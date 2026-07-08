@@ -1,4 +1,11 @@
+import type { Metadata } from "next"
+
 import { LoginForm } from "@/components/login-form"
+
+export const metadata: Metadata = {
+  title: "Sign in | Zimba",
+  description: "Mock sign-in screen for the Zimba dashboard preview.",
+}
 
 export default function LoginPage() {
   return (
