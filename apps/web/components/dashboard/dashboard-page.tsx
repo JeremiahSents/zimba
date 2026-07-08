@@ -1,4 +1,12 @@
-import { Button } from "@workspace/ui/components/button"
+import { HugeiconsIcon } from "@hugeicons/react"
+import {
+  Analytics02Icon,
+  DashboardSquare02Icon,
+  Invoice02Icon,
+  MoneyBag02Icon,
+} from "@hugeicons/core-free-icons"
+
+import { Avatar, AvatarFallback } from "@workspace/ui/components/avatar"
 import {
   Card,
   CardContent,
@@ -16,10 +24,6 @@ import {
   TableHeader,
   TableRow,
 } from "@workspace/ui/components/table"
-import {
-  SidebarInset,
-  SidebarProvider,
-} from "@workspace/ui/components/sidebar"
 
 import {
   dashboardStats,
@@ -27,79 +31,97 @@ import {
   projects,
   suppliers,
 } from "@/components/dashboard/data"
-import {
-  DashboardSidebar,
-  DashboardSidebarToggle,
-} from "@/components/dashboard/sidebar"
+import { DashboardShell } from "@/components/dashboard/dashboard-shell"
 
 export function DashboardPage() {
   return (
-    <SidebarProvider>
-      <DashboardSidebar />
-      <SidebarInset>
-        <div className="mx-auto flex max-w-7xl flex-col gap-6 p-4 sm:p-6 lg:p-8">
-          <DashboardTopbar />
-          <StatsGrid />
+    <DashboardShell
+      title="Dashboard"
+      subtitle="Track budgets, spend, and approvals."
+    >
+      <StatsGrid />
 
-          <div className="grid gap-6 xl:grid-cols-[1fr_20rem]">
-            <section className="space-y-6">
-              <ProjectOverview />
-              <RecentExpenses />
-            </section>
-            <aside className="space-y-6">
-              <SupplierSummary />
-              <ActivityCard />
-            </aside>
-          </div>
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
+      <div className="grid gap-6 xl:grid-cols-[1fr_20rem]">
+        <section className="space-y-6">
+          <ProjectOverview />
+          <RecentExpenses />
+        </section>
+        <aside className="space-y-6">
+          <SupplierSummary />
+          <ActivityCard />
+        </aside>
+      </div>
+    </DashboardShell>
   )
 }
 
-function DashboardTopbar() {
-  return (
-    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex items-center gap-3">
-        <DashboardSidebarToggle
-          aria-label="Open dashboard navigation"
-          className="md:hidden"
-          icon="open"
-        />
-        <div>
-          <p className="text-sm font-medium text-muted-foreground">
-            Construction finance overview
-          </p>
-          <h1 className="font-heading text-2xl font-semibold tracking-tight sm:text-3xl">
-            Dashboard
-          </h1>
-        </div>
-      </div>
+const statIcons = [
+  DashboardSquare02Icon,
+  MoneyBag02Icon,
+  Invoice02Icon,
+  Analytics02Icon,
+]
 
-      <div className="flex flex-wrap gap-2">
-        <Button variant="outline">+ New project</Button>
-        <Button>+ New expense</Button>
-      </div>
-    </div>
-  )
-}
+const statFilters = [
+  "All projects",
+  "This month",
+  "Budget risk",
+  "Pending approvals",
+]
 
 function StatsGrid() {
   return (
-    <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      {dashboardStats.map((stat) => (
-        <Card key={stat.label}>
-          <CardHeader>
-            <CardDescription className="font-semibold uppercase tracking-wide">
-              {stat.label}
-            </CardDescription>
-            <CardTitle className="text-2xl font-semibold">{stat.value}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">{stat.detail}</p>
-          </CardContent>
-        </Card>
-      ))}
+    <section className="space-y-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="font-heading text-lg font-semibold tracking-tight">
+          Overview
+        </h2>
+        <div className="flex flex-wrap items-center gap-2">
+          {statFilters.map((filter, index) => (
+            <Badge
+              key={filter}
+              variant={index === 0 ? "default" : "outline"}
+              className="h-8 px-3 text-xs font-medium"
+            >
+              {filter}
+            </Badge>
+          ))}
+        </div>
+      </div>
+
+      <Card className="grid gap-0 overflow-hidden rounded-xl py-0 shadow-none sm:grid-cols-2 lg:grid-cols-4">
+        {dashboardStats.map((stat, index) => (
+          <div
+            key={stat.label}
+            className="border-border/70 p-5 sm:odd:border-r lg:border-r lg:last:border-r-0"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
+                  <HugeiconsIcon
+                    icon={statIcons[index] ?? DashboardSquare02Icon}
+                    strokeWidth={2}
+                    className="size-4"
+                  />
+                </span>
+                <p className="text-sm font-medium text-muted-foreground">
+                  {stat.label}
+                </p>
+              </div>
+              <span className="size-1.5 rounded-full bg-border" />
+            </div>
+
+            <div className="mt-7">
+              <p className="font-heading text-2xl font-semibold tracking-tight">
+                {stat.value}
+              </p>
+              <p className="mt-1 text-xs font-medium text-primary">
+                {stat.detail}
+              </p>
+            </div>
+          </div>
+        ))}
+      </Card>
     </section>
   )
 }
@@ -117,7 +139,7 @@ function ProjectOverview() {
       </CardHeader>
       <CardContent className="grid gap-4 lg:grid-cols-3">
         {projects.map((project) => (
-          <Card key={project.name} size="sm" className="bg-background/50">
+          <Card key={project.name} size="sm" className="gap-4 border-border/70 shadow-none">
             <CardHeader>
               <div className="flex items-start justify-between gap-3">
                 <div>
@@ -207,11 +229,23 @@ function SupplierSummary() {
         {suppliers.map((supplier) => (
           <div
             key={supplier.name}
-            className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card p-3"
+            className="flex items-center justify-between gap-3 rounded-xl border border-border/70 p-3"
           >
-            <div>
-              <p className="font-medium">{supplier.name}</p>
-              <p className="text-sm text-muted-foreground">{supplier.payments}</p>
+            <div className="flex min-w-0 items-center gap-3">
+              <Avatar className="size-9">
+                <AvatarFallback className="bg-muted text-xs font-semibold">
+                  {supplier.name
+                    .split(" ")
+                    .map((part) => part[0])
+                    .join("")
+                    .slice(0, 2)
+                    .toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div className="min-w-0">
+                <p className="truncate font-medium">{supplier.name}</p>
+                <p className="text-sm text-muted-foreground">{supplier.payments}</p>
+              </div>
             </div>
             <p className="text-sm font-semibold">{supplier.amount}</p>
           </div>
