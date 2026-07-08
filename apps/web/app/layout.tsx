@@ -3,6 +3,7 @@ import { Geist_Mono, Nunito_Sans, Public_Sans } from "next/font/google"
 import "@workspace/ui/globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { cn } from "@workspace/ui/lib/utils";
+import { TooltipProvider } from "@workspace/ui/components/tooltip"
 
 const publicSansHeading = Public_Sans({subsets:['latin'],variable:'--font-heading'});
 
@@ -28,7 +29,9 @@ export default function RootLayout({
         <head>
           <meta name="apple-mobile-web-app-title" content="Zimba" />
         </head>
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          <TooltipProvider>{children}</TooltipProvider>
+        </ThemeProvider>
       </body>
     </html>
   )

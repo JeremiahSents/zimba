@@ -17,12 +17,9 @@ import {
   TableRow,
 } from "@workspace/ui/components/table"
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@workspace/ui/components/sheet"
+  SidebarInset,
+  SidebarProvider,
+} from "@workspace/ui/components/sidebar"
 
 import {
   dashboardStats,
@@ -30,16 +27,16 @@ import {
   projects,
   suppliers,
 } from "@/components/dashboard/data"
-import { DashboardSidebar } from "@/components/dashboard/sidebar"
+import {
+  DashboardSidebar,
+  DashboardSidebarToggle,
+} from "@/components/dashboard/sidebar"
 
 export function DashboardPage() {
   return (
-    <div className="min-h-svh bg-background text-foreground md:grid md:grid-cols-[15rem_1fr]">
-      <div className="hidden md:block">
-        <DashboardSidebar />
-      </div>
-
-      <main className="min-w-0 overflow-hidden">
+    <SidebarProvider>
+      <DashboardSidebar />
+      <SidebarInset>
         <div className="mx-auto flex max-w-7xl flex-col gap-6 p-4 sm:p-6 lg:p-8">
           <DashboardTopbar />
           <StatsGrid />
@@ -55,8 +52,8 @@ export function DashboardPage() {
             </aside>
           </div>
         </div>
-      </main>
-    </div>
+      </SidebarInset>
+    </SidebarProvider>
   )
 }
 
@@ -64,19 +61,11 @@ function DashboardTopbar() {
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-center gap-3">
-        <div className="md:hidden">
-          <Sheet>
-            <SheetTrigger render={<Button variant="outline" size="sm" />}>
-              Menu
-            </SheetTrigger>
-            <SheetContent side="left" className="w-72 border-0 bg-sidebar p-0">
-              <SheetHeader className="sr-only">
-                <SheetTitle>Dashboard navigation</SheetTitle>
-              </SheetHeader>
-              <DashboardSidebar />
-            </SheetContent>
-          </Sheet>
-        </div>
+        <DashboardSidebarToggle
+          aria-label="Open dashboard navigation"
+          className="md:hidden"
+          icon="open"
+        />
         <div>
           <p className="text-sm font-medium text-muted-foreground">
             Construction finance overview
