@@ -25,6 +25,9 @@ export default function RootLayout({
       className={cn("antialiased", fontMono.variable, "font-sans", nunitoSans.variable, publicSansHeading.variable)}
     >
       <body>
+        <head>
+          <meta name="apple-mobile-web-app-title" content="Zimba" />
+        </head>
         <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
