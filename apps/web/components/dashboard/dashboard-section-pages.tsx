@@ -17,6 +17,11 @@ import {
   TableHeader,
   TableRow,
 } from "@workspace/ui/components/table"
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+} from "@workspace/ui/components/tabs"
 
 import {
   dashboardStats,
@@ -37,14 +42,46 @@ export function ExpensesPage() {
       title="Expenses"
       subtitle="Review payments, tasks, suppliers, and site spend."
     >
-      <FilterRow title="Expense log" filters={expenseFilters} />
-      <SummaryStrip
-        items={[
-          ["This month", dashboardStats[2]?.value ?? "UGX 624M"],
-          ["Pending approval", "UGX 42M"],
-          ["Largest item", "UGX 18.4M"],
-        ]}
-      />
+      <div className="flex items-center justify-between pb-4">
+        <Tabs defaultValue={expenseFilters[0]}>
+          <TabsList>
+            {expenseFilters.map((filter) => (
+              <TabsTrigger key={filter} value={filter}>
+                {filter}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+      </div>
+      <div className="grid gap-4 lg:grid-cols-3 mb-6">
+        <Card className="shadow-none">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">This month</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{dashboardStats[2]?.value ?? "UGX 624M"}</div>
+            <p className="text-xs text-muted-foreground mt-1">Current period</p>
+          </CardContent>
+        </Card>
+        <Card className="shadow-none">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Pending approval</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">UGX 42M</div>
+            <p className="text-xs text-muted-foreground mt-1">Needs attention</p>
+          </CardContent>
+        </Card>
+        <Card className="shadow-none">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Largest item</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">UGX 18.4M</div>
+            <p className="text-xs text-muted-foreground mt-1">Needs attention</p>
+          </CardContent>
+        </Card>
+      </div>
       <Card>
         <CardHeader>
           <CardTitle>Recent expenses</CardTitle>
@@ -97,7 +134,17 @@ export function SuppliersPage() {
       title="Suppliers"
       subtitle="Track vendor spend, payment volume, and current exposure."
     >
-      <FilterRow title="Supplier network" filters={supplierFilters} />
+      <div className="flex items-center justify-between pb-4">
+        <Tabs defaultValue={supplierFilters[0]}>
+          <TabsList>
+            {supplierFilters.map((filter) => (
+              <TabsTrigger key={filter} value={filter}>
+                {filter}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+      </div>
       <div className="grid gap-4 lg:grid-cols-3">
         {suppliers.map((supplier) => (
           <Card key={supplier.name} className="shadow-none">
@@ -220,7 +267,17 @@ export function ReportsPage() {
       title="Reports"
       subtitle="Summarize budget performance and export project updates."
     >
-      <FilterRow title="Report center" filters={reportFilters} />
+      <div className="flex items-center justify-between pb-4">
+        <Tabs defaultValue={reportFilters[0]}>
+          <TabsList>
+            {reportFilters.map((filter) => (
+              <TabsTrigger key={filter} value={filter}>
+                {filter}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+      </div>
       <div className="grid gap-4 lg:grid-cols-3">
         {projects.map((project) => (
           <Card key={project.name} className="shadow-none">
@@ -249,13 +306,35 @@ export function ReportsPage() {
           </Card>
         ))}
       </div>
-      <SummaryStrip
-        items={[
-          ["Budget utilization", "44%"],
-          ["Projects on track", "2 of 3"],
-          ["Review required", "Entebbe Villas"],
-        ]}
-      />
+      <div className="grid gap-4 lg:grid-cols-3 mt-6">
+        <Card className="shadow-none">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Budget utilization</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">44%</div>
+            <p className="text-xs text-muted-foreground mt-1">Current period</p>
+          </CardContent>
+        </Card>
+        <Card className="shadow-none">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Projects on track</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">2 of 3</div>
+            <p className="text-xs text-muted-foreground mt-1">Needs attention</p>
+          </CardContent>
+        </Card>
+        <Card className="shadow-none">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Review required</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">Entebbe Villas</div>
+            <p className="text-xs text-muted-foreground mt-1">Needs attention</p>
+          </CardContent>
+        </Card>
+      </div>
     </DashboardShell>
   )
 }
@@ -334,53 +413,7 @@ export function SettingsPage() {
   )
 }
 
-function FilterRow({
-  title,
-  filters,
-}: {
-  title: string
-  filters: string[]
-}) {
-  return (
-    <div className="flex flex-wrap items-center justify-between gap-3">
-      <h2 className="font-heading text-lg font-semibold tracking-tight">
-        {title}
-      </h2>
-      <div className="flex flex-wrap items-center gap-4">
-        {filters.map((filter, index) => (
-          <button
-            key={filter}
-            className={`text-sm transition-colors ${
-              index === 0
-                ? "font-semibold text-foreground"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            {filter}
-          </button>
-        ))}
-      </div>
-    </div>
-  )
-}
 
-function SummaryStrip({ items }: { items: [string, string][] }) {
-  return (
-    <div className="grid gap-8 sm:grid-cols-3">
-      {items.map(([label, value], index) => (
-        <div key={label}>
-          <p className="text-sm text-muted-foreground">{label}</p>
-          <p className="mt-2 font-heading text-2xl font-semibold tracking-tight">
-            {value}
-          </p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            {index === 0 ? "Current period" : "Needs attention"}
-          </p>
-        </div>
-      ))}
-    </div>
-  )
-}
 
 function ActivityRow({
   title,
