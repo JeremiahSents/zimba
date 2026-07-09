@@ -10,38 +10,6 @@ import {
   SidebarInset,
   SidebarProvider,
 } from "@workspace/ui/components/sidebar"
-
-import {
-  DashboardSidebar,
-  DashboardSidebarToggle,
-} from "@/components/dashboard/sidebar"
-
-type DashboardShellProps = {
-  title: string
-  subtitle: string
-  children: ReactNode
-}
-
-export function DashboardShell({
-  title,
-  subtitle,
-  children,
-}: DashboardShellProps) {
-  return (
-    <div className="flex h-screen w-full bg-sidebar">
-      <SidebarProvider className="flex h-full w-full overflow-hidden bg-transparent">
-        <DashboardSidebar />
-        <SidebarInset className="relative z-10 flex min-w-0 flex-1 flex-col overflow-hidden rounded-tl-[1.5rem] border-l border-t border-black/5 bg-white shadow-[-12px_0_32px_rgba(0,0,0,0.05)]">
-          <DashboardTopbar title={title} subtitle={subtitle} />
-          <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 overflow-y-auto p-4 sm:p-6 lg:p-8 xl:px-10">
-            {children}
-          </div>
-        </SidebarInset>
-      </SidebarProvider>
-    </div>
-  )
-}
-
 import {
   Sheet,
   SheetContent,
@@ -51,10 +19,49 @@ import {
   SheetTrigger,
 } from "@workspace/ui/components/sheet"
 
+import {
+  DashboardSidebar,
+  DashboardSidebarToggle,
+} from "@/components/dashboard/sidebar"
+
+type DashboardShellProps = {
+  title: string
+  subtitle: string
+  dataSource?: "api" | "mock"
+  children: ReactNode
+}
+
+export function DashboardShell({
+  dataSource,
+  title,
+  subtitle,
+  children,
+}: DashboardShellProps) {
+  return (
+    <div className="flex h-screen w-full bg-sidebar">
+      <SidebarProvider className="flex h-full w-full overflow-hidden bg-transparent">
+        <DashboardSidebar />
+        <SidebarInset className="relative z-10 flex min-w-0 flex-1 flex-col overflow-hidden rounded-tl-[1.5rem] border-l border-t border-black/5 bg-white shadow-[-12px_0_32px_rgba(0,0,0,0.05)]">
+          <DashboardTopbar
+            title={title}
+            subtitle={subtitle}
+            dataSource={dataSource}
+          />
+          <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 overflow-y-auto p-4 sm:p-6 lg:p-8 xl:px-10">
+            {children}
+          </div>
+        </SidebarInset>
+      </SidebarProvider>
+    </div>
+  )
+}
+
 function DashboardTopbar({
+  dataSource,
   title,
   subtitle,
 }: {
+  dataSource?: "api" | "mock"
   title: string
   subtitle: string
 }) {
@@ -75,6 +82,11 @@ function DashboardTopbar({
         {subtitle && (
           <p className="text-sm text-muted-foreground mt-1">
             {subtitle}
+          </p>
+        )}
+        {dataSource === "mock" && (
+          <p className="mt-2 text-xs font-medium text-amber-600">
+            Showing typed mock data until API credentials are configured.
           </p>
         )}
       </div>

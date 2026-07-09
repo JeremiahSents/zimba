@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 
-import { SettingsPage } from "@/components/dashboard/dashboard-section-pages"
+import { SettingsPage } from "@/components/dashboard/features/settings/settings-page"
 
 export const metadata: Metadata = {
   title: "Settings | Zimba",

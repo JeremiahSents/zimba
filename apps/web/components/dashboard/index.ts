@@ -1,1 +1,1 @@
-export { DashboardPage } from "@/components/dashboard/dashboard-page"
+export { DashboardPage } from "@/components/dashboard/features/overview/overview-page"

@@ -11,73 +11,72 @@ import {
   CardTitle,
 } from "@workspace/ui/components/card"
 import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from "@workspace/ui/components/chart"
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@workspace/ui/components/select"
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  type ChartConfig,
-} from "@workspace/ui/components/chart"
 
-const chartData = [
-  { month: "Jan", spend: 120, budget: 200 },
-  { month: "Feb", spend: 150, budget: 200 },
-  { month: "Mar", spend: 180, budget: 200 },
-  { month: "Apr", spend: 90, budget: 200 },
-  { month: "May", spend: 130, budget: 200 },
-  { month: "Jun", spend: 170, budget: 200 },
-  { month: "Jul", spend: 190, budget: 200 },
-  { month: "Aug", spend: 110, budget: 200 },
-  { month: "Sep", spend: 80, budget: 200 },
-  { month: "Oct", spend: 140, budget: 200 },
-  { month: "Nov", spend: 160, budget: 200 },
-  { month: "Dec", spend: 200, budget: 200 },
-]
+import { formatCurrency } from "@/lib/zimba/format"
+import type { SpendChartPoint } from "@/lib/zimba/types"
 
 const chartConfig = {
-  spend: {
-    label: "Spend",
-    color: "#6366f1", // Indigo 500
-  },
   budget: {
+    color: "#e2e8f0",
     label: "Budget",
-    color: "#e2e8f0", // Slate 200
+  },
+  spent: {
+    color: "#0c8c5e",
+    label: "Spent",
   },
 } satisfies ChartConfig
 
-export function DashboardBarChart() {
+export function SpendBarChart({ data }: { data: SpendChartPoint[] }) {
+  const totalSpent = data.reduce((total, point) => total + point.spent, 0)
+
   return (
     <Card className="flex h-full flex-col">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-sm font-medium text-muted-foreground">Total sales</CardTitle>
-          <Select defaultValue="30days">
+          <CardTitle className="text-sm font-medium text-muted-foreground">
+            Budget spend
+          </CardTitle>
+          <Select defaultValue="current">
             <SelectTrigger className="h-8 w-auto gap-2 border-border text-xs font-medium">
               <SelectValue placeholder="Select range" />
-              <HugeiconsIcon icon={Calendar01Icon} className="size-3.5 text-muted-foreground" />
+              <HugeiconsIcon
+                icon={Calendar01Icon}
+                className="size-3.5 text-muted-foreground"
+              />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="7days">Last 7 days</SelectItem>
-              <SelectItem value="30days">Last 30 days</SelectItem>
-              <SelectItem value="6months">Last 6 months</SelectItem>
+              <SelectItem value="current">Current period</SelectItem>
+              <SelectItem value="quarter">This quarter</SelectItem>
+              <SelectItem value="year">This year</SelectItem>
             </SelectContent>
           </Select>
         </div>
         <div className="mt-2 space-y-1">
           <div className="flex items-center gap-2">
-            <span className="text-2xl font-bold">1,525</span>
+            <span className="text-2xl font-bold">
+              {formatCurrency(totalSpent)}
+            </span>
           </div>
-          <span className="text-xs text-emerald-500 font-medium">+20.1% from last month</span>
+          <span className="text-xs font-medium text-emerald-500">
+            Logged construction spend
+          </span>
         </div>
       </CardHeader>
       <CardContent className="mt-auto pb-6">
         <ChartContainer config={chartConfig} className="h-[200px] w-full">
-          <BarChart accessibilityLayer data={chartData} margin={{ top: 20 }}>
+          <BarChart accessibilityLayer data={data} margin={{ top: 20 }}>
             <CartesianGrid vertical={false} strokeDasharray="3 3" />
             <XAxis
               dataKey="month"
@@ -85,11 +84,14 @@ export function DashboardBarChart() {
               tickMargin={10}
               axisLine={false}
             />
-            <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+            <ChartTooltip
+              content={<ChartTooltipContent hideLabel />}
+              formatter={(value) => formatCurrency(Number(value))}
+            />
             <Bar
-              dataKey="spend"
+              dataKey="spent"
               stackId="a"
-              fill="var(--color-spend)"
+              fill="var(--color-spent)"
               radius={[0, 0, 4, 4]}
             />
             <Bar

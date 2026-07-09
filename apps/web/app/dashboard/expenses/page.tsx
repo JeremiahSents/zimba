@@ -1,12 +1,17 @@
 import type { Metadata } from "next"
 
-import { ExpensesPage } from "@/components/dashboard/dashboard-section-pages"
+import { ExpensesPage } from "@/components/dashboard/features/expenses/expenses-page"
+import { getDashboardOverviewData } from "@/lib/zimba/dashboard-data"
+
+export const dynamic = "force-dynamic"
 
 export const metadata: Metadata = {
   title: "Expenses | Zimba",
   description: "Expense tracking preview for Zimba construction projects.",
 }
 
-export default function Page() {
-  return <ExpensesPage />
+export default async function Page() {
+  const data = await getDashboardOverviewData()
+
+  return <ExpensesPage data={data} />
 }
