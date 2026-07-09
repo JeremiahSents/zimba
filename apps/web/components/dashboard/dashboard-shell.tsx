@@ -38,16 +38,16 @@ export function DashboardShell({
   children,
 }: DashboardShellProps) {
   return (
-    <div className="flex h-screen w-full bg-sidebar">
-      <SidebarProvider className="flex h-full w-full overflow-hidden bg-transparent">
+    <div className="flex min-h-svh w-full bg-sidebar">
+      <SidebarProvider className="flex min-h-svh w-full bg-transparent">
         <DashboardSidebar />
-        <SidebarInset className="relative z-10 flex min-w-0 flex-1 flex-col overflow-hidden rounded-tl-[1.5rem] border-l border-t border-black/5 bg-white shadow-[-12px_0_32px_rgba(0,0,0,0.05)]">
+        <SidebarInset className="relative z-10 flex min-w-0 flex-1 flex-col rounded-tl-[1.5rem] border-l border-t border-black/5 bg-white shadow-[-12px_0_32px_rgba(0,0,0,0.05)]">
           <DashboardTopbar
             title={title}
             subtitle={subtitle}
             dataSource={dataSource}
           />
-          <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 overflow-y-auto p-4 sm:p-6 lg:p-8 xl:px-10">
+          <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 p-4 sm:p-6 lg:p-8 xl:px-10">
             {children}
           </div>
         </SidebarInset>
