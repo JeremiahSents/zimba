@@ -28,15 +28,17 @@ export function DashboardShell({
   children,
 }: DashboardShellProps) {
   return (
-    <SidebarProvider className="bg-white">
-      <DashboardSidebar />
-      <SidebarInset className="min-w-0 bg-white">
-        <DashboardTopbar title={title} subtitle={subtitle} />
-        <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 p-4 sm:p-6 lg:p-8 xl:px-10">
-          {children}
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
+    <div className="flex h-screen w-full bg-sidebar">
+      <SidebarProvider className="flex h-full w-full overflow-hidden bg-transparent">
+        <DashboardSidebar />
+        <SidebarInset className="relative z-10 flex min-w-0 flex-1 flex-col overflow-hidden rounded-tl-[2.5rem] border-l border-t border-black/5 bg-white shadow-[-12px_0_32px_rgba(0,0,0,0.05)]">
+          <DashboardTopbar title={title} subtitle={subtitle} />
+          <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 overflow-y-auto p-4 sm:p-6 lg:p-8 xl:px-10">
+            {children}
+          </div>
+        </SidebarInset>
+      </SidebarProvider>
+    </div>
   )
 }
 
@@ -57,21 +59,27 @@ function DashboardTopbar({
   subtitle: string
 }) {
   return (
-    <header className="sticky top-0 z-10 flex min-h-16 flex-wrap items-center gap-x-4 gap-y-3 bg-white px-4 py-3 sm:px-6 lg:px-8">
-      <div className="flex min-w-0 flex-1 items-center gap-3">
-        <DashboardSidebarToggle
-          aria-label="Open dashboard navigation"
-          className="md:hidden"
-          icon="open"
-        />
-        <div className="flex min-w-0 flex-col">
-          <h1 className="font-heading text-xl font-semibold tracking-tight">
-            {title}
-          </h1>
+    <header className="flex min-h-16 shrink-0 flex-wrap items-center justify-between gap-x-4 gap-y-3 bg-white px-4 py-4 sm:px-6 lg:px-8 xl:px-10">
+      <div className="flex min-w-0 flex-1 flex-col gap-1">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+          <DashboardSidebarToggle
+            aria-label="Toggle dashboard navigation"
+            className="size-6 rounded-md hover:bg-muted hover:text-foreground [&_svg]:size-4 -ml-1"
+            icon="open"
+          />
+          <span className="font-medium">Overview</span>
         </div>
+        <h1 className="font-heading text-2xl font-semibold tracking-tight text-foreground">
+          {title}
+        </h1>
+        {subtitle && (
+          <p className="text-sm text-muted-foreground mt-1">
+            {subtitle}
+          </p>
+        )}
       </div>
 
-      <div className="ml-auto flex items-center gap-2">
+      <div className="flex items-center gap-2 self-start mt-8">
         <Sheet>
           <SheetTrigger render={<Button variant="ghost" size="icon" aria-label="View notifications" />}>
             <HugeiconsIcon icon={BellIcon} strokeWidth={2} className="size-4" />

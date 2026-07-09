@@ -46,7 +46,7 @@ export function DashboardSidebar() {
   return (
     <Sidebar
       collapsible="icon"
-      className="border-r-0 bg-white group-data-[collapsible=icon]:bg-white"
+      className="!border-r-0 bg-transparent group-data-[collapsible=icon]:bg-transparent"
     >
       <SidebarHeader className="p-4 pb-3">
         <SidebarBrand />
@@ -55,7 +55,7 @@ export function DashboardSidebar() {
       <SidebarContent>
         <SidebarGroup className="px-3 py-1">
           <SidebarGroupContent>
-            <SidebarMenu className="gap-1">
+            <SidebarMenu className="gap-2">
               {navItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
@@ -65,7 +65,7 @@ export function DashboardSidebar() {
                         ? pathname === item.href
                         : pathname.startsWith(item.href)
                     }
-                    className="relative h-10 rounded-lg px-3 text-[13px] font-medium text-sidebar-foreground/62 transition-colors hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground data-active:bg-[#0c8c5e]/10 data-active:text-[#0c8c5e] group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-0! group-data-[collapsible=icon]:[&_span]:hidden [&_svg]:size-4.5! [&_svg]:text-sidebar-foreground/45 data-active:[&_svg]:text-[#0c8c5e]"
+                    className="relative h-10 rounded-full px-3 text-[13px] font-medium text-sidebar-foreground/62 transition-colors hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground data-active:bg-[#0c8c5e]/10 data-active:text-[#0c8c5e] group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-0! group-data-[collapsible=icon]:[&_span]:hidden [&_svg]:size-4.5! [&_svg]:text-sidebar-foreground/45 data-active:[&_svg]:text-[#0c8c5e]"
                     render={
                       <Link href={item.href}>
                         <HugeiconsIcon icon={item.icon} strokeWidth={2} />
@@ -81,12 +81,12 @@ export function DashboardSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="p-3 pt-2">
-        <SidebarMenu className="gap-1">
+        <SidebarMenu className="gap-2">
           <SidebarMenuItem>
             <SidebarMenuButton
               tooltip="Settings"
               isActive={pathname.startsWith("/dashboard/settings")}
-              className="h-10 rounded-lg px-3 text-[13px] font-medium text-sidebar-foreground/62 hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-0! group-data-[collapsible=icon]:[&_span]:hidden [&_svg]:size-4.5! [&_svg]:text-sidebar-foreground/45"
+              className="h-10 rounded-full px-3 text-[13px] font-medium text-sidebar-foreground/62 hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-0! group-data-[collapsible=icon]:[&_span]:hidden [&_svg]:size-4.5! [&_svg]:text-sidebar-foreground/45"
               render={
                 <Link href="/dashboard/settings">
                   <HugeiconsIcon icon={Settings02Icon} strokeWidth={2} />
@@ -98,7 +98,7 @@ export function DashboardSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton
               tooltip="Musa Byaruhanga"
-              className="mt-1 h-12 rounded-lg px-3 text-sidebar-foreground hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-0! group-data-[collapsible=icon]:[&_span]:hidden [&_svg]:size-4.5!"
+              className="mt-1 h-12 rounded-full px-3 text-sidebar-foreground hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-0! group-data-[collapsible=icon]:[&_span]:hidden [&_svg]:size-4.5!"
               render={
                 <Link href="/dashboard/settings">
                   <HugeiconsIcon icon={UserCircleIcon} strokeWidth={2} />
@@ -126,16 +126,20 @@ function SidebarBrand() {
 
   if (collapsed) {
     return (
-      <DashboardSidebarToggle
-        aria-label="Open sidebar"
-        className="mx-auto size-10 rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground [&_svg]:size-5!"
-        icon="open"
-      />
+      <div className="mx-auto flex size-10 items-center justify-center">
+        <Image
+          src="/logo-landing.png"
+          alt="Zimba logo"
+          width={24}
+          height={24}
+          className="size-6"
+        />
+      </div>
     )
   }
 
   return (
-    <div className="flex items-center justify-between gap-2">
+    <div className="flex items-center gap-2">
       <Link href="/" className="flex min-w-0 items-center gap-3">
         <span className="grid size-10 place-items-center">
           <Image
@@ -155,11 +159,6 @@ function SidebarBrand() {
           </span>
         </span>
       </Link>
-      <DashboardSidebarToggle
-        aria-label="Close sidebar"
-        className="size-8 rounded-lg text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-        icon="close"
-      />
     </div>
   )
 }
