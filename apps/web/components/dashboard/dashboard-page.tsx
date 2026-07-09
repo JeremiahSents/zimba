@@ -6,15 +6,6 @@ import {
   MoneyBag02Icon,
 } from "@hugeicons/core-free-icons"
 
-import { Avatar, AvatarFallback } from "@workspace/ui/components/avatar"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@workspace/ui/components/card"
-import { Badge } from "@workspace/ui/components/badge"
 import { Progress } from "@workspace/ui/components/progress"
 import {
   Table,
@@ -24,6 +15,18 @@ import {
   TableHeader,
   TableRow,
 } from "@workspace/ui/components/table"
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@workspace/ui/components/card"
+import { Button } from "@workspace/ui/components/button"
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+} from "@workspace/ui/components/tabs"
 
 import {
   dashboardStats,
@@ -71,89 +74,80 @@ const statFilters = [
 
 function StatsGrid() {
   return (
-    <section className="space-y-3">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between pb-2">
         <h2 className="font-heading text-lg font-semibold tracking-tight">
           Overview
         </h2>
-        <div className="flex flex-wrap items-center gap-2">
-          {statFilters.map((filter, index) => (
-            <Badge
-              key={filter}
-              variant={index === 0 ? "default" : "outline"}
-              className="h-8 px-3 text-xs font-medium"
-            >
-              {filter}
-            </Badge>
-          ))}
-        </div>
+        <Tabs defaultValue={statFilters[0]} className="w-auto">
+          <TabsList>
+            {statFilters.map((filter) => (
+              <TabsTrigger key={filter} value={filter}>
+                {filter}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
       </div>
 
-      <Card className="grid gap-0 overflow-hidden rounded-xl py-0 shadow-none sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {dashboardStats.map((stat, index) => (
-          <div
-            key={stat.label}
-            className="border-border/70 p-5 sm:odd:border-r lg:border-r lg:last:border-r-0"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
-                  <HugeiconsIcon
-                    icon={statIcons[index] ?? DashboardSquare02Icon}
-                    strokeWidth={2}
-                    className="size-4"
-                  />
-                </span>
-                <p className="text-sm font-medium text-muted-foreground">
-                  {stat.label}
-                </p>
-              </div>
-              <span className="size-1.5 rounded-full bg-border" />
+          <Card key={stat.label} className="p-5">
+            <div className="flex items-center gap-2">
+              <HugeiconsIcon
+                icon={statIcons[index] ?? DashboardSquare02Icon}
+                strokeWidth={2}
+                className="size-4 text-muted-foreground"
+              />
+              <p className="text-sm text-muted-foreground">
+                {stat.label}
+              </p>
             </div>
 
-            <div className="mt-7">
+            <div className="mt-3">
               <p className="font-heading text-2xl font-semibold tracking-tight">
                 {stat.value}
               </p>
-              <p className="mt-1 text-xs font-medium text-primary">
+              <p className="mt-1 text-xs text-muted-foreground">
                 {stat.detail}
               </p>
             </div>
-          </div>
+          </Card>
         ))}
-      </Card>
-    </section>
+      </div>
+    </div>
   )
 }
 
 function ProjectOverview() {
   return (
     <Card>
-      <CardHeader>
-        <div>
-          <CardTitle>Project spend</CardTitle>
-          <CardDescription>
-            Budget usage by active construction project.
-          </CardDescription>
-        </div>
+      <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <CardTitle>Project spend</CardTitle>
+        <Button variant="outline" size="sm">View details</Button>
       </CardHeader>
-      <CardContent className="grid gap-4 lg:grid-cols-3">
-        {projects.map((project) => (
-          <Card key={project.name} size="sm" className="gap-4 border-border/70 shadow-none">
-            <CardHeader>
+      <CardContent>
+        {/* Placeholder for Graph */}
+        <div className="mb-6 h-[200px] w-full rounded-md bg-muted/30 flex items-center justify-center border border-border border-dashed">
+          <span className="text-sm text-muted-foreground flex items-center gap-2">
+            <HugeiconsIcon icon={Analytics02Icon} className="size-4" />
+            Spend Analysis Chart
+          </span>
+        </div>
+
+        <div className="grid gap-6 lg:grid-cols-3">
+          {projects.map((project) => (
+            <div key={project.name} className="space-y-4 rounded-xl border border-border p-4">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <CardTitle>{project.name}</CardTitle>
-                  <CardDescription>
-                    {project.location} · {project.plotSize}
-                  </CardDescription>
+                  <p className="font-heading text-base font-medium">{project.name}</p>
                 </div>
-                <Badge variant={project.status === "On track" ? "default" : "secondary"}>
+                <span className={`text-xs font-medium ${
+                  project.status === "On track" ? "text-primary" : "text-muted-foreground"
+                }`}>
                   {project.status}
-                </Badge>
+                </span>
               </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div>
                   <p className="text-muted-foreground">Budget</p>
@@ -164,14 +158,14 @@ function ProjectOverview() {
                   <p className="font-semibold">{project.spent}</p>
                 </div>
               </div>
-              <Progress value={project.progress} />
+              <Progress value={project.progress} className="[&_[data-slot=progress-track]]:h-1.5" />
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">Remaining</span>
                 <span className="font-semibold">{project.remaining}</span>
               </div>
-            </CardContent>
-          </Card>
-        ))}
+            </div>
+          ))}
+        </div>
       </CardContent>
     </Card>
   )
@@ -180,11 +174,9 @@ function ProjectOverview() {
 function RecentExpenses() {
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle>Recent expenses</CardTitle>
-        <CardDescription>
-          Latest payments logged across active projects.
-        </CardDescription>
+        <Button size="sm">Log expense</Button>
       </CardHeader>
       <CardContent>
         <Table>
@@ -221,35 +213,25 @@ function RecentExpenses() {
 function SupplierSummary() {
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle>Top suppliers</CardTitle>
-        <CardDescription>Highest paid this month.</CardDescription>
+        <Button variant="ghost" size="icon-sm"><HugeiconsIcon icon={DashboardSquare02Icon} className="size-4" /></Button>
       </CardHeader>
-      <CardContent className="space-y-3">
-        {suppliers.map((supplier) => (
-          <div
-            key={supplier.name}
-            className="flex items-center justify-between gap-3 rounded-xl border border-border/70 p-3"
-          >
-            <div className="flex min-w-0 items-center gap-3">
-              <Avatar className="size-9">
-                <AvatarFallback className="bg-muted text-xs font-semibold">
-                  {supplier.name
-                    .split(" ")
-                    .map((part) => part[0])
-                    .join("")
-                    .slice(0, 2)
-                    .toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
+      <CardContent>
+        <div className="space-y-4">
+          {suppliers.map((supplier) => (
+            <div
+              key={supplier.name}
+              className="flex items-center justify-between gap-3"
+            >
               <div className="min-w-0">
-                <p className="truncate font-medium">{supplier.name}</p>
-                <p className="text-sm text-muted-foreground">{supplier.payments}</p>
+                <p className="truncate text-sm font-medium">{supplier.name}</p>
+                <p className="text-xs text-muted-foreground">{supplier.payments}</p>
               </div>
+              <p className="text-sm font-semibold">{supplier.amount}</p>
             </div>
-            <p className="text-sm font-semibold">{supplier.amount}</p>
-          </div>
-        ))}
+          ))}
+        </div>
       </CardContent>
     </Card>
   )
@@ -258,28 +240,30 @@ function SupplierSummary() {
 function ActivityCard() {
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle>Today</CardTitle>
-        <CardDescription>Dummy activity preview.</CardDescription>
+        <Button variant="outline" size="sm">Approve all</Button>
       </CardHeader>
-      <CardContent className="space-y-4 text-sm">
-        <div className="flex gap-3">
-          <span className="mt-2 size-2 rounded-full bg-primary" />
-          <p>
-            Site manager logged a concrete delivery for{" "}
-            <span className="font-medium">Nakasero Heights</span>.
-          </p>
-        </div>
-        <div className="flex gap-3">
-          <span className="mt-2 size-2 rounded-full bg-primary" />
-          <p>
-            Accountant flagged <span className="font-medium">Entebbe Villas</span>{" "}
-            for budget review.
-          </p>
-        </div>
-        <div className="flex gap-3">
-          <span className="mt-2 size-2 rounded-full bg-primary" />
-          <p>Two supplier payments are ready for approval.</p>
+      <CardContent>
+        <div className="space-y-3 text-sm">
+          <div className="flex gap-3">
+            <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-primary" />
+            <p className="text-muted-foreground">
+              Site manager logged a concrete delivery for{" "}
+              <span className="font-medium text-foreground">Nakasero Heights</span>.
+            </p>
+          </div>
+          <div className="flex gap-3">
+            <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-primary" />
+            <p className="text-muted-foreground">
+              Accountant flagged <span className="font-medium text-foreground">Entebbe Villas</span>{" "}
+              for budget review.
+            </p>
+          </div>
+          <div className="flex gap-3">
+            <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-primary" />
+            <p className="text-muted-foreground">Two supplier payments are ready for approval.</p>
+          </div>
         </div>
       </CardContent>
     </Card>

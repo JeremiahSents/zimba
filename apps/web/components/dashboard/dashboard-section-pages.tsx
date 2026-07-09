@@ -318,7 +318,7 @@ export function SettingsPage() {
               {roles.map((role) => (
                 <div
                   key={role}
-                  className="rounded-xl border border-border/70 p-3"
+                  className="py-2"
                 >
                   <p className="font-medium">{role}</p>
                   <p className="text-sm text-muted-foreground">
@@ -346,15 +346,18 @@ function FilterRow({
       <h2 className="font-heading text-lg font-semibold tracking-tight">
         {title}
       </h2>
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap items-center gap-4">
         {filters.map((filter, index) => (
-          <Badge
+          <button
             key={filter}
-            variant={index === 0 ? "default" : "outline"}
-            className="h-8 px-3 text-xs font-medium"
+            className={`text-sm transition-colors ${
+              index === 0
+                ? "font-semibold text-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
           >
             {filter}
-          </Badge>
+          </button>
         ))}
       </div>
     </div>
@@ -363,22 +366,19 @@ function FilterRow({
 
 function SummaryStrip({ items }: { items: [string, string][] }) {
   return (
-    <Card className="grid gap-0 overflow-hidden py-0 shadow-none sm:grid-cols-3">
+    <div className="grid gap-8 sm:grid-cols-3">
       {items.map(([label, value], index) => (
-        <div
-          key={label}
-          className="border-border/70 p-5 sm:border-r sm:last:border-r-0"
-        >
+        <div key={label}>
           <p className="text-sm text-muted-foreground">{label}</p>
           <p className="mt-2 font-heading text-2xl font-semibold tracking-tight">
             {value}
           </p>
-          <p className="mt-1 text-xs font-medium text-primary">
+          <p className="mt-1 text-xs text-muted-foreground">
             {index === 0 ? "Current period" : "Needs attention"}
           </p>
         </div>
       ))}
-    </Card>
+    </div>
   )
 }
 
@@ -392,7 +392,7 @@ function ActivityRow({
   value: string
 }) {
   return (
-    <div className="flex items-center justify-between gap-4 rounded-xl border border-border/70 p-3">
+    <div className="flex items-center justify-between gap-4 py-2">
       <div className="min-w-0">
         <p className="truncate font-medium">{title}</p>
         <p className="text-sm text-muted-foreground">{detail}</p>
@@ -404,7 +404,7 @@ function ActivityRow({
 
 function SettingField({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-border/70 p-3">
+    <div className="py-2">
       <p className="text-sm text-muted-foreground">{label}</p>
       <p className="mt-1 font-medium">{value}</p>
     </div>

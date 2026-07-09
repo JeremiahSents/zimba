@@ -46,7 +46,7 @@ export function DashboardSidebar() {
   return (
     <Sidebar
       collapsible="icon"
-      className="border-r-0 bg-muted/70 group-data-[collapsible=icon]:bg-muted"
+      className="border-r-0 bg-white group-data-[collapsible=icon]:bg-white"
     >
       <SidebarHeader className="p-4 pb-3">
         <SidebarBrand />
@@ -65,7 +65,7 @@ export function DashboardSidebar() {
                         ? pathname === item.href
                         : pathname.startsWith(item.href)
                     }
-                    className="relative h-10 rounded-lg px-3 text-[13px] font-medium text-sidebar-foreground/62 transition-colors before:absolute before:left-1.5 before:top-1/2 before:h-4 before:w-0.5 before:-translate-y-1/2 before:rounded-full before:bg-transparent hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground data-active:bg-sidebar-accent data-active:text-sidebar-accent-foreground data-active:shadow-[inset_0_0_0_1px_rgb(15_23_42/0.04)] data-active:before:bg-primary group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-0! group-data-[collapsible=icon]:before:hidden group-data-[collapsible=icon]:[&_span]:hidden [&_svg]:size-4.5! [&_svg]:text-sidebar-foreground/45 data-active:[&_svg]:text-primary"
+                    className="relative h-10 rounded-lg px-3 text-[13px] font-medium text-sidebar-foreground/62 transition-colors hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground data-active:bg-[#0c8c5e]/10 data-active:text-[#0c8c5e] group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-0! group-data-[collapsible=icon]:[&_span]:hidden [&_svg]:size-4.5! [&_svg]:text-sidebar-foreground/45 data-active:[&_svg]:text-[#0c8c5e]"
                     render={
                       <Link href={item.href}>
                         <HugeiconsIcon icon={item.icon} strokeWidth={2} />
@@ -98,7 +98,7 @@ export function DashboardSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton
               tooltip="Musa Byaruhanga"
-              className="mt-1 h-12 rounded-lg border border-sidebar-border/70 bg-sidebar/80 px-3 text-sidebar-foreground shadow-[0_1px_2px_rgb(15_23_42/0.04)] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:border-0 group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:p-0! group-data-[collapsible=icon]:shadow-none group-data-[collapsible=icon]:[&_span]:hidden [&_svg]:size-4.5!"
+              className="mt-1 h-12 rounded-lg px-3 text-sidebar-foreground hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-0! group-data-[collapsible=icon]:[&_span]:hidden [&_svg]:size-4.5!"
               render={
                 <Link href="/dashboard/settings">
                   <HugeiconsIcon icon={UserCircleIcon} strokeWidth={2} />
@@ -137,7 +137,7 @@ function SidebarBrand() {
   return (
     <div className="flex items-center justify-between gap-2">
       <Link href="/" className="flex min-w-0 items-center gap-3">
-        <span className="grid size-10 place-items-center rounded-xl bg-sidebar shadow-[inset_0_0_0_1px_var(--sidebar-border)]">
+        <span className="grid size-10 place-items-center">
           <Image
             src="/logo-landing.png"
             alt="Zimba logo"
