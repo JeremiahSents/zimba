@@ -4,7 +4,7 @@ import { cn } from "@workspace/ui/lib/utils"
 import { cva, type VariantProps } from "class-variance-authority"
 
 const cardVariants = cva(
-  "group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-lg border border-border py-(--card-spacing) text-sm text-card-foreground [--card-spacing:--spacing(7)] data-[size=sm]:[--card-spacing:--spacing(5)]",
+  "group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-lg border border-border py-(--card-spacing) text-sm text-card-foreground [--card-spacing:--spacing(5)] data-[size=sm]:[--card-spacing:--spacing(4)]",
   {
     variants: {
       tone: {

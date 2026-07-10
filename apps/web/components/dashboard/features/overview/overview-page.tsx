@@ -52,7 +52,7 @@ export function DashboardPage({ data }: { data: DashboardOverviewData }) {
         </div>
       </div>
 
-      <div className="mt-6">
+      <div className="mt-2">
         <RecentExpenses data={data} />
       </div>
     </DashboardShell>

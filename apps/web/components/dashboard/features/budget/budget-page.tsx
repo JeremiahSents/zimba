@@ -15,16 +15,9 @@ import {
   CardTitle,
 } from "@workspace/ui/components/card"
 import { Progress } from "@workspace/ui/components/progress"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@workspace/ui/components/table"
 
 import { DashboardShell } from "@/components/dashboard/dashboard-shell"
+import { ProjectBudgetTable } from "@/components/dashboard/features/budget/project-budget-table"
 import { formatCurrency, formatPercent } from "@/lib/zimba/format"
 import type { DashboardOverviewData } from "@/lib/zimba/types"
 
@@ -67,43 +60,37 @@ export function BudgetPage({ data }: { data: DashboardOverviewData }) {
       subtitle="Set spending limits and keep every project financially on track."
       dataSource={data.source}
     >
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h2 className="font-heading text-lg font-semibold tracking-tight">
-            Budget overview
-          </h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            A live view of your company-wide allocation.
-          </p>
-        </div>
-        <Button size="sm">
-          <HugeiconsIcon icon={WalletAdd01Icon} strokeWidth={2} />
-          Set up budget
-        </Button>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-3">
-        {stats.map((stat) => (
-          <Card key={stat.label} tone="keylime" className="overflow-hidden">
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-sm text-muted-foreground">{stat.label}</p>
-              <span className="grid size-9 place-items-center rounded-full bg-primary/10 text-primary">
-                <HugeiconsIcon
-                  icon={stat.icon}
-                  strokeWidth={2}
-                  className="size-4"
-                />
-              </span>
+      <Card className="gap-0 py-0">
+        <div className="grid md:grid-cols-3">
+          {stats.map((stat) => (
+            <div
+              key={stat.label}
+              className="border-t p-5 first:border-t-0 md:border-t-0 md:border-l md:first:border-l-0"
+            >
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm font-medium text-foreground">
+                  {stat.label}
+                </p>
+                <span className="grid size-9 place-items-center rounded-full bg-primary/10 text-primary">
+                  <HugeiconsIcon
+                    icon={stat.icon}
+                    strokeWidth={2}
+                    className="size-4"
+                  />
+                </span>
+              </div>
+              <p className="mt-5 font-heading text-3xl font-semibold tracking-tight text-foreground">
+                {stat.value}
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {stat.detail}
+              </p>
             </div>
-            <p className="mt-5 font-heading text-2xl font-semibold tracking-tight">
-              {stat.value}
-            </p>
-            <p className="mt-1 text-xs text-muted-foreground">{stat.detail}</p>
-          </Card>
-        ))}
-      </div>
+          ))}
+        </div>
+      </Card>
 
-      <Card tone="sage">
+      <Card>
         <CardHeader>
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
@@ -130,52 +117,20 @@ export function BudgetPage({ data }: { data: DashboardOverviewData }) {
       </Card>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Project budgets</CardTitle>
-          <CardDescription>
-            Allocation and utilization by individual project.
-          </CardDescription>
+        <CardHeader className="flex flex-row items-start justify-between gap-4">
+          <div>
+            <CardTitle>Project budgets</CardTitle>
+            <CardDescription>
+              Allocation and utilization by individual project.
+            </CardDescription>
+          </div>
+          <Button size="sm">
+            <HugeiconsIcon icon={WalletAdd01Icon} strokeWidth={2} />
+            Set up budget
+          </Button>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Project</TableHead>
-                <TableHead>Allocated</TableHead>
-                <TableHead>Spent</TableHead>
-                <TableHead>Remaining</TableHead>
-                <TableHead className="min-w-44">Utilization</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {data.projects.map((project) => (
-                <TableRow key={project.id}>
-                  <TableCell>
-                    <p className="font-medium text-foreground">
-                      {project.name}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {project.location}
-                    </p>
-                  </TableCell>
-                  <TableCell>{formatCurrency(project.budget)}</TableCell>
-                  <TableCell>{formatCurrency(project.spent)}</TableCell>
-                  <TableCell>{formatCurrency(project.remaining)}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <Progress
-                        value={project.pct}
-                        className="w-28 shrink-0 [&_[data-slot=progress-track]]:h-2"
-                      />
-                      <span className="text-xs font-medium tabular-nums">
-                        {formatPercent(project.pct)}
-                      </span>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <ProjectBudgetTable projects={data.projects} />
         </CardContent>
       </Card>
     </DashboardShell>

@@ -6,7 +6,6 @@ import {
   TaskDone01Icon,
 } from "@hugeicons/core-free-icons"
 
-import { Badge } from "@workspace/ui/components/badge"
 import { Button } from "@workspace/ui/components/button"
 import {
   Card,
@@ -15,38 +14,27 @@ import {
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components/card"
-import { Progress } from "@workspace/ui/components/progress"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@workspace/ui/components/table"
 
 import { DashboardShell } from "@/components/dashboard/dashboard-shell"
-import { formatCurrency, formatPercent } from "@/lib/zimba/format"
+import { ProjectsTable } from "@/components/dashboard/features/projects/projects-table"
+import { formatCurrency } from "@/lib/zimba/format"
 import type { DashboardOverviewData } from "@/lib/zimba/types"
 
-const projectDetails: Record<
-  number,
-  { client: string; timeline: string; status: "On track" | "At risk" }
-> = {
+export const projectDetails = {
   1: {
     client: "Zimba Developments",
     timeline: "Jan – Nov 2026",
-    status: "On track",
+    status: "On track" as const,
   },
   2: {
     client: "Lakeview Living",
     timeline: "Mar – Dec 2026",
-    status: "On track",
+    status: "On track" as const,
   },
   3: {
     client: "Kira Commercial",
     timeline: "May 2026 – Feb 2027",
-    status: "At risk",
+    status: "At risk" as const,
   },
 }
 
@@ -56,9 +44,10 @@ export function ProjectsPage({ data }: { data: DashboardOverviewData }) {
     0
   )
   const onTrack = data.projects.filter(
-    (project) => projectDetails[project.id]?.status === "On track"
+    (project) =>
+      projectDetails[project.id as keyof typeof projectDetails]?.status ===
+      "On track"
   ).length
-
   const stats = [
     {
       label: "Total projects",
@@ -86,128 +75,48 @@ export function ProjectsPage({ data }: { data: DashboardOverviewData }) {
       subtitle="See every project, its financial position, and delivery status."
       dataSource={data.source}
     >
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h2 className="font-heading text-lg font-semibold tracking-tight">
-            Project portfolio
-          </h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Your active construction work in one place.
-          </p>
-        </div>
-        <Button size="sm">
-          <HugeiconsIcon icon={Add01Icon} strokeWidth={2} />
-          New project
-        </Button>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-3">
-        {stats.map((stat) => (
-          <Card key={stat.label} tone="keylime">
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-sm text-muted-foreground">{stat.label}</p>
-              <span className="grid size-9 place-items-center rounded-full bg-primary/10 text-primary">
+      <Card className="gap-0 py-0">
+        <div className="grid md:grid-cols-3">
+          {stats.map((stat) => (
+            <div
+              key={stat.label}
+              className="border-t p-5 first:border-t-0 md:border-t-0 md:border-l md:first:border-l-0"
+            >
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium text-foreground">
+                  {stat.label}
+                </p>
                 <HugeiconsIcon
                   icon={stat.icon}
-                  strokeWidth={2}
-                  className="size-4"
+                  strokeWidth={1.5}
+                  className="size-4 text-primary"
                 />
-              </span>
+              </div>
+              <p className="mt-5 font-heading text-3xl font-semibold text-foreground">
+                {stat.value}
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {stat.detail}
+              </p>
             </div>
-            <p className="mt-5 font-heading text-2xl font-semibold tracking-tight">
-              {stat.value}
-            </p>
-            <p className="mt-1 text-xs text-muted-foreground">{stat.detail}</p>
-          </Card>
-        ))}
-      </div>
-
+          ))}
+        </div>
+      </Card>
       <Card>
-        <CardHeader>
-          <CardTitle>All projects</CardTitle>
-          <CardDescription>
-            Delivery status and financial progress across the portfolio.
-          </CardDescription>
+        <CardHeader className="flex flex-row items-start justify-between gap-4">
+          <div>
+            <CardTitle>All projects</CardTitle>
+            <CardDescription>
+              Delivery status and financial progress across the portfolio.
+            </CardDescription>
+          </div>
+          <Button size="sm">
+            <HugeiconsIcon icon={Add01Icon} strokeWidth={1.5} />
+            New project
+          </Button>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Project</TableHead>
-                <TableHead>Client</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Timeline</TableHead>
-                <TableHead>Budget</TableHead>
-                <TableHead className="min-w-44">Spend</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {data.projects.map((project) => {
-                const details = projectDetails[project.id] ?? {
-                  client: "Private client",
-                  timeline: "Timeline pending",
-                  status: "On track" as const,
-                }
-
-                return (
-                  <TableRow key={project.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
-                          <HugeiconsIcon
-                            icon={FolderKanbanIcon}
-                            strokeWidth={2}
-                            className="size-4"
-                          />
-                        </span>
-                        <div>
-                          <p className="font-medium text-foreground">
-                            {project.name}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {project.location} · {project.plot_size}
-                          </p>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>{details.client}</TableCell>
-                    <TableCell>
-                      <Badge
-                        variant="outline"
-                        className={
-                          details.status === "At risk"
-                            ? "bg-warning-soft text-warning"
-                            : "bg-success-soft text-success"
-                        }
-                      >
-                        {details.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {details.timeline}
-                    </TableCell>
-                    <TableCell>{formatCurrency(project.budget)}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <Progress
-                          value={project.pct}
-                          className="w-24 shrink-0 [&_[data-slot=progress-track]]:h-2"
-                        />
-                        <div className="min-w-20">
-                          <p className="text-xs font-medium">
-                            {formatPercent(project.pct)}
-                          </p>
-                          <p className="text-[11px] text-muted-foreground">
-                            {formatCurrency(project.spent)}
-                          </p>
-                        </div>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                )
-              })}
-            </TableBody>
-          </Table>
+          <ProjectsTable projects={data.projects} details={projectDetails} />
         </CardContent>
       </Card>
     </DashboardShell>

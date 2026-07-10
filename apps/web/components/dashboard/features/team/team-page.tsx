@@ -1,5 +1,3 @@
-import { Avatar, AvatarFallback } from "@workspace/ui/components/avatar"
-import { Badge } from "@workspace/ui/components/badge"
 import {
   Card,
   CardContent,
@@ -7,65 +5,56 @@ import {
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components/card"
-
+import { Button } from "@workspace/ui/components/button"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { UserAdd01Icon } from "@hugeicons/core-free-icons"
 import { DashboardShell } from "@/components/dashboard/dashboard-shell"
-import { ActivityRow } from "@/components/dashboard/shared/activity-row"
-import { initials } from "@/components/dashboard/shared/initials"
+import { TeamTable } from "@/components/dashboard/features/team/team-table"
 import { mockTeamMembers } from "@/lib/zimba/mock-data"
 
 export function TeamPage() {
+  const stats = [
+    ["Team members", String(mockTeamMembers.length), "With dashboard access"],
+    ["Approvers", "2", "Owner and accountant roles"],
+    ["Open reviews", "3", "Items awaiting action"],
+  ]
   return (
     <DashboardShell
       title="Team"
       subtitle="Manage project roles, approvals, and access levels."
       dataSource="mock"
     >
-      <div className="grid gap-4 lg:grid-cols-3">
-        {mockTeamMembers.map((member) => (
-          <Card key={member.name} tone="keylime">
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <Avatar className="size-11">
-                  <AvatarFallback className="bg-muted text-sm font-semibold">
-                    {initials(member.name)}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <CardTitle>{member.name}</CardTitle>
-                  <CardDescription>{member.role}</CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                {member.responsibility}
+      <Card className="gap-0 py-0">
+        <div className="grid md:grid-cols-3">
+          {stats.map(([label, value, detail]) => (
+            <div
+              key={label}
+              className="border-t p-5 first:border-t-0 md:border-t-0 md:border-l md:first:border-l-0"
+            >
+              <p className="text-sm font-medium text-foreground">{label}</p>
+              <p className="mt-5 font-heading text-3xl font-semibold text-foreground">
+                {value}
               </p>
-              <Badge variant="outline">Dashboard access</Badge>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+              <p className="mt-1 text-xs text-muted-foreground">{detail}</p>
+            </div>
+          ))}
+        </div>
+      </Card>
       <Card>
-        <CardHeader>
-          <CardTitle>Approval queue</CardTitle>
-          <CardDescription>Who needs to review current work.</CardDescription>
+        <CardHeader className="flex flex-row items-start justify-between gap-4">
+          <div>
+            <CardTitle>Team access</CardTitle>
+            <CardDescription>
+              Roles and responsibilities across the dashboard.
+            </CardDescription>
+          </div>
+          <Button size="sm">
+            <HugeiconsIcon icon={UserAdd01Icon} strokeWidth={1.5} />
+            Invite member
+          </Button>
         </CardHeader>
-        <CardContent className="space-y-3">
-          <ActivityRow
-            title="Budget variance review"
-            detail="Entebbe Villas requires owner sign-off."
-            value="Owner"
-          />
-          <ActivityRow
-            title="Supplier payment batch"
-            detail="Two payments need accountant confirmation."
-            value="Accountant"
-          />
-          <ActivityRow
-            title="Site expense capture"
-            detail="Concrete delivery details are ready for validation."
-            value="Site manager"
-          />
+        <CardContent>
+          <TeamTable members={mockTeamMembers} />
         </CardContent>
       </Card>
     </DashboardShell>
