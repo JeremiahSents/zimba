@@ -1,12 +1,13 @@
+"use client"
+
+import { useState } from "react"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
-  Add01Icon,
   FolderKanbanIcon,
   MoneyBag02Icon,
   TaskDone01Icon,
 } from "@hugeicons/core-free-icons"
 
-import { Button } from "@workspace/ui/components/button"
 import {
   Card,
   CardContent,
@@ -17,6 +18,7 @@ import {
 
 import { DashboardShell } from "@/components/dashboard/dashboard-shell"
 import { ProjectsTable } from "@/components/dashboard/features/projects/projects-table"
+import { ProjectCreateSheet } from "@/components/dashboard/features/projects/project-create-sheet"
 import { formatCurrency } from "@/lib/zimba/format"
 import type { DashboardOverviewData } from "@/lib/zimba/types"
 
@@ -39,11 +41,12 @@ export const projectDetails = {
 }
 
 export function ProjectsPage({ data }: { data: DashboardOverviewData }) {
-  const totalValue = data.projects.reduce(
+  const [projects, setProjects] = useState(data.projects)
+  const totalValue = projects.reduce(
     (sum, project) => sum + project.budget,
     0
   )
-  const onTrack = data.projects.filter(
+  const onTrack = projects.filter(
     (project) =>
       projectDetails[project.id as keyof typeof projectDetails]?.status ===
       "On track"
@@ -51,7 +54,7 @@ export function ProjectsPage({ data }: { data: DashboardOverviewData }) {
   const stats = [
     {
       label: "Total projects",
-      value: String(data.projects.length),
+      value: String(projects.length),
       detail: "Across the current portfolio",
       icon: FolderKanbanIcon,
     },
@@ -110,13 +113,10 @@ export function ProjectsPage({ data }: { data: DashboardOverviewData }) {
               Delivery status and financial progress across the portfolio.
             </CardDescription>
           </div>
-          <Button size="sm">
-            <HugeiconsIcon icon={Add01Icon} strokeWidth={1.5} />
-            New project
-          </Button>
+          <ProjectCreateSheet onCreated={(project) => setProjects((current) => [...current, { ...project, id: Date.now(), plot_size: null, spent: 0, remaining: project.budget, pct: 0 }])} />
         </CardHeader>
         <CardContent>
-          <ProjectsTable projects={data.projects} details={projectDetails} />
+          <ProjectsTable projects={projects} details={projectDetails} />
         </CardContent>
       </Card>
     </DashboardShell>

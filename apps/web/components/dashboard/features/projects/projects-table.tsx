@@ -18,6 +18,7 @@ import { Badge } from "@workspace/ui/components/badge"
 import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
 import { Progress } from "@workspace/ui/components/progress"
+import Link from "next/link"
 import {
   Table,
   TableBody,
@@ -50,7 +51,9 @@ export function ProjectsTable({
         header: "Project",
         cell: ({ row }) => (
           <div>
-            <p className="font-medium">{row.original.name}</p>
+            <Link href={`/dashboard/projects/${row.original.id}`} className="font-medium hover:text-primary hover:underline">
+              {row.original.name}
+            </Link>
             <p className="text-xs text-muted-foreground">
               {row.original.location}
             </p>
