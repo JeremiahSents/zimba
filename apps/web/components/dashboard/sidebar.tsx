@@ -9,6 +9,7 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import {
   Analytics02Icon,
   DashboardSquare02Icon,
+  FolderKanbanIcon,
   Invoice02Icon,
   LayoutAlignLeftIcon,
   LayoutAlignRightIcon,
@@ -16,6 +17,7 @@ import {
   Settings02Icon,
   UserCircleIcon,
   UserGroupIcon,
+  Wallet02Icon,
 } from "@hugeicons/core-free-icons"
 
 import { Button } from "@workspace/ui/components/button"
@@ -25,6 +27,7 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -34,6 +37,8 @@ import {
 
 const navItems = [
   { title: "Dashboard", href: "/dashboard", icon: DashboardSquare02Icon },
+  { title: "Budget", href: "/dashboard/budget", icon: Wallet02Icon },
+  { title: "Projects", href: "/dashboard/projects", icon: FolderKanbanIcon },
   { title: "Expenses", href: "/dashboard/expenses", icon: Invoice02Icon },
   { title: "Suppliers", href: "/dashboard/suppliers", icon: MoneyBag02Icon },
   { title: "Team", href: "/dashboard/team", icon: UserGroupIcon },
@@ -54,6 +59,9 @@ export function DashboardSidebar() {
 
       <SidebarContent>
         <SidebarGroup className="px-3 py-1">
+          <SidebarGroupLabel className="px-3 pb-2 text-[10px] font-semibold tracking-[0.16em] text-sidebar-foreground/40 uppercase group-data-[collapsible=icon]:hidden">
+            Overview
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="gap-2">
               {navItems.map((item) => (
@@ -65,7 +73,7 @@ export function DashboardSidebar() {
                         ? pathname === item.href
                         : pathname.startsWith(item.href)
                     }
-                    className="relative h-10 rounded-full px-3 text-[13px] font-medium text-sidebar-foreground/62 transition-colors hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground data-active:bg-[#0c8c5e]/10 data-active:text-[#0c8c5e] group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-0! group-data-[collapsible=icon]:[&_span]:hidden [&_svg]:size-4.5! [&_svg]:text-sidebar-foreground/45 data-active:[&_svg]:text-[#0c8c5e]"
+                    className="relative h-10 rounded-full px-3 text-[13px] font-medium text-sidebar-foreground/62 transition-colors group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-0! hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground data-active:bg-primary/10 data-active:text-primary group-data-[collapsible=icon]:[&_span]:hidden [&_svg]:size-4.5! [&_svg]:text-sidebar-foreground/45 data-active:[&_svg]:text-primary"
                     render={
                       <Link href={item.href}>
                         <HugeiconsIcon icon={item.icon} strokeWidth={2} />
@@ -86,7 +94,7 @@ export function DashboardSidebar() {
             <SidebarMenuButton
               tooltip="Settings"
               isActive={pathname.startsWith("/dashboard/settings")}
-              className="h-10 rounded-full px-3 text-[13px] font-medium text-sidebar-foreground/62 hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-0! group-data-[collapsible=icon]:[&_span]:hidden [&_svg]:size-4.5! [&_svg]:text-sidebar-foreground/45"
+              className="h-10 rounded-full px-3 text-[13px] font-medium text-sidebar-foreground/62 group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-0! hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:[&_span]:hidden [&_svg]:size-4.5! [&_svg]:text-sidebar-foreground/45"
               render={
                 <Link href="/dashboard/settings">
                   <HugeiconsIcon icon={Settings02Icon} strokeWidth={2} />
@@ -98,7 +106,7 @@ export function DashboardSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton
               tooltip="Musa Byaruhanga"
-              className="mt-1 h-12 rounded-full px-3 text-sidebar-foreground hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-0! group-data-[collapsible=icon]:[&_span]:hidden [&_svg]:size-4.5!"
+              className="mt-1 h-12 rounded-full px-3 text-sidebar-foreground group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-0! hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:[&_span]:hidden [&_svg]:size-4.5!"
               render={
                 <Link href="/dashboard/settings">
                   <HugeiconsIcon icon={UserCircleIcon} strokeWidth={2} />
@@ -151,7 +159,7 @@ function SidebarBrand() {
           />
         </span>
         <span className="min-w-0">
-          <span className="block truncate font-heading text-lg font-semibold leading-tight text-sidebar-foreground">
+          <span className="block truncate font-heading text-lg leading-tight font-semibold text-sidebar-foreground">
             Zimba
           </span>
           <span className="block truncate text-xs font-medium text-muted-foreground">

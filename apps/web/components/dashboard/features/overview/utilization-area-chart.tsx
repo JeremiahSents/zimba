@@ -29,7 +29,7 @@ import type { UtilizationChartPoint } from "@/lib/zimba/types"
 
 const chartConfig = {
   utilization: {
-    color: "#0c8c5e",
+    color: "var(--primary)",
     label: "Utilization",
   },
 } satisfies ChartConfig
@@ -69,7 +69,7 @@ export function UtilizationAreaChart({
               {formatPercent(currentUtilization)}
             </span>
           </div>
-          <span className="text-xs font-medium text-emerald-500">
+          <span className="text-xs font-medium text-primary">
             Average project budget used
           </span>
         </div>

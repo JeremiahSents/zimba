@@ -33,7 +33,7 @@ const chartConfig = {
     label: "Budget",
   },
   spent: {
-    color: "#0c8c5e",
+    color: "var(--primary)",
     label: "Spent",
   },
 } satisfies ChartConfig
@@ -69,7 +69,7 @@ export function SpendBarChart({ data }: { data: SpendChartPoint[] }) {
               {formatCurrency(totalSpent)}
             </span>
           </div>
-          <span className="text-xs font-medium text-emerald-500">
+          <span className="text-xs font-medium text-primary">
             Logged construction spend
           </span>
         </div>

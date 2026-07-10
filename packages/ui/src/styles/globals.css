@@ -7,13 +7,19 @@
 @source "../**/*.{ts,tsx}";
 
 :root {
+    --color-mint-green: #0c8c5e;
+    --color-ink-black: #08090a;
+    --color-true-black: #000000;
+    --color-paper-white: #ffffff;
+    --color-mist-gray: #f2f2f2;
+    --color-cloud-gray: #dddddd;
     --background: #ffffff;
     --foreground: #08090a;
     --card: #ffffff;
     --card-foreground: #08090a;
     --popover: #ffffff;
     --popover-foreground: #08090a;
-    --primary: #0c8c5e;
+    --primary: var(--color-mint-green);
     --primary-foreground: #ffffff;
     --secondary: #f2f2f2;
     --secondary-foreground: #08090a;
@@ -34,7 +40,7 @@
     --radius: 0.25rem;
     --sidebar: #ffffff;
     --sidebar-foreground: #08090a;
-    --sidebar-primary: #0c8c5e;
+    --sidebar-primary: var(--color-mint-green);
     --sidebar-primary-foreground: #ffffff;
     --sidebar-accent: #f2f2f2;
     --sidebar-accent-foreground: #08090a;
@@ -44,6 +50,12 @@
 
 @theme inline {
     --color-background: var(--background);
+    --color-mint-green: #0c8c5e;
+    --color-ink-black: #08090a;
+    --color-true-black: #000000;
+    --color-paper-white: #ffffff;
+    --color-mist-gray: #f2f2f2;
+    --color-cloud-gray: #dddddd;
     --color-foreground: var(--foreground);
     --color-card: var(--card);
     --color-card-foreground: var(--card-foreground);
