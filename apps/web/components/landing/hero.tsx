@@ -27,8 +27,8 @@ export function Hero() {
       <Header />
 
       <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col justify-center px-5 pb-24 sm:px-8 lg:px-10">
-        <h1 className="max-w-2xl font-heading text-5xl font-medium tracking-[-0.03em] text-balance text-white sm:text-6xl lg:text-7xl">
-          Cleaner project spend. Built on Zimba.
+        <h1 className="max-w-2xl font-heading text-3xl font-medium tracking-[-0.03em] text-balance text-white sm:text-5xl lg:text-5xl">
+          Track your project expenses as you build the future.
         </h1>
 
         <p className="mt-6 max-w-xl text-base leading-7 text-white/80 sm:text-lg">
