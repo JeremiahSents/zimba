@@ -8,11 +8,7 @@ import {
   CardTitle,
 } from "@workspace/ui/components/card"
 import { Progress } from "@workspace/ui/components/progress"
-import {
-  Tabs,
-  TabsList,
-  TabsTrigger,
-} from "@workspace/ui/components/tabs"
+import { Tabs, TabsList, TabsTrigger } from "@workspace/ui/components/tabs"
 
 import { DashboardShell } from "@/components/dashboard/dashboard-shell"
 import { ActivityRow } from "@/components/dashboard/shared/activity-row"
@@ -25,7 +21,7 @@ const supplierFilters = ["All suppliers", "Top paid", "Materials", "Services"]
 export function SuppliersPage({ data }: { data: DashboardOverviewData }) {
   const largestSupplierAmount = Math.max(
     1,
-    ...data.suppliers.map((supplier) => supplier.amount),
+    ...data.suppliers.map((supplier) => supplier.amount)
   )
 
   return (
@@ -47,7 +43,7 @@ export function SuppliersPage({ data }: { data: DashboardOverviewData }) {
       </div>
       <div className="grid gap-4 lg:grid-cols-3">
         {data.suppliers.map((supplier) => (
-          <Card key={supplier.name} className="shadow-none">
+          <Card key={supplier.name} tone="keylime">
             <CardHeader>
               <div className="flex items-start justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-3">
@@ -73,7 +69,9 @@ export function SuppliersPage({ data }: { data: DashboardOverviewData }) {
                   {formatCurrency(supplier.amount)}
                 </p>
               </div>
-              <Progress value={(supplier.amount / largestSupplierAmount) * 100} />
+              <Progress
+                value={(supplier.amount / largestSupplierAmount) * 100}
+              />
               <p className="text-sm text-muted-foreground">
                 Next payment review scheduled with project accountant.
               </p>

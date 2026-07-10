@@ -1,8 +1,6 @@
 "use client"
 
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
-import { HugeiconsIcon } from "@hugeicons/react"
-import { Calendar01Icon } from "@hugeicons/core-free-icons"
 
 import {
   Card,
@@ -40,9 +38,15 @@ export function UtilizationAreaChart({
   data: UtilizationChartPoint[]
 }) {
   const currentUtilization = data.at(-1)?.utilization ?? 0
+  const startingUtilization = data[0]?.utilization ?? 0
+  const utilizationChange = currentUtilization - startingUtilization
+  const highestUtilization = Math.max(
+    0,
+    ...data.map((point) => point.utilization)
+  )
 
   return (
-    <Card className="flex h-full flex-col">
+    <Card size="sm" className="flex h-full flex-col">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -51,10 +55,6 @@ export function UtilizationAreaChart({
           <Select defaultValue="current">
             <SelectTrigger className="h-8 w-auto gap-2 border-border text-xs font-medium">
               <SelectValue placeholder="Select range" />
-              <HugeiconsIcon
-                icon={Calendar01Icon}
-                className="size-3.5 text-muted-foreground"
-              />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="current">Current period</SelectItem>
@@ -65,7 +65,7 @@ export function UtilizationAreaChart({
         </div>
         <div className="mt-2 space-y-1">
           <div className="flex items-center gap-2">
-            <span className="text-2xl font-bold">
+            <span className="font-heading text-3xl font-medium text-primary">
               {formatPercent(currentUtilization)}
             </span>
           </div>
@@ -73,8 +73,18 @@ export function UtilizationAreaChart({
             Average project budget used
           </span>
         </div>
+        <div className="mt-4 grid grid-cols-2 divide-x border-y py-3">
+          <MicroMetric
+            label="Period change"
+            value={`+${formatPercent(utilizationChange)}`}
+          />
+          <MicroMetric
+            label="Period high"
+            value={formatPercent(highestUtilization)}
+          />
+        </div>
       </CardHeader>
-      <CardContent className="mt-auto pb-6">
+      <CardContent className="mt-auto pb-4">
         <ChartContainer config={chartConfig} className="h-[200px] w-full">
           <AreaChart
             accessibilityLayer
@@ -111,11 +121,20 @@ export function UtilizationAreaChart({
               stroke="var(--color-utilization)"
               strokeWidth={2}
               activeDot={{ r: 6 }}
-              dot={{ r: 4, fill: "#fff", strokeWidth: 2 }}
+              dot={{ r: 4, fill: "var(--background)", strokeWidth: 2 }}
             />
           </AreaChart>
         </ChartContainer>
       </CardContent>
     </Card>
+  )
+}
+
+function MicroMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="px-3 first:pl-0 last:pr-0">
+      <p className="text-[10px] font-medium text-muted-foreground">{label}</p>
+      <p className="mt-1 text-xs font-semibold text-foreground">{value}</p>
+    </div>
   )
 }

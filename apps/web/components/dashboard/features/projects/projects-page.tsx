@@ -103,7 +103,7 @@ export function ProjectsPage({ data }: { data: DashboardOverviewData }) {
 
       <div className="grid gap-4 md:grid-cols-3">
         {stats.map((stat) => (
-          <Card key={stat.label} className="p-5 shadow-none">
+          <Card key={stat.label} tone="keylime">
             <div className="flex items-center justify-between gap-3">
               <p className="text-sm text-muted-foreground">{stat.label}</p>
               <span className="grid size-9 place-items-center rounded-full bg-primary/10 text-primary">
@@ -122,7 +122,7 @@ export function ProjectsPage({ data }: { data: DashboardOverviewData }) {
         ))}
       </div>
 
-      <Card className="shadow-none">
+      <Card>
         <CardHeader>
           <CardTitle>All projects</CardTitle>
           <CardDescription>
@@ -176,8 +176,8 @@ export function ProjectsPage({ data }: { data: DashboardOverviewData }) {
                         variant="outline"
                         className={
                           details.status === "At risk"
-                            ? "border-amber-200 bg-amber-50 text-amber-700"
-                            : "border-emerald-200 bg-emerald-50 text-emerald-700"
+                            ? "bg-warning-soft text-warning"
+                            : "bg-success-soft text-success"
                         }
                       >
                         {details.status}

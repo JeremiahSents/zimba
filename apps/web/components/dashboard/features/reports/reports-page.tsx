@@ -7,11 +7,7 @@ import {
   CardTitle,
 } from "@workspace/ui/components/card"
 import { Progress } from "@workspace/ui/components/progress"
-import {
-  Tabs,
-  TabsList,
-  TabsTrigger,
-} from "@workspace/ui/components/tabs"
+import { Tabs, TabsList, TabsTrigger } from "@workspace/ui/components/tabs"
 
 import { DashboardShell } from "@/components/dashboard/dashboard-shell"
 import { formatCurrency, formatPercent } from "@/lib/zimba/format"
@@ -24,7 +20,7 @@ export function ReportsPage({ data }: { data: DashboardOverviewData }) {
     data.projects.length > 0
       ? Math.round(
           data.projects.reduce((total, project) => total + project.pct, 0) /
-            data.projects.length,
+            data.projects.length
         )
       : 0
   const projectsOnTrack = data.projects.filter((project) => project.pct < 80)
@@ -50,7 +46,7 @@ export function ReportsPage({ data }: { data: DashboardOverviewData }) {
       </div>
       <div className="grid gap-4 lg:grid-cols-3">
         {data.projects.map((project) => (
-          <Card key={project.id} className="shadow-none">
+          <Card key={project.id} tone="keylime">
             <CardHeader>
               <CardTitle>{project.name}</CardTitle>
               <CardDescription>
@@ -111,14 +107,16 @@ function ReportMetric({
   value: string
 }) {
   return (
-    <Card className="shadow-none">
+    <Card tone="mint">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">
           {label}
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
+        <div className="font-heading text-3xl font-medium text-primary">
+          {value}
+        </div>
         <p className="mt-1 text-xs text-muted-foreground">{detail}</p>
       </CardContent>
     </Card>

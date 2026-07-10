@@ -1,20 +1,37 @@
 import * as React from "react"
 
 import { cn } from "@workspace/ui/lib/utils"
+import { cva, type VariantProps } from "class-variance-authority"
+
+const cardVariants = cva(
+  "group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-lg border border-border py-(--card-spacing) text-sm text-card-foreground [--card-spacing:--spacing(7)] data-[size=sm]:[--card-spacing:--spacing(5)]",
+  {
+    variants: {
+      tone: {
+        cream: "bg-card",
+        keylime: "bg-surface-keylime",
+        mint: "bg-surface-mint",
+        sage: "bg-surface-sage",
+        slate: "bg-surface-slate",
+      },
+    },
+    defaultVariants: { tone: "cream" },
+  }
+)
 
 function Card({
   className,
   size = "default",
+  tone = "cream",
   ...props
-}: React.ComponentProps<"div"> & { size?: "default" | "sm" }) {
+}: React.ComponentProps<"div"> & { size?: "default" | "sm" } & VariantProps<
+    typeof cardVariants
+  >) {
   return (
     <div
       data-slot="card"
       data-size={size}
-      className={cn(
-        "group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-3xl bg-card py-(--card-spacing) text-sm text-card-foreground ring-1 ring-[#f2f2f2] shadow-[0_2px_4px_rgba(0,0,0,0.05)] [--card-spacing:--spacing(6)] has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(4)] *:[img:first-child]:rounded-t-[1.5rem] *:[img:last-child]:rounded-b-[1.5rem]",
-        className
-      )}
+      className={cn(cardVariants({ tone }), className)}
       {...props}
     />
   )
@@ -37,7 +54,10 @@ function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-title"
-      className={cn("font-heading text-base font-medium", className)}
+      className={cn(
+        "font-heading text-xl leading-tight font-medium text-primary",
+        className
+      )}
       {...props}
     />
   )

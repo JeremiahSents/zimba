@@ -84,7 +84,7 @@ export function BudgetPage({ data }: { data: DashboardOverviewData }) {
 
       <div className="grid gap-4 md:grid-cols-3">
         {stats.map((stat) => (
-          <Card key={stat.label} className="overflow-hidden p-5 shadow-none">
+          <Card key={stat.label} tone="keylime" className="overflow-hidden">
             <div className="flex items-center justify-between gap-3">
               <p className="text-sm text-muted-foreground">{stat.label}</p>
               <span className="grid size-9 place-items-center rounded-full bg-primary/10 text-primary">
@@ -103,7 +103,7 @@ export function BudgetPage({ data }: { data: DashboardOverviewData }) {
         ))}
       </div>
 
-      <Card className="border-primary/15 bg-[linear-gradient(135deg,var(--card),color-mix(in_oklab,var(--primary)_7%,white))] shadow-none">
+      <Card tone="sage">
         <CardHeader>
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
@@ -129,7 +129,7 @@ export function BudgetPage({ data }: { data: DashboardOverviewData }) {
         </CardContent>
       </Card>
 
-      <Card className="shadow-none">
+      <Card>
         <CardHeader>
           <CardTitle>Project budgets</CardTitle>
           <CardDescription>

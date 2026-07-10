@@ -5,11 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components/card"
-import {
-  Tabs,
-  TabsList,
-  TabsTrigger,
-} from "@workspace/ui/components/tabs"
+import { Tabs, TabsList, TabsTrigger } from "@workspace/ui/components/tabs"
 
 import { DashboardShell } from "@/components/dashboard/dashboard-shell"
 import { ExpenseTable } from "@/components/dashboard/shared/expense-table"
@@ -21,11 +17,11 @@ const expenseFilters = ["All expenses", "This week", "Labour", "Materials"]
 export function ExpensesPage({ data }: { data: DashboardOverviewData }) {
   const totalSpent = data.expenses.reduce(
     (total, expense) => total + expense.amount,
-    0,
+    0
   )
   const largestExpense = Math.max(
     0,
-    ...data.expenses.map((expense) => expense.amount),
+    ...data.expenses.map((expense) => expense.amount)
   )
 
   return (
@@ -87,14 +83,16 @@ function ExpenseMetric({
   value: string
 }) {
   return (
-    <Card className="shadow-none">
+    <Card tone="keylime">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">
           {label}
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
+        <div className="font-heading text-3xl font-medium text-primary">
+          {value}
+        </div>
         <p className="mt-1 text-xs text-muted-foreground">{detail}</p>
       </CardContent>
     </Card>

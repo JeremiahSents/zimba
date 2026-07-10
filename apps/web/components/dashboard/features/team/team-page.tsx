@@ -22,7 +22,7 @@ export function TeamPage() {
     >
       <div className="grid gap-4 lg:grid-cols-3">
         {mockTeamMembers.map((member) => (
-          <Card key={member.name} className="shadow-none">
+          <Card key={member.name} tone="keylime">
             <CardHeader>
               <div className="flex items-center gap-3">
                 <Avatar className="size-11">

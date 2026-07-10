@@ -9,10 +9,7 @@ import {
 import { DashboardShell } from "@/components/dashboard/dashboard-shell"
 import { ActivityRow } from "@/components/dashboard/shared/activity-row"
 import { SettingField } from "@/components/dashboard/shared/setting-field"
-import {
-  mockCompanySettings,
-  mockTeamMembers,
-} from "@/lib/zimba/mock-data"
+import { mockCompanySettings, mockTeamMembers } from "@/lib/zimba/mock-data"
 
 export function SettingsPage() {
   return (

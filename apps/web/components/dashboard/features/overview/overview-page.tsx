@@ -13,11 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components/card"
-import {
-  Tabs,
-  TabsList,
-  TabsTrigger,
-} from "@workspace/ui/components/tabs"
+import { Tabs, TabsList, TabsTrigger } from "@workspace/ui/components/tabs"
 
 import { DashboardShell } from "@/components/dashboard/dashboard-shell"
 import { ExpenseTable } from "@/components/dashboard/shared/expense-table"
@@ -81,29 +77,36 @@ function StatsGrid({ data }: { data: DashboardOverviewData }) {
         </Tabs>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {data.stats.map((stat, index) => (
-          <Card key={stat.label} className="p-5">
-            <div className="flex items-center gap-2">
-              <HugeiconsIcon
-                icon={statIcons[index] ?? DashboardSquare02Icon}
-                strokeWidth={2}
-                className="size-4 text-muted-foreground"
-              />
-              <p className="text-sm text-muted-foreground">{stat.label}</p>
-            </div>
+      <Card className="gap-0 py-0">
+        <div className="grid lg:grid-cols-4">
+          {data.stats.map((stat, index) => (
+            <div
+              key={stat.label}
+              className="border-t p-5 first:border-t-0 lg:border-t-0 lg:border-l lg:first:border-l-0"
+            >
+              <div className="flex items-center gap-2">
+                <HugeiconsIcon
+                  icon={statIcons[index] ?? DashboardSquare02Icon}
+                  strokeWidth={2}
+                  className="size-3.5 text-primary"
+                />
+                <p className="text-xs font-medium text-foreground">
+                  {stat.label}
+                </p>
+              </div>
 
-            <div className="mt-3">
-              <p className="font-heading text-2xl font-semibold tracking-tight">
-                {stat.value}
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                {stat.detail}
-              </p>
+              <div className="mt-3">
+                <p className="font-heading text-2xl font-semibold tracking-tight">
+                  {stat.value}
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {stat.detail}
+                </p>
+              </div>
             </div>
-          </Card>
-        ))}
-      </div>
+          ))}
+        </div>
+      </Card>
     </div>
   )
 }

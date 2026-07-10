@@ -6,10 +6,7 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import { BellIcon } from "@hugeicons/core-free-icons"
 
 import { Button } from "@workspace/ui/components/button"
-import {
-  SidebarInset,
-  SidebarProvider,
-} from "@workspace/ui/components/sidebar"
+import { SidebarInset, SidebarProvider } from "@workspace/ui/components/sidebar"
 import {
   Sheet,
   SheetContent,
@@ -34,20 +31,15 @@ type DashboardShellProps = {
 export function DashboardShell({
   dataSource,
   title,
-  subtitle,
   children,
 }: DashboardShellProps) {
   return (
     <div className="flex min-h-svh w-full bg-sidebar">
       <SidebarProvider className="flex min-h-svh w-full bg-transparent">
         <DashboardSidebar />
-        <SidebarInset className="relative z-10 flex min-w-0 flex-1 flex-col rounded-tl-[1.5rem] border-l border-t border-black/5 bg-white shadow-[-12px_0_32px_rgba(0,0,0,0.05)]">
-          <DashboardTopbar
-            title={title}
-            subtitle={subtitle}
-            dataSource={dataSource}
-          />
-          <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 p-4 sm:p-6 lg:p-8 xl:px-10">
+        <SidebarInset className="relative z-10 flex min-w-0 flex-1 flex-col rounded-tl-2xl border-t border-l bg-background">
+          <DashboardTopbar title={title} dataSource={dataSource} />
+          <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-4 sm:px-7 sm:py-5 lg:px-10 lg:py-6">
             {children}
           </div>
         </SidebarInset>
@@ -59,41 +51,39 @@ export function DashboardShell({
 function DashboardTopbar({
   dataSource,
   title,
-  subtitle,
 }: {
   dataSource?: "api" | "mock"
   title: string
-  subtitle: string
 }) {
   return (
-    <header className="flex min-h-16 shrink-0 flex-wrap items-center justify-between gap-x-4 gap-y-3 bg-white px-4 py-4 sm:px-6 lg:px-8 xl:px-10">
-      <div className="flex min-w-0 flex-1 flex-col gap-1">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+    <header className="flex min-h-16 shrink-0 flex-wrap items-center justify-between gap-3 border-b bg-background px-4 py-3 sm:px-7 lg:px-10">
+      <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-4 gap-y-2">
+        <div className="flex items-center gap-2">
           <DashboardSidebarToggle
             aria-label="Toggle dashboard navigation"
-            className="size-6 rounded-md hover:bg-muted hover:text-foreground [&_svg]:size-4 -ml-1"
+            className="-ml-1 size-6 rounded-md hover:bg-muted hover:text-foreground [&_svg]:size-4"
             icon="open"
           />
-          <span className="font-medium">Overview</span>
+          <h1 className="text-sm font-semibold text-foreground">{title}</h1>
         </div>
-        <h1 className="font-heading text-2xl font-semibold tracking-tight text-foreground">
-          {title}
-        </h1>
-        {subtitle && (
-          <p className="text-sm text-muted-foreground mt-1">
-            {subtitle}
-          </p>
-        )}
         {dataSource === "mock" && (
-          <p className="mt-2 text-xs font-medium text-amber-600">
+          <p className="text-xs font-medium text-warning">
             Showing typed mock data until API credentials are configured.
           </p>
         )}
       </div>
 
-      <div className="flex items-center gap-2 self-start mt-8">
+      <div className="flex items-center gap-2">
         <Sheet>
-          <SheetTrigger render={<Button variant="ghost" size="icon" aria-label="View notifications" />}>
+          <SheetTrigger
+            render={
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="View notifications"
+              />
+            }
+          >
             <HugeiconsIcon icon={BellIcon} strokeWidth={2} className="size-4" />
           </SheetTrigger>
           <SheetContent>
@@ -110,4 +100,3 @@ function DashboardTopbar({
     </header>
   )
 }
-
