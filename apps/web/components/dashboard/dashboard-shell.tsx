@@ -43,6 +43,9 @@ export function DashboardShell({
           <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-3 sm:px-7 sm:py-3 lg:px-10 lg:py-4">
             {children}
           </div>
+          <footer className="mt-auto border-t px-4 py-4 text-center text-[10px] text-muted-foreground sm:px-7 lg:px-10">
+            A product of Sents Holding Company
+          </footer>
         </SidebarInset>
       </SidebarProvider>
     </div>

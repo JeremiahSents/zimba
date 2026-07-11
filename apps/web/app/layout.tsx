@@ -1,9 +1,13 @@
-import { Inter } from "next/font/google"
+import { Inter, Noto_Sans, IBM_Plex_Sans } from "next/font/google"
 
 import "@workspace/ui/globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { cn } from "@workspace/ui/lib/utils"
 import { TooltipProvider } from "@workspace/ui/components/tooltip"
+
+const ibmPlexSansHeading = IBM_Plex_Sans({subsets:['latin'],variable:'--font-heading'});
+
+const notoSans = Noto_Sans({subsets:['latin'],variable:'--font-sans'});
 
 const inter = Inter({
   subsets: ["latin"],
@@ -19,7 +23,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={cn("antialiased", "font-sans", inter.variable)}
+      className={cn("antialiased", inter.variable, "font-sans", notoSans.variable, ibmPlexSansHeading.variable)}
     >
       <body>
         <head>
