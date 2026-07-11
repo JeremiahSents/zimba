@@ -10,13 +10,11 @@ import {
   Analytics02Icon,
   DashboardSquare02Icon,
   FolderKanbanIcon,
-  Invoice02Icon,
   LayoutAlignLeftIcon,
   LayoutAlignRightIcon,
   MoneyBag02Icon,
   Settings02Icon,
   UserGroupIcon,
-  Wallet02Icon,
 } from "@hugeicons/core-free-icons"
 
 import { Button } from "@workspace/ui/components/button"
@@ -36,12 +34,10 @@ import {
 
 const navItems = [
   { title: "Home", href: "/dashboard", icon: DashboardSquare02Icon },
-  { title: "Analytics", href: "/dashboard/analytics", icon: Analytics02Icon },
-  { title: "Budget", href: "/dashboard/budget", icon: Wallet02Icon },
   { title: "Projects", href: "/dashboard/projects", icon: FolderKanbanIcon },
-  { title: "Expenses", href: "/dashboard/expenses", icon: Invoice02Icon },
   { title: "Suppliers", href: "/dashboard/suppliers", icon: MoneyBag02Icon },
   { title: "Team", href: "/dashboard/team", icon: UserGroupIcon },
+  { title: "Analytics", href: "/dashboard/analytics", icon: Analytics02Icon },
   { title: "Reports", href: "/dashboard/reports", icon: Analytics02Icon },
 ]
 
@@ -99,6 +95,18 @@ export function DashboardSidebar() {
                 <Link href="/dashboard/settings">
                   <HugeiconsIcon icon={Settings02Icon} strokeWidth={2} />
                   <span>Settings</span>
+                </Link>
+              }
+            />
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              tooltip="Sign out"
+              className="h-10 rounded-full px-3 text-[13px] font-medium text-sidebar-foreground/62 group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:grid group-data-[collapsible=icon]:place-items-center group-data-[collapsible=icon]:p-0! hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:[&_span]:hidden [&_svg]:size-4! [&_svg]:text-sidebar-foreground/45"
+              render={
+                <Link href="/login">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M21 19V5a2 2 0 0 0-2-2h-6"/></svg>
+                  <span>Sign out</span>
                 </Link>
               }
             />
