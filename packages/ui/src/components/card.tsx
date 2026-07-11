@@ -4,7 +4,7 @@ import { cn } from "@workspace/ui/lib/utils"
 import { cva, type VariantProps } from "class-variance-authority"
 
 const cardVariants = cva(
-  "group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-2xl border border-border bg-card py-(--card-spacing) text-sm text-card-foreground shadow-[0_2px_4px_rgba(8,9,10,0.03)] [--card-spacing:--spacing(6)] data-[size=sm]:[--card-spacing:--spacing(4)]",
+  "group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-2xl border border-border bg-card py-(--card-spacing) text-xs text-card-foreground shadow-[0_2px_4px_rgba(8,9,10,0.03)] [--card-spacing:--spacing(6)] data-[size=sm]:[--card-spacing:--spacing(4)]",
   {
     variants: {
       tone: {
@@ -55,7 +55,7 @@ function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="card-title"
       className={cn(
-        "font-heading text-xl leading-tight font-medium",
+        "font-heading text-base leading-tight font-medium",
         className
       )}
       {...props}
@@ -67,7 +67,7 @@ function CardDescription({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-description"
-      className={cn("text-sm text-muted-foreground", className)}
+      className={cn("text-xs text-muted-foreground", className)}
       {...props}
     />
   )

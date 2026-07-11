@@ -6,6 +6,7 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import { BellIcon } from "@hugeicons/core-free-icons"
 
 import { Button } from "@workspace/ui/components/button"
+import { Avatar, AvatarFallback } from "@workspace/ui/components/avatar"
 import { SidebarInset, SidebarProvider } from "@workspace/ui/components/sidebar"
 import {
   Sheet,
@@ -39,7 +40,7 @@ export function DashboardShell({
         <DashboardSidebar />
         <SidebarInset className="relative z-10 flex min-w-0 flex-1 flex-col rounded-tl-2xl border-t border-l bg-background">
           <DashboardTopbar title={title} dataSource={dataSource} />
-          <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-4 sm:px-7 sm:py-5 lg:px-10 lg:py-6">
+          <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-3 sm:px-7 sm:py-3 lg:px-10 lg:py-4">
             {children}
           </div>
         </SidebarInset>
@@ -64,10 +65,10 @@ function DashboardTopbar({
             className="-ml-1 size-6 rounded-md hover:bg-muted hover:text-foreground [&_svg]:size-4"
             icon="open"
           />
-          <h1 className="text-sm font-semibold text-foreground">{title}</h1>
+          <h1 className="text-xl leading-6 font-semibold text-foreground">{title}</h1>
         </div>
         {dataSource === "mock" && (
-          <p className="text-xs font-medium text-warning">
+          <p className="text-[10px] font-medium text-warning">
             Showing typed mock data until API credentials are configured.
           </p>
         )}
@@ -95,7 +96,11 @@ function DashboardTopbar({
             </SheetHeader>
           </SheetContent>
         </Sheet>
-        <Button size="sm">New expense</Button>
+        <Avatar aria-label="Musa Byaruhanga" className="size-8">
+          <AvatarFallback className="bg-primary/10 text-xs font-semibold text-primary">
+            MB
+          </AvatarFallback>
+        </Avatar>
       </div>
     </header>
   )

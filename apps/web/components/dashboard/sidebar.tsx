@@ -15,7 +15,6 @@ import {
   LayoutAlignRightIcon,
   MoneyBag02Icon,
   Settings02Icon,
-  UserCircleIcon,
   UserGroupIcon,
   Wallet02Icon,
 } from "@hugeicons/core-free-icons"
@@ -37,6 +36,7 @@ import {
 
 const navItems = [
   { title: "Home", href: "/dashboard", icon: DashboardSquare02Icon },
+  { title: "Analytics", href: "/dashboard/analytics", icon: Analytics02Icon },
   { title: "Budget", href: "/dashboard/budget", icon: Wallet02Icon },
   { title: "Projects", href: "/dashboard/projects", icon: FolderKanbanIcon },
   { title: "Expenses", href: "/dashboard/expenses", icon: Invoice02Icon },
@@ -99,25 +99,6 @@ export function DashboardSidebar() {
                 <Link href="/dashboard/settings">
                   <HugeiconsIcon icon={Settings02Icon} strokeWidth={2} />
                   <span>Settings</span>
-                </Link>
-              }
-            />
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              tooltip="Musa Byaruhanga"
-              className="mt-1 h-12 rounded-full px-3 text-sidebar-foreground group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-0! hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:[&_span]:hidden [&_svg]:size-4!"
-              render={
-                <Link href="/dashboard/settings">
-                  <HugeiconsIcon icon={UserCircleIcon} strokeWidth={2} />
-                  <span className="flex min-w-0 flex-col leading-tight">
-                    <span className="truncate text-sm font-medium">
-                      Musa Byaruhanga
-                    </span>
-                    <span className="truncate text-xs text-muted-foreground">
-                      Owner / Admin
-                    </span>
-                  </span>
                 </Link>
               }
             />

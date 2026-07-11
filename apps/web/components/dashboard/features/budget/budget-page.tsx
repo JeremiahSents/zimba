@@ -68,7 +68,7 @@ export function BudgetPage({ data }: { data: DashboardOverviewData }) {
               className="border-t p-5 first:border-t-0 md:border-t-0 md:border-l md:first:border-l-0"
             >
               <div className="flex items-center justify-between gap-3">
-                <p className="text-sm font-medium text-foreground">
+                <p className="text-xs font-medium text-foreground">
                   {stat.label}
                 </p>
                 <span className="grid size-9 place-items-center rounded-full bg-primary/10 text-primary">
@@ -79,10 +79,10 @@ export function BudgetPage({ data }: { data: DashboardOverviewData }) {
                   />
                 </span>
               </div>
-              <p className="mt-5 font-heading text-3xl font-semibold tracking-tight text-foreground">
+              <p className="mt-5 font-heading text-base font-semibold tracking-tight text-foreground">
                 {stat.value}
               </p>
-              <p className="mt-1 text-xs text-muted-foreground">
+              <p className="mt-1 text-[10px] text-muted-foreground">
                 {stat.detail}
               </p>
             </div>
@@ -99,7 +99,7 @@ export function BudgetPage({ data }: { data: DashboardOverviewData }) {
                 Combined spend against the approved portfolio budget.
               </CardDescription>
             </div>
-            <p className="font-heading text-3xl font-semibold text-primary">
+            <p className="font-heading text-base font-semibold text-primary">
               {formatPercent(utilization)}
             </p>
           </div>
@@ -109,7 +109,7 @@ export function BudgetPage({ data }: { data: DashboardOverviewData }) {
             value={utilization}
             className="[&_[data-slot=progress-track]]:h-3"
           />
-          <div className="mt-3 flex justify-between text-xs text-muted-foreground">
+          <div className="mt-3 flex justify-between text-[10px] text-muted-foreground">
             <span>{formatCurrency(totalSpent)} spent</span>
             <span>{formatCurrency(totalBudget)} total</span>
           </div>

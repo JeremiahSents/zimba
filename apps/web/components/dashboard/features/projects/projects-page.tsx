@@ -1,7 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import Link from "next/link"
+import { useEffect, useState } from "react"
 import { HugeiconsIcon } from "@hugeicons/react"
+import { Button } from "@workspace/ui/components/button"
 import {
   FolderKanbanIcon,
   MoneyBag02Icon,
@@ -18,7 +20,7 @@ import {
 
 import { DashboardShell } from "@/components/dashboard/dashboard-shell"
 import { ProjectsTable } from "@/components/dashboard/features/projects/projects-table"
-import { ProjectCreateSheet } from "@/components/dashboard/features/projects/project-create-sheet"
+import { mergeStoredProjects } from "@/lib/zimba/project-store"
 import { formatCurrency } from "@/lib/zimba/format"
 import type { DashboardOverviewData } from "@/lib/zimba/types"
 
@@ -42,6 +44,12 @@ export const projectDetails = {
 
 export function ProjectsPage({ data }: { data: DashboardOverviewData }) {
   const [projects, setProjects] = useState(data.projects)
+  useEffect(() => {
+    const sync = () => setProjects(mergeStoredProjects(data.projects))
+    sync()
+    window.addEventListener("zimba-projects-updated", sync)
+    return () => window.removeEventListener("zimba-projects-updated", sync)
+  }, [data.projects])
   const totalValue = projects.reduce(
     (sum, project) => sum + project.budget,
     0
@@ -86,7 +94,7 @@ export function ProjectsPage({ data }: { data: DashboardOverviewData }) {
               className="border-t p-5 first:border-t-0 md:border-t-0 md:border-l md:first:border-l-0"
             >
               <div className="flex items-center justify-between">
-                <p className="text-sm font-medium text-foreground">
+                <p className="text-xs font-medium text-foreground">
                   {stat.label}
                 </p>
                 <HugeiconsIcon
@@ -95,10 +103,10 @@ export function ProjectsPage({ data }: { data: DashboardOverviewData }) {
                   className="size-4 text-primary"
                 />
               </div>
-              <p className="mt-5 font-heading text-3xl font-semibold text-foreground">
+              <p className="mt-5 font-heading text-base font-semibold text-foreground">
                 {stat.value}
               </p>
-              <p className="mt-1 text-xs text-muted-foreground">
+              <p className="mt-1 text-[10px] text-muted-foreground">
                 {stat.detail}
               </p>
             </div>
@@ -113,7 +121,7 @@ export function ProjectsPage({ data }: { data: DashboardOverviewData }) {
               Delivery status and financial progress across the portfolio.
             </CardDescription>
           </div>
-          <ProjectCreateSheet onCreated={(project) => setProjects((current) => [...current, { ...project, id: Date.now(), plot_size: null, spent: 0, remaining: project.budget, pct: 0 }])} />
+          <Button size="sm" render={<Link href="/dashboard/projects/new" />}>+ New project</Button>
         </CardHeader>
         <CardContent>
           <ProjectsTable projects={projects} details={projectDetails} />

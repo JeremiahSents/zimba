@@ -49,11 +49,11 @@ export function UtilizationAreaChart({
     <Card size="sm" className="flex h-full flex-col">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-sm font-medium text-muted-foreground">
+          <CardTitle className="text-xs font-medium text-muted-foreground">
             Budget utilization
           </CardTitle>
           <Select defaultValue="current">
-            <SelectTrigger className="h-8 w-auto gap-2 border-border text-xs font-medium">
+            <SelectTrigger className="h-8 w-auto gap-2 border-border text-[10px] font-medium">
               <SelectValue placeholder="Select range" />
             </SelectTrigger>
             <SelectContent>
@@ -65,11 +65,11 @@ export function UtilizationAreaChart({
         </div>
         <div className="mt-2 space-y-1">
           <div className="flex items-center gap-2">
-            <span className="font-heading text-3xl font-medium text-primary">
+            <span className="font-heading text-base font-semibold text-primary">
               {formatPercent(currentUtilization)}
             </span>
           </div>
-          <span className="text-xs font-medium text-primary">
+          <span className="text-[10px] font-medium text-primary">
             Average project budget used
           </span>
         </div>
