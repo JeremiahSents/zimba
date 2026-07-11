@@ -12,6 +12,7 @@ import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetT
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@workspace/ui/components/dialog"
 import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select"
 import { formatCurrency, formatPercent, formatShortDate } from "@/lib/zimba/format"
 import type { ProjectDetailResponse } from "@/lib/zimba/types"
 import { DashboardShell } from "@/components/dashboard/dashboard-shell"
@@ -69,6 +70,7 @@ export function ProjectDetailPage({ project }: { project: ProjectDetailResponse 
   const spent = expenses.reduce((sum, expense) => sum + expense.amount, 0)
   const taskData = project.tasks.map((task) => ({ name: task.name, value: task.spent })).filter((task) => task.value > 0)
   const utilisation = Math.round((spent / project.budget) * 100)
+  const supplierOptions = Array.from(new Set([...project.suppliers.map((supplier) => supplier.name), ...expenses.map((expense) => expense.supplier_name)])).filter(Boolean)
   const update = (key: keyof typeof form, value: string) => setForm((current) => ({ ...current, [key]: value }))
   
   function submit(event: React.FormEvent) { 
@@ -83,48 +85,34 @@ export function ProjectDetailPage({ project }: { project: ProjectDetailResponse 
     <div className="flex flex-wrap items-end justify-between gap-4"><div><div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground"><Link href="/dashboard/projects" className="font-semibold text-primary hover:underline">Projects</Link><span>/</span><span>{project.name}</span></div><h2 className="font-heading text-2xl font-semibold tracking-tight">{project.name}</h2><p className="mt-1 text-xs text-muted-foreground">{project.location}{project.plot_size ? ` · ${project.plot_size}` : ""}</p></div><div className="flex gap-2"><Button variant="outline" size="sm">Share</Button><Button onClick={() => setOpen(true)} size="sm">+ New expense</Button></div></div>
     
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6"><Metric label="Total budget" value={formatCurrency(project.budget)} detail="Baseline budget" /><Metric label="Total spent" value={formatCurrency(spent)} detail="Across project expenses" /><Metric label="Remaining budget" value={formatCurrency(Math.max(project.budget - spent, 0))} detail={`${formatPercent(Math.max(100 - utilisation, 0))} left`} /><Metric label="Utilization" value={formatPercent(utilisation)} detail={utilisation <= 80 ? "On budget" : "Needs attention"} /></div>
-    <div className="mb-6 grid items-stretch gap-4 lg:grid-cols-2">
-      <Card className="flex h-full flex-col">
-        <CardHeader className="flex flex-row items-center justify-between pb-0">
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <CardTitle>Budget overview</CardTitle>
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-          </div>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-6 pt-2">
-          <div className="flex items-center gap-4">
-            <span className="font-heading text-2xl font-semibold tracking-tight tabular-nums">{formatCurrency(project.budget)}</span>
-            <span className="text-xs font-semibold text-primary">
-              {formatPercent(utilisation)} Utilised
-            </span>
-          </div>
-
+    <div className="mb-6 grid items-stretch gap-4 lg:grid-cols-[1.35fr_1fr]">
+      <Card className="h-full border-0 bg-[#1e5544] text-white">
+        <CardContent className="flex h-full flex-col justify-between gap-6">
           <div>
-            <p className="mb-4 text-xs font-medium text-muted-foreground">Spending breakdown</p>
-            <div className="flex h-8 w-full overflow-hidden rounded-md bg-muted">
-              {taskData.map((task, index) => {
-                const widthPct = (task.value / Math.max(project.budget, 1)) * 100;
-                return <div key={task.name} className="h-full transition-all" title={`${task.name}: ${formatCurrency(task.value)}`} style={{ width: `${widthPct}%`, backgroundColor: colors[index % colors.length] }} />
-              })}
+            <div className="flex items-center justify-between gap-4">
+              <p className="text-sm font-semibold tracking-tight text-white/70 uppercase">Total budget</p>
+              <p className="font-heading text-xl font-semibold tracking-tight tabular-nums">{formatCurrency(project.budget)}</p>
             </div>
-            <div className="mt-3 flex flex-wrap items-center gap-6">
-              {taskData.slice(0, 3).map((task, index) => (
-                <div key={task.name} className="flex items-center gap-2.5">
-                  <span className="size-3 rounded-full" style={{ backgroundColor: colors[index % colors.length] }} />
-                  <span className="text-xs font-medium leading-none">{task.name}</span>
-                </div>
-              ))}
+            <div className="mt-5 h-2.5 overflow-hidden rounded-full bg-white/25">
+              <div className="h-full rounded-full bg-primary" style={{ width: `${Math.min(Math.max(utilisation, 0), 100)}%` }} />
             </div>
           </div>
+          <div className="grid grid-cols-2 gap-5">
+            <div>
+              <p className="text-xs font-semibold text-white/70 uppercase">Spent</p>
+              <p className="mt-1 font-heading text-2xl font-semibold tracking-tight tabular-nums">{formatCurrency(spent)}</p>
+            </div>
+            <div className="text-right">
+              <p className="text-xs font-semibold text-white/70 uppercase">Remaining</p>
+              <p className="mt-1 font-heading text-2xl font-semibold tracking-tight tabular-nums">{formatCurrency(Math.max(project.budget - spent, 0))}</p>
+            </div>
+          </div>
+          <p className="text-sm text-white/70">{project.location}{project.plot_size ? ` · ${project.plot_size}` : ""}</p>
         </CardContent>
       </Card>
 
       <Card className="flex h-full min-w-0 flex-col">
-        <CardHeader className="pb-1">
-          <CardTitle>Spend overview</CardTitle>
-          <CardDescription>Visual breakdown of project spending by category.</CardDescription>
-        </CardHeader>
-        <CardContent className="grid flex-1 items-center gap-5 sm:grid-cols-[12rem_minmax(0,1fr)]">
+        <CardContent className="grid flex-1 items-center gap-5 sm:grid-cols-[9rem_minmax(0,1fr)]">
           <div className="relative flex aspect-square w-full max-w-[12rem] shrink-0 items-center justify-center justify-self-center sm:justify-self-start">
             <ChartContainer config={chartConfig} className="absolute inset-0 aspect-auto h-full w-full">
               <PieChart>
@@ -134,15 +122,15 @@ export function ProjectDetailPage({ project }: { project: ProjectDetailResponse 
               </PieChart>
             </ChartContainer>
             <div className="text-center z-10 flex flex-col items-center justify-center pointer-events-none">
-              <span className="font-heading text-2xl font-semibold text-foreground tabular-nums">{utilisation}%</span>
-              <span className="mt-1 text-[10px] font-medium tracking-wide text-muted-foreground uppercase">Utilised</span>
+              <span className="text-[10px] font-medium tracking-wide text-muted-foreground uppercase">Spent</span>
             </div>
           </div>
-          <div className="grid min-w-0 content-center gap-3">
+          <div className="grid min-w-0 content-center gap-2.5">
             {taskData.map((task, index) => (
               <div key={task.name} className="flex min-w-0 items-center gap-3">
                 <span className="size-3 shrink-0 rounded-full" style={{ backgroundColor: colors[index % colors.length] }} />
                 <span className="truncate text-xs font-medium">{task.name}</span>
+                <span className="ml-auto shrink-0 text-xs font-semibold text-muted-foreground">{formatPercent((task.value / Math.max(spent, 1)) * 100)}</span>
               </div>
             ))}
           </div>
@@ -150,11 +138,13 @@ export function ProjectDetailPage({ project }: { project: ProjectDetailResponse 
       </Card>
     </div>
 
+    <TaskExpenseSection tasks={project.tasks} expenses={expenses} />
+
     <div className="grid gap-6 lg:grid-cols-[1fr_350px]">
       <Card className="flex flex-col min-h-0">
         <CardHeader>
-          <CardTitle>Recent Expenses</CardTitle>
-          <CardDescription>Latest payments logged against this project.</CardDescription>
+          <CardTitle>Expenses</CardTitle>
+          <CardDescription>Every payment recorded against this project.</CardDescription>
         </CardHeader>
         <CardContent className="p-0">
           <ProjectExpensesTable expenses={expenses} />
@@ -215,11 +205,15 @@ export function ProjectDetailPage({ project }: { project: ProjectDetailResponse 
       </DialogContent>
     </Dialog>
 
-    <Sheet open={open} onOpenChange={setOpen}><SheetContent><SheetHeader><SheetTitle>Add an expense</SheetTitle><SheetDescription>Log a payment for {project.name}.</SheetDescription></SheetHeader><form onSubmit={submit} className="grid gap-4 px-6"><Field label="Date" value={form.date} onChange={(v) => update("date", v)} type="date" /><Field label="Task" value={form.task_name} onChange={(v) => update("task_name", v)} /><Field label="Supplier" value={form.supplier_name} onChange={(v) => update("supplier_name", v)} placeholder="Supplier name" /><Field label="Item" value={form.item_description} onChange={(v) => update("item_description", v)} placeholder="What was purchased?" /><Field label="Amount (UGX)" value={form.amount} onChange={(v) => update("amount", v)} placeholder="0" type="number" /><SheetFooter className="px-0"><Button type="submit">Save expense</Button></SheetFooter></form></SheetContent></Sheet>
+    <Sheet open={open} onOpenChange={setOpen}><SheetContent><SheetHeader><SheetTitle>Add an expense</SheetTitle><SheetDescription>Log a payment for {project.name}.</SheetDescription></SheetHeader><form onSubmit={submit} className="grid gap-4 px-6"><Field label="Expense name" value={form.item_description} onChange={(v) => update("item_description", v)} placeholder="e.g. Cement – 50 bags" /><label className="grid gap-2"><Label>Supplier</Label><Select value={form.supplier_name} onValueChange={(value) => update("supplier_name", value ?? "")}><SelectTrigger className="w-full"><SelectValue placeholder="Select supplier" /></SelectTrigger><SelectContent>{supplierOptions.length ? supplierOptions.map((supplier) => <SelectItem key={supplier} value={supplier}>{supplier}</SelectItem>) : <SelectItem value="new-supplier">New supplier</SelectItem>}</SelectContent></Select></label><Field label="Amount (UGX)" value={form.amount} onChange={(v) => update("amount", v)} placeholder="0" type="number" /><label className="grid gap-2"><Label>Category</Label><Select value={form.task_name} onValueChange={(value) => update("task_name", value ?? "")}><SelectTrigger className="w-full"><SelectValue placeholder="Select category" /></SelectTrigger><SelectContent>{project.tasks.map((task) => <SelectItem key={task.id} value={task.name}>{task.name}</SelectItem>)}</SelectContent></Select></label><SheetFooter className="px-0"><Button type="submit">Save expense</Button></SheetFooter></form></SheetContent></Sheet>
   </DashboardShell>
 }
 
 function Metric({ label, value, detail }: { label: string; value: string; detail: string }) { return <Card className="flex flex-row items-center justify-between gap-4 p-5"><div><p className="text-xs font-medium text-muted-foreground">{label}</p><p className="mt-2 font-heading text-xl font-semibold tracking-tight tabular-nums">{value}</p></div><p className="max-w-[80px] text-right text-[10px] font-medium text-muted-foreground">{detail}</p></Card> }
+
+function TaskExpenseSection({ tasks, expenses }: { tasks: ProjectDetailResponse["tasks"]; expenses: ProjectDetailResponse["expenses"] }) {
+  return <section className="mb-6"><div className="mb-3 flex items-center justify-between gap-4"><div><h2 className="font-heading text-base font-semibold tracking-tight">By project task</h2><p className="mt-1 text-xs text-muted-foreground">Expenses against the budget assigned to each task.</p></div></div><div className="grid gap-2">{tasks.map((task, index) => { const taskSpent = expenses.filter((expense) => expense.task_name === task.name).reduce((sum, expense) => sum + expense.amount, 0); const percentage = task.budget ? Math.min((taskSpent / task.budget) * 100, 100) : 0; return <div key={task.id} className="grid items-center gap-3 rounded-xl border border-border/70 bg-card px-5 py-4 sm:grid-cols-[minmax(9rem,0.85fr)_minmax(10rem,1.6fr)_minmax(12rem,1fr)]"><div className="flex min-w-0 items-center gap-3"><span className="size-3 shrink-0 rounded-full" style={{ backgroundColor: colors[index % colors.length] }} /><span className="truncate text-sm font-medium">{task.name}</span></div><Progress value={percentage} className="h-2 bg-muted [&>div]:bg-primary" /><p className="text-right text-xs text-muted-foreground tabular-nums"><span className="font-semibold text-foreground">{formatCurrency(taskSpent)}</span> of {formatCurrency(task.budget)}</p></div> })}</div></section>
+}
 
 function Field({ label, value, onChange, placeholder = "", type = "text" }: { label: string; value: string; onChange: (value: string) => void; placeholder?: string; type?: string }) { return <label className="grid gap-2"><Label>{label}</Label><Input required type={type} value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} /></label> }
 

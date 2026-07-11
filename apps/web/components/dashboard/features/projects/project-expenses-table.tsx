@@ -27,8 +27,9 @@ export function ProjectExpensesTable({ expenses }: { expenses: ExpenseResponse[]
   const columns = useMemo<ColumnDef<ExpenseResponse>[]>(
     () => [
       { accessorKey: "date", header: "Date", cell: ({ getValue }) => <span className="text-muted-foreground">{formatShortDate(getValue<string>())}</span> },
-      { accessorKey: "item_description", header: "Item / description", cell: ({ row }) => <div className="grid gap-0.5"><span className="font-medium">{row.original.item_description}</span><span className="text-[11px] text-muted-foreground">{row.original.task_name}</span></div> },
-      { accessorKey: "supplier_name", header: "Vendor" },
+      { accessorKey: "task_name", header: "Task", cell: ({ getValue }) => <span className="font-medium">{getValue<string>()}</span> },
+      { accessorKey: "supplier_name", header: "Supplier" },
+      { accessorKey: "item_description", header: "Item" },
       { accessorKey: "amount", header: "Amount", cell: ({ getValue }) => <span className="font-semibold text-primary">{formatCurrency(getValue<number>())}</span> },
     ],
     []
@@ -54,8 +55,8 @@ export function ProjectExpensesTable({ expenses }: { expenses: ExpenseResponse[]
         <p className="text-xs text-muted-foreground">{table.getFilteredRowModel().rows.length} expenses</p>
       </div>
       <Table>
-        <TableHeader>{table.getHeaderGroups().map((group) => <TableRow key={group.id}>{group.headers.map((header) => <TableHead key={header.id} className={header.id === "amount" ? "text-right" : undefined}>{header.isPlaceholder ? null : <Button type="button" variant="ghost" size="xs" className="inline-flex items-center gap-1.5 px-0 text-inherit" onClick={header.column.getToggleSortingHandler()} disabled={!header.column.getCanSort()}>{flexRender(header.column.columnDef.header, header.getContext())}{header.column.getCanSort() && <HugeiconsIcon icon={Sorting05Icon} strokeWidth={1.5} className="size-3.5" />}</Button>}</TableHead>)}</TableRow>)}</TableHeader>
-        <TableBody>{rows.length ? rows.map((row) => <TableRow key={row.id}>{row.getVisibleCells().map((cell) => <TableCell key={cell.id} className={cell.column.id === "amount" ? "text-right" : undefined}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>)}</TableRow>) : <TableRow><TableCell colSpan={columns.length} className="h-24 text-center text-muted-foreground">No expenses match your search.</TableCell></TableRow>}</TableBody>
+        <TableHeader className="bg-muted/45">{table.getHeaderGroups().map((group) => <TableRow key={group.id} className="hover:bg-transparent">{group.headers.map((header) => <TableHead key={header.id} className={header.id === "amount" ? "px-5 text-right" : "px-5"}>{header.isPlaceholder ? null : <Button type="button" variant="ghost" size="xs" className="inline-flex h-auto items-center gap-1.5 px-0 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase hover:bg-transparent hover:text-foreground" onClick={header.column.getToggleSortingHandler()} disabled={!header.column.getCanSort()}>{flexRender(header.column.columnDef.header, header.getContext())}{header.column.getCanSort() && <HugeiconsIcon icon={Sorting05Icon} strokeWidth={1.5} className="size-3.5" />}</Button>}</TableHead>)}</TableRow>)}</TableHeader>
+        <TableBody>{rows.length ? rows.map((row) => <TableRow key={row.id} className="hover:bg-muted/25">{row.getVisibleCells().map((cell) => <TableCell key={cell.id} className={cell.column.id === "amount" ? "px-5 py-4 text-right text-sm" : "px-5 py-4 text-sm"}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>)}</TableRow>) : <TableRow><TableCell colSpan={columns.length} className="h-24 text-center text-muted-foreground">No expenses match your search.</TableCell></TableRow>}</TableBody>
       </Table>
       <div className="flex flex-col gap-3 border-t px-5 pt-4 sm:flex-row sm:items-center sm:justify-between"><p className="text-xs text-muted-foreground">Page {table.getState().pagination.pageIndex + 1} of {Math.max(table.getPageCount(), 1)}</p><div className="flex gap-2"><Button variant="outline" size="sm" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}><HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={1.5} />Previous</Button><Button variant="outline" size="sm" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>Next<HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={1.5} /></Button></div></div>
     </div>
