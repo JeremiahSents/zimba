@@ -73,7 +73,7 @@ export function DashboardSidebar() {
                         ? pathname === item.href
                         : pathname.startsWith(item.href)
                     }
-                    className="relative h-10 rounded-full px-3 text-[13px] font-medium text-sidebar-foreground/62 transition-colors group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-0! hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground data-active:bg-primary/10 data-active:text-primary group-data-[collapsible=icon]:[&_span]:hidden [&_svg]:size-4! [&_svg]:text-sidebar-foreground/45 data-active:[&_svg]:text-primary"
+                    className="relative h-10 rounded-full px-3 text-[13px] font-medium text-sidebar-foreground/62 transition-colors group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:grid group-data-[collapsible=icon]:place-items-center group-data-[collapsible=icon]:p-0! hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground data-active:text-primary group-data-[collapsible=icon]:[&_span]:hidden [&_svg]:size-4! [&_svg]:text-sidebar-foreground/45 data-active:[&_svg]:text-primary"
                     render={
                       <Link href={item.href}>
                         <HugeiconsIcon icon={item.icon} strokeWidth={2} />
@@ -94,7 +94,7 @@ export function DashboardSidebar() {
             <SidebarMenuButton
               tooltip="Settings"
               isActive={pathname.startsWith("/dashboard/settings")}
-              className="h-10 rounded-full px-3 text-[13px] font-medium text-sidebar-foreground/62 group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-0! hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:[&_span]:hidden [&_svg]:size-4! [&_svg]:text-sidebar-foreground/45"
+              className="h-10 rounded-full px-3 text-[13px] font-medium text-sidebar-foreground/62 group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:grid group-data-[collapsible=icon]:place-items-center group-data-[collapsible=icon]:p-0! hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:[&_span]:hidden [&_svg]:size-4! [&_svg]:text-sidebar-foreground/45 data-active:text-primary data-active:[&_svg]:text-primary"
               render={
                 <Link href="/dashboard/settings">
                   <HugeiconsIcon icon={Settings02Icon} strokeWidth={2} />
@@ -121,7 +121,7 @@ function SidebarBrand() {
           alt="Zimba logo"
           width={24}
           height={24}
-          className="size-6"
+          className="size-5 object-contain"
         />
       </div>
     )
