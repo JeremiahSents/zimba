@@ -18,7 +18,7 @@ function DialogContent({ className, ...props }: DialogPrimitive.Popup.Props) {
       <DialogPrimitive.Popup
         data-slot="dialog-content"
         className={cn(
-          "fixed top-1/2 left-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-xl border border-border/70 bg-popover p-6 text-popover-foreground shadow-xl transition duration-150 data-ending-style:translate-y-[calc(-50%+0.5rem)] data-ending-style:opacity-0 data-starting-style:translate-y-[calc(-50%+0.5rem)] data-starting-style:opacity-0",
+          "fixed top-1/2 left-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-border bg-popover p-6 text-popover-foreground transition duration-200 ease-out data-ending-style:translate-y-[calc(-50%+0.5rem)] data-ending-style:opacity-0 data-starting-style:translate-y-[calc(-50%+0.5rem)] data-starting-style:opacity-0",
           className
         )}
         {...props}
@@ -36,7 +36,7 @@ function DialogFooter({ className, ...props }: React.ComponentProps<"div">) {
 }
 
 function DialogTitle({ className, ...props }: DialogPrimitive.Title.Props) {
-  return <DialogPrimitive.Title className={cn("font-heading text-base font-semibold tracking-tight", className)} {...props} />
+  return <DialogPrimitive.Title className={cn("font-heading text-base font-normal tracking-tight", className)} {...props} />
 }
 
 function DialogDescription({ className, ...props }: DialogPrimitive.Description.Props) {

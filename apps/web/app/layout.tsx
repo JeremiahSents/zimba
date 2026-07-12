@@ -1,17 +1,14 @@
-import { Inter, Noto_Sans, IBM_Plex_Sans } from "next/font/google"
+import { IBM_Plex_Sans } from "next/font/google"
 
 import "@workspace/ui/globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { cn } from "@workspace/ui/lib/utils"
 import { TooltipProvider } from "@workspace/ui/components/tooltip"
 
-const ibmPlexSansHeading = IBM_Plex_Sans({subsets:['latin'],variable:'--font-heading'});
-
-const notoSans = Noto_Sans({subsets:['latin'],variable:'--font-sans'});
-
-const inter = Inter({
+const lausanneFallback = IBM_Plex_Sans({
   subsets: ["latin"],
-  variable: "--font-inter",
+  weight: "400",
+  variable: "--font-lausanne",
 })
 
 export default function RootLayout({
@@ -23,7 +20,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={cn("antialiased", inter.variable, "font-sans", notoSans.variable, ibmPlexSansHeading.variable)}
+      className={cn("antialiased font-sans", lausanneFallback.variable)}
     >
       <body>
         <head>

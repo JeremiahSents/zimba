@@ -38,9 +38,9 @@ export function DashboardShell({
     <div className="flex min-h-svh w-full bg-sidebar">
       <SidebarProvider className="flex min-h-svh w-full bg-transparent">
         <DashboardSidebar />
-        <SidebarInset className="relative z-10 flex min-w-0 flex-1 flex-col rounded-tl-2xl border-t border-l bg-background">
+        <SidebarInset className="relative z-10 flex min-w-0 flex-1 flex-col border-t border-l bg-background">
           <DashboardTopbar title={title} dataSource={dataSource} />
-          <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-3 sm:px-7 sm:py-3 lg:px-10 lg:py-4">
+          <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-5 sm:px-7 sm:py-6 lg:px-10 lg:py-8">
             {children}
           </div>
           <footer className="mt-auto border-t px-4 py-4 text-center text-[10px] text-muted-foreground sm:px-7 lg:px-10">
@@ -68,10 +68,10 @@ function DashboardTopbar({
             className="-ml-1 size-6 rounded-md hover:bg-muted hover:text-foreground [&_svg]:size-4"
             icon="open"
           />
-          <h1 className="text-xl leading-6 font-semibold text-foreground">{title}</h1>
+          <h1 className="font-heading text-xl leading-6 font-normal tracking-tight text-foreground">{title}</h1>
         </div>
         {dataSource === "mock" && (
-          <p className="text-[10px] font-medium text-warning">
+          <p className="text-[10px] font-normal tracking-[0.08em] text-warning uppercase">
             Showing typed mock data until API credentials are configured.
           </p>
         )}
@@ -100,7 +100,7 @@ function DashboardTopbar({
           </SheetContent>
         </Sheet>
         <Avatar aria-label="Musa Byaruhanga" className="size-8">
-          <AvatarFallback className="bg-primary/10 text-xs font-semibold text-primary">
+          <AvatarFallback className="bg-primary text-xs font-normal text-primary-foreground">
             MB
           </AvatarFallback>
         </Avatar>

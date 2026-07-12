@@ -46,7 +46,7 @@ export function Footer() {
             aria-label="Zimba home"
           >
             <Image src="/logo-landing.png" alt="Zimba logo" width={28} height={28} className="size-7" />  
-            <span className="font-heading text-base font-semibold uppercase tracking-[0.14em]">
+            <span className="font-heading text-base font-normal uppercase tracking-[0.14em]">
               zimba
             </span>
           </Link>
@@ -54,7 +54,7 @@ export function Footer() {
           <div className="grid grid-cols-2 gap-10 sm:grid-cols-4">
             {footerColumns.map((column) => (
               <div key={column.heading}>
-                <h3 className="text-sm font-semibold">{column.heading}</h3>
+                <h3 className="text-[10px] font-normal tracking-[0.12em] uppercase">{column.heading}</h3>
                 <ul className="mt-5 space-y-3">
                   {column.links.map((link) => (
                     <li key={link}>

@@ -49,13 +49,13 @@ export function DashboardSidebar() {
       collapsible="icon"
       className="!border-r-0 bg-transparent group-data-[collapsible=icon]:bg-transparent"
     >
-      <SidebarHeader className="p-4 pb-3">
+      <SidebarHeader className="p-4 pb-3 group-data-[collapsible=icon]:px-0">
         <SidebarBrand />
       </SidebarHeader>
 
       <SidebarContent>
-        <SidebarGroup className="px-3 py-1">
-          <SidebarGroupLabel className="px-3 pb-2 text-xs font-semibold text-sidebar-foreground/65 group-data-[collapsible=icon]:hidden">
+        <SidebarGroup className="px-3 py-1 group-data-[collapsible=icon]:px-0">
+          <SidebarGroupLabel className="px-3 pb-2 text-[10px] font-normal tracking-[0.12em] text-sidebar-foreground/55 uppercase group-data-[collapsible=icon]:hidden">
             Overview
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -69,7 +69,7 @@ export function DashboardSidebar() {
                         ? pathname === item.href
                         : pathname.startsWith(item.href)
                     }
-                    className="relative h-10 rounded-full px-3 text-[13px] font-medium text-sidebar-foreground/62 transition-colors group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:grid group-data-[collapsible=icon]:place-items-center group-data-[collapsible=icon]:p-0! hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground data-active:text-primary group-data-[collapsible=icon]:[&_span]:hidden [&_svg]:size-4! [&_svg]:text-sidebar-foreground/45 data-active:[&_svg]:text-primary"
+                    className="relative h-10 rounded-md px-3 text-[13px] font-normal text-sidebar-foreground/70 transition-colors group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:grid group-data-[collapsible=icon]:place-items-center group-data-[collapsible=icon]:p-0! hover:bg-sidebar-accent hover:text-sidebar-accent-foreground data-active:bg-primary/10 data-active:text-primary group-data-[collapsible=icon]:[&_span]:hidden [&_svg]:size-4! [&_svg]:text-sidebar-foreground/45 data-active:[&_svg]:text-primary"
                     render={
                       <Link href={item.href}>
                         <HugeiconsIcon icon={item.icon} strokeWidth={2} />
@@ -84,13 +84,13 @@ export function DashboardSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-3 pt-2">
+      <SidebarFooter className="p-3 pt-2 group-data-[collapsible=icon]:px-0">
         <SidebarMenu className="gap-2">
           <SidebarMenuItem>
             <SidebarMenuButton
               tooltip="Settings"
               isActive={pathname.startsWith("/dashboard/settings")}
-              className="h-10 rounded-full px-3 text-[13px] font-medium text-sidebar-foreground/62 group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:grid group-data-[collapsible=icon]:place-items-center group-data-[collapsible=icon]:p-0! hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:[&_span]:hidden [&_svg]:size-4! [&_svg]:text-sidebar-foreground/45 data-active:text-primary data-active:[&_svg]:text-primary"
+              className="h-10 rounded-md px-3 text-[13px] font-normal text-sidebar-foreground/70 group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:grid group-data-[collapsible=icon]:place-items-center group-data-[collapsible=icon]:p-0! hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:[&_span]:hidden [&_svg]:size-4! [&_svg]:text-sidebar-foreground/45 data-active:bg-primary/10 data-active:text-primary data-active:[&_svg]:text-primary"
               render={
                 <Link href="/dashboard/settings">
                   <HugeiconsIcon icon={Settings02Icon} strokeWidth={2} />
@@ -102,7 +102,7 @@ export function DashboardSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton
               tooltip="Sign out"
-              className="h-10 rounded-full px-3 text-[13px] font-medium text-sidebar-foreground/62 group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:grid group-data-[collapsible=icon]:place-items-center group-data-[collapsible=icon]:p-0! hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:[&_span]:hidden [&_svg]:size-4! [&_svg]:text-sidebar-foreground/45"
+              className="h-10 rounded-md px-3 text-[13px] font-normal text-sidebar-foreground/70 group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:grid group-data-[collapsible=icon]:place-items-center group-data-[collapsible=icon]:p-0! hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:[&_span]:hidden [&_svg]:size-4! [&_svg]:text-sidebar-foreground/45"
               render={
                 <Link href="/login">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M21 19V5a2 2 0 0 0-2-2h-6"/></svg>
@@ -148,10 +148,10 @@ function SidebarBrand() {
           />
         </span>
         <span className="min-w-0">
-          <span className="block truncate font-heading text-lg leading-tight font-semibold text-sidebar-foreground">
+          <span className="block truncate font-heading text-lg leading-tight font-normal tracking-tight text-sidebar-foreground">
             Zimba
           </span>
-          <span className="block truncate text-xs font-medium text-muted-foreground">
+          <span className="block truncate text-[10px] font-normal tracking-[0.08em] text-sidebar-foreground/55 uppercase">
             Zimba Consultants
           </span>
         </span>

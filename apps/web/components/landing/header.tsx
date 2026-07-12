@@ -6,15 +6,16 @@ const navItems = ["Product", "Industries", "Customers", "Company"]
 
 export function Header() {
   return (
-    <header className="relative z-10 mx-3 mt-3 flex items-center justify-between rounded-full border border-white/10 bg-black/20 px-4 py-3 shadow-[0_18px_60px_rgba(0,0,0,0.18)] backdrop-blur-md sm:mx-6 sm:px-5 lg:mx-8">
+    <header className="relative z-10 border-b border-white/10 bg-transparent px-5 py-4 sm:px-8 lg:px-10">
+      <div className="mx-auto flex max-w-7xl items-center justify-between">
       <Link href="/" className="flex items-center gap-2 text-white" aria-label="Zimba home">
         <Image src="/logo-landing.png" alt="Zimba logo" width={28} height={28} className="size-7" />
-        <span className="font-heading text-base font-semibold uppercase tracking-[0.14em]">
+        <span className="font-heading text-base font-normal uppercase tracking-[0.14em]">
           zimba
         </span>
       </Link>
 
-      <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-8 text-sm font-medium text-white/80 md:flex">
+      <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-8 text-sm font-normal text-white/75 md:flex">
         {navItems.map((item) => (
           <Link key={item} href="#" className="transition hover:text-white">
             {item}
@@ -25,13 +26,14 @@ export function Header() {
       <div className="flex items-center gap-5">
         <Link
           href="/login"
-          className="hidden text-sm font-medium text-white/80 transition hover:text-white sm:inline-flex"
+          className="hidden text-sm font-normal text-white/75 transition hover:text-white sm:inline-flex"
         >
           Sign in
         </Link>
-        <Button size="sm" className="px-4 text-white">
+        <Button size="sm" className="px-4">
           Learn more
         </Button>
+      </div>
       </div>
     </header>
   )

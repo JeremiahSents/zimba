@@ -1,42 +1,23 @@
-import Image from "next/image"
-
 import { Button } from "@workspace/ui/components/button"
 
 import { Header } from "@/components/landing/header"
 
 export function Hero() {
   return (
-    <section className="relative isolate flex min-h-svh flex-col overflow-hidden">
-      <Image
-        src="/hero.png"
-        alt="Construction team reviewing project expenses"
-        fill
-        priority
-        className="-z-10 object-cover"
-        sizes="100vw"
-      />
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 -z-10 bg-gradient-to-r from-black/60 via-black/30 to-black/10"
-      />
-      <div
-        aria-hidden="true"
-        className="absolute inset-x-0 top-0 -z-10 h-36 bg-gradient-to-b from-black/75 via-black/40 to-transparent"
-      />
-
+    <section className="relative flex min-h-svh flex-col overflow-hidden bg-muted bg-[linear-gradient(to_right,rgba(0,0,0,0.62),rgba(0,0,0,0.18)),url('/hero.png')] bg-cover bg-center">
       <Header />
 
-      <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col justify-center px-5 pb-24 sm:px-8 lg:px-10">
-        <h1 className="max-w-2xl font-heading text-3xl font-medium tracking-[-0.03em] text-balance text-white sm:text-5xl lg:text-5xl">
+      <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-1 flex-col justify-center px-5 py-24 sm:px-8 lg:px-10">
+        <h1 className="max-w-3xl font-heading text-4xl leading-none font-normal tracking-[-0.04em] text-balance text-white sm:text-6xl lg:text-7xl">
           Track your project expenses as you build the future.
         </h1>
 
-        <p className="mt-6 max-w-xl text-base leading-7 text-white/80 sm:text-lg">
+        <p className="mt-7 max-w-xl text-base leading-7 text-white/78 sm:text-xl">
           One clean place for construction and real estate teams to monitor
           expenses, budgets, approvals, and project cash flow.
         </p>
 
-        <div className="mt-8">
+        <div className="mt-10">
           <Button size="lg" className="px-6">
             Learn more
           </Button>
