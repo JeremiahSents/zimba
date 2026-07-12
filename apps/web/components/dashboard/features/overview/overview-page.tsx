@@ -72,11 +72,11 @@ export function DashboardPage({ data }: { data: DashboardOverviewData }) {
           </h2>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button size="sm" render={<Link href="/dashboard/expenses" />}>
+          <Button size="sm" nativeButton={false} render={<Link href="/dashboard/expenses" />}>
             <HugeiconsIcon icon={Invoice02Icon} strokeWidth={2} />
             Add expense
           </Button>
-          <Button size="sm" render={<Link href="/dashboard/projects/new" />}>+ New project</Button>
+          <Button size="sm" nativeButton={false} render={<Link href="/dashboard/projects/new" />}>+ New project</Button>
         </div>
       </section>
 
@@ -119,6 +119,7 @@ function ProjectsSection({ projects }: { projects: ProjectDashboardResponse[] })
         <Button
           variant="ghost"
           size="sm"
+          nativeButton={false}
           render={<Link href="/dashboard/projects" />}
         >
           View all

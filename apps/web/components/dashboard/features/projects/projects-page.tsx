@@ -121,7 +121,7 @@ export function ProjectsPage({ data }: { data: DashboardOverviewData }) {
               Delivery status and financial progress across the portfolio.
             </CardDescription>
           </div>
-          <Button size="sm" render={<Link href="/dashboard/projects/new" />}>+ New project</Button>
+          <Button size="sm" nativeButton={false} render={<Link href="/dashboard/projects/new" />}>+ New project</Button>
         </CardHeader>
         <CardContent>
           <ProjectsTable projects={projects} details={projectDetails} />
