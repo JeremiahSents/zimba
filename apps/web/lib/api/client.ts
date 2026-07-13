@@ -1,5 +1,6 @@
 import "server-only"
 
+import type { ZimbaApiSession } from "@/lib/api/auth"
 import type {
   ExpenseCreate,
   ExpenseResponse,
@@ -9,7 +10,6 @@ import type {
   ProjectDetailResponse,
   SupplierResponse,
 } from "@/lib/types"
-import type { ZimbaApiSession } from "@/lib/api/auth"
 
 const API_BASE_URL =
   process.env.ZIMBA_API_BASE_URL ??
@@ -25,7 +25,7 @@ export class ZimbaApiError extends Error {
   constructor(
     message: string,
     readonly status: number,
-    readonly validation?: HTTPValidationError,
+    readonly validation?: HTTPValidationError
   ) {
     super(message)
     this.name = "ZimbaApiError"
@@ -35,7 +35,7 @@ export class ZimbaApiError extends Error {
 async function zimbaFetch<T>(
   path: string,
   session: ZimbaApiSession,
-  options: RequestOptions = {},
+  options: RequestOptions = {}
 ): Promise<T> {
   const url = new URL(path, API_BASE_URL)
 
@@ -64,7 +64,7 @@ async function zimbaFetch<T>(
     throw new ZimbaApiError(
       `Zimba API request failed with ${response.status}`,
       response.status,
-      errorBody,
+      errorBody
     )
   }
 
@@ -77,7 +77,7 @@ export function listProjects(session: ZimbaApiSession) {
 
 export function createProject(
   session: ZimbaApiSession,
-  project: ProjectCreate,
+  project: ProjectCreate
 ) {
   return zimbaFetch<ProjectDashboardResponse>("/api/v1/projects", session, {
     body: project,
@@ -85,19 +85,16 @@ export function createProject(
   })
 }
 
-export function getProjectDetail(
-  session: ZimbaApiSession,
-  projectId: number,
-) {
+export function getProjectDetail(session: ZimbaApiSession, projectId: number) {
   return zimbaFetch<ProjectDetailResponse>(
     `/api/v1/projects/${projectId}`,
-    session,
+    session
   )
 }
 
 export function listExpenses(
   session: ZimbaApiSession,
-  query: { project_id?: number | null; search?: string | null } = {},
+  query: { project_id?: number | null; search?: string | null } = {}
 ) {
   return zimbaFetch<ExpenseResponse[]>("/api/v1/expenses", session, {
     query,

@@ -113,8 +113,8 @@ export const mockProjectDetails: ProjectDetailResponse[] = mockProjects.map(
         mockExpenses.some(
           (expense) =>
             expense.project_name === project.name &&
-            expense.supplier_name === supplier.name,
-        ),
+            expense.supplier_name === supplier.name
+        )
       )
       .map(({ name, amount }) => ({ name, amount })),
     tasks: [
@@ -133,7 +133,7 @@ export const mockProjectDetails: ProjectDetailResponse[] = mockProjects.map(
         pct: Math.max(project.pct - 8, 0),
       },
     ],
-  }),
+  })
 )
 
 function toExpenseResponse(expense: ExpenseTableRow) {

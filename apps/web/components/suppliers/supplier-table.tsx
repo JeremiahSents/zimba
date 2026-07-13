@@ -1,18 +1,17 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { Sorting05Icon } from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
 import {
+  type ColumnDef,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  useReactTable,
-  type ColumnDef,
   type SortingState,
+  useReactTable,
 } from "@tanstack/react-table"
-import { HugeiconsIcon } from "@hugeicons/react"
-import { Sorting05Icon } from "@hugeicons/core-free-icons"
 import { Badge } from "@workspace/ui/components/badge"
 import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
@@ -24,6 +23,7 @@ import {
   TableHeader,
   TableRow,
 } from "@workspace/ui/components/table"
+import { useMemo, useState } from "react"
 import { formatCurrency } from "@/lib/format"
 import type { SupplierResponse } from "@/lib/types"
 
@@ -90,7 +90,7 @@ export function SupplierTable({
           placeholder="Search suppliers..."
           className="max-w-xs"
         />
-        <span className="text-xs text-muted-foreground">
+        <span className="text-muted-foreground text-xs">
           {table.getFilteredRowModel().rows.length} suppliers
         </span>
       </div>
@@ -137,7 +137,7 @@ export function SupplierTable({
         </TableBody>
       </Table>
       <div className="flex items-center justify-between border-t pt-3">
-        <span className="text-xs text-muted-foreground">
+        <span className="text-muted-foreground text-xs">
           Page {table.getState().pagination.pageIndex + 1} of{" "}
           {Math.max(table.getPageCount(), 1)}
         </span>

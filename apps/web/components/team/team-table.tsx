@@ -1,19 +1,18 @@
 "use client"
 
-import { useMemo, useState } from "react"
 import {
+  type ColumnDef,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  useReactTable,
-  type ColumnDef,
   type SortingState,
+  useReactTable,
 } from "@tanstack/react-table"
+import { Badge } from "@workspace/ui/components/badge"
 import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
-import { Badge } from "@workspace/ui/components/badge"
 import {
   Table,
   TableBody,
@@ -22,6 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from "@workspace/ui/components/table"
+import { useMemo, useState } from "react"
 import type { TeamMember } from "@/lib/types"
 
 export function TeamTable({ members }: { members: TeamMember[] }) {
@@ -68,7 +68,7 @@ export function TeamTable({ members }: { members: TeamMember[] }) {
           placeholder="Search team..."
           className="max-w-xs"
         />
-        <span className="text-xs text-muted-foreground">
+        <span className="text-muted-foreground text-xs">
           {table.getFilteredRowModel().rows.length} members
         </span>
       </div>

@@ -1,24 +1,21 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { Sorting05Icon } from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
 import {
+  type ColumnDef,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  useReactTable,
-  type ColumnDef,
   type SortingState,
+  useReactTable,
 } from "@tanstack/react-table"
-import { HugeiconsIcon } from "@hugeicons/react"
-import { Sorting05Icon } from "@hugeicons/core-free-icons"
-
 import { Badge } from "@workspace/ui/components/badge"
 import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
 import { Progress } from "@workspace/ui/components/progress"
-import Link from "next/link"
 import {
   Table,
   TableBody,
@@ -27,6 +24,8 @@ import {
   TableHeader,
   TableRow,
 } from "@workspace/ui/components/table"
+import Link from "next/link"
+import { useMemo, useState } from "react"
 import { formatCurrency, formatPercent } from "@/lib/format"
 import type { ProjectDashboardResponse } from "@/lib/types"
 
@@ -51,10 +50,13 @@ export function ProjectsTable({
         header: "Project",
         cell: ({ row }) => (
           <div>
-            <Link href={`/dashboard/projects/${row.original.id}`} className="font-medium hover:text-primary hover:underline">
+            <Link
+              href={`/dashboard/projects/${row.original.id}`}
+              className="font-medium hover:text-primary hover:underline"
+            >
               {row.original.name}
             </Link>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               {row.original.location}
             </p>
           </div>
@@ -98,7 +100,7 @@ export function ProjectsTable({
         cell: ({ row }) => (
           <div className="flex items-center gap-2">
             <Progress value={row.original.pct} className="w-20" />
-            <span className="text-xs font-medium">
+            <span className="font-medium text-xs">
               {formatPercent(row.original.pct)}
             </span>
           </div>
@@ -128,7 +130,7 @@ export function ProjectsTable({
           placeholder="Search projects..."
           className="max-w-xs"
         />
-        <span className="text-xs text-muted-foreground">
+        <span className="text-muted-foreground text-xs">
           {table.getFilteredRowModel().rows.length} projects
         </span>
       </div>
@@ -175,7 +177,7 @@ export function ProjectsTable({
         </TableBody>
       </Table>
       <div className="flex items-center justify-between border-t pt-3">
-        <span className="text-xs text-muted-foreground">
+        <span className="text-muted-foreground text-xs">
           Page {table.getState().pagination.pageIndex + 1} of{" "}
           {Math.max(table.getPageCount(), 1)}
         </span>

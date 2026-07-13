@@ -1,7 +1,5 @@
 "use client"
 
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts"
-
 import {
   Card,
   CardContent,
@@ -9,10 +7,10 @@ import {
   CardTitle,
 } from "@workspace/ui/components/card"
 import {
+  type ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-  type ChartConfig,
 } from "@workspace/ui/components/chart"
 import {
   Select,
@@ -21,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@workspace/ui/components/select"
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts"
 
 import { formatCurrency } from "@/lib/format"
 import type { SpendChartPoint } from "@/lib/types"
@@ -49,11 +48,11 @@ export function SpendBarChart({ data }: { data: SpendChartPoint[] }) {
     <Card size="sm" className="flex h-full flex-col">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-xs font-medium text-muted-foreground">
+          <CardTitle className="font-medium text-muted-foreground text-xs">
             Budget spend
           </CardTitle>
           <Select defaultValue="current">
-            <SelectTrigger className="h-8 w-auto gap-2 border-border text-[10px] font-medium">
+            <SelectTrigger className="h-8 w-auto gap-2 border-border font-medium text-[10px]">
               <SelectValue placeholder="Select range" />
             </SelectTrigger>
             <SelectContent>
@@ -65,11 +64,11 @@ export function SpendBarChart({ data }: { data: SpendChartPoint[] }) {
         </div>
         <div className="mt-2 space-y-1">
           <div className="flex items-center gap-2">
-            <span className="font-heading text-base font-semibold text-primary">
+            <span className="font-heading font-semibold text-base text-primary">
               {formatCurrency(totalSpent)}
             </span>
           </div>
-          <span className="text-[10px] font-medium text-primary">
+          <span className="font-medium text-[10px] text-primary">
             Logged construction spend
           </span>
         </div>
@@ -133,8 +132,8 @@ export function SpendBarChart({ data }: { data: SpendChartPoint[] }) {
 function MicroMetric({ label, value }: { label: string; value: string }) {
   return (
     <div className="px-3 first:pl-0 last:pr-0">
-      <p className="text-[10px] font-medium text-muted-foreground">{label}</p>
-      <p className="mt-1 text-xs font-semibold text-foreground">{value}</p>
+      <p className="font-medium text-[10px] text-muted-foreground">{label}</p>
+      <p className="mt-1 font-semibold text-foreground text-xs">{value}</p>
     </div>
   )
 }

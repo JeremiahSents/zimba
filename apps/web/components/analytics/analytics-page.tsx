@@ -6,10 +6,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components/card"
-
-import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { SpendBarChart } from "@/components/dashboard/spend-bar-chart"
 import { UtilizationAreaChart } from "@/components/dashboard/utilization-area-chart"
+import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { ExpenseTable } from "@/components/shared/expense-table"
 import { formatCurrency, formatPercent } from "@/lib/format"
 import type { DashboardOverviewData } from "@/lib/types"
@@ -29,13 +28,13 @@ export function AnalyticsPage({ data }: { data: DashboardOverviewData }) {
     <DashboardShell title="Analytics" subtitle="" dataSource={data.source}>
       <section className="flex flex-col gap-4 border-b pb-6 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="mb-2 text-[10px] font-semibold tracking-[0.16em] text-primary uppercase">
+          <p className="mb-2 font-semibold text-[10px] text-primary uppercase tracking-[0.16em]">
             Portfolio performance
           </p>
-          <h2 className="font-heading text-xl font-semibold tracking-tight">
+          <h2 className="font-heading font-semibold text-xl tracking-tight">
             Spending and budget health
           </h2>
-          <p className="mt-2 text-xs text-muted-foreground">
+          <p className="mt-2 text-muted-foreground text-xs">
             Compare project spend and review every recorded expense.
           </p>
         </div>
@@ -53,8 +52,10 @@ export function AnalyticsPage({ data }: { data: DashboardOverviewData }) {
               key={label}
               className="border-t p-5 first:border-t-0 sm:border-t-0 sm:border-l sm:first:border-l-0"
             >
-              <p className="text-xs font-medium text-muted-foreground">{label}</p>
-              <p className="mt-4 font-heading text-base font-semibold tracking-tight">
+              <p className="font-medium text-muted-foreground text-xs">
+                {label}
+              </p>
+              <p className="mt-4 font-heading font-semibold text-base tracking-tight">
                 {value}
               </p>
             </div>

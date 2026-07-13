@@ -1,15 +1,14 @@
 "use client"
 
-import { useMemo, useState } from "react"
 import {
+  type ColumnDef,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  useReactTable,
-  type ColumnDef,
   type SortingState,
+  useReactTable,
 } from "@tanstack/react-table"
 import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
@@ -22,6 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from "@workspace/ui/components/table"
+import { useMemo, useState } from "react"
 import { formatCurrency, formatPercent } from "@/lib/format"
 import type { ProjectDashboardResponse } from "@/lib/types"
 
@@ -51,7 +51,7 @@ export function ReportsTable({
         cell: ({ row }) => (
           <div className="flex items-center gap-2">
             <Progress value={row.original.pct} className="w-24" />
-            <span className="text-xs font-medium">
+            <span className="font-medium text-xs">
               {formatPercent(row.original.pct)}
             </span>
           </div>

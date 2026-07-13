@@ -22,7 +22,7 @@ export function TrustedBy() {
   return (
     <section className="bg-background py-20 sm:py-24">
       <div className="mx-auto max-w-6xl px-5 text-center sm:px-8 lg:px-10">
-        <h2 className="font-heading text-xl font-medium tracking-[-0.02em] sm:text-2xl">
+        <h2 className="font-heading font-medium text-xl tracking-[-0.02em] sm:text-2xl">
           Leading builders succeed with Zimba
         </h2>
 
@@ -34,7 +34,7 @@ export function TrustedBy() {
           {trustedBy.map((name) => (
             <div
               key={name}
-              className="flex items-center justify-center font-heading text-base font-semibold tracking-[-0.02em] text-muted-foreground/70"
+              className="flex items-center justify-center font-heading font-semibold text-base text-muted-foreground/70 tracking-[-0.02em]"
             >
               {name}
             </div>

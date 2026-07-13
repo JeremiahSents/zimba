@@ -5,9 +5,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components/card"
-
-import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { ActivityRow } from "@/components/shared/activity-row"
+import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { SettingField } from "@/components/shared/setting-field"
 import { mockCompanySettings, mockTeamMembers } from "@/lib/api/mock-data"
 
@@ -84,7 +83,7 @@ export function SettingsPage() {
               {mockTeamMembers.map((member) => (
                 <div key={member.role} className="py-2">
                   <p className="font-medium">{member.role}</p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     Can view assigned projects and payment context.
                   </p>
                 </div>

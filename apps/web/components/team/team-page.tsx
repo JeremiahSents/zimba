@@ -1,3 +1,6 @@
+import { UserAdd01Icon } from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { Button } from "@workspace/ui/components/button"
 import {
   Card,
   CardContent,
@@ -5,9 +8,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components/card"
-import { Button } from "@workspace/ui/components/button"
-import { HugeiconsIcon } from "@hugeicons/react"
-import { UserAdd01Icon } from "@hugeicons/core-free-icons"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { TeamTable } from "@/components/team/team-table"
 import { mockTeamMembers } from "@/lib/api/mock-data"
@@ -31,8 +31,8 @@ export function TeamPage() {
               key={label}
               className="border-t p-5 first:border-t-0 md:border-t-0 md:border-l md:first:border-l-0"
             >
-              <p className="text-xs font-medium text-foreground">{label}</p>
-              <p className="mt-5 font-heading text-base font-semibold text-foreground">
+              <p className="font-medium text-foreground text-xs">{label}</p>
+              <p className="mt-5 font-heading font-semibold text-base text-foreground">
                 {value}
               </p>
               <p className="mt-1 text-[10px] text-muted-foreground">{detail}</p>

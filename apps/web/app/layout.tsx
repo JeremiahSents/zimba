@@ -1,9 +1,9 @@
 import { IBM_Plex_Sans } from "next/font/google"
 
 import "@workspace/ui/globals.css"
-import { ThemeProvider } from "@/components/shared/theme-provider"
-import { cn } from "@workspace/ui/lib/utils"
 import { TooltipProvider } from "@workspace/ui/components/tooltip"
+import { cn } from "@workspace/ui/lib/utils"
+import { ThemeProvider } from "@/components/shared/theme-provider"
 
 const lausanneFallback = IBM_Plex_Sans({
   subsets: ["latin"],
@@ -20,7 +20,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={cn("antialiased font-sans", lausanneFallback.variable)}
+      className={cn("font-sans antialiased", lausanneFallback.variable)}
     >
       <body>
         <head>

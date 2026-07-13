@@ -1,15 +1,12 @@
 "use client"
 
-import Link from "next/link"
-import { useEffect, useState } from "react"
-import { HugeiconsIcon } from "@hugeicons/react"
-import { Button } from "@workspace/ui/components/button"
 import {
   FolderKanbanIcon,
   MoneyBag02Icon,
   TaskDone01Icon,
 } from "@hugeicons/core-free-icons"
-
+import { HugeiconsIcon } from "@hugeicons/react"
+import { Button } from "@workspace/ui/components/button"
 import {
   Card,
   CardContent,
@@ -17,11 +14,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components/card"
-
-import { DashboardShell } from "@/components/shared/dashboard-shell"
+import Link from "next/link"
+import { useEffect, useState } from "react"
 import { ProjectsTable } from "@/components/projects/projects-table"
-import { mergeStoredProjects } from "@/lib/project-store"
+import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { formatCurrency } from "@/lib/format"
+import { mergeStoredProjects } from "@/lib/project-store"
 import type { DashboardOverviewData } from "@/lib/types"
 
 export const projectDetails = {
@@ -50,10 +48,7 @@ export function ProjectsPage({ data }: { data: DashboardOverviewData }) {
     window.addEventListener("zimba-projects-updated", sync)
     return () => window.removeEventListener("zimba-projects-updated", sync)
   }, [data.projects])
-  const totalValue = projects.reduce(
-    (sum, project) => sum + project.budget,
-    0
-  )
+  const totalValue = projects.reduce((sum, project) => sum + project.budget, 0)
   const onTrack = projects.filter(
     (project) =>
       projectDetails[project.id as keyof typeof projectDetails]?.status ===
@@ -94,7 +89,7 @@ export function ProjectsPage({ data }: { data: DashboardOverviewData }) {
               className="border-t p-5 first:border-t-0 md:border-t-0 md:border-l md:first:border-l-0"
             >
               <div className="flex items-center justify-between">
-                <p className="text-xs font-medium text-foreground">
+                <p className="font-medium text-foreground text-xs">
                   {stat.label}
                 </p>
                 <HugeiconsIcon
@@ -103,7 +98,7 @@ export function ProjectsPage({ data }: { data: DashboardOverviewData }) {
                   className="size-4 text-primary"
                 />
               </div>
-              <p className="mt-5 font-heading text-base font-semibold text-foreground">
+              <p className="mt-5 font-heading font-semibold text-base text-foreground">
                 {stat.value}
               </p>
               <p className="mt-1 text-[10px] text-muted-foreground">
@@ -121,7 +116,13 @@ export function ProjectsPage({ data }: { data: DashboardOverviewData }) {
               Delivery status and financial progress across the portfolio.
             </CardDescription>
           </div>
-          <Button size="sm" nativeButton={false} render={<Link href="/dashboard/projects/new" />}>+ New project</Button>
+          <Button
+            size="sm"
+            nativeButton={false}
+            render={<Link href="/dashboard/projects/new" />}
+          >
+            + New project
+          </Button>
         </CardHeader>
         <CardContent>
           <ProjectsTable projects={projects} details={projectDetails} />

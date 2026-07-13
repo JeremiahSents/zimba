@@ -7,7 +7,6 @@ import {
   listSuppliers,
   ZimbaApiError,
 } from "@/lib/api/client"
-import { formatCurrency, formatPercent } from "@/lib/format"
 import {
   mockExpenses,
   mockProjects,
@@ -15,6 +14,7 @@ import {
   mockSuppliers,
   mockUtilizationChart,
 } from "@/lib/api/mock-data"
+import { formatCurrency, formatPercent } from "@/lib/format"
 import type {
   DashboardOverviewData,
   DashboardSource,
@@ -81,13 +81,13 @@ function buildDashboardOverviewData({
       acc.remaining += project.remaining
       return acc
     },
-    { budget: 0, remaining: 0, spent: 0 },
+    { budget: 0, remaining: 0, spent: 0 }
   )
   const averagePct =
     projects.length > 0
       ? Math.round(
           projects.reduce((total, project) => total + project.pct, 0) /
-            projects.length,
+            projects.length
         )
       : 0
 
@@ -152,7 +152,7 @@ function buildSpendChart(projects: ProjectDashboardResponse[]) {
 
 function buildUtilizationChart(
   projects: ProjectDashboardResponse[],
-  fallbackPct: number,
+  fallbackPct: number
 ) {
   if (projects.length === 0) {
     return [{ month: "Current", utilization: fallbackPct }]

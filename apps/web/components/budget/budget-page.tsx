@@ -1,10 +1,10 @@
-import { HugeiconsIcon } from "@hugeicons/react"
 import {
   AnalyticsUpIcon,
   MoneyBag02Icon,
   Wallet02Icon,
   WalletAdd01Icon,
 } from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
 
 import { Button } from "@workspace/ui/components/button"
 import {
@@ -15,9 +15,8 @@ import {
   CardTitle,
 } from "@workspace/ui/components/card"
 import { Progress } from "@workspace/ui/components/progress"
-
-import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { ProjectBudgetTable } from "@/components/budget/project-budget-table"
+import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { formatCurrency, formatPercent } from "@/lib/format"
 import type { DashboardOverviewData } from "@/lib/types"
 
@@ -68,7 +67,7 @@ export function BudgetPage({ data }: { data: DashboardOverviewData }) {
               className="border-t p-5 first:border-t-0 md:border-t-0 md:border-l md:first:border-l-0"
             >
               <div className="flex items-center justify-between gap-3">
-                <p className="text-xs font-medium text-foreground">
+                <p className="font-medium text-foreground text-xs">
                   {stat.label}
                 </p>
                 <span className="grid size-9 place-items-center rounded-full bg-primary/10 text-primary">
@@ -79,7 +78,7 @@ export function BudgetPage({ data }: { data: DashboardOverviewData }) {
                   />
                 </span>
               </div>
-              <p className="mt-5 font-heading text-base font-semibold tracking-tight text-foreground">
+              <p className="mt-5 font-heading font-semibold text-base text-foreground tracking-tight">
                 {stat.value}
               </p>
               <p className="mt-1 text-[10px] text-muted-foreground">
@@ -99,7 +98,7 @@ export function BudgetPage({ data }: { data: DashboardOverviewData }) {
                 Combined spend against the approved portfolio budget.
               </CardDescription>
             </div>
-            <p className="font-heading text-base font-semibold text-primary">
+            <p className="font-heading font-semibold text-base text-primary">
               {formatPercent(utilization)}
             </p>
           </div>

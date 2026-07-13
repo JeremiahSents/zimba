@@ -1,24 +1,22 @@
 "use client"
 
-import { useMemo, useState } from "react"
-import {
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  useReactTable,
-  type ColumnDef,
-  type SortingState,
-} from "@tanstack/react-table"
-import { HugeiconsIcon } from "@hugeicons/react"
 import {
   ArrowLeft01Icon,
   ArrowRight01Icon,
   Search01Icon,
   Sorting05Icon,
 } from "@hugeicons/core-free-icons"
-
+import { HugeiconsIcon } from "@hugeicons/react"
+import {
+  type ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  type SortingState,
+  useReactTable,
+} from "@tanstack/react-table"
 import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
 import {
@@ -29,6 +27,7 @@ import {
   TableHeader,
   TableRow,
 } from "@workspace/ui/components/table"
+import { useMemo, useState } from "react"
 
 import { formatCurrency, formatShortDate } from "@/lib/format"
 import type { ExpenseTableRow } from "@/lib/types"
@@ -98,7 +97,7 @@ export function ExpenseTable({ expenses }: { expenses: ExpenseTableRow[] }) {
             className="pl-9"
           />
         </div>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-muted-foreground text-xs">
           {totalRows} {totalRows === 1 ? "expense" : "expenses"}
         </p>
       </div>
@@ -168,7 +167,7 @@ export function ExpenseTable({ expenses }: { expenses: ExpenseTableRow[] }) {
       </Table>
 
       <div className="flex flex-col gap-3 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-xs text-muted-foreground">
+        <p className="text-muted-foreground text-xs">
           Page {table.getState().pagination.pageIndex + 1} of{" "}
           {Math.max(table.getPageCount(), 1)}
         </p>

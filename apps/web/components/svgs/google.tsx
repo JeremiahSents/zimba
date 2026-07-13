@@ -1,4 +1,4 @@
-import type { SVGProps } from "react";
+import type { SVGProps } from "react"
 
 const Google = (props: SVGProps<SVGSVGElement>) => (
   <svg
@@ -238,6 +238,6 @@ const Google = (props: SVGProps<SVGSVGElement>) => (
       />
     </g>
   </svg>
-);
+)
 
-export { Google };
+export { Google }

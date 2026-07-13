@@ -45,8 +45,8 @@ export function SuppliersPage({ data }: { data: DashboardOverviewData }) {
               key={label}
               className="border-t p-5 first:border-t-0 md:border-t-0 md:border-l md:first:border-l-0"
             >
-              <p className="text-xs font-medium text-foreground">{label}</p>
-              <p className="mt-5 font-heading text-base font-semibold text-foreground">
+              <p className="font-medium text-foreground text-xs">{label}</p>
+              <p className="mt-5 font-heading font-semibold text-base text-foreground">
                 {value}
               </p>
               <p className="mt-1 text-[10px] text-muted-foreground">{detail}</p>

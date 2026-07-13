@@ -85,12 +85,12 @@ function ExpenseMetric({
   return (
     <Card tone="keylime">
       <CardHeader className="pb-2">
-        <CardTitle className="text-xs font-medium text-muted-foreground">
+        <CardTitle className="font-medium text-muted-foreground text-xs">
           {label}
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="font-heading text-base font-semibold text-primary">
+        <div className="font-heading font-semibold text-base text-primary">
           {value}
         </div>
         <p className="mt-1 text-[10px] text-muted-foreground">{detail}</p>

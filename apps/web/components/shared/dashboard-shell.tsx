@@ -1,13 +1,11 @@
 "use client"
 
-import type { ReactNode } from "react"
-
-import { HugeiconsIcon } from "@hugeicons/react"
 import { BellIcon } from "@hugeicons/core-free-icons"
 
-import { Button } from "@workspace/ui/components/button"
+import { HugeiconsIcon } from "@hugeicons/react"
 import { Avatar, AvatarFallback } from "@workspace/ui/components/avatar"
-import { SidebarInset, SidebarProvider } from "@workspace/ui/components/sidebar"
+
+import { Button } from "@workspace/ui/components/button"
 import {
   Sheet,
   SheetContent,
@@ -16,6 +14,8 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@workspace/ui/components/sheet"
+import { SidebarInset, SidebarProvider } from "@workspace/ui/components/sidebar"
+import type { ReactNode } from "react"
 
 import {
   DashboardSidebar,
@@ -68,10 +68,12 @@ function DashboardTopbar({
             className="-ml-1 size-6 rounded-md hover:bg-muted hover:text-foreground [&_svg]:size-4"
             icon="open"
           />
-          <h1 className="font-heading text-xl leading-6 font-normal tracking-tight text-foreground">{title}</h1>
+          <h1 className="font-heading font-normal text-foreground text-xl leading-6 tracking-tight">
+            {title}
+          </h1>
         </div>
         {dataSource === "mock" && (
-          <p className="text-[10px] font-normal tracking-[0.08em] text-warning uppercase">
+          <p className="font-normal text-[10px] text-warning uppercase tracking-[0.08em]">
             Showing typed mock data until API credentials are configured.
           </p>
         )}
@@ -100,7 +102,7 @@ function DashboardTopbar({
           </SheetContent>
         </Sheet>
         <Avatar aria-label="Musa Byaruhanga" className="size-8">
-          <AvatarFallback className="bg-primary text-xs font-normal text-primary-foreground">
+          <AvatarFallback className="bg-primary font-normal text-primary-foreground text-xs">
             MB
           </AvatarFallback>
         </Avatar>

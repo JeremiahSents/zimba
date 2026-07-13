@@ -11,9 +11,9 @@ export function ActivityRow({
     <div className="flex items-center justify-between gap-4 py-2">
       <div className="min-w-0">
         <p className="truncate font-medium">{title}</p>
-        <p className="text-xs text-muted-foreground">{detail}</p>
+        <p className="text-muted-foreground text-xs">{detail}</p>
       </div>
-      <p className="shrink-0 text-sm font-semibold">{value}</p>
+      <p className="shrink-0 font-semibold text-sm">{value}</p>
     </div>
   )
 }
