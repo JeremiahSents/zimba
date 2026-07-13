@@ -2,12 +2,23 @@
 
 import {
   Analytics02Icon,
+  Calendar03Icon,
   FolderKanbanIcon,
   MoneyBag02Icon,
+  PlusSignIcon,
   Wallet02Icon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
+import { Button } from "@workspace/ui/components/button"
 import { Card } from "@workspace/ui/components/card"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@workspace/ui/components/select"
+import Link from "next/link"
 import { useEffect, useState } from "react"
 
 import { ProjectsSection } from "@/components/dashboard/projects-section"
@@ -20,6 +31,7 @@ import type { DashboardOverviewData } from "@/lib/types"
 
 export function DashboardPage({ data }: { data: DashboardOverviewData }) {
   const [projects, setProjects] = useState(data.projects)
+  const [period, setPeriod] = useState("30")
   useEffect(() => {
     const sync = () => setProjects(mergeStoredProjects(data.projects))
     sync()
@@ -71,14 +83,40 @@ export function DashboardPage({ data }: { data: DashboardOverviewData }) {
       headerGreeting="Good morning, Musa"
       subtitle=""
     >
-      <section className="flex items-baseline justify-between gap-3">
+      <section className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
         <h2 className="font-heading font-semibold text-base text-foreground tracking-tight">
           Overview
         </h2>
-        <p className="text-muted-foreground text-xs">Last 30 days</p>
+        <div className="flex items-center gap-2">
+          <Select
+            value={period}
+            onValueChange={(value) => setPeriod(value ?? "30")}
+          >
+            <SelectTrigger size="sm" className="min-w-32 px-3 text-xs">
+              <HugeiconsIcon
+                icon={Calendar03Icon}
+                strokeWidth={1.8}
+                className="size-3.5 text-muted-foreground"
+              />
+              <SelectValue placeholder="Select range" />
+            </SelectTrigger>
+            <SelectContent side="bottom" align="end" sideOffset={6}>
+              <SelectItem value="7">Last 7 days</SelectItem>
+              <SelectItem value="30">Last 30 days</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button
+            size="sm"
+            nativeButton={false}
+            render={<Link href="/dashboard/projects/new" />}
+          >
+            <HugeiconsIcon icon={PlusSignIcon} strokeWidth={2} />
+            Create project
+          </Button>
+        </div>
       </section>
 
-      <Card className="-mt-4 gap-0 py-0">
+      <Card className="-mt-2 gap-0 py-0">
         <div className="grid sm:grid-cols-2 lg:grid-cols-4">
           {stats.map((stat) => (
             <div
@@ -89,22 +127,20 @@ export function DashboardPage({ data }: { data: DashboardOverviewData }) {
                 <p className="font-medium text-muted-foreground text-xs">
                   {stat.label}
                 </p>
-                <span className="flex size-7 items-center justify-center rounded-md bg-primary/10">
-                  <HugeiconsIcon
-                    icon={stat.icon}
-                    strokeWidth={1.7}
-                    className="size-4 text-primary"
-                  />
-                </span>
+                <HugeiconsIcon
+                  icon={stat.icon}
+                  strokeWidth={1.7}
+                  className="size-4 text-primary"
+                />
               </div>
-              <p className="mt-3 font-heading font-semibold text-2xl tracking-tight">
+              <p className="mt-4 font-heading font-semibold text-xl tracking-tight">
                 {stat.value}
               </p>
               <p className="mt-2 flex items-center gap-1.5 text-[10px] text-muted-foreground">
                 <span
                   className={
                     stat.trendTone === "positive"
-                      ? "rounded-full bg-success-soft px-1.5 py-0.5 font-medium text-success"
+                      ? "rounded-full bg-green-50 px-1.5 py-0.5 font-medium text-green-600"
                       : "rounded-full bg-destructive/10 px-1.5 py-0.5 font-medium text-destructive"
                   }
                 >

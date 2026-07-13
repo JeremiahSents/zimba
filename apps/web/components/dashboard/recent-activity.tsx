@@ -8,7 +8,8 @@ import {
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import Link from "next/link"
-import { formatCurrency, formatShortDate } from "@/lib/format"
+
+import { formatCurrency } from "@/lib/format"
 import type { DashboardOverviewData } from "@/lib/types"
 
 const activityIcons = [
@@ -18,6 +19,19 @@ const activityIcons = [
   Analytics02Icon,
 ]
 
+const taskPillClasses: Record<string, string> = {
+  Concrete: "border-sky-500 text-sky-600",
+  Labour: "border-amber-500 text-amber-600",
+  Steel: "border-violet-500 text-violet-600",
+  Equipment: "border-teal-500 text-teal-600",
+}
+
+const statusPillClasses = {
+  confirmed: "border-green-500 text-green-600",
+  pending: "border-amber-500 text-amber-600",
+  rejected: "border-red-500 text-red-600",
+}
+
 export function RecentActivity({
   expenses,
 }: {
@@ -25,60 +39,87 @@ export function RecentActivity({
 }) {
   return (
     <section>
-      <div className="mb-3 flex items-center justify-between gap-4">
-        <h2 className="font-heading font-semibold text-base text-foreground">
-          Recent activity
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <h2 className="font-heading font-semibold text-base text-foreground tracking-tight">
+          Recent expenses
         </h2>
         <Link
-          href="/dashboard/analytics"
+          href="/dashboard/expenses"
           className="font-semibold text-primary text-xs transition-colors hover:text-primary/75"
         >
-          View analytics
+          View expenses
         </Link>
       </div>
       {expenses.length ? (
-        <div className="divide-y">
-          {expenses.map((expense, index) => (
-            <div
-              key={expense.id}
-              className="flex items-center gap-3 py-3 first:pt-0 last:pb-0"
-            >
-              <span className="grid size-8 shrink-0 place-items-center text-primary">
-                <HugeiconsIcon
-                  icon={
-                    activityIcons[index % activityIcons.length] ?? Invoice02Icon
-                  }
-                  strokeWidth={1.8}
-                  className="size-4"
-                />
-              </span>
-              <div className="min-w-0">
-                <p className="truncate font-medium text-sm">
-                  {expense.item_description}
-                </p>
-                <p className="mt-0.5 truncate text-[10px] text-muted-foreground">
-                  {expense.project_name} · {expense.supplier_name}
-                </p>
-              </div>
-              <div className="ml-auto shrink-0 text-right">
-                <p className="font-semibold text-sm">
-                  {formatCurrency(expense.amount)}
-                </p>
-                <p className="text-[10px] text-muted-foreground">
-                  {formatShortDate(expense.date)}
-                </p>
-              </div>
-            </div>
-          ))}
+        <div className="overflow-x-auto rounded-lg border">
+          <table className="w-full min-w-[34rem] text-left">
+            <thead className="border-b bg-muted/25 text-muted-foreground text-xs">
+              <tr>
+                <th className="px-4 py-2.5 font-medium">Expense</th>
+                <th className="border-l px-4 py-2.5 font-medium">
+                  Category & supplier
+                </th>
+                <th className="border-l px-4 py-2.5 text-right font-medium">
+                  Amount
+                </th>
+                <th className="border-l px-4 py-2.5 text-right font-medium">
+                  Status
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y">
+              {expenses.map((expense, index) => (
+                <tr key={expense.id} className="hover:bg-muted/35">
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-3">
+                      <HugeiconsIcon
+                        icon={
+                          activityIcons[index % activityIcons.length] ??
+                          Invoice02Icon
+                        }
+                        strokeWidth={1.8}
+                        className="size-4 shrink-0 text-primary"
+                      />
+                      <p className="truncate font-medium text-xs">
+                        {expense.item_description}
+                      </p>
+                    </div>
+                  </td>
+                  <td className="border-l px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`inline-flex rounded-lg border px-1.5 py-0.5 font-medium text-[10px] ${taskPillClasses[expense.task_name] ?? "border-muted-foreground/40 text-muted-foreground"}`}
+                      >
+                        {expense.task_name}
+                      </span>
+                      <span className="truncate text-muted-foreground text-xs">
+                        {expense.supplier_name}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="border-l px-4 py-3 text-right font-semibold text-xs">
+                    {formatCurrency(expense.amount)}
+                  </td>
+                  <td className="border-l px-4 py-3 text-right">
+                    <span
+                      className={`inline-flex rounded-lg border px-1.5 py-0.5 font-medium text-[10px] capitalize ${statusPillClasses[expense.status ?? "pending"]}`}
+                    >
+                      {expense.status ?? "pending"}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       ) : (
         <p className="py-4 text-center text-muted-foreground text-xs">
-          No activity yet.
+          No expenses yet.
         </p>
       )}
-      <div className="mt-3 flex justify-center border-t pt-3">
+      <div className="mt-4 flex justify-center border-t pt-3">
         <Link
-          href="/dashboard/analytics"
+          href="/dashboard/expenses"
           className="rounded-md border border-border px-3 py-1.5 font-semibold text-foreground text-xs transition-colors hover:bg-muted"
         >
           View more

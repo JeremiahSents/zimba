@@ -1,7 +1,8 @@
 "use client"
 
+import { Building01Icon, Location01Icon } from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
 import { Button } from "@workspace/ui/components/button"
-import { CardTitle } from "@workspace/ui/components/card"
 import { Progress } from "@workspace/ui/components/progress"
 import Link from "next/link"
 import { formatCurrency } from "@/lib/format"
@@ -14,8 +15,10 @@ export function ProjectsSection({
 }) {
   return (
     <section>
-      <div className="mb-2 flex flex-row items-start justify-between gap-4">
-        <CardTitle>Active projects</CardTitle>
+      <div className="mb-4 flex flex-row items-center justify-between gap-3">
+        <h2 className="font-heading font-semibold text-base text-foreground tracking-tight">
+          Active projects
+        </h2>
         <Button
           variant="ghost"
           size="sm"
@@ -46,28 +49,74 @@ export function ProjectsSection({
 }
 
 function ProjectRow({ project }: { project: ProjectDashboardResponse }) {
+  const budgetTone =
+    project.pct >= 80 ? "critical" : project.pct >= 60 ? "warning" : "healthy"
+  const remainingPercent = Math.min(Math.max(100 - project.pct, 0), 100)
+  const budgetStatus =
+    budgetTone === "critical"
+      ? "Budget critical"
+      : budgetTone === "warning"
+        ? "Budget watch"
+        : "Budget on track"
+  const toneClasses =
+    budgetTone === "critical"
+      ? {
+          pill: "bg-red-50 text-red-600",
+          progress: "[&_[data-slot=progress-indicator]]:bg-red-500",
+        }
+      : budgetTone === "warning"
+        ? {
+            pill: "bg-amber-50 text-amber-600",
+            progress: "[&_[data-slot=progress-indicator]]:bg-amber-500",
+          }
+        : {
+            pill: "bg-green-50 text-green-600",
+            progress: "[&_[data-slot=progress-indicator]]:bg-green-500",
+          }
+
   return (
-    <div className="grid gap-4 p-4 transition-colors hover:bg-muted/35 lg:grid-cols-[minmax(12rem,1.3fr)_minmax(15rem,1.5fr)_auto] lg:items-center">
+    <div className="grid gap-4 p-5 transition-colors hover:bg-muted/35 lg:grid-cols-[minmax(12rem,1.3fr)_minmax(15rem,1.5fr)_auto] lg:items-center">
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-2">
+          <HugeiconsIcon
+            icon={Building01Icon}
+            strokeWidth={1.8}
+            className="size-4 shrink-0 text-primary"
+          />
           <Link
             href={`/dashboard/projects/${project.id}`}
-            className="truncate font-semibold hover:text-primary"
+            className="truncate font-semibold text-sm hover:text-primary"
           >
             {project.name}
           </Link>
         </div>
-        <p className="mt-1 text-[10px] text-muted-foreground">
-          {project.location}
+        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-muted-foreground text-xs">
+          <span className="inline-flex items-center gap-1">
+            <HugeiconsIcon icon={Location01Icon} className="size-3.5" />
+            {project.location}
+          </span>
+          {project.plot_size && <span>{project.plot_size}</span>}
+        </div>
+        <p
+          className={`mt-2 inline-flex rounded-full px-2 py-0.5 font-medium text-[10px] ${toneClasses.pill}`}
+        >
+          {budgetStatus}
         </p>
       </div>
       <div>
         <div className="mb-2 flex justify-between gap-4 text-xs">
-          <span className="text-muted-foreground">Budget used</span>
-          <span className="font-semibold">{Math.round(project.pct)}%</span>
+          <span className="text-muted-foreground">Budget remaining</span>
+          <span
+            className={`rounded-full px-2 py-0.5 font-semibold text-[10px] ${toneClasses.pill}`}
+          >
+            {Math.round(project.pct)}%
+          </span>
         </div>
-        <Progress value={Math.min(Math.max(project.pct, 0), 100)} />
-        <div className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-[10px] text-muted-foreground">
+        <Progress
+          value={remainingPercent}
+          className={`[&_[data-slot=progress-indicator]]:ml-auto ${toneClasses.progress}`}
+        />
+        <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[10px] text-muted-foreground">
           <span>{formatCurrency(project.spent)} spent</span>
           <span>{formatCurrency(project.remaining)} left</span>
         </div>

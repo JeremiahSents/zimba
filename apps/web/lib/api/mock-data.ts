@@ -44,9 +44,9 @@ export const mockProjects: ProjectDashboardResponse[] = [
     location: "Entebbe",
     plot_size: "12 units",
     budget: 480_000_000,
-    spent: 218_000_000,
-    remaining: 262_000_000,
-    pct: 45,
+    spent: 336_000_000,
+    remaining: 144_000_000,
+    pct: 70,
   },
   {
     id: 3,
@@ -54,9 +54,9 @@ export const mockProjects: ProjectDashboardResponse[] = [
     location: "Kira",
     plot_size: "2 floors",
     budget: 320_000_000,
-    spent: 120_000_000,
-    remaining: 200_000_000,
-    pct: 38,
+    spent: 275_000_000,
+    remaining: 45_000_000,
+    pct: 86,
   },
 ]
 
@@ -69,6 +69,7 @@ export const mockExpenses: ExpenseTableRow[] = [
     supplier_name: "Prime Cement",
     item_description: "Cement and aggregates",
     amount: 18_400_000,
+    status: "confirmed",
   },
   {
     id: 2,
@@ -78,6 +79,7 @@ export const mockExpenses: ExpenseTableRow[] = [
     supplier_name: "Cash / labour",
     item_description: "Masonry team payout",
     amount: 9_800_000,
+    status: "pending",
   },
   {
     id: 3,
@@ -87,6 +89,7 @@ export const mockExpenses: ExpenseTableRow[] = [
     supplier_name: "Mirembe Steel",
     item_description: "Rebar delivery",
     amount: 14_200_000,
+    status: "rejected",
   },
   {
     id: 4,
@@ -96,6 +99,7 @@ export const mockExpenses: ExpenseTableRow[] = [
     supplier_name: "LiftPro Rentals",
     item_description: "Crane rental",
     amount: 7_600_000,
+    status: "confirmed",
   },
 ]
 

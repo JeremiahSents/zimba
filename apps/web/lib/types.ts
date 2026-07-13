@@ -88,6 +88,7 @@ export type DashboardSource = "api" | "mock"
 
 export type ExpenseTableRow = ExpenseResponse & {
   project_name: string
+  status?: "confirmed" | "pending" | "rejected"
 }
 
 export type DashboardStat = {

@@ -67,10 +67,10 @@ function DashboardTopbar({
         <div className="flex items-center gap-2">
           <DashboardSidebarToggle
             aria-label="Toggle dashboard navigation"
-            className="-ml-1 size-6 rounded-md hover:bg-muted hover:text-foreground [&_svg]:size-4"
+            className="-ml-1 size-9 rounded-md hover:bg-muted hover:text-foreground [&_svg]:size-5"
             icon="open"
           />
-          <h1 className="font-heading font-semibold text-foreground text-xl leading-6 tracking-tight">
+          <h1 className="font-heading font-medium text-foreground text-lg leading-6 tracking-tight">
             {headerGreeting ?? title}
           </h1>
         </div>

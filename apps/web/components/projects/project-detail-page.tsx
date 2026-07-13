@@ -131,6 +131,8 @@ export function ProjectDetailPage({
     .map((task) => ({ name: task.name, value: task.spent }))
     .filter((task) => task.value > 0)
   const utilisation = Math.round((spent / project.budget) * 100)
+  const budgetHealth = getBudgetHealth(utilisation)
+  const remainingPercent = Math.min(Math.max(100 - utilisation, 0), 100)
   const supplierOptions = Array.from(
     new Set([
       ...project.suppliers.map((supplier) => supplier.name),
@@ -215,45 +217,58 @@ export function ProjectDetailPage({
         />
       </div>
       <div className="mb-6 grid items-stretch gap-4 lg:grid-cols-[1.35fr_1fr]">
-        <Card className="h-full border-0 bg-[#1e5544] text-white">
+        <Card className="h-full">
           <CardContent className="flex h-full flex-col justify-between gap-6">
             <div>
               <div className="flex items-center justify-between gap-4">
-                <p className="font-semibold text-sm text-white/70 uppercase tracking-tight">
-                  Total budget
+                <p className="font-medium text-muted-foreground text-xs">
+                  Budget health
                 </p>
-                <p className="font-heading font-semibold text-xl tabular-nums tracking-tight">
-                  {formatCurrency(project.budget)}
-                </p>
+                <span
+                  className={`rounded-lg px-2 py-0.5 font-medium text-[10px] ${budgetHealth.pill}`}
+                >
+                  {budgetHealth.label}
+                </span>
               </div>
-              <div className="mt-5 h-2.5 overflow-hidden rounded-full bg-white/25">
-                <div
-                  className="h-full rounded-full bg-primary"
-                  style={{
-                    width: `${Math.min(Math.max(utilisation, 0), 100)}%`,
-                  }}
-                />
+              <div className="mt-5 flex items-end justify-between gap-4">
+                <div>
+                  <p className="font-heading font-semibold text-xl tabular-nums tracking-tight">
+                    {formatCurrency(Math.max(project.budget - spent, 0))}
+                  </p>
+                  <p className="mt-1 text-muted-foreground text-xs">
+                    remaining from {formatCurrency(project.budget)}
+                  </p>
+                </div>
+                <span
+                  className={`rounded-lg px-2 py-0.5 font-semibold text-xs ${budgetHealth.pill}`}
+                >
+                  {formatPercent(utilisation)} used
+                </span>
               </div>
+              <Progress
+                value={remainingPercent}
+                className={`mt-5 [&_[data-slot=progress-indicator]]:ml-auto ${budgetHealth.progress}`}
+              />
             </div>
-            <div className="grid grid-cols-2 gap-5">
+            <div className="grid grid-cols-2 gap-5 border-t pt-4">
               <div>
-                <p className="font-semibold text-white/70 text-xs uppercase">
+                <p className="font-medium text-muted-foreground text-xs">
                   Spent
                 </p>
-                <p className="mt-1 font-heading font-semibold text-2xl tabular-nums tracking-tight">
+                <p className="mt-1 font-heading font-semibold text-base tabular-nums tracking-tight">
                   {formatCurrency(spent)}
                 </p>
               </div>
               <div className="text-right">
-                <p className="font-semibold text-white/70 text-xs uppercase">
+                <p className="font-medium text-muted-foreground text-xs">
                   Remaining
                 </p>
-                <p className="mt-1 font-heading font-semibold text-2xl tabular-nums tracking-tight">
+                <p className="mt-1 font-heading font-semibold text-base tabular-nums tracking-tight">
                   {formatCurrency(Math.max(project.budget - spent, 0))}
                 </p>
               </div>
             </div>
-            <p className="text-sm text-white/70">
+            <p className="text-muted-foreground text-xs">
               {project.location}
               {project.plot_size ? ` · ${project.plot_size}` : ""}
             </p>
@@ -603,23 +618,32 @@ function TaskExpenseSection({
           const percentage = task.budget
             ? Math.min((taskSpent / task.budget) * 100, 100)
             : 0
+          const budgetHealth = getBudgetHealth(percentage)
+          const remainingPercent = Math.max(100 - percentage, 0)
           return (
             <div
               key={task.id}
-              className="grid items-center gap-3 rounded-xl border border-border/70 bg-card px-5 py-4 sm:grid-cols-[minmax(9rem,0.85fr)_minmax(10rem,1.6fr)_minmax(12rem,1fr)]"
+              className="grid items-center gap-3 rounded-lg border border-border/70 bg-card px-4 py-3 sm:grid-cols-[minmax(9rem,0.85fr)_minmax(10rem,1.6fr)_minmax(12rem,1fr)]"
             >
               <div className="flex min-w-0 items-center gap-3">
                 <span
                   className="size-3 shrink-0 rounded-full"
                   style={{ backgroundColor: colors[index % colors.length] }}
                 />
-                <span className="truncate font-medium text-sm">
-                  {task.name}
-                </span>
+                <div className="min-w-0">
+                  <span className="block truncate font-medium text-sm">
+                    {task.name}
+                  </span>
+                  <span
+                    className={`mt-1 inline-flex rounded-lg px-1.5 py-0.5 font-medium text-[10px] ${budgetHealth.pill}`}
+                  >
+                    {budgetHealth.label}
+                  </span>
+                </div>
               </div>
               <Progress
-                value={percentage}
-                className="h-2 bg-muted [&>div]:bg-primary"
+                value={remainingPercent}
+                className={`h-1.5 [&_[data-slot=progress-indicator]]:ml-auto ${budgetHealth.progress}`}
               />
               <p className="text-right text-muted-foreground text-xs tabular-nums">
                 <span className="font-semibold text-foreground">
@@ -633,6 +657,28 @@ function TaskExpenseSection({
       </div>
     </section>
   )
+}
+
+function getBudgetHealth(percentageUsed: number) {
+  if (percentageUsed >= 80) {
+    return {
+      label: "Critical",
+      pill: "bg-red-50 text-red-600",
+      progress: "[&_[data-slot=progress-indicator]]:bg-red-500",
+    }
+  }
+  if (percentageUsed >= 60) {
+    return {
+      label: "Watch",
+      pill: "bg-amber-50 text-amber-600",
+      progress: "[&_[data-slot=progress-indicator]]:bg-amber-500",
+    }
+  }
+  return {
+    label: "On track",
+    pill: "bg-green-50 text-green-600",
+    progress: "[&_[data-slot=progress-indicator]]:bg-green-500",
+  }
 }
 
 function Field({
