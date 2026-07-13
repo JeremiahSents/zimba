@@ -3,6 +3,7 @@
 import {
   FolderKanbanIcon,
   MoneyBag02Icon,
+  PlusSignIcon,
   TaskDone01Icon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
@@ -41,19 +42,22 @@ export function ProjectsPage({ data }: { data: DashboardOverviewData }) {
     {
       label: "Total projects",
       value: String(projects.length),
-      detail: "Across the current portfolio",
+      detail: "Portfolio",
+      pillClassName: "bg-blue-50 text-blue-700",
       icon: FolderKanbanIcon,
     },
     {
       label: "On track",
       value: String(onTrack),
-      detail: "Delivering within plan",
+      detail: `${onTrack} healthy`,
+      pillClassName: "bg-green-50 text-green-700",
       icon: TaskDone01Icon,
     },
     {
       label: "Portfolio value",
       value: formatCurrency(totalValue),
-      detail: "Total approved project budget",
+      detail: "Approved",
+      pillClassName: "bg-amber-50 text-amber-700",
       icon: MoneyBag02Icon,
     },
   ]
@@ -71,8 +75,8 @@ export function ProjectsPage({ data }: { data: DashboardOverviewData }) {
               key={stat.label}
               className="border-t p-5 first:border-t-0 md:border-t-0 md:border-l md:first:border-l-0"
             >
-              <div className="flex items-center justify-between">
-                <p className="font-medium text-foreground text-xs">
+              <div className="flex items-center justify-between gap-3">
+                <p className="font-medium text-muted-foreground text-xs">
                   {stat.label}
                 </p>
                 <HugeiconsIcon
@@ -81,10 +85,12 @@ export function ProjectsPage({ data }: { data: DashboardOverviewData }) {
                   className="size-4 text-primary"
                 />
               </div>
-              <p className="mt-5 font-heading font-semibold text-base text-foreground">
+              <p className="mt-4 font-heading font-semibold text-base text-foreground">
                 {stat.value}
               </p>
-              <p className="mt-1 text-[10px] text-muted-foreground">
+              <p
+                className={`mt-2 inline-flex rounded-lg px-1.5 py-0.5 font-medium text-[10px] ${stat.pillClassName}`}
+              >
                 {stat.detail}
               </p>
             </div>
@@ -104,7 +110,8 @@ export function ProjectsPage({ data }: { data: DashboardOverviewData }) {
             nativeButton={false}
             render={<Link href="/dashboard/projects/new" />}
           >
-            + New project
+            <HugeiconsIcon icon={PlusSignIcon} strokeWidth={2} />
+            Create project
           </Button>
         </CardHeader>
         <CardContent>

@@ -1,5 +1,12 @@
 "use client"
 
+import {
+  Analytics02Icon,
+  FolderKanbanIcon,
+  MoneyBag02Icon,
+  Wallet02Icon,
+} from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
 import { Button } from "@workspace/ui/components/button"
 import {
   Card,
@@ -37,16 +44,18 @@ import { useEffect, useState } from "react"
 import { Cell, Pie, PieChart } from "recharts"
 import { ProjectExpensesTable } from "@/components/projects/project-expenses-table"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
+import { DatePicker } from "@/components/shared/date-picker"
 import { formatCurrency, formatPercent, formatShortDate } from "@/lib/format"
 import { readStoredProjects } from "@/lib/project-store"
 import type { ProjectDetailResponse } from "@/lib/types"
 
-const colors = [
-  "var(--primary)",
-  "color-mix(in oklch, var(--primary) 78%, white)",
-  "color-mix(in oklch, var(--primary) 58%, white)",
-  "color-mix(in oklch, var(--primary) 40%, white)",
-  "color-mix(in oklch, var(--primary) 24%, white)",
+const colors = ["#86efac", "#fcd34d", "#fca5a5", "#93c5fd", "#d8b4fe"]
+const taskLegendClasses = [
+  "bg-green-50 text-green-700",
+  "bg-amber-50 text-amber-700",
+  "bg-red-50 text-red-700",
+  "bg-blue-50 text-blue-700",
+  "bg-violet-50 text-violet-700",
 ]
 const chartConfig: ChartConfig = {
   value: { label: "Spent", color: "var(--primary)" },
@@ -120,11 +129,30 @@ export function ProjectDetailPage({
     amount: "",
   })
   const [upcoming, setUpcoming] = useState([
-    { id: 1, name: "Cement Delivery", date: "2026-07-28", amount: 15_000_000 },
-    { id: 2, name: "Site Security", date: "2026-07-30", amount: 2_500_000 },
+    {
+      id: 1,
+      name: "Cement delivery",
+      contractor: "Prime Cement",
+      item: "50 bags of cement",
+      date: "2026-07-28",
+      amount: 15_000_000,
+    },
+    {
+      id: 2,
+      name: "Site security",
+      contractor: "SecureGuard Uganda",
+      item: "Monthly site coverage",
+      date: "2026-07-30",
+      amount: 2_500_000,
+    },
   ])
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false)
-  const [newUpcoming, setNewUpcoming] = useState({ name: "", amount: "" })
+  const [newUpcoming, setNewUpcoming] = useState({
+    title: "",
+    description: "",
+    amount: "",
+    date: new Date().toISOString().slice(0, 10),
+  })
 
   const spent = expenses.reduce((sum, expense) => sum + expense.amount, 0)
   const taskData = project.tasks
@@ -198,22 +226,30 @@ export function ProjectDetailPage({
         <Metric
           label="Total budget"
           value={formatCurrency(project.budget)}
-          detail="Baseline budget"
+          detail="Baseline"
+          icon="budget"
+          pillClassName="bg-blue-50 text-blue-700"
         />
         <Metric
           label="Total spent"
           value={formatCurrency(spent)}
-          detail="Across project expenses"
+          detail="Spent"
+          icon="spent"
+          pillClassName="bg-amber-50 text-amber-700"
         />
         <Metric
           label="Remaining budget"
           value={formatCurrency(Math.max(project.budget - spent, 0))}
           detail={`${formatPercent(Math.max(100 - utilisation, 0))} left`}
+          icon="remaining"
+          pillClassName="bg-green-50 text-green-700"
         />
         <Metric
           label="Utilization"
           value={formatPercent(utilisation)}
-          detail={utilisation <= 80 ? "On budget" : "Needs attention"}
+          detail={utilisation <= 80 ? "On track" : "Attention"}
+          icon="utilization"
+          pillClassName={budgetHealth.pill}
         />
       </div>
       <div className="mb-6 grid items-stretch gap-4 lg:grid-cols-[1.35fr_1fr]">
@@ -314,10 +350,8 @@ export function ProjectDetailPage({
                   className="flex min-w-0 items-center gap-3"
                 >
                   <span
-                    className="size-3 shrink-0 rounded-full"
-                    style={{ backgroundColor: colors[index % colors.length] }}
-                  />
-                  <span className="truncate font-medium text-xs">
+                    className={`truncate rounded-lg px-2 py-1 font-medium text-[10px] ${taskLegendClasses[index % taskLegendClasses.length]}`}
+                  >
                     {task.name}
                   </span>
                   <span className="ml-auto shrink-0 font-semibold text-muted-foreground text-xs">
@@ -330,7 +364,7 @@ export function ProjectDetailPage({
         </Card>
       </div>
 
-      <TaskExpenseSection tasks={project.tasks} expenses={expenses} />
+      <TaskExpenseSection tasks={project.tasks} />
 
       <div className="grid gap-6 lg:grid-cols-[1fr_350px]">
         <Card className="flex min-h-0 flex-col">
@@ -347,15 +381,13 @@ export function ProjectDetailPage({
 
         <Card className="flex h-full flex-col overflow-hidden">
           <CardHeader className="border-b">
-            <CardTitle>Next payments</CardTitle>
-            <CardDescription>
-              Planned costs that need to be scheduled or paid.
-            </CardDescription>
+            <CardTitle>Payment notifications</CardTitle>
+            <CardDescription>Payments awaiting review.</CardDescription>
             <CardAction>
               <Button
                 variant="outline"
                 size="icon"
-                className="h-8 w-8 shrink-0 rounded-full"
+                className="h-8 w-8 shrink-0 rounded-lg border-primary bg-primary text-primary-foreground hover:bg-primary/85 hover:text-primary-foreground"
                 onClick={() => setPaymentDialogOpen(true)}
               >
                 <svg
@@ -380,39 +412,25 @@ export function ProjectDetailPage({
               {upcoming.map((item) => (
                 <div
                   key={item.id}
-                  className="flex items-center gap-3 px-5 py-4 transition-colors hover:bg-muted/40"
+                  className="flex items-start gap-3 px-5 py-4 transition-colors hover:bg-muted/40"
                 >
-                  <span className="grid size-8 shrink-0 place-items-center rounded-full bg-primary/10 text-primary">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="15"
-                      height="15"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.8"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M8 2v4" />
-                      <path d="M16 2v4" />
-                      <rect width="18" height="18" x="3" y="4" rx="2" />
-                      <path d="M3 10h18" />
-                      <path d="M8 14h.01" />
-                      <path d="M12 14h.01" />
-                    </svg>
-                  </span>
-                  <div className="flex min-w-0 flex-1 items-baseline gap-2">
-                    <span className="truncate font-medium text-sm">
+                  <span className="mt-2 size-1.5 shrink-0 rounded-full bg-amber-500" />
+                  <div className="min-w-0 flex-1">
+                    <span className="block font-medium text-sm">
                       {item.name}
                     </span>
-                    <span className="shrink-0 text-[11px] text-muted-foreground">
+                    <p className="mt-1 text-muted-foreground text-xs leading-5">
+                      {item.contractor} · {item.item}
+                    </p>
+                  </div>
+                  <div className="shrink-0 text-right">
+                    <span className="block text-muted-foreground text-xs">
                       Due {formatShortDate(item.date)}
                     </span>
+                    <span className="mt-1 block font-semibold text-foreground text-sm">
+                      {formatCurrency(item.amount)}
+                    </span>
                   </div>
-                  <span className="shrink-0 font-semibold text-primary text-sm">
-                    {formatCurrency(item.amount)}
-                  </span>
                 </div>
               ))}
               {upcoming.length === 0 && (
@@ -435,13 +453,26 @@ export function ProjectDetailPage({
           </DialogHeader>
           <div className="mt-5 grid gap-4">
             <label className="grid gap-2">
-              <Label>Payment description</Label>
+              <Label>Title</Label>
               <Input
-                value={newUpcoming.name}
+                value={newUpcoming.title}
                 onChange={(event) =>
-                  setNewUpcoming({ ...newUpcoming, name: event.target.value })
+                  setNewUpcoming({ ...newUpcoming, title: event.target.value })
                 }
                 placeholder="e.g. Cement delivery"
+              />
+            </label>
+            <label className="grid gap-2">
+              <Label>Description</Label>
+              <Input
+                value={newUpcoming.description}
+                onChange={(event) =>
+                  setNewUpcoming({
+                    ...newUpcoming,
+                    description: event.target.value,
+                  })
+                }
+                placeholder="e.g. 50 bags of cement"
               />
             </label>
             <label className="grid gap-2">
@@ -455,31 +486,56 @@ export function ProjectDetailPage({
                 placeholder="0"
               />
             </label>
+            <label className="grid gap-2">
+              <Label>Payment date</Label>
+              <DatePicker
+                value={newUpcoming.date}
+                onChange={(date) => setNewUpcoming({ ...newUpcoming, date })}
+              />
+            </label>
           </div>
           <DialogFooter>
             <Button
               variant="outline"
               onClick={() => {
                 setPaymentDialogOpen(false)
-                setNewUpcoming({ name: "", amount: "" })
+                setNewUpcoming({
+                  title: "",
+                  description: "",
+                  amount: "",
+                  date: new Date().toISOString().slice(0, 10),
+                })
               }}
             >
               Cancel
             </Button>
             <Button
               onClick={() => {
-                if (!newUpcoming.name || !newUpcoming.amount) return
+                if (
+                  !newUpcoming.title ||
+                  !newUpcoming.description ||
+                  !newUpcoming.amount ||
+                  !newUpcoming.date
+                )
+                  return
                 setUpcoming([
                   {
                     id: Date.now(),
-                    name: newUpcoming.name,
+                    name: newUpcoming.title,
+                    contractor: "Contractor pending",
+                    item: newUpcoming.description,
                     amount: Number(newUpcoming.amount),
-                    date: new Date().toISOString().slice(0, 10),
+                    date: newUpcoming.date,
                   },
                   ...upcoming,
                 ])
                 setPaymentDialogOpen(false)
-                setNewUpcoming({ name: "", amount: "" })
+                setNewUpcoming({
+                  title: "",
+                  description: "",
+                  amount: "",
+                  date: new Date().toISOString().slice(0, 10),
+                })
               }}
             >
               Add payment
@@ -571,20 +627,40 @@ function Metric({
   label,
   value,
   detail,
+  icon,
+  pillClassName,
 }: {
   label: string
   value: string
   detail: string
+  icon: "budget" | "spent" | "remaining" | "utilization"
+  pillClassName: string
 }) {
+  const icons = {
+    budget: Wallet02Icon,
+    spent: MoneyBag02Icon,
+    remaining: FolderKanbanIcon,
+    utilization: Analytics02Icon,
+  }
+
   return (
     <Card className="flex flex-row items-center justify-between gap-4 p-5">
       <div>
-        <p className="font-medium text-muted-foreground text-xs">{label}</p>
+        <div className="flex items-center gap-2">
+          <p className="font-medium text-muted-foreground text-xs">{label}</p>
+          <HugeiconsIcon
+            icon={icons[icon]}
+            strokeWidth={1.8}
+            className="size-4 text-primary"
+          />
+        </div>
         <p className="mt-2 font-heading font-semibold text-xl tabular-nums tracking-tight">
           {value}
         </p>
       </div>
-      <p className="max-w-[80px] text-right font-medium text-[10px] text-muted-foreground">
+      <p
+        className={`shrink-0 whitespace-nowrap rounded-lg px-1.5 py-0.5 text-right font-medium text-[10px] ${pillClassName}`}
+      >
         {detail}
       </p>
     </Card>
@@ -593,10 +669,8 @@ function Metric({
 
 function TaskExpenseSection({
   tasks,
-  expenses,
 }: {
   tasks: ProjectDetailResponse["tasks"]
-  expenses: ProjectDetailResponse["expenses"]
 }) {
   return (
     <section className="mb-6">
@@ -612,9 +686,7 @@ function TaskExpenseSection({
       </div>
       <div className="grid gap-2">
         {tasks.map((task, index) => {
-          const taskSpent = expenses
-            .filter((expense) => expense.task_name === task.name)
-            .reduce((sum, expense) => sum + expense.amount, 0)
+          const taskSpent = task.spent
           const percentage = task.budget
             ? Math.min((taskSpent / task.budget) * 100, 100)
             : 0

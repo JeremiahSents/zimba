@@ -54,16 +54,26 @@ export function ProjectExpensesTable({
         accessorKey: "task_name",
         header: "Task",
         cell: ({ getValue }) => (
-          <span className="font-medium">{getValue<string>()}</span>
+          <span className="inline-flex rounded-lg border border-primary/50 px-2 py-0.5 font-medium text-primary text-xs">
+            {getValue<string>()}
+          </span>
         ),
       },
-      { accessorKey: "supplier_name", header: "Supplier" },
+      {
+        accessorKey: "supplier_name",
+        header: "Supplier",
+        cell: ({ getValue }) => (
+          <span className="inline-flex rounded-lg border border-muted-foreground/40 px-2 py-0.5 font-medium text-muted-foreground text-xs">
+            {getValue<string>()}
+          </span>
+        ),
+      },
       { accessorKey: "item_description", header: "Item" },
       {
         accessorKey: "amount",
         header: "Amount",
         cell: ({ getValue }) => (
-          <span className="font-semibold text-primary">
+          <span className="font-semibold text-foreground">
             {formatCurrency(getValue<number>())}
           </span>
         ),
@@ -114,7 +124,11 @@ export function ProjectExpensesTable({
                 <TableHead
                   key={header.id}
                   className={
-                    header.id === "amount" ? "px-5 text-right" : "px-5"
+                    header.id === "date"
+                      ? "px-5"
+                      : header.id === "amount"
+                        ? "border-l px-5 text-right"
+                        : "border-l px-5"
                   }
                 >
                   {header.isPlaceholder ? null : (
@@ -152,9 +166,11 @@ export function ProjectExpensesTable({
                   <TableCell
                     key={cell.id}
                     className={
-                      cell.column.id === "amount"
-                        ? "px-5 py-4 text-right text-sm"
-                        : "px-5 py-4 text-sm"
+                      cell.column.id === "date"
+                        ? "px-5 py-4 text-sm"
+                        : cell.column.id === "amount"
+                          ? "border-l px-5 py-4 text-right text-sm"
+                          : "border-l px-5 py-4 text-sm"
                     }
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}

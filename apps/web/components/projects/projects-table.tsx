@@ -12,7 +12,6 @@ import {
   type SortingState,
   useReactTable,
 } from "@tanstack/react-table"
-import { Badge } from "@workspace/ui/components/badge"
 import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
 import { Progress } from "@workspace/ui/components/progress"
@@ -72,16 +71,15 @@ export function ProjectsTable({
         header: "Status",
         accessorFn: (row) => details[row.id]?.status ?? "On track",
         cell: ({ row }) => (
-          <Badge
-            variant="outline"
+          <span
             className={
               details[row.original.id]?.status === "At risk"
-                ? "bg-warning-soft text-warning"
-                : "bg-success-soft text-success"
+                ? "inline-flex rounded-lg bg-red-50 px-1.5 py-0.5 font-medium text-[10px] text-red-600"
+                : "inline-flex rounded-lg bg-green-50 px-1.5 py-0.5 font-medium text-[10px] text-green-600"
             }
           >
             {details[row.original.id]?.status ?? "On track"}
-          </Badge>
+          </span>
         ),
       },
       {
@@ -99,8 +97,25 @@ export function ProjectsTable({
         header: "Spend",
         cell: ({ row }) => (
           <div className="flex items-center gap-2">
-            <Progress value={row.original.pct} className="w-20" />
-            <span className="font-medium text-xs">
+            <Progress
+              value={Math.max(100 - row.original.pct, 0)}
+              className={`w-20 [&_[data-slot=progress-indicator]]:ml-auto ${
+                row.original.pct >= 80
+                  ? "[&_[data-slot=progress-indicator]]:bg-red-500"
+                  : row.original.pct >= 60
+                    ? "[&_[data-slot=progress-indicator]]:bg-amber-500"
+                    : "[&_[data-slot=progress-indicator]]:bg-green-500"
+              }`}
+            />
+            <span
+              className={`rounded-lg px-1.5 py-0.5 font-medium text-[10px] ${
+                row.original.pct >= 80
+                  ? "bg-red-50 text-red-600"
+                  : row.original.pct >= 60
+                    ? "bg-amber-50 text-amber-600"
+                    : "bg-green-50 text-green-600"
+              }`}
+            >
               {formatPercent(row.original.pct)}
             </span>
           </div>
@@ -139,7 +154,10 @@ export function ProjectsTable({
           {table.getHeaderGroups().map((group) => (
             <TableRow key={group.id}>
               {group.headers.map((header) => (
-                <TableHead key={header.id}>
+                <TableHead
+                  key={header.id}
+                  className={header.id === "name" ? undefined : "border-l"}
+                >
                   <Button
                     variant="ghost"
                     size="xs"
@@ -168,7 +186,10 @@ export function ProjectsTable({
           {table.getRowModel().rows.map((row) => (
             <TableRow key={row.id}>
               {row.getVisibleCells().map((cell) => (
-                <TableCell key={cell.id}>
+                <TableCell
+                  key={cell.id}
+                  className={cell.column.id === "name" ? undefined : "border-l"}
+                >
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </TableCell>
               ))}

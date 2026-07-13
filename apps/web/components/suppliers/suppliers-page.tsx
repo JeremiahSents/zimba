@@ -1,10 +1,17 @@
 import {
+  MoneyBag02Icon,
+  TaskDone01Icon,
+  UserGroupIcon,
+} from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
+import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components/card"
+
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { SupplierTable } from "@/components/suppliers/supplier-table"
 import { formatCurrency } from "@/lib/format"
@@ -20,18 +27,29 @@ export function SuppliersPage({ data }: { data: DashboardOverviewData }) {
     data.suppliers[0]
   )
   const stats = [
-    [
-      "Active suppliers",
-      String(data.suppliers.length),
-      "Currently linked to projects",
-    ],
-    ["Paid this month", formatCurrency(totalPaid), "Across all suppliers"],
-    [
-      "Top supplier",
-      topSupplier?.name ?? "—",
-      topSupplier ? formatCurrency(topSupplier.amount) : "No payments yet",
-    ],
+    {
+      label: "Active suppliers",
+      value: String(data.suppliers.length),
+      detail: "Active",
+      icon: UserGroupIcon,
+      pillClassName: "bg-green-50 text-green-700",
+    },
+    {
+      label: "Paid this month",
+      value: formatCurrency(totalPaid),
+      detail: "Payments",
+      icon: MoneyBag02Icon,
+      pillClassName: "bg-amber-50 text-amber-700",
+    },
+    {
+      label: "Top supplier",
+      value: topSupplier?.name ?? "—",
+      detail: topSupplier ? formatCurrency(topSupplier.amount) : "No payments",
+      icon: TaskDone01Icon,
+      pillClassName: "bg-blue-50 text-blue-700",
+    },
   ]
+
   return (
     <DashboardShell
       title="Suppliers"
@@ -40,16 +58,29 @@ export function SuppliersPage({ data }: { data: DashboardOverviewData }) {
     >
       <Card className="gap-0 py-0">
         <div className="grid md:grid-cols-3">
-          {stats.map(([label, value, detail]) => (
+          {stats.map((stat) => (
             <div
-              key={label}
+              key={stat.label}
               className="border-t p-5 first:border-t-0 md:border-t-0 md:border-l md:first:border-l-0"
             >
-              <p className="font-medium text-foreground text-xs">{label}</p>
-              <p className="mt-5 font-heading font-semibold text-base text-foreground">
-                {value}
+              <div className="flex items-center justify-between gap-3">
+                <p className="font-medium text-muted-foreground text-xs">
+                  {stat.label}
+                </p>
+                <HugeiconsIcon
+                  icon={stat.icon}
+                  strokeWidth={1.6}
+                  className="size-4 text-primary"
+                />
+              </div>
+              <p className="mt-4 font-heading font-semibold text-base text-foreground">
+                {stat.value}
               </p>
-              <p className="mt-1 text-[10px] text-muted-foreground">{detail}</p>
+              <p
+                className={`mt-2 inline-flex rounded-lg px-1.5 py-0.5 font-medium text-[10px] ${stat.pillClassName}`}
+              >
+                {stat.detail}
+              </p>
             </div>
           ))}
         </div>

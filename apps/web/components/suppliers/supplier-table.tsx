@@ -12,7 +12,6 @@ import {
   type SortingState,
   useReactTable,
 } from "@tanstack/react-table"
-import { Badge } from "@workspace/ui/components/badge"
 import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
 import {
@@ -44,11 +43,22 @@ export function SupplierTable({
       {
         accessorKey: "category",
         header: "Category",
-        cell: ({ getValue }) => (
-          <span className="text-muted-foreground capitalize">
-            {getValue<string>()}
-          </span>
-        ),
+        cell: ({ getValue }) => {
+          const category = getValue<string>()
+          const categoryClasses = {
+            materials: "border-blue-500 text-blue-600",
+            labour: "border-amber-500 text-amber-600",
+            equipment: "border-violet-500 text-violet-600",
+            services: "border-teal-500 text-teal-600",
+          }
+          return (
+            <span
+              className={`inline-flex rounded-lg border px-1.5 py-0.5 font-medium text-[10px] capitalize ${categoryClasses[category as keyof typeof categoryClasses] ?? "border-muted-foreground/40 text-muted-foreground"}`}
+            >
+              {category}
+            </span>
+          )
+        },
       },
       { accessorKey: "payments", header: "Payments" },
       {
@@ -63,7 +73,11 @@ export function SupplierTable({
       {
         id: "status",
         header: "Status",
-        cell: () => <Badge variant="success">Active</Badge>,
+        cell: () => (
+          <span className="inline-flex rounded-lg border border-green-500 px-1.5 py-0.5 font-medium text-[10px] text-green-600">
+            Active
+          </span>
+        ),
         enableSorting: false,
       },
     ],
@@ -99,7 +113,10 @@ export function SupplierTable({
           {table.getHeaderGroups().map((group) => (
             <TableRow key={group.id}>
               {group.headers.map((header) => (
-                <TableHead key={header.id}>
+                <TableHead
+                  key={header.id}
+                  className={header.id === "name" ? undefined : "border-l"}
+                >
                   <Button
                     variant="ghost"
                     size="xs"
@@ -128,7 +145,10 @@ export function SupplierTable({
           {table.getRowModel().rows.map((row) => (
             <TableRow key={row.id}>
               {row.getVisibleCells().map((cell) => (
-                <TableCell key={cell.id}>
+                <TableCell
+                  key={cell.id}
+                  className={cell.column.id === "name" ? undefined : "border-l"}
+                >
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </TableCell>
               ))}
