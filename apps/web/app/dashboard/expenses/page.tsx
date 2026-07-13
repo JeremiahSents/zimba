@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 
-import { ExpensesPage } from "@/components/dashboard/features/expenses/expenses-page"
-import { getDashboardOverviewData } from "@/lib/zimba/dashboard-data"
+import { ExpensesPage } from "@/components/expenses/expenses-page"
+import { getDashboardOverviewData } from "@/lib/api/dashboard"
 
 export const dynamic = "force-dynamic"
 

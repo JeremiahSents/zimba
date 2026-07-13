@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 
-import { TeamPage } from "@/components/dashboard/features/team/team-page"
+import { TeamPage } from "@/components/team/team-page"
 
 export const metadata: Metadata = {
   title: "Team | Zimba",

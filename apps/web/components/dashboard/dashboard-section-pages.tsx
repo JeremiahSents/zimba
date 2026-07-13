@@ -1,7 +1,0 @@
-export { BudgetPage } from "@/components/dashboard/features/budget/budget-page"
-export { ExpensesPage } from "@/components/dashboard/features/expenses/expenses-page"
-export { ProjectsPage } from "@/components/dashboard/features/projects/projects-page"
-export { ReportsPage } from "@/components/dashboard/features/reports/reports-page"
-export { SettingsPage } from "@/components/dashboard/features/settings/settings-page"
-export { SuppliersPage } from "@/components/dashboard/features/suppliers/suppliers-page"
-export { TeamPage } from "@/components/dashboard/features/team/team-page"

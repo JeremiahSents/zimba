@@ -1,4 +1,4 @@
-import { ProjectCreatePage } from "@/components/dashboard/features/projects/project-create-page"
+import { ProjectCreatePage } from "@/components/projects/project-create-page"
 
 export default function Page() {
   return <ProjectCreatePage />

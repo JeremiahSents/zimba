@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 
-import { AnalyticsPage } from "@/components/dashboard/features/analytics/analytics-page"
-import { getDashboardOverviewData } from "@/lib/zimba/dashboard-data"
+import { AnalyticsPage } from "@/components/analytics/analytics-page"
+import { getDashboardOverviewData } from "@/lib/api/dashboard"
 
 export const dynamic = "force-dynamic"
 
