@@ -12,7 +12,8 @@
       "!**/node_modules",
       "!**/dist",
       "!**/.turbo",
-      "!**/pnpm-lock.yaml"
+      "!**/pnpm-lock.yaml",
+      "!apps/web/app/icon0.svg"
     ]
   },
   "formatter": {
@@ -82,6 +83,9 @@
           },
           "security": {
             "noDangerouslySetInnerHtml": "off"
+          },
+          "correctness": {
+            "useExhaustiveDependencies": "off"
           },
           "suspicious": {
             "noDocumentCookie": "off",

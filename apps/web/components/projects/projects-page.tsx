@@ -18,27 +18,10 @@ import Link from "next/link"
 import { useEffect, useState } from "react"
 import { ProjectsTable } from "@/components/projects/projects-table"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
+import { mockProjectListDetails } from "@/lib/api/mock-data"
 import { formatCurrency } from "@/lib/format"
 import { mergeStoredProjects } from "@/lib/project-store"
 import type { DashboardOverviewData } from "@/lib/types"
-
-export const projectDetails = {
-  1: {
-    client: "Zimba Developments",
-    timeline: "Jan – Nov 2026",
-    status: "On track" as const,
-  },
-  2: {
-    client: "Lakeview Living",
-    timeline: "Mar – Dec 2026",
-    status: "On track" as const,
-  },
-  3: {
-    client: "Kira Commercial",
-    timeline: "May 2026 – Feb 2027",
-    status: "At risk" as const,
-  },
-}
 
 export function ProjectsPage({ data }: { data: DashboardOverviewData }) {
   const [projects, setProjects] = useState(data.projects)
@@ -51,8 +34,8 @@ export function ProjectsPage({ data }: { data: DashboardOverviewData }) {
   const totalValue = projects.reduce((sum, project) => sum + project.budget, 0)
   const onTrack = projects.filter(
     (project) =>
-      projectDetails[project.id as keyof typeof projectDetails]?.status ===
-      "On track"
+      mockProjectListDetails[project.id as keyof typeof mockProjectListDetails]
+        ?.status === "On track"
   ).length
   const stats = [
     {
@@ -125,7 +108,7 @@ export function ProjectsPage({ data }: { data: DashboardOverviewData }) {
           </Button>
         </CardHeader>
         <CardContent>
-          <ProjectsTable projects={projects} details={projectDetails} />
+          <ProjectsTable projects={projects} details={mockProjectListDetails} />
         </CardContent>
       </Card>
     </DashboardShell>

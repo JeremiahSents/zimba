@@ -31,14 +31,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@workspace/ui/components/select"
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from "@workspace/ui/components/sheet"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { useEffect, useState } from "react"
@@ -481,15 +473,15 @@ export function ProjectDetailPage({
         </DialogContent>
       </Dialog>
 
-      <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent>
-          <SheetHeader>
-            <SheetTitle>Add an expense</SheetTitle>
-            <SheetDescription>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add an expense</DialogTitle>
+            <DialogDescription>
               Log a payment for {project.name}.
-            </SheetDescription>
-          </SheetHeader>
-          <form onSubmit={submit} className="grid gap-4 px-6">
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={submit} className="grid gap-4">
             <Field
               label="Expense name"
               value={form.item_description}
@@ -543,12 +535,19 @@ export function ProjectDetailPage({
                 </SelectContent>
               </Select>
             </label>
-            <SheetFooter className="px-0">
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setOpen(false)}
+              >
+                Cancel
+              </Button>
               <Button type="submit">Save expense</Button>
-            </SheetFooter>
+            </DialogFooter>
           </form>
-        </SheetContent>
-      </Sheet>
+        </DialogContent>
+      </Dialog>
     </DashboardShell>
   )
 }
@@ -660,18 +659,5 @@ function Field({
         placeholder={placeholder}
       />
     </label>
-  )
-}
-
-function UtilBar({ value, dark = false }: { value: number; dark?: boolean }) {
-  return (
-    <div
-      className={`mt-7 h-3 w-full overflow-hidden rounded-full ${dark ? "bg-white/20" : "bg-muted"}`}
-    >
-      <div
-        className={`h-full rounded-full transition-all ${dark ? "bg-accent" : "bg-primary"}`}
-        style={{ width: `${Math.min(Math.max(value, 0), 100)}%` }}
-      />
-    </div>
   )
 }

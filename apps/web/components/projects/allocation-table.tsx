@@ -21,7 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from "@workspace/ui/components/table"
-import { useMemo, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 
 export type Allocation = {
   id: number
@@ -59,21 +59,29 @@ type AllocationTableProps = {
 export function AllocationTable({ rows, onRowsChange }: AllocationTableProps) {
   const [editingId, setEditingId] = useState<number | null>(null)
 
-  const updateRow = (id: number, field: keyof Allocation, value: string) =>
-    onRowsChange((current) =>
-      current.map((row) => (row.id === id ? { ...row, [field]: value } : row))
-    )
+  const updateRow = useCallback(
+    (id: number, field: keyof Allocation, value: string) =>
+      onRowsChange((current) =>
+        current.map((row) => (row.id === id ? { ...row, [field]: value } : row))
+      ),
+    [onRowsChange]
+  )
 
-  const removeRow = (id: number) =>
-    onRowsChange((current) => current.filter((item) => item.id !== id))
+  const removeRow = useCallback(
+    (id: number) =>
+      onRowsChange((current) => current.filter((item) => item.id !== id)),
+    [onRowsChange]
+  )
 
-  const addRow = () =>
-    onRowsChange((current) => [
-      ...current,
-      { id: Date.now(), name: "", quantity: "", unitCost: "" },
-    ])
+  const addRow = useCallback(
+    () =>
+      onRowsChange((current) => [
+        ...current,
+        { id: Date.now(), name: "", quantity: "", unitCost: "" },
+      ]),
+    [onRowsChange]
+  )
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies(updateRow): stable per-render closure over onRowsChange
   const columns = useMemo<ColumnDef<Allocation>[]>(
     () => [
       {
@@ -141,7 +149,7 @@ export function AllocationTable({ rows, onRowsChange }: AllocationTableProps) {
         ),
       },
     ],
-    [editingId]
+    [editingId, removeRow, updateRow]
   )
 
   const table = useReactTable({

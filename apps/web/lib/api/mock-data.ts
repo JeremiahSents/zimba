@@ -9,6 +9,24 @@ import type {
   UtilizationChartPoint,
 } from "@/lib/types"
 
+export const mockProjectListDetails = {
+  1: {
+    client: "Zimba Developments",
+    timeline: "Jan – Nov 2026",
+    status: "On track" as const,
+  },
+  2: {
+    client: "Lakeview Living",
+    timeline: "Mar – Dec 2026",
+    status: "On track" as const,
+  },
+  3: {
+    client: "Kira Commercial",
+    timeline: "May 2026 – Feb 2027",
+    status: "At risk" as const,
+  },
+}
+
 export const mockProjects: ProjectDashboardResponse[] = [
   {
     id: 1,
