@@ -7,7 +7,6 @@ import {
   LayoutAlignLeftIcon,
   LayoutAlignRightIcon,
   MoneyBag02Icon,
-  Settings02Icon,
   UserGroupIcon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
@@ -84,19 +83,6 @@ export function DashboardSidebar() {
 
       <SidebarFooter className="p-3 pt-2 group-data-[collapsible=icon]:px-0">
         <SidebarMenu className="gap-2">
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              tooltip="Settings"
-              isActive={pathname.startsWith("/dashboard/settings")}
-              className="h-10 rounded-md px-3 font-normal text-[13px] text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground data-active:bg-primary/10 data-active:text-primary group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:grid group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:place-items-center group-data-[collapsible=icon]:p-0! group-data-[collapsible=icon]:[&_span]:hidden [&_svg]:size-4! [&_svg]:text-sidebar-foreground/45 data-active:[&_svg]:text-primary"
-              render={
-                <Link href="/dashboard/settings">
-                  <HugeiconsIcon icon={Settings02Icon} strokeWidth={2} />
-                  <span>Settings</span>
-                </Link>
-              }
-            />
-          </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton
               tooltip="Sign out"

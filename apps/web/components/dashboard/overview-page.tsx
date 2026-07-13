@@ -3,14 +3,11 @@
 import {
   Analytics02Icon,
   FolderKanbanIcon,
-  Invoice02Icon,
   MoneyBag02Icon,
   Wallet02Icon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Button } from "@workspace/ui/components/button"
 import { Card } from "@workspace/ui/components/card"
-import Link from "next/link"
 import { useEffect, useState } from "react"
 
 import { ProjectsSection } from "@/components/dashboard/projects-section"
@@ -37,52 +34,51 @@ export function DashboardPage({ data }: { data: DashboardOverviewData }) {
       label: "Active projects",
       value: String(projects.length),
       icon: FolderKanbanIcon,
+      trend: "+12%",
+      trendLabel: "from last month",
+      trendTone: "positive",
     },
     {
       label: "Needs attention",
       value: String(attentionItems.length),
       icon: Analytics02Icon,
+      trend: "-8%",
+      trendLabel: "from last month",
+      trendTone: "positive",
     },
     {
       label: "Total budget",
       value: formatCurrency(totalBudget),
       icon: Wallet02Icon,
+      trend: "+5.4%",
+      trendLabel: "from last month",
+      trendTone: "positive",
     },
     {
       label: "Total spent",
       value: formatCurrency(totalSpent),
       icon: MoneyBag02Icon,
+      trend: "+2.1%",
+      trendLabel: "from last month",
+      trendTone: "negative",
     },
   ]
 
   return (
-    <DashboardShell title="Home" dataSource={data.source} subtitle="">
-      <section className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h2 className="font-heading font-semibold text-foreground text-xl tracking-tight">
-            Good morning, Musa
-          </h2>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button
-            size="sm"
-            nativeButton={false}
-            render={<Link href="/dashboard/expenses" />}
-          >
-            <HugeiconsIcon icon={Invoice02Icon} strokeWidth={2} />
-            Add expense
-          </Button>
-          <Button
-            size="sm"
-            nativeButton={false}
-            render={<Link href="/dashboard/projects/new" />}
-          >
-            + New project
-          </Button>
-        </div>
+    <DashboardShell
+      title="Home"
+      dataSource={data.source}
+      headerGreeting="Good morning, Musa"
+      subtitle=""
+    >
+      <section className="flex items-baseline justify-between gap-3">
+        <h2 className="font-heading font-semibold text-base text-foreground tracking-tight">
+          Overview
+        </h2>
+        <p className="text-muted-foreground text-xs">Last 30 days</p>
       </section>
 
-      <Card className="gap-0 py-0">
+      <Card className="-mt-4 gap-0 py-0">
         <div className="grid sm:grid-cols-2 lg:grid-cols-4">
           {stats.map((stat) => (
             <div
@@ -93,14 +89,28 @@ export function DashboardPage({ data }: { data: DashboardOverviewData }) {
                 <p className="font-medium text-muted-foreground text-xs">
                   {stat.label}
                 </p>
-                <HugeiconsIcon
-                  icon={stat.icon}
-                  strokeWidth={1.7}
-                  className="size-4 text-primary"
-                />
+                <span className="flex size-7 items-center justify-center rounded-md bg-primary/10">
+                  <HugeiconsIcon
+                    icon={stat.icon}
+                    strokeWidth={1.7}
+                    className="size-4 text-primary"
+                  />
+                </span>
               </div>
-              <p className="mt-4 font-heading font-semibold text-base tracking-tight">
+              <p className="mt-3 font-heading font-semibold text-2xl tracking-tight">
                 {stat.value}
+              </p>
+              <p className="mt-2 flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                <span
+                  className={
+                    stat.trendTone === "positive"
+                      ? "rounded-full bg-success-soft px-1.5 py-0.5 font-medium text-success"
+                      : "rounded-full bg-destructive/10 px-1.5 py-0.5 font-medium text-destructive"
+                  }
+                >
+                  {stat.trend}
+                </span>
+                {stat.trendLabel}
               </p>
             </div>
           ))}

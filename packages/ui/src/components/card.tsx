@@ -1,18 +1,31 @@
 import { cn } from "@workspace/ui/lib/utils"
 import type * as React from "react"
 
+const cardVariants = {
+  outline: "border border-border bg-card shadow-xs",
+  elevated: "border border-border/60 bg-card shadow-md",
+  ghost: "border border-transparent bg-transparent shadow-none",
+} as const
+
 function Card({
   className,
   size = "default",
+  variant = "outline",
   tone: _tone,
   ...props
-}: React.ComponentProps<"div"> & { size?: "default" | "sm"; tone?: string }) {
+}: React.ComponentProps<"div"> & {
+  size?: "default" | "sm"
+  variant?: keyof typeof cardVariants
+  tone?: string
+}) {
   return (
     <div
       data-slot="card"
       data-size={size}
+      data-variant={variant}
       className={cn(
-        "group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-2xl border border-border bg-card py-(--card-spacing) text-card-foreground text-xs/relaxed [--card-spacing:--spacing(5)] has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(4)] *:[img:first-child]:rounded-t-2xl *:[img:last-child]:rounded-b-2xl",
+        "group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-xl py-(--card-spacing) text-card-foreground text-xs/relaxed [--card-spacing:--spacing(5)] has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(4)] *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
+        cardVariants[variant],
         className
       )}
       {...props}

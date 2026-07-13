@@ -1,6 +1,6 @@
 "use client"
 
-import { BellIcon } from "@hugeicons/core-free-icons"
+import { BellIcon, Settings02Icon } from "@hugeicons/core-free-icons"
 
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Avatar, AvatarFallback } from "@workspace/ui/components/avatar"
@@ -15,6 +15,7 @@ import {
   SheetTrigger,
 } from "@workspace/ui/components/sheet"
 import { SidebarInset, SidebarProvider } from "@workspace/ui/components/sidebar"
+import Link from "next/link"
 import type { ReactNode } from "react"
 
 import {
@@ -26,11 +27,12 @@ type DashboardShellProps = {
   title: string
   subtitle: string
   dataSource?: "api" | "mock"
+  headerGreeting?: string
   children: ReactNode
 }
 
 export function DashboardShell({
-  dataSource,
+  headerGreeting,
   title,
   children,
 }: DashboardShellProps) {
@@ -39,7 +41,7 @@ export function DashboardShell({
       <SidebarProvider className="flex min-h-svh w-full bg-transparent">
         <DashboardSidebar />
         <SidebarInset className="relative z-10 flex min-w-0 flex-1 flex-col border-t border-l bg-background">
-          <DashboardTopbar title={title} dataSource={dataSource} />
+          <DashboardTopbar title={title} headerGreeting={headerGreeting} />
           <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-5 sm:px-7 sm:py-6 lg:px-10 lg:py-8">
             {children}
           </div>
@@ -53,10 +55,10 @@ export function DashboardShell({
 }
 
 function DashboardTopbar({
-  dataSource,
+  headerGreeting,
   title,
 }: {
-  dataSource?: "api" | "mock"
+  headerGreeting?: string
   title: string
 }) {
   return (
@@ -68,15 +70,10 @@ function DashboardTopbar({
             className="-ml-1 size-6 rounded-md hover:bg-muted hover:text-foreground [&_svg]:size-4"
             icon="open"
           />
-          <h1 className="font-heading font-normal text-foreground text-xl leading-6 tracking-tight">
-            {title}
+          <h1 className="font-heading font-semibold text-foreground text-xl leading-6 tracking-tight">
+            {headerGreeting ?? title}
           </h1>
         </div>
-        {dataSource === "mock" && (
-          <p className="font-normal text-[10px] text-warning uppercase tracking-[0.08em]">
-            Showing typed mock data until API credentials are configured.
-          </p>
-        )}
       </div>
 
       <div className="flex items-center gap-2">
@@ -101,6 +98,20 @@ function DashboardTopbar({
             </SheetHeader>
           </SheetContent>
         </Sheet>
+        <Button
+          variant="ghost"
+          size="icon"
+          nativeButton={false}
+          render={
+            <Link href="/dashboard/settings" aria-label="Open settings" />
+          }
+        >
+          <HugeiconsIcon
+            icon={Settings02Icon}
+            strokeWidth={2}
+            className="size-4"
+          />
+        </Button>
         <Avatar aria-label="Musa Byaruhanga" className="size-8">
           <AvatarFallback className="bg-primary font-normal text-primary-foreground text-xs">
             MB
