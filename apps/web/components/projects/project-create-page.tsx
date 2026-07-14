@@ -38,7 +38,6 @@ export function ProjectCreatePage() {
   const [files, setFiles] = useState<File[]>([])
   const [draftBudget, setDraftBudget] = useState(0)
   const [error, setError] = useState("")
-  const [draftReady, setDraftReady] = useState(false)
 
   useEffect(() => {
     const draft = readProjectCreateDraft()
@@ -46,20 +45,17 @@ export function ProjectCreatePage() {
       setDetails(draft.details)
       setDraftBudget(initialAllocationTotal(draft.allocations))
     }
-    setDraftReady(true)
   }, [])
 
-  useEffect(() => {
-    if (!draftReady) return
+  const updateDetail = (field: keyof ProjectDetails, value: string) => {
+    const nextDetails = { ...details, [field]: value }
+    setDetails(nextDetails)
     const existingDraft = readProjectCreateDraft()
     writeProjectCreateDraft({
-      details,
+      details: nextDetails,
       allocations: existingDraft?.allocations ?? defaultInitialAllocations,
     })
-  }, [details, draftReady])
-
-  const updateDetail = (field: keyof ProjectDetails, value: string) =>
-    setDetails((current) => ({ ...current, [field]: value }))
+  }
 
   function goToAllocation(event: React.FormEvent) {
     event.preventDefault()

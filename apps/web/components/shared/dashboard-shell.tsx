@@ -18,7 +18,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@workspace/ui/components/sheet"
-import { SidebarInset, SidebarProvider } from "@workspace/ui/components/sidebar"
+import { SidebarInset } from "@workspace/ui/components/sidebar"
 import Link from "next/link"
 import type { ReactNode } from "react"
 import { formatCurrency, formatShortDate } from "@/lib/format"
@@ -56,23 +56,21 @@ export function DashboardShell({
 }: DashboardShellProps) {
   return (
     <div className="flex min-h-svh w-full bg-sidebar">
-      <SidebarProvider className="flex min-h-svh w-full bg-transparent">
-        <DashboardSidebar />
-        <SidebarInset className="relative z-10 flex min-w-0 flex-1 flex-col border-t border-l bg-background">
-          <DashboardTopbar
-            title={title}
-            headerGreeting={headerGreeting}
-            notifications={notifications}
-            onAddNotification={onAddNotification}
-          />
-          <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-5 sm:px-7 sm:py-6 lg:px-10 lg:py-8">
-            {children}
-          </div>
-          <footer className="mt-auto border-t px-4 py-4 text-center text-[10px] text-muted-foreground sm:px-7 lg:px-10">
-            A product of Sents Holding Company
-          </footer>
-        </SidebarInset>
-      </SidebarProvider>
+      <DashboardSidebar />
+      <SidebarInset className="relative z-10 flex min-w-0 flex-1 flex-col border-t border-l bg-background">
+        <DashboardTopbar
+          title={title}
+          headerGreeting={headerGreeting}
+          notifications={notifications}
+          onAddNotification={onAddNotification}
+        />
+        <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-5 sm:px-7 sm:py-6 lg:px-10 lg:py-8">
+          {children}
+        </div>
+        <footer className="mt-auto border-t px-4 py-4 text-center text-[10px] text-muted-foreground sm:px-7 lg:px-10">
+          A product of Sents Holding Company
+        </footer>
+      </SidebarInset>
     </div>
   )
 }
@@ -121,9 +119,7 @@ function DashboardTopbar({
               <div className="flex items-start justify-between gap-4 pr-8">
                 <div>
                   <SheetTitle>Payment notifications</SheetTitle>
-                  <SheetDescription>
-                    Payments awaiting review.
-                  </SheetDescription>
+                  <SheetDescription>Payments awaiting review.</SheetDescription>
                 </div>
                 {onAddNotification && (
                   <Button

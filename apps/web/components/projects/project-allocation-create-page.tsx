@@ -36,6 +36,11 @@ import {
 } from "@/lib/project-create-draft"
 import { storeProject } from "@/lib/project-store"
 
+function persistRows(rows: InitialAllocation[]) {
+  const draft = readProjectCreateDraft()
+  if (draft) writeProjectCreateDraft({ ...draft, allocations: rows })
+}
+
 export function ProjectAllocationCreatePage() {
   const router = useRouter()
   const [rows, setRows] = useState<InitialAllocation[]>(
@@ -56,32 +61,31 @@ export function ProjectAllocationCreatePage() {
     setReady(true)
   }, [router])
 
-  useEffect(() => {
-    if (!ready) return
-    const draft = readProjectCreateDraft()
-    if (draft) writeProjectCreateDraft({ ...draft, allocations: rows })
-  }, [ready, rows])
-
   const total = initialAllocationTotal(rows)
 
   function updateRow(id: number, field: "name" | "amount", value: string) {
-    setRows((current) =>
-      current.map((row) => (row.id === id ? { ...row, [field]: value } : row))
+    const nextRows = rows.map((row) =>
+      row.id === id ? { ...row, [field]: value } : row
     )
+    setRows(nextRows)
+    persistRows(nextRows)
     setError("")
   }
 
   function addRow() {
-    setRows((current) => [...current, { id: Date.now(), name: "", amount: "" }])
+    const nextRows = [...rows, { id: Date.now(), name: "", amount: "" }]
+    setRows(nextRows)
+    persistRows(nextRows)
   }
 
   function removeRow(id: number) {
-    setRows((current) => current.filter((row) => row.id !== id))
+    const nextRows = rows.filter((row) => row.id !== id)
+    setRows(nextRows)
+    persistRows(nextRows)
   }
 
   function saveDraftAndGoBack() {
-    const draft = readProjectCreateDraft()
-    if (draft) writeProjectCreateDraft({ ...draft, allocations: rows })
+    persistRows(rows)
     router.push("/admin/projects/new")
   }
 
