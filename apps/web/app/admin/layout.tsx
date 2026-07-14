@@ -1,4 +1,5 @@
 import { SidebarProvider } from "@workspace/ui/components/sidebar"
+import { WorkspaceProvider } from "@/components/shared/workspace-provider"
 import { cookies, headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { auth } from "@/lib/auth"
@@ -22,11 +23,20 @@ export default async function AdminLayout({
     sidebarCookie === undefined ? true : sidebarCookie === "true"
 
   return (
-    <SidebarProvider
-      defaultOpen={defaultOpen}
-      className="min-h-svh w-full bg-transparent"
+    <WorkspaceProvider
+      user={{
+        name: session.user.name,
+        image: session.user.image ?? null,
+        organizationName: membership.organizationName,
+        role: membership.role,
+      }}
     >
-      {children}
-    </SidebarProvider>
+      <SidebarProvider
+        defaultOpen={defaultOpen}
+        className="min-h-svh w-full bg-transparent"
+      >
+        {children}
+      </SidebarProvider>
+    </WorkspaceProvider>
   )
 }

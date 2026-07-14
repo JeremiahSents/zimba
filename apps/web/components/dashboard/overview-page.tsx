@@ -14,10 +14,20 @@ import Link from "next/link"
 import { ProjectsSection } from "@/components/dashboard/projects-section"
 import { RecentActivity } from "@/components/dashboard/recent-activity"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
+import { useWorkspace } from "@/components/shared/workspace-provider"
 import { formatCurrency } from "@/lib/format"
 import type { DashboardOverviewData } from "@/lib/types"
 
+function getGreeting() {
+  const hour = new Date().getHours()
+  if (hour < 12) return "Good morning"
+  if (hour < 17) return "Good afternoon"
+  return "Good evening"
+}
+
 export function DashboardPage({ data }: { data: DashboardOverviewData }) {
+  const user = useWorkspace()
+  const firstName = user.name.trim().split(/\s+/)[0] ?? user.name
   const projects = data.projects
   const totalBudget = projects.reduce((sum, project) => sum + project.budget, 0)
   const totalSpent = projects.reduce((sum, project) => sum + project.spent, 0)
@@ -43,7 +53,7 @@ export function DashboardPage({ data }: { data: DashboardOverviewData }) {
     <DashboardShell
       title="Home"
       dataSource={data.source}
-      headerGreeting="Good morning, Musa"
+      headerGreeting={`${getGreeting()}, ${firstName}`}
       subtitle=""
     >
       <section className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">

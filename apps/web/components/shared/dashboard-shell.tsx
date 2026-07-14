@@ -7,7 +7,11 @@ import {
   Settings02Icon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Avatar, AvatarFallback } from "@workspace/ui/components/avatar"
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@workspace/ui/components/avatar"
 
 import { Button } from "@workspace/ui/components/button"
 import {
@@ -26,6 +30,11 @@ import {
   DashboardSidebarToggle,
 } from "@/components/shared/sidebar"
 import { formatCurrency, formatShortDate } from "@/lib/format"
+import {
+  formatRole,
+  getInitials,
+  useWorkspace,
+} from "@/components/shared/workspace-provider"
 
 type DashboardShellProps = {
   title: string
@@ -85,6 +94,9 @@ function DashboardTopbar({
   notifications: NotificationItem[]
   onAddNotification?: () => void
 }) {
+  const user = useWorkspace()
+  const initials = getInitials(user.name)
+
   return (
     <header className="flex min-h-16 shrink-0 flex-wrap items-center justify-between gap-3 border-b bg-background px-4 py-3 sm:px-7 lg:px-10">
       <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-4 gap-y-2">
@@ -180,12 +192,15 @@ function DashboardTopbar({
         </Button>
         <Menu.Root>
           <Menu.Trigger
-            aria-label="Open account menu for Musa Byaruhanga"
+            aria-label={`Open account menu for ${user.name}`}
             className="rounded-full outline-none ring-offset-background transition-shadow focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             <Avatar className="size-8">
+              {user.image ? (
+                <AvatarImage src={user.image} alt={user.name} />
+              ) : null}
               <AvatarFallback className="bg-primary font-medium text-primary-foreground text-xs">
-                MB
+                {initials}
               </AvatarFallback>
             </Avatar>
           </Menu.Trigger>
@@ -198,9 +213,9 @@ function DashboardTopbar({
             >
               <Menu.Popup className="min-w-44 origin-(--transform-origin) rounded-lg border bg-popover p-1 text-popover-foreground shadow-md outline-none transition data-ending-style:scale-95 data-starting-style:scale-95 data-ending-style:opacity-0 data-starting-style:opacity-0">
                 <div className="border-b px-2.5 py-2">
-                  <p className="font-medium text-xs">Musa Byaruhanga</p>
+                  <p className="font-medium text-xs">{user.name}</p>
                   <p className="mt-0.5 text-[10px] text-muted-foreground">
-                    Admin · Zimba Consultants
+                    {formatRole(user.role)} · {user.organizationName}
                   </p>
                 </div>
                 <Menu.LinkItem

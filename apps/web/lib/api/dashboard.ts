@@ -6,6 +6,7 @@ import {
   listExpenses,
   listProjects,
   listSuppliers,
+  ZimbaApiError,
 } from "@/lib/api/client"
 import {
   mockExpenses,
@@ -27,7 +28,7 @@ export async function getDashboardOverviewData(): Promise<DashboardOverviewData>
 
   if (!session) return getMockDashboardData()
 
-  const [overview, projectPage, expensePage, apiSuppliers] = await Promise.all([
+  const workspaceData = await Promise.all([
     getDashboardOverview(session),
     listProjects(session, { page: 1, page_size: 100 }),
     listExpenses(session, {
@@ -37,7 +38,21 @@ export async function getDashboardOverviewData(): Promise<DashboardOverviewData>
       sort_order: "desc",
     }),
     listSuppliers(session, { page: 1, page_size: 100 }),
-  ])
+  ]).catch((error: unknown) => {
+    if (error instanceof ZimbaApiError && error.status === 500) {
+      console.error(
+        "The Zimba API could not load the workspace; showing an empty workspace.",
+        error
+      )
+      return null
+    }
+
+    throw error
+  })
+
+  if (!workspaceData) return getEmptyDashboardData()
+
+  const [overview, projectPage, expensePage, apiSuppliers] = workspaceData
 
   const projects = projectPage.items.map(toProjectSummary)
   const expenses = expensePage.items.map(toExpenseTableRow)
@@ -79,6 +94,39 @@ export async function getDashboardOverviewData(): Promise<DashboardOverviewData>
       month: period.period,
       utilization: period.utilization_pct,
     })),
+  }
+}
+
+function getEmptyDashboardData(): DashboardOverviewData {
+  return {
+    expenses: [],
+    projects: [],
+    source: "api",
+    spendChart: [],
+    stats: [
+      {
+        detail: "Across active construction sites",
+        label: "Active projects",
+        value: "0",
+      },
+      {
+        detail: "Approved project allocations",
+        label: "Total budget",
+        value: formatCurrency(0),
+      },
+      {
+        detail: `${formatPercent(0)} of current budgets`,
+        label: "Total spent",
+        value: formatCurrency(0),
+      },
+      {
+        detail: "Available before overruns",
+        label: "Remaining",
+        value: formatCurrency(0),
+      },
+    ],
+    suppliers: [],
+    utilizationChart: [],
   }
 }
 

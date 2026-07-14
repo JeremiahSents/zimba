@@ -35,6 +35,10 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import type { ComponentProps } from "react"
 import { authClient } from "@/lib/auth-client"
+import {
+  formatRole,
+  useWorkspace,
+} from "@/components/shared/workspace-provider"
 
 const navItems = [
   { title: "Home", href: "/admin/home", icon: DashboardSquare02Icon },
@@ -138,6 +142,8 @@ function SidebarBrand() {
 function TenantCard() {
   const { state } = useSidebar()
   const router = useRouter()
+  const user = useWorkspace()
+  const role = formatRole(user.role)
 
   async function handleSignOut() {
     await authClient.signOut()
@@ -149,7 +155,7 @@ function TenantCard() {
     return (
       <Tooltip>
         <TooltipTrigger
-          aria-label="Current account: Zimba Consultants, Admin"
+          aria-label={`Current account: ${user.organizationName}, ${role}`}
           className="mx-auto grid size-10 place-items-center rounded-md border border-sidebar-border bg-sidebar-accent/60 text-sidebar-foreground outline-none transition-colors hover:bg-sidebar-accent focus-visible:ring-2 focus-visible:ring-sidebar-ring"
         >
           <HugeiconsIcon
@@ -159,7 +165,7 @@ function TenantCard() {
           />
         </TooltipTrigger>
         <TooltipContent side="right" sideOffset={8}>
-          Zimba Consultants · Admin
+          {user.organizationName} · {role}
         </TooltipContent>
       </Tooltip>
     )
@@ -176,10 +182,10 @@ function TenantCard() {
       </span>
       <span className="min-w-0">
         <span className="block truncate font-medium text-sidebar-foreground text-xs">
-          Zimba Consultants
+          {user.organizationName}
         </span>
         <span className="mt-0.5 block text-[10px] text-sidebar-foreground/55">
-          Admin
+          {role}
         </span>
       </span>
       <Button
