@@ -29,12 +29,12 @@ import {
   DashboardSidebar,
   DashboardSidebarToggle,
 } from "@/components/shared/sidebar"
-import { formatCurrency, formatShortDate } from "@/lib/format"
 import {
   formatRole,
   getInitials,
   useWorkspace,
 } from "@/components/shared/workspace-provider"
+import { formatCurrency, formatShortDate } from "@/lib/format"
 
 type DashboardShellProps = {
   title: string

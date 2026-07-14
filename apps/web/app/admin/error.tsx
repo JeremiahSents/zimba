@@ -51,7 +51,10 @@ export default function AdminError({
 
         <div className="mt-8 flex items-center justify-center gap-3">
           <Button onClick={() => unstable_retry()}>Try again</Button>
-          <a className={buttonVariants({ variant: "outline" })} href="/admin/home">
+          <a
+            className={buttonVariants({ variant: "outline" })}
+            href="/admin/home"
+          >
             Back to home
           </a>
         </div>

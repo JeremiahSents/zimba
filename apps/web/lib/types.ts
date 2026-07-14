@@ -147,7 +147,6 @@ export type DashboardOverviewData = {
   projects: ProjectDashboardResponse[]
   expenses: ExpenseTableRow[]
   suppliers: SupplierResponse[]
-  stats: DashboardStat[]
   spendChart: SpendChartPoint[]
   utilizationChart: UtilizationChartPoint[]
 }

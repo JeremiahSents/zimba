@@ -34,11 +34,11 @@ import Image from "next/image"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import type { ComponentProps } from "react"
-import { authClient } from "@/lib/auth-client"
 import {
   formatRole,
   useWorkspace,
 } from "@/components/shared/workspace-provider"
+import { authClient } from "@/lib/auth-client"
 
 const navItems = [
   { title: "Home", href: "/admin/home", icon: DashboardSquare02Icon },

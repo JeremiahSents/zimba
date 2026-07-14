@@ -1,7 +1,7 @@
 import { SidebarProvider } from "@workspace/ui/components/sidebar"
-import { WorkspaceProvider } from "@/components/shared/workspace-provider"
 import { cookies, headers } from "next/headers"
 import { redirect } from "next/navigation"
+import { WorkspaceProvider } from "@/components/shared/workspace-provider"
 import { auth } from "@/lib/auth"
 import { getOrganizationMembership } from "@/lib/organization"
 
