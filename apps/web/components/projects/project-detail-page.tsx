@@ -31,7 +31,7 @@ import { ProjectExpensesTable } from "@/components/projects/project-expenses-tab
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { DatePicker } from "@/components/shared/date-picker"
 import { mergeStoredExpenses, storeExpenseStatus } from "@/lib/expense-store"
-import { formatCurrency, formatPercent } from "@/lib/format"
+import { formatCurrency, formatPercent, formatShortDate } from "@/lib/format"
 import { readStoredProjects } from "@/lib/project-store"
 import type { ExpenseStatus, ProjectDetailResponse } from "@/lib/types"
 
@@ -151,6 +151,19 @@ export function ProjectDetailPage({
       storeExpenseStatus(project.id, expenseId, status)
     },
     [project.id]
+  )
+
+  const updateExpenseSupplier = useCallback(
+    (expenseId: number, supplierName: string) => {
+      setExpenses((current) =>
+        current.map((expense) =>
+          expense.id === expenseId
+            ? { ...expense, supplier_name: supplierName }
+            : expense
+        )
+      )
+    },
+    []
   )
 
   const spent = expenses.reduce((sum, expense) => sum + expense.amount, 0)
@@ -330,7 +343,7 @@ export function ProjectDetailPage({
         </Card>
       </div>
 
-      <TaskExpenseSection tasks={project.tasks} />
+      <TaskExpenseSection tasks={project.tasks} expenses={expenses} />
 
       <div>
         <section className="flex min-h-0 flex-col pt-1">
@@ -345,6 +358,13 @@ export function ProjectDetailPage({
           <ProjectExpensesTable
             expenses={expenses}
             onStatusChange={updateExpenseStatus}
+            supplierOptions={Array.from(
+              new Set([
+                ...project.suppliers.map((supplier) => supplier.name),
+                ...expenses.map((expense) => expense.supplier_name),
+              ])
+            ).filter(Boolean)}
+            onSupplierChange={updateExpenseSupplier}
           />
         </section>
       </div>
@@ -494,9 +514,13 @@ function Metric({
 
 function TaskExpenseSection({
   tasks,
+  expenses,
 }: {
   tasks: ProjectDetailResponse["tasks"]
+  expenses: ProjectDetailResponse["expenses"]
 }) {
+  const [expandedTask, setExpandedTask] = useState<number | null>(null)
+
   return (
     <section className="mb-6">
       <div className="mb-3 flex items-center justify-between gap-4">
@@ -519,39 +543,128 @@ function TaskExpenseSection({
           return (
             <div
               key={task.id}
-              className="grid items-center gap-3 rounded-lg border border-border/70 bg-card px-4 py-3 sm:grid-cols-[minmax(9rem,0.85fr)_minmax(10rem,1.6fr)_minmax(12rem,1fr)]"
+              className="overflow-hidden rounded-lg border border-border/70 bg-card"
             >
-              <div className="flex min-w-0 items-center gap-3">
-                <span
-                  className="size-3 shrink-0 rounded-full"
-                  style={{ backgroundColor: colors[index % colors.length] }}
-                />
-                <div className="min-w-0">
-                  <span className="block truncate font-medium text-sm">
-                    {task.name}
-                  </span>
+              <button
+                type="button"
+                onClick={() =>
+                  setExpandedTask((current) =>
+                    current === task.id ? null : task.id
+                  )
+                }
+                aria-expanded={expandedTask === task.id}
+                className="grid w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-muted/30 sm:grid-cols-[minmax(9rem,0.85fr)_minmax(10rem,1.6fr)_minmax(12rem,1fr)]"
+              >
+                <div className="flex min-w-0 items-center gap-3">
                   <span
-                    className={`mt-1 inline-flex rounded-lg px-1.5 py-0.5 font-medium text-[10px] ${budgetHealth.pill}`}
-                  >
-                    {budgetHealth.label}
-                  </span>
+                    className="size-3 shrink-0 rounded-full"
+                    style={{ backgroundColor: colors[index % colors.length] }}
+                  />
+                  <div className="min-w-0">
+                    <span className="block truncate font-medium text-sm">
+                      {task.name}
+                    </span>
+                    <span
+                      className={`mt-1 inline-flex rounded-lg px-1.5 py-0.5 font-medium text-[10px] ${budgetHealth.pill}`}
+                    >
+                      {budgetHealth.label}
+                    </span>
+                  </div>
                 </div>
-              </div>
-              <Progress
-                value={percentage}
-                className={`h-1.5 ${budgetHealth.progress}`}
-              />
-              <p className="text-right text-muted-foreground text-xs tabular-nums">
-                <span className="font-semibold text-foreground">
-                  {formatCurrency(taskSpent)}
-                </span>{" "}
-                of {formatCurrency(task.budget)}
-              </p>
+                <Progress
+                  value={percentage}
+                  className={`h-1.5 ${budgetHealth.progress}`}
+                />
+                <p className="text-right text-muted-foreground text-xs tabular-nums">
+                  <span className="font-semibold text-foreground">
+                    {formatCurrency(taskSpent)}
+                  </span>{" "}
+                  of {formatCurrency(task.budget)}
+                </p>
+              </button>
+              {expandedTask === task.id && (
+                <TaskExpenseDetails
+                  taskName={task.name}
+                  expenses={expenses.filter(
+                    (expense) => expense.task_name === task.name
+                  )}
+                />
+              )}
             </div>
           )
         })}
       </div>
     </section>
+  )
+}
+
+function TaskExpenseDetails({
+  taskName,
+  expenses,
+}: {
+  taskName: string
+  expenses: ProjectDetailResponse["expenses"]
+}) {
+  const recent = [...expenses]
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .slice(0, 4)
+
+  return (
+    <div className="border-border/70 border-t bg-muted/20 px-4 py-3">
+      <div className="mb-2 flex items-center justify-between">
+        <p className="font-medium text-[11px] text-muted-foreground uppercase tracking-wide">
+          Recent {taskName.toLowerCase()} records
+        </p>
+        <span className="text-[10px] text-muted-foreground">Last 4</span>
+      </div>
+      {recent.length === 0 ? (
+        <p className="py-3 text-muted-foreground text-xs">
+          No expenses recorded yet.
+        </p>
+      ) : (
+        <div className="divide-y divide-border/60 rounded-md border border-border/60 bg-background">
+          {recent.map((expense) => {
+            const paid =
+              expense.status === "Full"
+                ? expense.amount
+                : expense.status === "Partial"
+                  ? expense.amount / 2
+                  : 0
+            const owed = Math.max(expense.amount - paid, 0)
+            return (
+              <div
+                key={expense.id}
+                className="grid gap-2 px-3 py-2.5 text-xs sm:grid-cols-[1.25fr_0.7fr_0.8fr_0.8fr] sm:items-center"
+              >
+                <div className="min-w-0">
+                  <p className="truncate font-medium">
+                    {expense.supplier_name}
+                  </p>
+                  <p className="truncate text-muted-foreground">
+                    {expense.item_description}
+                  </p>
+                </div>
+                <span className="text-muted-foreground">
+                  {formatShortDate(expense.date)}
+                </span>
+                <span className="tabular-nums">
+                  Paid <strong>{formatCurrency(paid)}</strong>
+                </span>
+                <span
+                  className={
+                    owed
+                      ? "font-medium text-amber-700 tabular-nums"
+                      : "text-muted-foreground tabular-nums"
+                  }
+                >
+                  {owed ? `Owed ${formatCurrency(owed)}` : "Paid in full"}
+                </span>
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </div>
   )
 }
 

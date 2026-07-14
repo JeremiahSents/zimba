@@ -1,63 +1,109 @@
+"use client"
+
 import {
   MoneyBag02Icon,
   TaskDone01Icon,
   UserGroupIcon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@workspace/ui/components/card"
+import { Button } from "@workspace/ui/components/button"
+import { Card } from "@workspace/ui/components/card"
+import Link from "next/link"
+import { useEffect, useMemo, useState } from "react"
 
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { SupplierTable } from "@/components/suppliers/supplier-table"
 import { formatCurrency } from "@/lib/format"
+import {
+  getSupplierListItems,
+  type SupplierListItem,
+} from "@/lib/supplier-data"
+import { readStoredSuppliers } from "@/lib/supplier-store"
 import type { DashboardOverviewData } from "@/lib/types"
 
 export function SuppliersPage({ data }: { data: DashboardOverviewData }) {
-  const totalPaid = data.suppliers.reduce(
+  const [paymentFilter, setPaymentFilter] = useState<
+    "all" | "Full" | "Partial" | "Not paid"
+  >("all")
+  const [storedSuppliers, setStoredSuppliers] = useState(() =>
+    readStoredSuppliers()
+  )
+  useEffect(() => {
+    const refresh = () => setStoredSuppliers(readStoredSuppliers())
+    window.addEventListener("storage", refresh)
+    return () => window.removeEventListener("storage", refresh)
+  }, [])
+  const suppliers = useMemo<SupplierListItem[]>(
+    () => [
+      ...getSupplierListItems(),
+      ...storedSuppliers.map((supplier) => ({
+        ...supplier,
+        paid: 0,
+        remaining: 0,
+        statusSummary: { Full: 0, Partial: 0, "Not paid": 0 },
+      })),
+    ],
+    [storedSuppliers]
+  )
+  const totalReceiptValue = suppliers.reduce(
     (sum, supplier) => sum + supplier.amount,
     0
   )
-  const topSupplier = data.suppliers.reduce(
-    (top, supplier) => (!top || supplier.amount > top.amount ? supplier : top),
-    data.suppliers[0]
-  )
+  const totalPaid = suppliers.reduce((sum, supplier) => sum + supplier.paid, 0)
+  const pendingBalance = totalReceiptValue - totalPaid
+  const filteredSuppliers =
+    paymentFilter === "all"
+      ? suppliers
+      : suppliers.filter(
+          (supplier) => supplier.statusSummary[paymentFilter] > 0
+        )
   const stats = [
     {
-      label: "Active suppliers",
-      value: String(data.suppliers.length),
-      detail: "Active",
+      label: "Suppliers we have",
+      value: String(suppliers.length),
+      detail: "Active partners",
       icon: UserGroupIcon,
       pillClassName: "bg-green-50 text-green-700",
     },
     {
-      label: "Paid this month",
-      value: formatCurrency(totalPaid),
-      detail: "Payments",
+      label: "Receipt value",
+      value: formatCurrency(totalReceiptValue),
+      detail: "Across all receipts",
       icon: MoneyBag02Icon,
+      pillClassName: "bg-blue-50 text-blue-700",
+    },
+    {
+      label: "Paid to suppliers",
+      value: formatCurrency(totalPaid),
+      detail: `${Math.round((totalPaid / totalReceiptValue) * 100)}% settled`,
+      icon: TaskDone01Icon,
       pillClassName: "bg-amber-50 text-amber-700",
     },
     {
-      label: "Top supplier",
-      value: topSupplier?.name ?? "—",
-      detail: topSupplier ? formatCurrency(topSupplier.amount) : "No payments",
-      icon: TaskDone01Icon,
-      pillClassName: "bg-blue-50 text-blue-700",
+      label: "Pending balance",
+      value: formatCurrency(pendingBalance),
+      detail: "Unpaid arrears",
+      icon: MoneyBag02Icon,
+      pillClassName: "bg-rose-50 text-rose-700",
     },
   ]
+  const filterLabel =
+    paymentFilter === "all"
+      ? "All receipts"
+      : paymentFilter === "Not paid"
+        ? "Unpaid"
+        : paymentFilter === "Full"
+          ? "Fully paid"
+          : "Partial"
 
   return (
     <DashboardShell
       title="Suppliers"
-      subtitle="Track vendor spend, payment volume, and current exposure."
+      subtitle="Track receipts, payments, and the balance owed to every supplier."
       dataSource={data.source}
     >
-      <Card className="gap-0 py-0">
-        <div className="grid md:grid-cols-3">
+      <Card className="gap-0 overflow-hidden py-0">
+        <div className="grid md:grid-cols-4">
           {stats.map((stat) => (
             <div
               key={stat.label}
@@ -85,17 +131,42 @@ export function SuppliersPage({ data }: { data: DashboardOverviewData }) {
           ))}
         </div>
       </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle>All suppliers</CardTitle>
-          <CardDescription>
-            Vendor payment activity across active projects.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <SupplierTable suppliers={data.suppliers} />
-        </CardContent>
-      </Card>
+
+      <section className="space-y-5">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="font-heading font-medium text-lg">Supplier ledger</p>
+            <p className="mt-1 text-muted-foreground text-sm">
+              Receipt value and outstanding balances across active projects.
+            </p>
+          </div>
+          <Button
+            nativeButton={false}
+            render={<Link href="/admin/suppliers/new" />}
+          >
+            + New supplier
+          </Button>
+          <label className="flex items-center gap-2 text-muted-foreground text-xs">
+            Show
+            <select
+              value={paymentFilter}
+              onChange={(event) =>
+                setPaymentFilter(event.target.value as typeof paymentFilter)
+              }
+              className="h-9 rounded-lg border bg-background px-3 font-medium text-foreground outline-none focus:ring-2 focus:ring-ring"
+            >
+              <option value="all">All receipts</option>
+              <option value="Full">Fully paid</option>
+              <option value="Partial">Partial</option>
+              <option value="Not paid">Unpaid</option>
+            </select>
+          </label>
+        </div>
+        <SupplierTable
+          suppliers={filteredSuppliers}
+          filterLabel={filterLabel}
+        />
+      </section>
     </DashboardShell>
   )
 }
