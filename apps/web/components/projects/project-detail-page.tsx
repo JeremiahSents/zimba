@@ -24,15 +24,19 @@ import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
 import { Progress } from "@workspace/ui/components/progress"
 import Link from "next/link"
-import { notFound } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { useCallback, useEffect, useState } from "react"
 import { Cell, Pie, PieChart } from "recharts"
+import {
+  createUpcomingPaymentAction,
+  deleteUpcomingPaymentAction,
+  updateExpenseStatusAction,
+  updateUpcomingPaymentAction,
+} from "@/app/admin/actions"
 import { ProjectExpensesTable } from "@/components/projects/project-expenses-table"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { DatePicker } from "@/components/shared/date-picker"
-import { mergeStoredExpenses, storeExpenseStatus } from "@/lib/expense-store"
 import { formatCurrency, formatPercent, formatShortDate } from "@/lib/format"
-import { readStoredProjects } from "@/lib/project-store"
 import type { ExpenseStatus, ProjectDetailResponse } from "@/lib/types"
 
 const colors = ["#86efac", "#fcd34d", "#fca5a5", "#93c5fd", "#d8b4fe"]
@@ -53,56 +57,11 @@ const metricIcons = {
 }
 
 export function ProjectDetailPageWrapper({
-  id,
   initialProject,
 }: {
-  id: number
-  initialProject?: ProjectDetailResponse
+  initialProject: ProjectDetailResponse
 }) {
-  const [project, setProject] = useState<ProjectDetailResponse | undefined>(
-    initialProject
-  )
-  const [loading, setLoading] = useState(!initialProject)
-
-  useEffect(() => {
-    if (!initialProject) {
-      const stored = readStoredProjects().find((p) => p.id === id)
-      if (stored) {
-        setProject({
-          ...stored,
-          expenses: [],
-          tasks: [
-            {
-              id: 1,
-              name: "Materials",
-              budget: Math.round(stored.budget * 0.45),
-              spent: 0,
-              pct: 0,
-            },
-            {
-              id: 2,
-              name: "Labour",
-              budget: Math.round(stored.budget * 0.3),
-              spent: 0,
-              pct: 0,
-            },
-          ],
-          suppliers: [],
-        })
-      }
-      setLoading(false)
-    }
-  }, [id, initialProject])
-
-  if (loading)
-    return (
-      <div className="animate-pulse p-8 text-center text-muted-foreground">
-        Loading project...
-      </div>
-    )
-  if (!project) return notFound()
-
-  return <ProjectDetailPage project={project} />
+  return <ProjectDetailPage project={initialProject} />
 }
 
 export function ProjectDetailPage({
@@ -110,26 +69,22 @@ export function ProjectDetailPage({
 }: {
   project: ProjectDetailResponse
 }) {
+  const router = useRouter()
   const [expenses, setExpenses] = useState(project.expenses)
-  const [upcoming, setUpcoming] = useState([
-    {
-      id: 1,
-      name: "Cement delivery",
-      contractor: "Prime Cement",
-      item: "50 bags of cement",
-      date: "2026-07-28",
-      amount: 15_000_000,
-    },
-    {
-      id: 2,
-      name: "Site security",
-      contractor: "SecureGuard Uganda",
-      item: "Monthly site coverage",
-      date: "2026-07-30",
-      amount: 2_500_000,
-    },
-  ])
+  const [upcomingPayments, setUpcomingPayments] = useState(
+    project.upcoming_payments ?? []
+  )
+  const upcoming = upcomingPayments.map((payment) => ({
+    amount: payment.amount,
+    contractor: payment.supplier_name ?? "Supplier not assigned",
+    date: payment.due_date,
+    id: payment.id,
+    item: payment.description ?? "Planned payment",
+    name: payment.title,
+  }))
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false)
+  const [mutationError, setMutationError] = useState("")
+  const [savingPayment, setSavingPayment] = useState(false)
   const [newUpcoming, setNewUpcoming] = useState({
     title: "",
     description: "",
@@ -138,39 +93,43 @@ export function ProjectDetailPage({
   })
 
   useEffect(() => {
-    setExpenses(mergeStoredExpenses(project.id, project.expenses))
-  }, [project.id, project.expenses])
+    setExpenses(project.expenses)
+    setUpcomingPayments(project.upcoming_payments ?? [])
+  }, [project])
 
   const updateExpenseStatus = useCallback(
-    (expenseId: number, status: ExpenseStatus) => {
+    async (expenseId: number, status: ExpenseStatus) => {
+      const previous = expenses
       setExpenses((current) =>
         current.map((expense) =>
           expense.id === expenseId ? { ...expense, status } : expense
         )
       )
-      storeExpenseStatus(project.id, expenseId, status)
+      const result = await updateExpenseStatusAction(
+        project.id,
+        expenseId,
+        status
+      )
+      if (!result.ok) {
+        setExpenses(previous)
+        setMutationError(result.error)
+      } else {
+        setMutationError("")
+        router.refresh()
+      }
     },
-    [project.id]
+    [expenses, project.id, router]
   )
 
-  const updateExpenseSupplier = useCallback(
-    (expenseId: number, supplierName: string) => {
-      setExpenses((current) =>
-        current.map((expense) =>
-          expense.id === expenseId
-            ? { ...expense, supplier_name: supplierName }
-            : expense
-        )
-      )
+  const spent = project.spent
+  const taskData = project.tasks.reduce<Array<{ name: string; value: number }>>(
+    (items, task) => {
+      if (task.spent > 0) items.push({ name: task.name, value: task.spent })
+      return items
     },
     []
   )
-
-  const spent = expenses.reduce((sum, expense) => sum + expense.amount, 0)
-  const taskData = project.tasks
-    .map((task) => ({ name: task.name, value: task.spent }))
-    .filter((task) => task.value > 0)
-  const utilisation = Math.round((spent / project.budget) * 100)
+  const utilisation = project.pct
   const budgetHealth = getBudgetHealth(utilisation)
 
   return (
@@ -225,7 +184,7 @@ export function ProjectDetailPage({
         />
         <Metric
           label="Remaining budget"
-          value={formatCurrency(Math.max(project.budget - spent, 0))}
+          value={formatCurrency(project.remaining)}
           detail={`${formatPercent(Math.max(100 - utilisation, 0))} left`}
           icon="remaining"
           pillClassName="bg-green-50 text-green-700"
@@ -248,7 +207,7 @@ export function ProjectDetailPage({
               <div className="mt-5 flex items-end justify-between gap-4">
                 <div>
                   <p className="font-heading font-semibold text-xl tabular-nums tracking-tight">
-                    {formatCurrency(Math.max(project.budget - spent, 0))}
+                    {formatCurrency(project.remaining)}
                   </p>
                   <p className="mt-1 text-muted-foreground text-xs">
                     remaining from {formatCurrency(project.budget)}
@@ -279,7 +238,7 @@ export function ProjectDetailPage({
                   Remaining
                 </p>
                 <p className="mt-1 font-heading font-semibold text-base tabular-nums tracking-tight">
-                  {formatCurrency(Math.max(project.budget - spent, 0))}
+                  {formatCurrency(project.remaining)}
                 </p>
               </div>
             </div>
@@ -345,7 +304,98 @@ export function ProjectDetailPage({
 
       <TaskExpenseSection tasks={project.tasks} expenses={expenses} />
 
+      <section>
+        <div className="mb-4 flex items-end justify-between gap-4">
+          <div>
+            <h2 className="font-heading font-semibold text-base tracking-tight">
+              Upcoming payments
+            </h2>
+            <p className="mt-1 text-muted-foreground text-xs">
+              Planned commitments for this project.
+            </p>
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setPaymentDialogOpen(true)}
+          >
+            + Add payment
+          </Button>
+        </div>
+        <div className="divide-y rounded-xl border">
+          {upcomingPayments.map((payment) => (
+            <div
+              key={payment.id}
+              className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center"
+            >
+              <div className="min-w-0 flex-1">
+                <p className="font-medium text-sm">{payment.title}</p>
+                <p className="mt-1 text-muted-foreground text-xs">
+                  {payment.supplier_name ?? "Supplier not assigned"} · Due{" "}
+                  {formatShortDate(payment.due_date)}
+                </p>
+              </div>
+              <p className="font-heading font-semibold text-sm tabular-nums">
+                {formatCurrency(payment.amount)}
+              </p>
+              <span className="rounded-full bg-muted px-2 py-1 text-[10px] capitalize">
+                {payment.status.replaceAll("_", " ")}
+              </span>
+              <div className="flex gap-2">
+                {payment.status === "planned" && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={async () => {
+                      const result = await updateUpcomingPaymentAction(
+                        project.id,
+                        payment.id,
+                        { status: "due" }
+                      )
+                      if (!result.ok) setMutationError(result.error)
+                      else router.refresh()
+                    }}
+                  >
+                    Mark due
+                  </Button>
+                )}
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="text-destructive"
+                  onClick={async () => {
+                    const result = await deleteUpcomingPaymentAction(
+                      project.id,
+                      payment.id
+                    )
+                    if (!result.ok) setMutationError(result.error)
+                    else {
+                      setUpcomingPayments((current) =>
+                        current.filter((item) => item.id !== payment.id)
+                      )
+                      router.refresh()
+                    }
+                  }}
+                >
+                  Delete
+                </Button>
+              </div>
+            </div>
+          ))}
+          {upcomingPayments.length === 0 && (
+            <p className="p-6 text-center text-muted-foreground text-sm">
+              No upcoming payments.
+            </p>
+          )}
+        </div>
+      </section>
+
       <div>
+        {mutationError && (
+          <p className="mb-4 font-medium text-destructive text-xs" role="alert">
+            {mutationError}
+          </p>
+        )}
         <section className="flex min-h-0 flex-col pt-1">
           <div className="mb-4">
             <h2 className="font-heading font-semibold text-base tracking-tight">
@@ -358,13 +408,6 @@ export function ProjectDetailPage({
           <ProjectExpensesTable
             expenses={expenses}
             onStatusChange={updateExpenseStatus}
-            supplierOptions={Array.from(
-              new Set([
-                ...project.suppliers.map((supplier) => supplier.name),
-                ...expenses.map((expense) => expense.supplier_name),
-              ])
-            ).filter(Boolean)}
-            onSupplierChange={updateExpenseSupplier}
           />
         </section>
       </div>
@@ -436,7 +479,8 @@ export function ProjectDetailPage({
               Cancel
             </Button>
             <Button
-              onClick={() => {
+              disabled={savingPayment}
+              onClick={async () => {
                 if (
                   !newUpcoming.title ||
                   !newUpcoming.description ||
@@ -444,17 +488,19 @@ export function ProjectDetailPage({
                   !newUpcoming.date
                 )
                   return
-                setUpcoming([
-                  {
-                    id: Date.now(),
-                    name: newUpcoming.title,
-                    contractor: "Contractor pending",
-                    item: newUpcoming.description,
-                    amount: Number(newUpcoming.amount),
-                    date: newUpcoming.date,
-                  },
-                  ...upcoming,
-                ])
+                setSavingPayment(true)
+                const result = await createUpcomingPaymentAction(project.id, {
+                  amount: Number(newUpcoming.amount),
+                  currency: project.currency ?? "UGX",
+                  description: newUpcoming.description,
+                  due_date: newUpcoming.date,
+                  title: newUpcoming.title,
+                })
+                if (!result.ok) {
+                  setMutationError(result.error)
+                  setSavingPayment(false)
+                  return
+                }
                 setPaymentDialogOpen(false)
                 setNewUpcoming({
                   title: "",
@@ -462,9 +508,11 @@ export function ProjectDetailPage({
                   amount: "",
                   date: new Date().toISOString().slice(0, 10),
                 })
+                setSavingPayment(false)
+                router.refresh()
               }}
             >
-              Add payment
+              {savingPayment ? "Adding..." : "Add payment"}
             </Button>
           </DialogFooter>
         </DialogContent>

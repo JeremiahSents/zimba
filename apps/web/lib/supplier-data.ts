@@ -1,5 +1,5 @@
 import { mockExpenses, mockSuppliers } from "@/lib/api/mock-data"
-import type { SupplierResponse } from "@/lib/types"
+import type { ExpenseTableRow, SupplierResponse } from "@/lib/types"
 
 export type SupplierPaymentStatus = "Full" | "Partial" | "Not paid"
 
@@ -130,16 +130,26 @@ export function getSupplierSlug(name: string) {
     .replace(/(^-|-$)/g, "")
 }
 
-export function getSupplierBySlug(slug: string) {
-  return mockSuppliers.find(
-    (supplier) => getSupplierSlug(supplier.name) === slug
-  )
+export function getSupplierBySlug(
+  slug: string,
+  suppliers: SupplierResponse[] = mockSuppliers
+) {
+  return suppliers.find((supplier) => getSupplierSlug(supplier.name) === slug)
 }
 
-export function getSupplierListItems(): SupplierListItem[] {
-  return mockSuppliers.map((supplier) => {
-    const paid = supplierPaid[supplier.name] ?? 0
-    const statusSummary = mockExpenses
+export function getSupplierListItems(
+  suppliers: SupplierResponse[] = mockSuppliers,
+  expenses: ExpenseTableRow[] = mockExpenses
+): SupplierListItem[] {
+  return suppliers.map((supplier) => {
+    const paid =
+      supplier.outstanding_amount === undefined
+        ? (supplierPaid[supplier.name] ?? 0)
+        : supplier.amount
+    const remaining =
+      supplier.outstanding_amount ?? Math.max(supplier.amount - paid, 0)
+    const receiptValue = paid + remaining
+    const statusSummary = expenses
       .filter((expense) => expense.supplier_name === supplier.name)
       .reduce<Record<SupplierPaymentStatus, number>>(
         (summary, expense) => {
@@ -150,17 +160,19 @@ export function getSupplierListItems(): SupplierListItem[] {
       )
     return {
       ...supplier,
+      amount: receiptValue,
       paid,
-      remaining: Math.max(supplier.amount - paid, 0),
+      remaining,
       statusSummary,
     }
   })
 }
 
 export function getSupplierLedger(
-  supplier: SupplierResponse
+  supplier: SupplierResponse,
+  expenses: ExpenseTableRow[] = mockExpenses
 ): SupplierLedgerEntry[] {
-  const realEntries = mockExpenses
+  const realEntries = expenses
     .filter((expense) => expense.supplier_name === supplier.name)
     .map((expense) => ({
       id: `expense-${expense.id}`,

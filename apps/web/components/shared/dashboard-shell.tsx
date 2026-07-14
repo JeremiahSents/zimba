@@ -21,12 +21,11 @@ import {
 import { SidebarInset } from "@workspace/ui/components/sidebar"
 import Link from "next/link"
 import type { ReactNode } from "react"
-import { formatCurrency, formatShortDate } from "@/lib/format"
-
 import {
   DashboardSidebar,
   DashboardSidebarToggle,
 } from "@/components/shared/sidebar"
+import { formatCurrency, formatShortDate } from "@/lib/format"
 
 type DashboardShellProps = {
   title: string

@@ -6,10 +6,8 @@ import {
   UserGroupIcon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Button } from "@workspace/ui/components/button"
 import { Card } from "@workspace/ui/components/card"
-import Link from "next/link"
-import { useEffect, useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { SupplierTable } from "@/components/suppliers/supplier-table"
@@ -18,32 +16,15 @@ import {
   getSupplierListItems,
   type SupplierListItem,
 } from "@/lib/supplier-data"
-import { readStoredSuppliers } from "@/lib/supplier-store"
 import type { DashboardOverviewData } from "@/lib/types"
 
 export function SuppliersPage({ data }: { data: DashboardOverviewData }) {
   const [paymentFilter, setPaymentFilter] = useState<
     "all" | "Full" | "Partial" | "Not paid"
   >("all")
-  const [storedSuppliers, setStoredSuppliers] = useState(() =>
-    readStoredSuppliers()
-  )
-  useEffect(() => {
-    const refresh = () => setStoredSuppliers(readStoredSuppliers())
-    window.addEventListener("storage", refresh)
-    return () => window.removeEventListener("storage", refresh)
-  }, [])
   const suppliers = useMemo<SupplierListItem[]>(
-    () => [
-      ...getSupplierListItems(),
-      ...storedSuppliers.map((supplier) => ({
-        ...supplier,
-        paid: 0,
-        remaining: 0,
-        statusSummary: { Full: 0, Partial: 0, "Not paid": 0 },
-      })),
-    ],
-    [storedSuppliers]
+    () => getSupplierListItems(data.suppliers, data.expenses),
+    [data.expenses, data.suppliers]
   )
   const totalReceiptValue = suppliers.reduce(
     (sum, supplier) => sum + supplier.amount,
@@ -140,12 +121,6 @@ export function SuppliersPage({ data }: { data: DashboardOverviewData }) {
               Receipt value and outstanding balances across active projects.
             </p>
           </div>
-          <Button
-            nativeButton={false}
-            render={<Link href="/admin/suppliers/new" />}
-          >
-            + New supplier
-          </Button>
           <label className="flex items-center gap-2 text-muted-foreground text-xs">
             Show
             <select

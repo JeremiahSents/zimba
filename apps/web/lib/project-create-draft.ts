@@ -11,6 +11,7 @@ export type InitialAllocation = {
 export type ProjectCreateDraft = {
   details: ProjectDetails
   allocations: InitialAllocation[]
+  attachmentIds?: string[]
 }
 
 export const defaultInitialAllocations: InitialAllocation[] = [

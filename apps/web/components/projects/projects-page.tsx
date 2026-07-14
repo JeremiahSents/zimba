@@ -14,46 +14,33 @@ import { Button } from "@workspace/ui/components/button"
 import { Card } from "@workspace/ui/components/card"
 import { Input } from "@workspace/ui/components/input"
 import Link from "next/link"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 
 import { ProjectsList } from "@/components/dashboard/projects-section"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
-import { mockProjectListDetails } from "@/lib/api/mock-data"
 import { formatCurrency } from "@/lib/format"
-import { mergeStoredProjects } from "@/lib/project-store"
 import type { DashboardOverviewData } from "@/lib/types"
 
 const PAGE_SIZE = 5
 
 export function ProjectsPage({ data }: { data: DashboardOverviewData }) {
-  const [projects, setProjects] = useState(data.projects)
+  const projects = data.projects
   const [search, setSearch] = useState("")
   const [pageIndex, setPageIndex] = useState(0)
 
-  useEffect(() => {
-    const sync = () => setProjects(mergeStoredProjects(data.projects))
-    sync()
-    window.addEventListener("zimba-projects-updated", sync)
-    return () => window.removeEventListener("zimba-projects-updated", sync)
-  }, [data.projects])
-
   const totalValue = projects.reduce((sum, project) => sum + project.budget, 0)
   const onTrack = projects.filter(
-    (project) =>
-      mockProjectListDetails[project.id as keyof typeof mockProjectListDetails]
-        ?.status === "On track"
+    (project) => project.status === "on_track" || !project.status
   ).length
   const normalizedSearch = search.trim().toLowerCase()
   const filteredProjects = projects.filter((project) => {
-    const details =
-      mockProjectListDetails[project.id as keyof typeof mockProjectListDetails]
     return [
       project.name,
       project.location,
       project.plot_size,
-      details?.client,
-      details?.status,
-      details?.timeline,
+      project.client_name,
+      project.status,
+      project.building_type,
     ].some((value) => value?.toLowerCase().includes(normalizedSearch))
   })
   const pageCount = Math.max(Math.ceil(filteredProjects.length / PAGE_SIZE), 1)

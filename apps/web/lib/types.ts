@@ -1,77 +1,108 @@
+import type { components } from "@/types/api"
+
+type ApiSchemas = components["schemas"]
+
+export type PaymentStatus = "paid" | "partially_paid" | "unpaid"
+export type ExpenseStatus = "Partial" | "Full" | "Not paid"
+
+export type ProjectStatus =
+  | "draft"
+  | "on_track"
+  | "at_risk"
+  | "over_budget"
+  | "completed"
+  | "archived"
+
+export type BuildingType =
+  | "residential"
+  | "commercial"
+  | "mixed_use"
+  | "industrial"
+  | "other"
+
+// API contract types are generated from the backend OpenAPI document.
+export type ProjectAllocationCreate = ApiSchemas["ProjectAllocationCreate"]
+export type ProjectCreate = ApiSchemas["ProjectCreate"]
+export type ProjectUpdate = ApiSchemas["ProjectUpdate"]
+export type AllocationUpdate = ApiSchemas["AllocationUpdate"]
+export type ProjectSummaryResponse = ApiSchemas["ProjectSummaryResponse"]
+export type ProjectAllocationResponse = ApiSchemas["ProjectAllocationResponse"]
+export type TaskResponse = ApiSchemas["TaskResponse"]
+export type SupplierSubResponse = ApiSchemas["SupplierSubResponse"]
+export type ReceiptFileResponse = ApiSchemas["ReceiptFileSubResponse"]
+export type ApiExpenseResponse = ApiSchemas["ExpenseResponse"]
+export type ExpenseCreate = ApiSchemas["ExpenseCreate"]
+export type ExpenseReceiptItemCreate = ApiSchemas["ExpenseReceiptItemCreate"]
+export type ExpenseReceiptCreate = ApiSchemas["ExpenseReceiptCreate"]
+export type ExpenseUpdate = ApiSchemas["ExpenseUpdate"]
+export type SupplierBreakdown = ApiSchemas["SupplierBreakdown"]
+export type ApiSupplierResponse = ApiSchemas["SupplierResponse"]
+export type UpcomingPaymentCreate = ApiSchemas["UpcomingPaymentCreate"]
+export type UpcomingPaymentUpdate = ApiSchemas["UpcomingPaymentUpdate"]
+export type UpcomingPaymentResponse = ApiSchemas["UpcomingPaymentResponse"]
+export type ProjectDetailApiResponse = ApiSchemas["ProjectDetailResponse"]
+export type FileUploadRequest = ApiSchemas["FileUploadRequest"]
+export type FileUploadResponse = ApiSchemas["FileUploadResponse"]
+export type FileCompleteResponse = ApiSchemas["FileCompleteResponse"]
+export type DashboardOverviewResponse = ApiSchemas["DashboardOverviewResponse"]
+export type PaginatedProjectsResponse = ApiSchemas["PaginatedProjectsResponse"]
+export type PaginatedExpensesResponse = ApiSchemas["PaginatedExpensesResponse"]
+export type ValidationError = ApiSchemas["ValidationError"]
+export type HTTPValidationError = ApiSchemas["HTTPValidationError"] & {
+  message?: string
+}
+
+export type FileUploadPurpose = "project_attachment" | "expense_receipt"
+
+// View models preserve the existing component API while normalizers isolate
+// backend compatibility aliases such as pct/tasks/date.
 export type ProjectDashboardResponse = {
   id: number
   name: string
   location: string
   plot_size?: string | null
+  land_size?: string | null
+  building_type?: string | null
+  client_name?: string | null
+  status?: string
+  start_date?: string | null
+  target_end_date?: string | null
+  currency?: string
   budget: number
   spent: number
   remaining: number
   pct: number
 }
 
-export type TaskResponse = {
-  id: number
-  name: string
-  budget: number
-  spent: number
-  pct: number
-}
-
-export type ExpenseStatus = "Partial" | "Full" | "Not paid"
-
 export type ExpenseResponse = {
   id: number
+  project_id?: number
+  allocation_id?: number
   date: string
   task_name: string
   supplier_name: string
   item_description: string
   amount: number
   status?: ExpenseStatus
+  quantity?: number
+  unit_rate?: number
+  receipt_url?: string | null
 }
 
-export type SupplierBreakdown = {
-  name: string
-  amount: number
+export type SupplierResponse = SupplierBreakdown & {
+  id?: number
+  payments: number
+  category: "materials" | "labour" | "equipment" | "services" | "other"
+  outstanding_amount?: number
+  status?: string
 }
 
 export type ProjectDetailResponse = ProjectDashboardResponse & {
   tasks: TaskResponse[]
+  allocations?: ProjectAllocationResponse[]
   expenses: ExpenseResponse[]
   suppliers: SupplierBreakdown[]
-}
-
-export type ProjectCreate = {
-  name: string
-  location: string
-  plot_size?: string | null
-  tasks: Record<string, unknown>[]
-}
-
-export type ExpenseCreate = {
-  project_id: number
-  task_id: number
-  amount: number
-  date: string
-  supplier_name: string
-  item_description: string
-  receipt_url?: string | null
-}
-
-export type ValidationError = {
-  loc: Array<string | number>
-  msg: string
-  type: string
-  input?: unknown
-  ctx?: Record<string, unknown>
-}
-
-export type HTTPValidationError = {
-  detail?: ValidationError[]
-}
-
-export type SupplierResponse = SupplierBreakdown & {
-  payments: number
-  category: "materials" | "labour" | "equipment" | "services"
+  upcoming_payments?: UpcomingPaymentResponse[]
 }
 
 export type TeamMember = {

@@ -24,6 +24,7 @@ import {
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 
+import { createProjectAction } from "@/app/admin/actions"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { formatCurrency } from "@/lib/format"
 import {
@@ -34,7 +35,6 @@ import {
   readProjectCreateDraft,
   writeProjectCreateDraft,
 } from "@/lib/project-create-draft"
-import { storeProject } from "@/lib/project-store"
 
 function persistRows(rows: InitialAllocation[]) {
   const draft = readProjectCreateDraft()
@@ -48,18 +48,20 @@ export function ProjectAllocationCreatePage() {
   )
   const [ready, setReady] = useState(false)
   const [error, setError] = useState("")
+  const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
     const draft = readProjectCreateDraft()
     if (!draft || !hasCompleteDetails(draft.details)) {
-      router.replace("/admin/projects/new")
+      setError("Project details are missing. Go back and complete them first.")
+      setReady(true)
       return
     }
     setRows(
       draft.allocations.length ? draft.allocations : defaultInitialAllocations
     )
     setReady(true)
-  }, [router])
+  }, [])
 
   const total = initialAllocationTotal(rows)
 
@@ -89,7 +91,7 @@ export function ProjectAllocationCreatePage() {
     router.push("/admin/projects/new")
   }
 
-  function createProject() {
+  async function createProject() {
     const draft = readProjectCreateDraft()
     if (!draft || !hasCompleteDetails(draft.details)) {
       router.replace("/admin/projects/new")
@@ -103,19 +105,30 @@ export function ProjectAllocationCreatePage() {
       setError("Enter an initial allocation greater than zero.")
       return
     }
+    if (rows.some((row) => Number(row.amount) <= 0)) {
+      setError("Enter an allocation greater than zero for every item.")
+      return
+    }
 
-    storeProject({
-      id: Date.now(),
-      name: draft.details.name.trim(),
+    setSubmitting(true)
+    setError("")
+    const result = await createProjectAction({
+      allocations: rows.map((row) => ({
+        budget: Number(row.amount),
+        name: row.name.trim(),
+      })),
+      attachment_ids: draft.attachmentIds ?? [],
+      building_type: normalizeBuildingType(draft.details.buildingType),
+      land_size: draft.details.landSize.trim(),
       location: draft.details.location.trim(),
-      plot_size: draft.details.landSize.trim(),
-      budget: total,
-      spent: 0,
-      remaining: total,
-      pct: 0,
+      name: draft.details.name.trim(),
     })
+    if (!result.ok) {
+      setError(result.error)
+      setSubmitting(false)
+      return
+    }
     clearProjectCreateDraft()
-    router.push("/admin/projects")
   }
 
   if (!ready) return null
@@ -156,11 +169,12 @@ export function ProjectAllocationCreatePage() {
               type="button"
               variant="outline"
               onClick={saveDraftAndGoBack}
+              disabled={submitting}
             >
               Back
             </Button>
-            <Button type="button" onClick={createProject}>
-              Create project
+            <Button type="button" onClick={createProject} disabled={submitting}>
+              {submitting ? "Creating..." : "Create project"}
             </Button>
           </div>
         </div>
@@ -296,4 +310,8 @@ function formatNumberInput(value: string) {
   const [integer, decimal] = value.split(".")
   const formatted = Number(integer || 0).toLocaleString("en-UG")
   return decimal === undefined ? formatted : `${formatted}.${decimal}`
+}
+
+function normalizeBuildingType(value: string) {
+  return value.trim().toLowerCase().replaceAll(" ", "_")
 }

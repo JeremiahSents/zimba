@@ -12,11 +12,8 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>
 }): Promise<Metadata> {
   const { slug } = await params
-  const supplier = getSupplierBySlug(slug)
   return {
-    title: supplier
-      ? `${supplier.name} | Suppliers | Zimba`
-      : "Supplier | Zimba",
+    title: `${slug.replaceAll("-", " ")} | Suppliers | Zimba`,
   }
 }
 
@@ -25,11 +22,17 @@ export default async function Page({
 }: {
   params: Promise<{ slug: string }>
 }) {
-  const { slug } = await params
-  const supplier = getSupplierBySlug(slug)
+  const [{ slug }, data] = await Promise.all([
+    params,
+    getDashboardOverviewData(),
+  ])
+  const supplier = getSupplierBySlug(slug, data.suppliers)
   if (!supplier) notFound()
-  const data = await getDashboardOverviewData()
   return (
-    <SupplierDetailPage supplierName={supplier.name} source={data.source} />
+    <SupplierDetailPage
+      supplier={supplier}
+      expenses={data.expenses}
+      source={data.source}
+    />
   )
 }

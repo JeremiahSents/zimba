@@ -18,13 +18,6 @@ import {
   useReactTable,
 } from "@tanstack/react-table"
 import { Button } from "@workspace/ui/components/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@workspace/ui/components/dialog"
 import { Input } from "@workspace/ui/components/input"
 import {
   Select,
@@ -44,8 +37,6 @@ import {
 import { useMemo, useState } from "react"
 
 import { formatCurrency, formatShortDate } from "@/lib/format"
-import { SupplierForm } from "@/components/suppliers/supplier-form"
-import { readStoredSuppliers, storeSupplier } from "@/lib/supplier-store"
 import type { ExpenseResponse, ExpenseStatus } from "@/lib/types"
 
 const statusPillClasses = {
@@ -66,28 +57,12 @@ const columnWidths: Record<string, string> = {
 export function ProjectExpensesTable({
   expenses,
   onStatusChange,
-  supplierOptions,
-  onSupplierChange,
 }: {
   expenses: ExpenseResponse[]
   onStatusChange: (expenseId: number, status: ExpenseStatus) => void
-  supplierOptions: string[]
-  onSupplierChange: (expenseId: number, supplierName: string) => void
 }) {
   const [globalFilter, setGlobalFilter] = useState("")
   const [sorting, setSorting] = useState<SortingState>([])
-  const [availableSuppliers, setAvailableSuppliers] = useState(() =>
-    Array.from(
-      new Set([
-        ...supplierOptions,
-        ...readStoredSuppliers().map((supplier) => supplier.name),
-      ])
-    )
-  )
-  const [supplierDialogOpen, setSupplierDialogOpen] = useState(false)
-  const [supplierExpenseId, setSupplierExpenseId] = useState<number | null>(
-    null
-  )
   const columns = useMemo<ColumnDef<ExpenseResponse>[]>(
     () => [
       {
@@ -109,48 +84,10 @@ export function ProjectExpensesTable({
       {
         accessorKey: "supplier_name",
         header: "Supplier",
-        cell: ({ getValue, row }) => (
-          <div className="flex min-w-0 items-center gap-1">
-            <Select
-              value={getValue<string>()}
-              onValueChange={(value) =>
-                onSupplierChange(row.original.id, value ?? "")
-              }
-            >
-              <SelectTrigger
-                size="sm"
-                className="min-w-0 flex-1 border-0 bg-transparent px-0 font-normal shadow-none focus-visible:ring-0"
-              >
-                <SelectValue placeholder="Select supplier" />
-              </SelectTrigger>
-              <SelectContent>
-                {availableSuppliers.length > 0 ? (
-                  availableSuppliers.map((supplier) => (
-                    <SelectItem key={supplier} value={supplier}>
-                      {supplier}
-                    </SelectItem>
-                  ))
-                ) : (
-                  <SelectItem value="__none" disabled>
-                    No suppliers yet
-                  </SelectItem>
-                )}
-              </SelectContent>
-            </Select>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-xs"
-              className="shrink-0 text-primary"
-              onClick={() => {
-                setSupplierExpenseId(row.original.id)
-                setSupplierDialogOpen(true)
-              }}
-              aria-label="Add a new supplier"
-            >
-              +
-            </Button>
-          </div>
+        cell: ({ getValue }) => (
+          <span className="block truncate text-muted-foreground">
+            {getValue<string>()}
+          </span>
         ),
       },
       {
@@ -200,7 +137,7 @@ export function ProjectExpensesTable({
         },
       },
     ],
-    [availableSuppliers, onStatusChange, onSupplierChange]
+    [onStatusChange]
   )
   const table = useReactTable({
     data: expenses,
@@ -328,31 +265,6 @@ export function ProjectExpensesTable({
           </Button>
         </div>
       </div>
-      <Dialog open={supplierDialogOpen} onOpenChange={setSupplierDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add supplier</DialogTitle>
-            <DialogDescription>
-              Create a supplier and use it immediately on this expense.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="mt-5">
-            <SupplierForm
-              compact
-              onCancel={() => setSupplierDialogOpen(false)}
-              onSubmit={(values) => {
-                const supplier = storeSupplier(values)
-                setAvailableSuppliers((current) =>
-                  Array.from(new Set([supplier.name, ...current]))
-                )
-                if (supplierExpenseId !== null)
-                  onSupplierChange(supplierExpenseId, supplier.name)
-                setSupplierDialogOpen(false)
-              }}
-            />
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }

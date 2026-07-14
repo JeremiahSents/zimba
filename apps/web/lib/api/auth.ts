@@ -15,3 +15,13 @@ export function getZimbaApiSession(): ZimbaApiSession | null {
 
   return { token, organizationId }
 }
+
+export function requireZimbaApiSession(): ZimbaApiSession {
+  const session = getZimbaApiSession()
+  if (!session) {
+    throw new Error(
+      "Set ZIMBA_API_SESSION_TOKEN and ZIMBA_ORGANIZATION_ID to use the Zimba API."
+    )
+  }
+  return session
+}

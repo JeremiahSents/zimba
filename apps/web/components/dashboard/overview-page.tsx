@@ -10,23 +10,15 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import { Button } from "@workspace/ui/components/button"
 import { Card } from "@workspace/ui/components/card"
 import Link from "next/link"
-import { useEffect, useState } from "react"
 
 import { ProjectsSection } from "@/components/dashboard/projects-section"
 import { RecentActivity } from "@/components/dashboard/recent-activity"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { formatCurrency } from "@/lib/format"
-import { mergeStoredProjects } from "@/lib/project-store"
 import type { DashboardOverviewData } from "@/lib/types"
 
 export function DashboardPage({ data }: { data: DashboardOverviewData }) {
-  const [projects, setProjects] = useState(data.projects)
-  useEffect(() => {
-    const sync = () => setProjects(mergeStoredProjects(data.projects))
-    sync()
-    window.addEventListener("zimba-projects-updated", sync)
-    return () => window.removeEventListener("zimba-projects-updated", sync)
-  }, [data.projects])
+  const projects = data.projects
   const totalBudget = projects.reduce((sum, project) => sum + project.budget, 0)
   const totalSpent = projects.reduce((sum, project) => sum + project.spent, 0)
   const stats = [

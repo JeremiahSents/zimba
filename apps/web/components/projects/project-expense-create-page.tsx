@@ -20,13 +20,15 @@ import {
   SelectValue,
 } from "@workspace/ui/components/select"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
 import { useMemo, useState } from "react"
+import { createExpenseReceiptAction } from "@/app/admin/actions"
+import { UploadZone } from "@/components/projects/upload-zone"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { DatePicker } from "@/components/shared/date-picker"
+import { toApiExpenseStatus } from "@/lib/api/normalizers"
 import { formatCurrency } from "@/lib/format"
-import { storeExpense } from "@/lib/expense-store"
 import type { ProjectDetailResponse } from "@/lib/types"
+import { uploadZimbaFile } from "@/lib/upload-file"
 
 type ReceiptItem = {
   id: number
@@ -42,9 +44,11 @@ export function ProjectExpenseCreatePage({
 }: {
   project: ProjectDetailResponse
 }) {
-  const router = useRouter()
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10))
   const [status, setStatus] = useState<"Partial" | "Full" | "Not paid">("Full")
+  const [files, setFiles] = useState<File[]>([])
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState("")
   const supplierOptions = useMemo(
     () =>
       Array.from(
@@ -105,7 +109,7 @@ export function ProjectExpenseCreatePage({
     setItems((current) => current.filter((item) => item.id !== id))
   }
 
-  function submit(event: React.FormEvent<HTMLFormElement>) {
+  async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (
       !date ||
@@ -119,25 +123,44 @@ export function ProjectExpenseCreatePage({
           Number(item.rate) < 0
       )
     ) {
+      setError("Complete every required receipt field.")
       return
     }
 
-    const createdAt = Date.now()
-    items
-      .slice()
-      .reverse()
-      .forEach((item, index) => {
-        storeExpense(project.id, {
-          id: createdAt + index,
-          date,
-          task_name: item.taskName,
-          supplier_name: item.supplierName,
-          item_description: item.itemDetails.trim(),
-          amount: Number(item.quantity) * Number(item.rate),
-          status,
-        })
-      })
-    router.push(projectHref)
+    setSubmitting(true)
+    setError("")
+    let receiptFileId: string | undefined
+    try {
+      if (files[0]) {
+        receiptFileId = await uploadZimbaFile(files[0], "expense_receipt")
+      }
+    } catch (uploadError) {
+      setError(
+        uploadError instanceof Error
+          ? uploadError.message
+          : "The receipt file could not be uploaded."
+      )
+      setSubmitting(false)
+      return
+    }
+
+    const result = await createExpenseReceiptAction(project.id, {
+      expense_date: date,
+      items: items.map((item) => ({
+        allocation_id:
+          project.tasks.find((task) => task.name === item.taskName)?.id ?? 0,
+        item_description: item.itemDetails.trim(),
+        quantity: Number(item.quantity),
+        supplier_name: item.supplierName,
+        unit_rate: Number(item.rate),
+      })),
+      payment_status: toApiExpenseStatus(status),
+      receipt_file_id: receiptFileId,
+    })
+    if (!result.ok) {
+      setError(result.error)
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -175,6 +198,11 @@ export function ProjectExpenseCreatePage({
       </div>
 
       <form onSubmit={submit} className="grid gap-6">
+        {error && (
+          <p className="font-medium text-destructive text-xs" role="alert">
+            {error}
+          </p>
+        )}
         <Card>
           <CardHeader>
             <CardTitle className="font-semibold text-base">
@@ -215,6 +243,24 @@ export function ProjectExpenseCreatePage({
                 </SelectContent>
               </Select>
             </label>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-semibold text-base">
+              Receipt attachment
+            </CardTitle>
+            <CardDescription>
+              Upload an image or document for this receipt.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <UploadZone
+              files={files}
+              onFiles={(incoming) => setFiles(incoming.slice(0, 1))}
+              onRemove={() => setFiles([])}
+            />
           </CardContent>
         </Card>
 
@@ -387,7 +433,9 @@ export function ProjectExpenseCreatePage({
           >
             Cancel
           </Button>
-          <Button type="submit">Save expense</Button>
+          <Button type="submit" disabled={submitting}>
+            {submitting ? "Saving..." : "Save expense"}
+          </Button>
         </div>
       </form>
     </DashboardShell>

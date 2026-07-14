@@ -24,6 +24,7 @@ import {
   readProjectCreateDraft,
   writeProjectCreateDraft,
 } from "@/lib/project-create-draft"
+import { uploadZimbaFile } from "@/lib/upload-file"
 
 const emptyDetails: ProjectDetails = {
   name: "",
@@ -38,6 +39,7 @@ export function ProjectCreatePage() {
   const [files, setFiles] = useState<File[]>([])
   const [draftBudget, setDraftBudget] = useState(0)
   const [error, setError] = useState("")
+  const [uploading, setUploading] = useState(false)
 
   useEffect(() => {
     const draft = readProjectCreateDraft()
@@ -54,10 +56,11 @@ export function ProjectCreatePage() {
     writeProjectCreateDraft({
       details: nextDetails,
       allocations: existingDraft?.allocations ?? defaultInitialAllocations,
+      attachmentIds: existingDraft?.attachmentIds,
     })
   }
 
-  function goToAllocation(event: React.FormEvent) {
+  async function goToAllocation(event: React.FormEvent) {
     event.preventDefault()
     const { name, location, landSize, buildingType } = details
     if (!name.trim() || !location.trim() || !landSize.trim() || !buildingType) {
@@ -66,9 +69,28 @@ export function ProjectCreatePage() {
       )
       return
     }
+    setUploading(true)
+    setError("")
+    let attachmentIds = readProjectCreateDraft()?.attachmentIds ?? []
+    try {
+      if (files.length > 0) {
+        attachmentIds = await Promise.all(
+          files.map((file) => uploadZimbaFile(file, "project_attachment"))
+        )
+      }
+    } catch (uploadError) {
+      setError(
+        uploadError instanceof Error
+          ? uploadError.message
+          : "The project files could not be uploaded."
+      )
+      setUploading(false)
+      return
+    }
     const existingDraft = readProjectCreateDraft()
     writeProjectCreateDraft({
       details,
+      attachmentIds,
       allocations: existingDraft?.allocations.length
         ? existingDraft.allocations
         : defaultInitialAllocations,
@@ -80,6 +102,7 @@ export function ProjectCreatePage() {
     <DashboardShell title="New project" subtitle="">
       <form onSubmit={goToAllocation} className="grid gap-6">
         <PageHeader
+          pending={uploading}
           onCancel={() => {
             clearProjectCreateDraft()
             router.push("/admin/projects")
@@ -120,7 +143,13 @@ export function ProjectCreatePage() {
   )
 }
 
-function PageHeader({ onCancel }: { onCancel: () => void }) {
+function PageHeader({
+  onCancel,
+  pending,
+}: {
+  onCancel: () => void
+  pending: boolean
+}) {
   return (
     <div className="flex items-center justify-between gap-4">
       <div>
@@ -143,10 +172,17 @@ function PageHeader({ onCancel }: { onCancel: () => void }) {
         </p>
       </div>
       <div className="flex gap-2">
-        <Button type="button" variant="outline" onClick={onCancel}>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onCancel}
+          disabled={pending}
+        >
           Cancel
         </Button>
-        <Button type="submit">Next</Button>
+        <Button type="submit" disabled={pending}>
+          {pending ? "Uploading..." : "Next"}
+        </Button>
       </div>
     </div>
   )

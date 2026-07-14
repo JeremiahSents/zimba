@@ -27,6 +27,7 @@ import {
   getSupplierProfile,
   type SupplierPaymentStatus,
 } from "@/lib/supplier-data"
+import type { ExpenseTableRow, SupplierResponse } from "@/lib/types"
 
 const statusStyles: Record<SupplierPaymentStatus, string> = {
   Full: "bg-green-50 text-green-700",
@@ -35,18 +36,18 @@ const statusStyles: Record<SupplierPaymentStatus, string> = {
 }
 
 export function SupplierDetailPage({
-  supplierName,
+  supplier: supplierRecord,
+  expenses,
   source,
 }: {
-  supplierName: string
+  supplier: SupplierResponse
+  expenses: ExpenseTableRow[]
   source: "api" | "mock"
 }) {
-  const supplier = getSupplierListItems().find(
-    (item) => item.name === supplierName
-  )
+  const [supplier] = getSupplierListItems([supplierRecord], expenses)
   if (!supplier) return null
   const profile = getSupplierProfile(supplier.name)
-  const ledger = getSupplierLedger(supplier)
+  const ledger = getSupplierLedger(supplierRecord, expenses)
   const totalReceipts = ledger.reduce(
     (sum, entry) => sum + entry.receiptValue,
     0

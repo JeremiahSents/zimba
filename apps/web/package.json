@@ -4,6 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
+    "api:generate": "openapi-typescript https://zimba-backend-779644650318.us-central1.run.app/openapi.json --output types/api.ts",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
@@ -36,6 +37,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@workspace/typescript-config": "workspace:*",
+    "openapi-typescript": "7.13.0",
     "typescript": "^5"
   }
 }

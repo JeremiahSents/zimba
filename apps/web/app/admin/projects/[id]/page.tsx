@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import { notFound } from "next/navigation"
 import { ProjectDetailPageWrapper } from "@/components/projects/project-detail-page"
 import { getProjectDetail } from "@/lib/api/projects"
 
@@ -12,6 +13,7 @@ export default async function Page({
 }) {
   const { id } = await params
   const project = await getProjectDetail(Number(id))
+  if (!project) notFound()
 
-  return <ProjectDetailPageWrapper id={Number(id)} initialProject={project} />
+  return <ProjectDetailPageWrapper initialProject={project} />
 }

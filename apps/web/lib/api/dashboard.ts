@@ -2,10 +2,10 @@ import "server-only"
 
 import { getZimbaApiSession } from "@/lib/api/auth"
 import {
+  getDashboardOverview,
   listExpenses,
   listProjects,
   listSuppliers,
-  ZimbaApiError,
 } from "@/lib/api/client"
 import {
   mockExpenses,
@@ -14,93 +14,98 @@ import {
   mockSuppliers,
   mockUtilizationChart,
 } from "@/lib/api/mock-data"
+import {
+  toExpenseTableRow,
+  toProjectSummary,
+  toSupplier,
+} from "@/lib/api/normalizers"
 import { formatCurrency, formatPercent } from "@/lib/format"
-import type {
-  DashboardOverviewData,
-  DashboardSource,
-  ExpenseResponse,
-  ExpenseTableRow,
-  ProjectDashboardResponse,
-  SupplierResponse,
-} from "@/lib/types"
+import type { DashboardOverviewData } from "@/lib/types"
 
 export async function getDashboardOverviewData(): Promise<DashboardOverviewData> {
   const session = getZimbaApiSession()
 
-  if (!session) {
-    return buildDashboardOverviewData({
-      expenses: mockExpenses,
-      projects: mockProjects,
-      source: "mock",
-      suppliers: mockSuppliers,
-    })
-  }
+  if (!session) return getMockDashboardData()
 
-  try {
-    const [projects, expenses, suppliers] = await Promise.all([
-      listProjects(session),
-      listExpenses(session),
-      listSuppliers(session),
-    ])
+  const [overview, projectPage, expensePage, apiSuppliers] = await Promise.all([
+    getDashboardOverview(session),
+    listProjects(session, { page: 1, page_size: 100 }),
+    listExpenses(session, {
+      page: 1,
+      page_size: 100,
+      sort_by: "expense_date",
+      sort_order: "desc",
+    }),
+    listSuppliers(session, { page: 1, page_size: 100 }),
+  ])
 
-    return buildDashboardOverviewData({
-      expenses: enrichExpenses(expenses),
-      projects,
-      source: "api",
-      suppliers: normalizeSuppliers(suppliers),
-    })
-  } catch (error) {
-    if (error instanceof ZimbaApiError) {
-      console.warn(error.message)
-    }
-
-    return buildDashboardOverviewData({
-      expenses: mockExpenses,
-      projects: mockProjects,
-      source: "mock",
-      suppliers: mockSuppliers,
-    })
-  }
-}
-
-function buildDashboardOverviewData({
-  expenses,
-  projects,
-  source,
-  suppliers,
-}: {
-  expenses: ExpenseTableRow[]
-  projects: ProjectDashboardResponse[]
-  source: DashboardSource
-  suppliers: SupplierResponse[]
-}): DashboardOverviewData {
-  const totals = projects.reduce(
-    (acc, project) => {
-      acc.budget += project.budget
-      acc.spent += project.spent
-      acc.remaining += project.remaining
-      return acc
-    },
-    { budget: 0, remaining: 0, spent: 0 }
-  )
-  const averagePct =
-    projects.length > 0
-      ? Math.round(
-          projects.reduce((total, project) => total + project.pct, 0) /
-            projects.length
-        )
-      : 0
+  const projects = projectPage.items.map(toProjectSummary)
+  const expenses = expensePage.items.map(toExpenseTableRow)
+  const suppliers = apiSuppliers.map(toSupplier)
 
   return {
     expenses,
     projects,
-    source,
-    spendChart: source === "mock" ? mockSpendChart : buildSpendChart(projects),
+    source: "api",
+    spendChart: overview.spend_by_period.map((period) => ({
+      budget: period.budget,
+      month: period.period,
+      spent: period.spent,
+    })),
     stats: [
       {
         detail: "Across active construction sites",
         label: "Active projects",
-        value: String(projects.length),
+        value: String(overview.totals.active_projects),
+      },
+      {
+        detail: "Approved project allocations",
+        label: "Total budget",
+        value: formatCurrency(overview.totals.budget),
+      },
+      {
+        detail: `${formatPercent(overview.totals.utilization_pct)} of current budgets`,
+        label: "Total spent",
+        value: formatCurrency(overview.totals.spent),
+      },
+      {
+        detail: "Available before overruns",
+        label: "Remaining",
+        value: formatCurrency(overview.totals.remaining),
+      },
+    ],
+    suppliers,
+    utilizationChart: overview.utilization_by_period.map((period) => ({
+      month: period.period,
+      utilization: period.utilization_pct,
+    })),
+  }
+}
+
+function getMockDashboardData(): DashboardOverviewData {
+  const totals = mockProjects.reduce(
+    (acc, project) => {
+      acc.budget += project.budget
+      acc.remaining += project.remaining
+      acc.spent += project.spent
+      return acc
+    },
+    { budget: 0, remaining: 0, spent: 0 }
+  )
+  const utilization = totals.budget
+    ? Math.round((totals.spent / totals.budget) * 100)
+    : 0
+
+  return {
+    expenses: mockExpenses,
+    projects: mockProjects,
+    source: "mock",
+    spendChart: mockSpendChart,
+    stats: [
+      {
+        detail: "Across active construction sites",
+        label: "Active projects",
+        value: String(mockProjects.length),
       },
       {
         detail: "Approved project allocations",
@@ -108,7 +113,7 @@ function buildDashboardOverviewData({
         value: formatCurrency(totals.budget),
       },
       {
-        detail: `${formatPercent(averagePct)} of current budgets`,
+        detail: `${formatPercent(utilization)} of current budgets`,
         label: "Total spent",
         value: formatCurrency(totals.spent),
       },
@@ -118,49 +123,7 @@ function buildDashboardOverviewData({
         value: formatCurrency(totals.remaining),
       },
     ],
-    suppliers,
-    utilizationChart:
-      source === "mock"
-        ? mockUtilizationChart
-        : buildUtilizationChart(projects, averagePct),
+    suppliers: mockSuppliers,
+    utilizationChart: mockUtilizationChart,
   }
-}
-
-function enrichExpenses(expenses: ExpenseResponse[]): ExpenseTableRow[] {
-  return expenses.map((expense) => ({
-    ...expense,
-    project_name: "Project pending from API",
-    status: "Not paid",
-  }))
-}
-
-function normalizeSuppliers(suppliers: SupplierResponse[]): SupplierResponse[] {
-  return suppliers.map((supplier) => ({
-    amount: supplier.amount,
-    category: supplier.category ?? "services",
-    name: supplier.name,
-    payments: supplier.payments ?? 0,
-  }))
-}
-
-function buildSpendChart(projects: ProjectDashboardResponse[]) {
-  return projects.map((project) => ({
-    budget: project.budget,
-    month: project.name,
-    spent: project.spent,
-  }))
-}
-
-function buildUtilizationChart(
-  projects: ProjectDashboardResponse[],
-  fallbackPct: number
-) {
-  if (projects.length === 0) {
-    return [{ month: "Current", utilization: fallbackPct }]
-  }
-
-  return projects.map((project) => ({
-    month: project.name,
-    utilization: project.pct,
-  }))
 }
