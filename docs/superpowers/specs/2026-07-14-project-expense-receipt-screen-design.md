@@ -15,6 +15,7 @@ Replace the project-detail New expense modal with a dedicated project-scoped rec
 ## Receipt fields
 
 - Expense date
+- Payment status: Full, Partial, or Not paid
 - One or more item rows, each with Project task, Supplier, Item details,
   Quantity, Rate, and Amount
 - Each row's amount is calculated automatically as quantity multiplied by rate
@@ -39,7 +40,8 @@ The screen does not include tax, attachments, scanning, or bulk actions.
 - Calculate every row amount and the receipt total in the client.
 - Store locally created expenses under the project id because no expense mutation endpoint currently exists.
 - Merge locally stored expenses into the project detail expense list so the new receipt appears after navigation.
-- Store each line item as a project expense using its calculated amount.
+- Store each line item as a project expense using its calculated amount and the
+  receipt-level payment status.
 
 ## Responsive behavior
 

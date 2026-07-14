@@ -25,15 +25,15 @@ import { Label } from "@workspace/ui/components/label"
 import { Progress } from "@workspace/ui/components/progress"
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { Cell, Pie, PieChart } from "recharts"
 import { ProjectExpensesTable } from "@/components/projects/project-expenses-table"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { DatePicker } from "@/components/shared/date-picker"
-import { mergeStoredExpenses } from "@/lib/expense-store"
+import { mergeStoredExpenses, storeExpenseStatus } from "@/lib/expense-store"
 import { formatCurrency, formatPercent } from "@/lib/format"
 import { readStoredProjects } from "@/lib/project-store"
-import type { ProjectDetailResponse } from "@/lib/types"
+import type { ExpenseStatus, ProjectDetailResponse } from "@/lib/types"
 
 const colors = ["#86efac", "#fcd34d", "#fca5a5", "#93c5fd", "#d8b4fe"]
 const taskLegendClasses = [
@@ -140,6 +140,18 @@ export function ProjectDetailPage({
   useEffect(() => {
     setExpenses(mergeStoredExpenses(project.id, project.expenses))
   }, [project.id, project.expenses])
+
+  const updateExpenseStatus = useCallback(
+    (expenseId: number, status: ExpenseStatus) => {
+      setExpenses((current) =>
+        current.map((expense) =>
+          expense.id === expenseId ? { ...expense, status } : expense
+        )
+      )
+      storeExpenseStatus(project.id, expenseId, status)
+    },
+    [project.id]
+  )
 
   const spent = expenses.reduce((sum, expense) => sum + expense.amount, 0)
   const taskData = project.tasks
@@ -330,7 +342,10 @@ export function ProjectDetailPage({
               Every payment recorded against this project.
             </p>
           </div>
-          <ProjectExpensesTable expenses={expenses} />
+          <ProjectExpensesTable
+            expenses={expenses}
+            onStatusChange={updateExpenseStatus}
+          />
         </section>
       </div>
 

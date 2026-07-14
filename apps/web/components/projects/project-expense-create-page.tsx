@@ -44,9 +44,7 @@ export function ProjectExpenseCreatePage({
 }) {
   const router = useRouter()
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10))
-  const [status, setStatus] = useState<"Partial" | "Full" | "Not paid">(
-    "Full"
-  )
+  const [status, setStatus] = useState<"Partial" | "Full" | "Not paid">("Full")
   const supplierOptions = useMemo(
     () =>
       Array.from(

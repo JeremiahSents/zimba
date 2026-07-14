@@ -17,6 +17,8 @@ export type TaskResponse = {
   pct: number
 }
 
+export type ExpenseStatus = "Partial" | "Full" | "Not paid"
+
 export type ExpenseResponse = {
   id: number
   date: string
@@ -24,7 +26,7 @@ export type ExpenseResponse = {
   supplier_name: string
   item_description: string
   amount: number
-  status?: "Partial" | "Full" | "Not paid"
+  status?: ExpenseStatus
 }
 
 export type SupplierBreakdown = {
@@ -89,7 +91,7 @@ export type DashboardSource = "api" | "mock"
 
 export type ExpenseTableRow = ExpenseResponse & {
   project_name: string
-  status: "Partial" | "Full" | "Not paid"
+  status: ExpenseStatus
 }
 
 export type DashboardStat = {
