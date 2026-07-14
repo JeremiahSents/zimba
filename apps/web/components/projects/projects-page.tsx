@@ -1,63 +1,81 @@
 "use client"
 
 import {
+  ArrowLeft01Icon,
+  ArrowRight01Icon,
   FolderKanbanIcon,
   MoneyBag02Icon,
   PlusSignIcon,
+  Search01Icon,
   TaskDone01Icon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Button } from "@workspace/ui/components/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@workspace/ui/components/card"
+import { Card } from "@workspace/ui/components/card"
+import { Input } from "@workspace/ui/components/input"
 import Link from "next/link"
 import { useEffect, useState } from "react"
-import { ProjectsTable } from "@/components/projects/projects-table"
+
+import { ProjectsList } from "@/components/dashboard/projects-section"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { mockProjectListDetails } from "@/lib/api/mock-data"
 import { formatCurrency } from "@/lib/format"
 import { mergeStoredProjects } from "@/lib/project-store"
 import type { DashboardOverviewData } from "@/lib/types"
 
+const PAGE_SIZE = 5
+
 export function ProjectsPage({ data }: { data: DashboardOverviewData }) {
   const [projects, setProjects] = useState(data.projects)
+  const [search, setSearch] = useState("")
+  const [pageIndex, setPageIndex] = useState(0)
+
   useEffect(() => {
     const sync = () => setProjects(mergeStoredProjects(data.projects))
     sync()
     window.addEventListener("zimba-projects-updated", sync)
     return () => window.removeEventListener("zimba-projects-updated", sync)
   }, [data.projects])
+
   const totalValue = projects.reduce((sum, project) => sum + project.budget, 0)
   const onTrack = projects.filter(
     (project) =>
       mockProjectListDetails[project.id as keyof typeof mockProjectListDetails]
         ?.status === "On track"
   ).length
+  const normalizedSearch = search.trim().toLowerCase()
+  const filteredProjects = projects.filter((project) => {
+    const details =
+      mockProjectListDetails[project.id as keyof typeof mockProjectListDetails]
+    return [
+      project.name,
+      project.location,
+      project.plot_size,
+      details?.client,
+      details?.status,
+      details?.timeline,
+    ].some((value) => value?.toLowerCase().includes(normalizedSearch))
+  })
+  const pageCount = Math.max(Math.ceil(filteredProjects.length / PAGE_SIZE), 1)
+  const safePageIndex = Math.min(pageIndex, pageCount - 1)
+  const visibleProjects = filteredProjects.slice(
+    safePageIndex * PAGE_SIZE,
+    (safePageIndex + 1) * PAGE_SIZE
+  )
   const stats = [
     {
       label: "Total projects",
       value: String(projects.length),
-      detail: "Portfolio",
-      pillClassName: "bg-blue-50 text-blue-700",
       icon: FolderKanbanIcon,
     },
     {
       label: "On track",
       value: String(onTrack),
-      detail: `${onTrack} healthy`,
-      pillClassName: "bg-green-50 text-green-700",
       icon: TaskDone01Icon,
     },
     {
       label: "Portfolio value",
       value: formatCurrency(totalValue),
-      detail: "Approved",
-      pillClassName: "bg-amber-50 text-amber-700",
       icon: MoneyBag02Icon,
     },
   ]
@@ -68,56 +86,113 @@ export function ProjectsPage({ data }: { data: DashboardOverviewData }) {
       subtitle="See every project, its financial position, and delivery status."
       dataSource={data.source}
     >
-      <Card className="gap-0 py-0">
-        <div className="grid md:grid-cols-3">
-          {stats.map((stat) => (
-            <div
-              key={stat.label}
-              className="border-t p-5 first:border-t-0 md:border-t-0 md:border-l md:first:border-l-0"
-            >
+      <section className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
+        <h2 className="font-heading font-semibold text-base text-foreground tracking-tight">
+          Overview
+        </h2>
+        <Button
+          variant="outline"
+          size="sm"
+          nativeButton={false}
+          render={<Link href="/admin/projects/new" />}
+        >
+          <HugeiconsIcon icon={PlusSignIcon} strokeWidth={2} />
+          New project
+        </Button>
+      </section>
+
+      <div className="-mt-2 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {stats.map((stat) => (
+          <Card key={stat.label} className="gap-0 py-0">
+            <div className="p-4">
               <div className="flex items-center justify-between gap-3">
                 <p className="font-medium text-muted-foreground text-xs">
                   {stat.label}
                 </p>
                 <HugeiconsIcon
                   icon={stat.icon}
-                  strokeWidth={1.5}
+                  strokeWidth={1.7}
                   className="size-4 text-primary"
                 />
               </div>
-              <p className="mt-4 font-heading font-semibold text-base text-foreground">
+              <p className="mt-2 font-heading font-semibold text-xl tracking-tight">
                 {stat.value}
               </p>
-              <p
-                className={`mt-2 inline-flex rounded-lg px-1.5 py-0.5 font-medium text-[10px] ${stat.pillClassName}`}
-              >
-                {stat.detail}
-              </p>
             </div>
-          ))}
+          </Card>
+        ))}
+      </div>
+
+      <section>
+        <div className="mb-4">
+          <h2 className="font-heading font-semibold text-base text-foreground tracking-tight">
+            All projects
+          </h2>
+          <p className="mt-1 text-muted-foreground text-xs">
+            Delivery status and financial progress across the portfolio.
+          </p>
         </div>
-      </Card>
-      <Card>
-        <CardHeader className="flex flex-row items-start justify-between gap-4">
-          <div>
-            <CardTitle>All projects</CardTitle>
-            <CardDescription>
-              Delivery status and financial progress across the portfolio.
-            </CardDescription>
+
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="relative w-full max-w-xs">
+            <HugeiconsIcon
+              icon={Search01Icon}
+              strokeWidth={1.5}
+              className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+            />
+            <Input
+              value={search}
+              onChange={(event) => {
+                setSearch(event.target.value)
+                setPageIndex(0)
+              }}
+              placeholder="Search projects..."
+              aria-label="Search projects"
+              className="pl-9"
+            />
           </div>
-          <Button
-            size="sm"
-            nativeButton={false}
-            render={<Link href="/admin/projects/new" />}
-          >
-            <HugeiconsIcon icon={PlusSignIcon} strokeWidth={2} />
-            Create project
-          </Button>
-        </CardHeader>
-        <CardContent>
-          <ProjectsTable projects={projects} details={mockProjectListDetails} />
-        </CardContent>
-      </Card>
+          <p className="text-muted-foreground text-xs">
+            {filteredProjects.length}{" "}
+            {filteredProjects.length === 1 ? "project" : "projects"}
+          </p>
+        </div>
+
+        <ProjectsList
+          projects={visibleProjects}
+          emptyTitle="No matching projects"
+          emptyDescription="Try a different project name, location, or client."
+        />
+
+        <div className="mt-5 flex flex-col gap-3 border-t pt-5 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-muted-foreground text-xs">
+            Page {safePageIndex + 1} of {pageCount}
+          </p>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                setPageIndex((current) => Math.max(current - 1, 0))
+              }
+              disabled={safePageIndex === 0}
+            >
+              <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={1.5} />
+              Previous
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                setPageIndex((current) => Math.min(current + 1, pageCount - 1))
+              }
+              disabled={safePageIndex >= pageCount - 1}
+            >
+              Next
+              <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={1.5} />
+            </Button>
+          </div>
+        </div>
+      </section>
     </DashboardShell>
   )
 }

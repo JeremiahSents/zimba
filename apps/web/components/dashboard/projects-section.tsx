@@ -28,27 +28,35 @@ export function ProjectsSection({
           View all
         </Button>
       </div>
-      <div>
-        {projects.length ? (
-          <div className="divide-y rounded-xl border">
-            {projects.map((project) => (
-              <ProjectRow key={project.id} project={project} />
-            ))}
-          </div>
-        ) : (
-          <div className="rounded-xl border border-dashed p-8 text-center">
-            <p className="font-medium">No projects yet</p>
-            <p className="mt-1 text-muted-foreground text-xs">
-              Create your first project to start tracking its budget.
-            </p>
-          </div>
-        )}
-      </div>
+      <ProjectsList projects={projects} />
     </section>
   )
 }
 
-function ProjectRow({ project }: { project: ProjectDashboardResponse }) {
+export function ProjectsList({
+  projects,
+  emptyTitle = "No projects yet",
+  emptyDescription = "Create your first project to start tracking its budget.",
+}: {
+  projects: ProjectDashboardResponse[]
+  emptyTitle?: string
+  emptyDescription?: string
+}) {
+  return projects.length ? (
+    <div className="divide-y rounded-xl border">
+      {projects.map((project) => (
+        <ProjectRow key={project.id} project={project} />
+      ))}
+    </div>
+  ) : (
+    <div className="rounded-xl border border-dashed p-8 text-center">
+      <p className="font-medium">{emptyTitle}</p>
+      <p className="mt-1 text-muted-foreground text-xs">{emptyDescription}</p>
+    </div>
+  )
+}
+
+export function ProjectRow({ project }: { project: ProjectDashboardResponse }) {
   const budgetTone =
     project.pct >= 80 ? "critical" : project.pct >= 60 ? "warning" : "healthy"
   const utilizationPercent = Math.min(Math.max(project.pct, 0), 100)

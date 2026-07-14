@@ -9,22 +9,21 @@ import {
   BreadcrumbSeparator,
 } from "@workspace/ui/components/breadcrumb"
 import { Button } from "@workspace/ui/components/button"
-import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useMemo, useState } from "react"
-import {
-  type Allocation,
-  AllocationTable,
-  allocationTotal,
-  initialAllocations,
-} from "@/components/projects/allocation-table"
+import { useEffect, useState } from "react"
 import {
   type ProjectDetails,
   ProjectDetailsCard,
 } from "@/components/projects/project-details-card"
 import { ProjectPreviewCard } from "@/components/projects/project-preview-card"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
-import { storeProject } from "@/lib/project-store"
+import {
+  clearProjectCreateDraft,
+  defaultInitialAllocations,
+  initialAllocationTotal,
+  readProjectCreateDraft,
+  writeProjectCreateDraft,
+} from "@/lib/project-create-draft"
 
 const emptyDetails: ProjectDetails = {
   name: "",
@@ -37,15 +36,32 @@ export function ProjectCreatePage() {
   const router = useRouter()
   const [details, setDetails] = useState<ProjectDetails>(emptyDetails)
   const [files, setFiles] = useState<File[]>([])
-  const [rows, setRows] = useState<Allocation[]>(initialAllocations)
+  const [draftBudget, setDraftBudget] = useState(0)
   const [error, setError] = useState("")
+  const [draftReady, setDraftReady] = useState(false)
 
-  const totalBudget = useMemo(() => allocationTotal(rows), [rows])
+  useEffect(() => {
+    const draft = readProjectCreateDraft()
+    if (draft) {
+      setDetails(draft.details)
+      setDraftBudget(initialAllocationTotal(draft.allocations))
+    }
+    setDraftReady(true)
+  }, [])
+
+  useEffect(() => {
+    if (!draftReady) return
+    const existingDraft = readProjectCreateDraft()
+    writeProjectCreateDraft({
+      details,
+      allocations: existingDraft?.allocations ?? defaultInitialAllocations,
+    })
+  }, [details, draftReady])
 
   const updateDetail = (field: keyof ProjectDetails, value: string) =>
     setDetails((current) => ({ ...current, [field]: value }))
 
-  function submit(event: React.FormEvent) {
+  function goToAllocation(event: React.FormEvent) {
     event.preventDefault()
     const { name, location, landSize, buildingType } = details
     if (!name.trim() || !location.trim() || !landSize.trim() || !buildingType) {
@@ -54,23 +70,25 @@ export function ProjectCreatePage() {
       )
       return
     }
-    storeProject({
-      id: Date.now(),
-      name,
-      location,
-      plot_size: landSize,
-      budget: totalBudget,
-      spent: 0,
-      remaining: totalBudget,
-      pct: 0,
+    const existingDraft = readProjectCreateDraft()
+    writeProjectCreateDraft({
+      details,
+      allocations: existingDraft?.allocations.length
+        ? existingDraft.allocations
+        : defaultInitialAllocations,
     })
-    router.push("/admin/projects")
+    router.push("/admin/projects/new/allocation")
   }
 
   return (
     <DashboardShell title="New project" subtitle="">
-      <form onSubmit={submit} className="grid gap-6">
-        <PageHeader />
+      <form onSubmit={goToAllocation} className="grid gap-6">
+        <PageHeader
+          onCancel={() => {
+            clearProjectCreateDraft()
+            router.push("/admin/projects")
+          }}
+        />
         {error && (
           <p className="font-medium text-destructive text-xs">{error}</p>
         )}
@@ -96,29 +114,24 @@ export function ProjectCreatePage() {
                 buildingType={details.buildingType}
                 landSize={details.landSize}
                 files={files}
-                totalBudget={totalBudget}
+                totalBudget={draftBudget}
               />
             </div>
           </div>
-          <section className="grid gap-5">
-            <AllocationTable rows={rows} onRowsChange={setRows} />
-          </section>
         </div>
       </form>
     </DashboardShell>
   )
 }
 
-function PageHeader() {
+function PageHeader({ onCancel }: { onCancel: () => void }) {
   return (
     <div className="flex items-center justify-between gap-4">
       <div>
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink href="/admin/projects">
-                Projects
-              </BreadcrumbLink>
+              <BreadcrumbLink href="/admin/projects">Projects</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
@@ -130,19 +143,14 @@ function PageHeader() {
           Create a project
         </h2>
         <p className="mt-1 text-muted-foreground text-xs">
-          Set up the project details and initial budget allocation.
+          Add the project details before setting its initial allocation.
         </p>
       </div>
       <div className="flex gap-2">
-        <Button
-          type="button"
-          variant="outline"
-          nativeButton={false}
-          render={<Link href="/admin/projects" />}
-        >
+        <Button type="button" variant="outline" onClick={onCancel}>
           Cancel
         </Button>
-        <Button type="submit">Create project</Button>
+        <Button type="submit">Next</Button>
       </div>
     </div>
   )
