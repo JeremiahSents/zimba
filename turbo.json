@@ -1,6 +1,11 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "globalEnv": [
+    "DATABASE_URL",
+    "BETTER_AUTH_SECRET",
+    "BETTER_AUTH_URL",
+    "GOOGLE_CLIENT_ID",
+    "GOOGLE_CLIENT_SECRET",
     "ZIMBA_API_BASE_URL",
     "ZIMBA_API_SESSION_TOKEN",
     "ZIMBA_ORGANIZATION_ID"
