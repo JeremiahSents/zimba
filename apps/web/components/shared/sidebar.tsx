@@ -30,12 +30,12 @@ import { usePathname } from "next/navigation"
 import type { ComponentProps } from "react"
 
 const navItems = [
-  { title: "Home", href: "/dashboard", icon: DashboardSquare02Icon },
-  { title: "Projects", href: "/dashboard/projects", icon: FolderKanbanIcon },
-  { title: "Suppliers", href: "/dashboard/suppliers", icon: MoneyBag02Icon },
-  { title: "Team", href: "/dashboard/team", icon: UserGroupIcon },
-  { title: "Analytics", href: "/dashboard/analytics", icon: Analytics02Icon },
-  { title: "Reports", href: "/dashboard/reports", icon: Analytics02Icon },
+  { title: "Home", href: "/admin/home", icon: DashboardSquare02Icon },
+  { title: "Projects", href: "/admin/projects", icon: FolderKanbanIcon },
+  { title: "Suppliers", href: "/admin/suppliers", icon: MoneyBag02Icon },
+  { title: "Team", href: "/admin/team", icon: UserGroupIcon },
+  { title: "Analytics", href: "/admin/analytics", icon: Analytics02Icon },
+  { title: "Reports", href: "/admin/reports", icon: Analytics02Icon },
 ]
 
 export function DashboardSidebar() {
@@ -62,7 +62,7 @@ export function DashboardSidebar() {
                   <SidebarMenuButton
                     tooltip={item.title}
                     isActive={
-                      item.href === "/dashboard"
+                      item.href === "/admin/home"
                         ? pathname === item.href
                         : pathname.startsWith(item.href)
                     }

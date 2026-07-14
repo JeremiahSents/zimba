@@ -196,7 +196,7 @@ export function ProjectDetailPage({
         <div>
           <div className="mb-2 flex items-center gap-2 text-muted-foreground text-xs">
             <Link
-              href="/dashboard/projects"
+              href="/admin/projects"
               className="font-semibold text-primary hover:underline"
             >
               Projects

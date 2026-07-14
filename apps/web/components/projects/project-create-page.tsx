@@ -64,7 +64,7 @@ export function ProjectCreatePage() {
       remaining: totalBudget,
       pct: 0,
     })
-    router.push("/dashboard/projects")
+    router.push("/admin/projects")
   }
 
   return (
@@ -116,7 +116,7 @@ function PageHeader() {
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink href="/dashboard/projects">
+              <BreadcrumbLink href="/admin/projects">
                 Projects
               </BreadcrumbLink>
             </BreadcrumbItem>
@@ -138,7 +138,7 @@ function PageHeader() {
           type="button"
           variant="outline"
           nativeButton={false}
-          render={<Link href="/dashboard/projects" />}
+          render={<Link href="/admin/projects" />}
         >
           Cancel
         </Button>

@@ -103,7 +103,7 @@ function DashboardTopbar({
           size="icon"
           nativeButton={false}
           render={
-            <Link href="/dashboard/settings" aria-label="Open settings" />
+            <Link href="/admin/settings" aria-label="Open settings" />
           }
         >
           <HugeiconsIcon

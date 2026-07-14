@@ -23,7 +23,7 @@ export function ProjectsSection({
           variant="ghost"
           size="sm"
           nativeButton={false}
-          render={<Link href="/dashboard/projects" />}
+          render={<Link href="/admin/projects" />}
         >
           View all
         </Button>
@@ -84,7 +84,7 @@ function ProjectRow({ project }: { project: ProjectDashboardResponse }) {
             className="size-4 shrink-0 text-primary"
           />
           <Link
-            href={`/dashboard/projects/${project.id}`}
+            href={`/admin/projects/${project.id}`}
             className="truncate font-semibold text-sm hover:text-primary"
           >
             {project.name}
@@ -122,7 +122,7 @@ function ProjectRow({ project }: { project: ProjectDashboardResponse }) {
         </div>
       </div>
       <Link
-        href={`/dashboard/projects/${project.id}`}
+        href={`/admin/projects/${project.id}`}
         className="font-semibold text-primary text-xs transition-colors hover:text-primary/75"
       >
         View project

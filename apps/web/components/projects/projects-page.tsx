@@ -108,7 +108,7 @@ export function ProjectsPage({ data }: { data: DashboardOverviewData }) {
           <Button
             size="sm"
             nativeButton={false}
-            render={<Link href="/dashboard/projects/new" />}
+            render={<Link href="/admin/projects/new" />}
           >
             <HugeiconsIcon icon={PlusSignIcon} strokeWidth={2} />
             Create project

@@ -28,7 +28,7 @@ export function getAttentionItems(
         title: "Create your first project",
         detail: "Set up a project before you start logging expenses.",
         action: "View projects",
-        href: "/dashboard/projects",
+        href: "/admin/projects",
       },
     ]
   }
@@ -41,6 +41,6 @@ export function getAttentionItems(
       title: `${project.name} needs a budget check`,
       detail: `${Math.round(project.pct)}% of the project budget has been used.`,
       action: "Review budget",
-      href: `/dashboard/projects/${project.id}`,
+      href: `/admin/projects/${project.id}`,
     }))
 }

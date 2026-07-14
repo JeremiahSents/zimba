@@ -50,7 +50,7 @@ export function ProjectsTable({
         cell: ({ row }) => (
           <div>
             <Link
-              href={`/dashboard/projects/${row.original.id}`}
+              href={`/admin/projects/${row.original.id}`}
               className="font-medium hover:text-primary hover:underline"
             >
               {row.original.name}

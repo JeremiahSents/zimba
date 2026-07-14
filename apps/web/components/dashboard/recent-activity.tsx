@@ -44,7 +44,7 @@ export function RecentActivity({
           Recent expenses
         </h2>
         <Link
-          href="/dashboard/expenses"
+          href="/admin/expenses"
           className="font-semibold text-primary text-xs transition-colors hover:text-primary/75"
         >
           View expenses
@@ -119,7 +119,7 @@ export function RecentActivity({
       )}
       <div className="mt-4 flex justify-center border-t pt-3">
         <Link
-          href="/dashboard/expenses"
+          href="/admin/expenses"
           className="rounded-md border border-border px-3 py-1.5 font-semibold text-foreground text-xs transition-colors hover:bg-muted"
         >
           View more
