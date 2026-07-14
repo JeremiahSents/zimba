@@ -21,7 +21,7 @@ export async function uploadZimbaFile(
     if (typeof value === "string") uploadHeaders.set(name, value)
   }
 
-  const uploaded = await fetch(requested.data.upload_url, {
+  const uploaded = await fetch(toSecureUploadUrl(requested.data.upload_url), {
     body: file,
     headers: uploadHeaders,
     method: "PUT",
@@ -33,4 +33,20 @@ export async function uploadZimbaFile(
   const completed = await completeFileUploadAction(requested.data.file_id)
   if (!completed.ok) throw new Error(completed.error)
   return completed.data.id
+}
+
+function toSecureUploadUrl(value: string) {
+  const url = new URL(value)
+
+  // The backend currently builds direct-upload URLs with http://. Browsers
+  // block those URLs when the Zimba app is served over HTTPS.
+  if (
+    url.protocol === "http:" &&
+    typeof window !== "undefined" &&
+    window.location.protocol === "https:"
+  ) {
+    url.protocol = "https:"
+  }
+
+  return url.toString()
 }

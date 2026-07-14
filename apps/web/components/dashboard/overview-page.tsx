@@ -127,13 +127,10 @@ export function DashboardPage({ data }: { data: DashboardOverviewData }) {
 function FirstProjectEmptyState() {
   return (
     <section className="relative isolate flex min-h-[28rem] items-center justify-center overflow-hidden rounded-2xl px-6 py-16 text-center sm:px-10">
+      <div aria-hidden className="absolute inset-0 -z-20 opacity-45" />
       <div
         aria-hidden
-        className="absolute inset-0 -z-20 opacity-45"
-      />
-      <div
-        aria-hidden
-        className="absolute top-0 left-1/2 -z-10 h-64 w-[36rem] -translate-x-1/2 rounded-full "
+        className="absolute top-0 left-1/2 -z-10 h-64 w-[36rem] -translate-x-1/2 rounded-full"
       />
 
       <div className="flex flex-col items-center gap-8">
