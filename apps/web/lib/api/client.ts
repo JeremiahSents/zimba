@@ -122,6 +122,7 @@ function getErrorMessage(status: number, body?: HTTPValidationError) {
     404: "The requested resource was not found.",
     409: "The request conflicts with existing data.",
     422: "Some submitted values are invalid.",
+    500: "The backend could not process this request. Its database may need the latest migrations.",
   }
   return statusMessages[status] ?? `The Zimba API returned status ${status}.`
 }
