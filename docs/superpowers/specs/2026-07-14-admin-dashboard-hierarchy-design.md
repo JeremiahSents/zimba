@@ -16,8 +16,8 @@ The current application has no live user or tenant object available to these cli
 
 ## Home toolbar and summary
 
-- Remove the period selector, its state, and the existing Create project action from the home toolbar.
-- Add one primary `Add expense` action linking to `/admin/expenses`. This is intentional because the application has no expense-creation flow to invoke and no new workflow is in scope.
+- Remove the period selector and its state from the home toolbar.
+- Add a primary `Add expense` action linking to `/admin/expenses` and a secondary `New project` action linking to the existing `/admin/projects/new` flow. The expense action links to the expense listing because the application has no expense-creation flow to invoke and no new workflow is in scope.
 - Show exactly three independently bordered compact cards: Active projects, Total budget, and Total spent.
 - Retain the current calculated values and icons, but remove trend pills, comparison copy, and the Needs attention metric.
 - Preserve responsive stacking by using the existing grid breakpoints with three independent card items.
@@ -27,7 +27,7 @@ The current application has no live user or tenant object available to these cli
 - Preserve the section-level View all action and each project's name, location, plot size, health label, utilization value, and budget figures.
 - Remove the trailing View project action. The existing project-name link remains the row's navigation affordance.
 - Keep the current green, amber, and red budget thresholds.
-- Render the utilization fill from right to left while keeping the percentage and budget-health text visible for non-color understanding.
+- Render the utilization fill from left to right while keeping the percentage and budget-health text visible for non-color understanding.
 - Adjust the desktop grid after removing the third action column and retain a single-column mobile layout.
 
 ## Recent expenses
@@ -43,7 +43,7 @@ Render the table columns in this exact order:
 
 The existing expense task name supplies Category, and dates use the application's existing formatter. Amount and all other columns are omitted. The dashboard expense type is extended so each row supplies one of `Partial`, `Full`, or `Not paid`. Mock and derived API dashboard data is updated at its current mapping boundary so the UI does not invent missing values while rendering.
 
-Status treatments use restrained labeled badges with distinct text and border/background treatments so meaning does not depend on color alone. The existing View expenses and View more navigation behavior remains unchanged, and horizontal overflow preserves usability at narrow widths.
+Status treatments use restrained labeled badges with distinct text and border/background treatments so meaning does not depend on color alone. The existing View expenses and View more navigation behavior remains unchanged. The table uses proportional fixed columns and wrapping so all six fields remain visible without horizontal scrolling.
 
 ## Component boundaries
 
@@ -62,7 +62,7 @@ No unrelated page redesign, route change, authentication change, new UI library,
 - Give the avatar menu and collapsed tenant representation explicit accessible labels or tooltip text.
 - Use text labels in addition to color for project health and payment state.
 - Keep the sidebar's mobile and icon-collapsed behavior intact.
-- Allow the six-column table to scroll horizontally rather than compressing content below readable density.
+- Keep all six table columns within the available card width, using proportional widths, compact responsive type, and wrapping instead of horizontal scrolling.
 
 ## Verification
 

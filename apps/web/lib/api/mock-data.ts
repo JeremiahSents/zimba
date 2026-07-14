@@ -69,7 +69,7 @@ export const mockExpenses: ExpenseTableRow[] = [
     supplier_name: "Prime Cement",
     item_description: "Cement and aggregates",
     amount: 18_400_000,
-    status: "confirmed",
+    status: "Full",
   },
   {
     id: 2,
@@ -79,7 +79,7 @@ export const mockExpenses: ExpenseTableRow[] = [
     supplier_name: "Cash / labour",
     item_description: "Masonry team payout",
     amount: 9_800_000,
-    status: "pending",
+    status: "Partial",
   },
   {
     id: 3,
@@ -89,7 +89,7 @@ export const mockExpenses: ExpenseTableRow[] = [
     supplier_name: "Mirembe Steel",
     item_description: "Rebar delivery",
     amount: 14_200_000,
-    status: "rejected",
+    status: "Not paid",
   },
   {
     id: 4,
@@ -99,7 +99,7 @@ export const mockExpenses: ExpenseTableRow[] = [
     supplier_name: "LiftPro Rentals",
     item_description: "Crane rental",
     amount: 7_600_000,
-    status: "confirmed",
+    status: "Full",
   },
 ]
 
@@ -171,6 +171,7 @@ function toExpenseResponse(expense: ExpenseTableRow) {
     date: expense.date,
     id: expense.id,
     item_description: expense.item_description,
+    status: expense.status,
     supplier_name: expense.supplier_name,
     task_name: expense.task_name,
   }

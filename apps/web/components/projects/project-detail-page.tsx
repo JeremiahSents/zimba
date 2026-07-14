@@ -1,21 +1,13 @@
 "use client"
 
 import {
-  Analytics02Icon,
   FolderKanbanIcon,
   MoneyBag02Icon,
   Wallet02Icon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Button } from "@workspace/ui/components/button"
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@workspace/ui/components/card"
+import { Card, CardContent } from "@workspace/ui/components/card"
 import {
   type ChartConfig,
   ChartContainer,
@@ -31,13 +23,6 @@ import {
 import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
 import { Progress } from "@workspace/ui/components/progress"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@workspace/ui/components/select"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { useEffect, useState } from "react"
@@ -45,7 +30,8 @@ import { Cell, Pie, PieChart } from "recharts"
 import { ProjectExpensesTable } from "@/components/projects/project-expenses-table"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { DatePicker } from "@/components/shared/date-picker"
-import { formatCurrency, formatPercent, formatShortDate } from "@/lib/format"
+import { mergeStoredExpenses } from "@/lib/expense-store"
+import { formatCurrency, formatPercent } from "@/lib/format"
 import { readStoredProjects } from "@/lib/project-store"
 import type { ProjectDetailResponse } from "@/lib/types"
 
@@ -59,6 +45,11 @@ const taskLegendClasses = [
 ]
 const chartConfig: ChartConfig = {
   value: { label: "Spent", color: "var(--primary)" },
+}
+const metricIcons = {
+  budget: Wallet02Icon,
+  spent: MoneyBag02Icon,
+  remaining: FolderKanbanIcon,
 }
 
 export function ProjectDetailPageWrapper({
@@ -120,14 +111,6 @@ export function ProjectDetailPage({
   project: ProjectDetailResponse
 }) {
   const [expenses, setExpenses] = useState(project.expenses)
-  const [open, setOpen] = useState(false)
-  const [form, setForm] = useState({
-    date: new Date().toISOString().slice(0, 10),
-    task_name: project.tasks[0]?.name ?? "Materials",
-    supplier_name: "",
-    item_description: "",
-    amount: "",
-  })
   const [upcoming, setUpcoming] = useState([
     {
       id: 1,
@@ -154,43 +137,24 @@ export function ProjectDetailPage({
     date: new Date().toISOString().slice(0, 10),
   })
 
+  useEffect(() => {
+    setExpenses(mergeStoredExpenses(project.id, project.expenses))
+  }, [project.id, project.expenses])
+
   const spent = expenses.reduce((sum, expense) => sum + expense.amount, 0)
   const taskData = project.tasks
     .map((task) => ({ name: task.name, value: task.spent }))
     .filter((task) => task.value > 0)
   const utilisation = Math.round((spent / project.budget) * 100)
   const budgetHealth = getBudgetHealth(utilisation)
-  const remainingPercent = Math.min(Math.max(100 - utilisation, 0), 100)
-  const supplierOptions = Array.from(
-    new Set([
-      ...project.suppliers.map((supplier) => supplier.name),
-      ...expenses.map((expense) => expense.supplier_name),
-    ])
-  ).filter(Boolean)
-  const update = (key: keyof typeof form, value: string) =>
-    setForm((current) => ({ ...current, [key]: value }))
-
-  function submit(event: React.FormEvent) {
-    event.preventDefault()
-    if (!form.amount || !form.supplier_name || !form.item_description) return
-    setExpenses((current) => [
-      { ...form, id: Date.now(), amount: Number(form.amount) },
-      ...current,
-    ])
-    setOpen(false)
-    setForm((current) => ({
-      ...current,
-      supplier_name: "",
-      item_description: "",
-      amount: "",
-    }))
-  }
 
   return (
     <DashboardShell
       title={project.name}
       subtitle="Project financial position and delivery tracking."
       dataSource="mock"
+      notifications={upcoming}
+      onAddNotification={() => setPaymentDialogOpen(true)}
     >
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
@@ -212,30 +176,27 @@ export function ProjectDetailPage({
             {project.plot_size ? ` · ${project.plot_size}` : ""}
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm">
-            Share
-          </Button>
-          <Button onClick={() => setOpen(true)} size="sm">
-            + New expense
-          </Button>
-        </div>
+        <Button
+          size="sm"
+          nativeButton={false}
+          render={<Link href={`/admin/projects/${project.id}/expenses/new`} />}
+        >
+          + New expense
+        </Button>
       </div>
 
-      <div className="mb-6 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="mb-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Metric
           label="Total budget"
           value={formatCurrency(project.budget)}
-          detail="Baseline"
           icon="budget"
-          pillClassName="bg-blue-50 text-blue-700"
         />
         <Metric
           label="Total spent"
           value={formatCurrency(spent)}
-          detail="Spent"
+          detail={`${formatPercent(utilisation)} used`}
           icon="spent"
-          pillClassName="bg-amber-50 text-amber-700"
+          pillClassName={budgetHealth.pill}
         />
         <Metric
           label="Remaining budget"
@@ -243,13 +204,6 @@ export function ProjectDetailPage({
           detail={`${formatPercent(Math.max(100 - utilisation, 0))} left`}
           icon="remaining"
           pillClassName="bg-green-50 text-green-700"
-        />
-        <Metric
-          label="Utilization"
-          value={formatPercent(utilisation)}
-          detail={utilisation <= 80 ? "On track" : "Attention"}
-          icon="utilization"
-          pillClassName={budgetHealth.pill}
         />
       </div>
       <div className="mb-6 grid items-stretch gap-4 lg:grid-cols-[1.35fr_1fr]">
@@ -282,8 +236,8 @@ export function ProjectDetailPage({
                 </span>
               </div>
               <Progress
-                value={remainingPercent}
-                className={`mt-5 [&_[data-slot=progress-indicator]]:ml-auto ${budgetHealth.progress}`}
+                value={utilisation}
+                className={`mt-5 ${budgetHealth.progress}`}
               />
             </div>
             <div className="grid grid-cols-2 gap-5 border-t pt-4">
@@ -366,81 +320,18 @@ export function ProjectDetailPage({
 
       <TaskExpenseSection tasks={project.tasks} />
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_350px]">
-        <Card className="flex min-h-0 flex-col">
-          <CardHeader>
-            <CardTitle>Expenses</CardTitle>
-            <CardDescription>
+      <div>
+        <section className="flex min-h-0 flex-col pt-1">
+          <div className="mb-4">
+            <h2 className="font-heading font-semibold text-base tracking-tight">
+              Expenses
+            </h2>
+            <p className="mt-1 text-muted-foreground text-xs">
               Every payment recorded against this project.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="p-0">
-            <ProjectExpensesTable expenses={expenses} />
-          </CardContent>
-        </Card>
-
-        <Card className="flex h-full flex-col overflow-hidden">
-          <CardHeader className="border-b">
-            <CardTitle>Payment notifications</CardTitle>
-            <CardDescription>Payments awaiting review.</CardDescription>
-            <CardAction>
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-8 w-8 shrink-0 rounded-lg border-primary bg-primary text-primary-foreground hover:bg-primary/85 hover:text-primary-foreground"
-                onClick={() => setPaymentDialogOpen(true)}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M5 12h14" />
-                  <path d="M12 5v14" />
-                </svg>
-              </Button>
-            </CardAction>
-          </CardHeader>
-          <CardContent className="flex-1 p-0">
-            <div className="flex flex-col divide-y divide-border">
-              {upcoming.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex items-start gap-3 px-5 py-4 transition-colors hover:bg-muted/40"
-                >
-                  <span className="mt-2 size-1.5 shrink-0 rounded-full bg-amber-500" />
-                  <div className="min-w-0 flex-1">
-                    <span className="block font-medium text-sm">
-                      {item.name}
-                    </span>
-                    <p className="mt-1 text-muted-foreground text-xs leading-5">
-                      {item.contractor} · {item.item}
-                    </p>
-                  </div>
-                  <div className="shrink-0 text-right">
-                    <span className="block text-muted-foreground text-xs">
-                      Due {formatShortDate(item.date)}
-                    </span>
-                    <span className="mt-1 block font-semibold text-foreground text-sm">
-                      {formatCurrency(item.amount)}
-                    </span>
-                  </div>
-                </div>
-              ))}
-              {upcoming.length === 0 && (
-                <div className="p-8 text-center text-muted-foreground text-sm">
-                  No upcoming payments.
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+            </p>
+          </div>
+          <ProjectExpensesTable expenses={expenses} />
+        </section>
       </div>
 
       <Dialog open={paymentDialogOpen} onOpenChange={setPaymentDialogOpen}>
@@ -543,82 +434,6 @@ export function ProjectDetailPage({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add an expense</DialogTitle>
-            <DialogDescription>
-              Log a payment for {project.name}.
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={submit} className="grid gap-4">
-            <Field
-              label="Expense name"
-              value={form.item_description}
-              onChange={(v) => update("item_description", v)}
-              placeholder="e.g. Cement – 50 bags"
-            />
-            <label className="grid gap-2">
-              <Label>Supplier</Label>
-              <Select
-                value={form.supplier_name}
-                onValueChange={(value) => update("supplier_name", value ?? "")}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select supplier" />
-                </SelectTrigger>
-                <SelectContent>
-                  {supplierOptions.length ? (
-                    supplierOptions.map((supplier) => (
-                      <SelectItem key={supplier} value={supplier}>
-                        {supplier}
-                      </SelectItem>
-                    ))
-                  ) : (
-                    <SelectItem value="new-supplier">New supplier</SelectItem>
-                  )}
-                </SelectContent>
-              </Select>
-            </label>
-            <Field
-              label="Amount (UGX)"
-              value={form.amount}
-              onChange={(v) => update("amount", v)}
-              placeholder="0"
-              type="number"
-            />
-            <label className="grid gap-2">
-              <Label>Category</Label>
-              <Select
-                value={form.task_name}
-                onValueChange={(value) => update("task_name", value ?? "")}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {project.tasks.map((task) => (
-                    <SelectItem key={task.id} value={task.name}>
-                      {task.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </label>
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button type="submit">Save expense</Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
     </DashboardShell>
   )
 }
@@ -632,24 +447,17 @@ function Metric({
 }: {
   label: string
   value: string
-  detail: string
-  icon: "budget" | "spent" | "remaining" | "utilization"
-  pillClassName: string
+  detail?: string
+  icon: "budget" | "spent" | "remaining"
+  pillClassName?: string
 }) {
-  const icons = {
-    budget: Wallet02Icon,
-    spent: MoneyBag02Icon,
-    remaining: FolderKanbanIcon,
-    utilization: Analytics02Icon,
-  }
-
   return (
     <Card className="flex flex-row items-center justify-between gap-4 p-5">
       <div>
         <div className="flex items-center gap-2">
           <p className="font-medium text-muted-foreground text-xs">{label}</p>
           <HugeiconsIcon
-            icon={icons[icon]}
+            icon={metricIcons[icon]}
             strokeWidth={1.8}
             className="size-4 text-primary"
           />
@@ -658,11 +466,13 @@ function Metric({
           {value}
         </p>
       </div>
-      <p
-        className={`shrink-0 whitespace-nowrap rounded-lg px-1.5 py-0.5 text-right font-medium text-[10px] ${pillClassName}`}
-      >
-        {detail}
-      </p>
+      {detail && (
+        <p
+          className={`shrink-0 whitespace-nowrap rounded-lg px-1.5 py-0.5 text-right font-medium text-[10px] ${pillClassName}`}
+        >
+          {detail}
+        </p>
+      )}
     </Card>
   )
 }
@@ -691,7 +501,6 @@ function TaskExpenseSection({
             ? Math.min((taskSpent / task.budget) * 100, 100)
             : 0
           const budgetHealth = getBudgetHealth(percentage)
-          const remainingPercent = Math.max(100 - percentage, 0)
           return (
             <div
               key={task.id}
@@ -714,8 +523,8 @@ function TaskExpenseSection({
                 </div>
               </div>
               <Progress
-                value={remainingPercent}
-                className={`h-1.5 [&_[data-slot=progress-indicator]]:ml-auto ${budgetHealth.progress}`}
+                value={percentage}
+                className={`h-1.5 ${budgetHealth.progress}`}
               />
               <p className="text-right text-muted-foreground text-xs tabular-nums">
                 <span className="font-semibold text-foreground">
@@ -751,31 +560,4 @@ function getBudgetHealth(percentageUsed: number) {
     pill: "bg-green-50 text-green-600",
     progress: "[&_[data-slot=progress-indicator]]:bg-green-500",
   }
-}
-
-function Field({
-  label,
-  value,
-  onChange,
-  placeholder = "",
-  type = "text",
-}: {
-  label: string
-  value: string
-  onChange: (value: string) => void
-  placeholder?: string
-  type?: string
-}) {
-  return (
-    <label className="grid gap-2">
-      <Label>{label}</Label>
-      <Input
-        required
-        type={type}
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        placeholder={placeholder}
-      />
-    </label>
-  )
 }

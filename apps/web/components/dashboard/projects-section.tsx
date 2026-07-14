@@ -51,7 +51,7 @@ export function ProjectsSection({
 function ProjectRow({ project }: { project: ProjectDashboardResponse }) {
   const budgetTone =
     project.pct >= 80 ? "critical" : project.pct >= 60 ? "warning" : "healthy"
-  const remainingPercent = Math.min(Math.max(100 - project.pct, 0), 100)
+  const utilizationPercent = Math.min(Math.max(project.pct, 0), 100)
   const budgetStatus =
     budgetTone === "critical"
       ? "Budget critical"
@@ -75,7 +75,7 @@ function ProjectRow({ project }: { project: ProjectDashboardResponse }) {
           }
 
   return (
-    <div className="grid gap-4 p-5 transition-colors hover:bg-muted/35 lg:grid-cols-[minmax(12rem,1.3fr)_minmax(15rem,1.5fr)_auto] lg:items-center">
+    <div className="grid gap-4 p-5 transition-colors hover:bg-muted/35 lg:grid-cols-[minmax(12rem,1.1fr)_minmax(15rem,1.5fr)] lg:items-center">
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-2">
           <HugeiconsIcon
@@ -105,28 +105,19 @@ function ProjectRow({ project }: { project: ProjectDashboardResponse }) {
       </div>
       <div>
         <div className="mb-2 flex justify-between gap-4 text-xs">
-          <span className="text-muted-foreground">Budget remaining</span>
+          <span className="text-muted-foreground">Budget utilized</span>
           <span
             className={`rounded-full px-2 py-0.5 font-semibold text-[10px] ${toneClasses.pill}`}
           >
             {Math.round(project.pct)}%
           </span>
         </div>
-        <Progress
-          value={remainingPercent}
-          className={`[&_[data-slot=progress-indicator]]:ml-auto ${toneClasses.progress}`}
-        />
+        <Progress value={utilizationPercent} className={toneClasses.progress} />
         <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[10px] text-muted-foreground">
           <span>{formatCurrency(project.spent)} spent</span>
           <span>{formatCurrency(project.remaining)} left</span>
         </div>
       </div>
-      <Link
-        href={`/admin/projects/${project.id}`}
-        className="font-semibold text-primary text-xs transition-colors hover:text-primary/75"
-      >
-        View project
-      </Link>
     </div>
   )
 }

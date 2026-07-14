@@ -24,6 +24,7 @@ export type ExpenseResponse = {
   supplier_name: string
   item_description: string
   amount: number
+  status?: "Partial" | "Full" | "Not paid"
 }
 
 export type SupplierBreakdown = {
@@ -88,7 +89,7 @@ export type DashboardSource = "api" | "mock"
 
 export type ExpenseTableRow = ExpenseResponse & {
   project_name: string
-  status?: "confirmed" | "pending" | "rejected"
+  status: "Partial" | "Full" | "Not paid"
 }
 
 export type DashboardStat = {

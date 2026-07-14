@@ -32,6 +32,12 @@ import { useMemo, useState } from "react"
 import { formatCurrency, formatShortDate } from "@/lib/format"
 import type { ExpenseResponse } from "@/lib/types"
 
+const statusPillClasses = {
+  Partial: "border-amber-200 bg-amber-50 text-amber-700",
+  Full: "border-green-200 bg-green-50 text-green-700",
+  "Not paid": "border-slate-200 bg-slate-50 text-slate-600",
+}
+
 export function ProjectExpensesTable({
   expenses,
 }: {
@@ -42,41 +48,54 @@ export function ProjectExpensesTable({
   const columns = useMemo<ColumnDef<ExpenseResponse>[]>(
     () => [
       {
-        accessorKey: "date",
-        header: "Date",
+        accessorKey: "item_description",
+        header: "Item",
         cell: ({ getValue }) => (
-          <span className="text-muted-foreground">
-            {formatShortDate(getValue<string>())}
+          <span className="font-medium text-foreground">
+            {getValue<string>()}
           </span>
         ),
       },
       {
         accessorKey: "task_name",
-        header: "Task",
+        header: "Category",
         cell: ({ getValue }) => (
-          <span className="inline-flex rounded-lg border border-primary/50 px-2 py-0.5 font-medium text-primary text-xs">
-            {getValue<string>()}
-          </span>
+          <span className="text-muted-foreground">{getValue<string>()}</span>
         ),
       },
       {
         accessorKey: "supplier_name",
         header: "Supplier",
-        cell: ({ getValue }) => (
-          <span className="inline-flex rounded-lg border border-muted-foreground/40 px-2 py-0.5 font-medium text-muted-foreground text-xs">
-            {getValue<string>()}
-          </span>
-        ),
+        cell: ({ getValue }) => getValue<string>(),
       },
-      { accessorKey: "item_description", header: "Item" },
       {
         accessorKey: "amount",
         header: "Amount",
+        cell: ({ getValue }) => formatCurrency(getValue<number>()),
+      },
+      {
+        accessorKey: "date",
+        header: "Date",
         cell: ({ getValue }) => (
-          <span className="font-semibold text-foreground">
-            {formatCurrency(getValue<number>())}
+          <span className="text-muted-foreground tabular-nums">
+            {formatShortDate(getValue<string>())}
           </span>
         ),
+      },
+      {
+        id: "status",
+        accessorFn: (expense) => expense.status ?? "Full",
+        header: "Status",
+        cell: ({ getValue }) => {
+          const status = getValue<"Partial" | "Full" | "Not paid">()
+          return (
+            <span
+              className={`inline-flex rounded-md border px-1.5 py-0.5 font-medium text-[10px] ${statusPillClasses[status]}`}
+            >
+              {status}
+            </span>
+          )
+        },
       },
     ],
     []
@@ -97,7 +116,7 @@ export function ProjectExpensesTable({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-3 px-5 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative w-full max-w-xs">
           <HugeiconsIcon
             icon={Search01Icon}
@@ -113,30 +132,27 @@ export function ProjectExpensesTable({
           />
         </div>
         <p className="text-muted-foreground text-xs">
-          {table.getFilteredRowModel().rows.length} expenses
+          {table.getFilteredRowModel().rows.length}{" "}
+          {table.getFilteredRowModel().rows.length === 1
+            ? "expense"
+            : "expenses"}
         </p>
       </div>
       <Table>
-        <TableHeader className="bg-muted/45">
+        <TableHeader>
           {table.getHeaderGroups().map((group) => (
-            <TableRow key={group.id} className="hover:bg-transparent">
+            <TableRow key={group.id}>
               {group.headers.map((header) => (
                 <TableHead
                   key={header.id}
-                  className={
-                    header.id === "date"
-                      ? "px-5"
-                      : header.id === "amount"
-                        ? "border-l px-5 text-right"
-                        : "border-l px-5"
-                  }
+                  className={header.id === "amount" ? "text-right" : undefined}
                 >
                   {header.isPlaceholder ? null : (
                     <Button
                       type="button"
                       variant="ghost"
                       size="xs"
-                      className="inline-flex h-auto items-center gap-1.5 px-0 font-semibold text-[11px] text-muted-foreground uppercase tracking-wide hover:bg-transparent hover:text-foreground"
+                      className={`inline-flex items-center gap-1.5 text-inherit ${header.id === "amount" ? "ml-auto" : ""}`}
                       onClick={header.column.getToggleSortingHandler()}
                       disabled={!header.column.getCanSort()}
                     >
@@ -161,16 +177,14 @@ export function ProjectExpensesTable({
         <TableBody>
           {rows.length ? (
             rows.map((row) => (
-              <TableRow key={row.id} className="hover:bg-muted/25">
+              <TableRow key={row.id}>
                 {row.getVisibleCells().map((cell) => (
                   <TableCell
                     key={cell.id}
                     className={
-                      cell.column.id === "date"
-                        ? "px-5 py-4 text-sm"
-                        : cell.column.id === "amount"
-                          ? "border-l px-5 py-4 text-right text-sm"
-                          : "border-l px-5 py-4 text-sm"
+                      cell.column.id === "amount"
+                        ? "text-right font-semibold"
+                        : undefined
                     }
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -190,12 +204,12 @@ export function ProjectExpensesTable({
           )}
         </TableBody>
       </Table>
-      <div className="flex flex-col gap-3 border-t px-5 pt-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-muted-foreground text-xs">
           Page {table.getState().pagination.pageIndex + 1} of{" "}
           {Math.max(table.getPageCount(), 1)}
         </p>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
           <Button
             variant="outline"
             size="sm"

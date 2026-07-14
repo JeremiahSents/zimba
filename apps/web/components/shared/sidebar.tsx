@@ -2,6 +2,7 @@
 
 import {
   Analytics02Icon,
+  Building01Icon,
   DashboardSquare02Icon,
   FolderKanbanIcon,
   LayoutAlignLeftIcon,
@@ -24,6 +25,11 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@workspace/ui/components/sidebar"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@workspace/ui/components/tooltip"
 import Image from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -52,7 +58,7 @@ export function DashboardSidebar() {
 
       <SidebarContent>
         <SidebarGroup className="px-3 py-1 group-data-[collapsible=icon]:px-0">
-          <SidebarGroupLabel className="px-3 pb-2 font-normal text-[10px] text-sidebar-foreground/55 uppercase tracking-[0.12em] group-data-[collapsible=icon]:hidden">
+          <SidebarGroupLabel className="px-3 pb-2 font-semibold text-[11px] text-sidebar-foreground/55 group-data-[collapsible=icon]:hidden">
             Overview
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -66,7 +72,7 @@ export function DashboardSidebar() {
                         ? pathname === item.href
                         : pathname.startsWith(item.href)
                     }
-                    className="relative h-10 rounded-md px-3 font-normal text-[13px] text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground data-active:bg-primary/10 data-active:text-primary group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:grid group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:place-items-center group-data-[collapsible=icon]:p-0! group-data-[collapsible=icon]:[&_span]:hidden [&_svg]:size-4! [&_svg]:text-sidebar-foreground/45 data-active:[&_svg]:text-primary"
+                    className="relative h-10 rounded-md px-3 font-medium text-[13px] text-sidebar-foreground/75 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground data-active:bg-primary/10 data-active:text-primary group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:grid group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:place-items-center group-data-[collapsible=icon]:p-0! group-data-[collapsible=icon]:[&_span]:hidden [&_svg]:size-4! [&_svg]:text-sidebar-foreground/50 data-active:[&_svg]:text-primary"
                     render={
                       <Link href={item.href}>
                         <HugeiconsIcon icon={item.icon} strokeWidth={2} />
@@ -82,32 +88,7 @@ export function DashboardSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="p-3 pt-2 group-data-[collapsible=icon]:px-0">
-        <SidebarMenu className="gap-2">
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              tooltip="Sign out"
-              className="h-10 rounded-md px-3 font-normal text-[13px] text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:grid group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:place-items-center group-data-[collapsible=icon]:p-0! group-data-[collapsible=icon]:[&_span]:hidden [&_svg]:size-4! [&_svg]:text-sidebar-foreground/45"
-              render={
-                <Link href="/login">
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                  >
-                    <path d="M10 17l5-5-5-5" />
-                    <path d="M15 12H3" />
-                    <path d="M21 19V5a2 2 0 0 0-2-2h-6" />
-                  </svg>
-                  <span>Sign out</span>
-                </Link>
-              }
-            />
-          </SidebarMenuItem>
-        </SidebarMenu>
+        <TenantCard />
       </SidebarFooter>
     </Sidebar>
   )
@@ -144,14 +125,55 @@ function SidebarBrand() {
           />
         </span>
         <span className="min-w-0">
-          <span className="block truncate font-heading font-normal text-lg text-sidebar-foreground leading-tight tracking-tight">
+          <span className="block truncate font-heading font-medium text-lg text-sidebar-foreground leading-tight tracking-tight">
             Zimba
-          </span>
-          <span className="block truncate font-normal text-[10px] text-sidebar-foreground/55 uppercase tracking-[0.08em]">
-            Zimba Consultants
           </span>
         </span>
       </Link>
+    </div>
+  )
+}
+
+function TenantCard() {
+  const { state } = useSidebar()
+
+  if (state === "collapsed") {
+    return (
+      <Tooltip>
+        <TooltipTrigger
+          aria-label="Current account: Zimba Consultants, Admin"
+          className="mx-auto grid size-10 place-items-center rounded-md border border-sidebar-border bg-sidebar-accent/60 text-sidebar-foreground outline-none transition-colors hover:bg-sidebar-accent focus-visible:ring-2 focus-visible:ring-sidebar-ring"
+        >
+          <HugeiconsIcon
+            icon={Building01Icon}
+            strokeWidth={1.8}
+            className="size-4"
+          />
+        </TooltipTrigger>
+        <TooltipContent side="right" sideOffset={8}>
+          Zimba Consultants · Admin
+        </TooltipContent>
+      </Tooltip>
+    )
+  }
+
+  return (
+    <div className="flex items-center gap-2.5 rounded-md border border-sidebar-border bg-sidebar-accent/45 px-3 py-2.5">
+      <span className="grid size-8 shrink-0 place-items-center rounded-md bg-primary/10 text-primary">
+        <HugeiconsIcon
+          icon={Building01Icon}
+          strokeWidth={1.8}
+          className="size-4"
+        />
+      </span>
+      <span className="min-w-0">
+        <span className="block truncate font-medium text-sidebar-foreground text-xs">
+          Zimba Consultants
+        </span>
+        <span className="mt-0.5 block text-[10px] text-sidebar-foreground/55">
+          Admin
+        </span>
+      </span>
     </div>
   )
 }

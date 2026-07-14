@@ -14,32 +14,32 @@ Replace the project-detail New expense modal with a dedicated project-scoped rec
 
 ## Receipt fields
 
-- Supplier
 - Expense date
-- Project task
-- Item details
-- Quantity
-- Rate
-- Amount, calculated automatically as quantity multiplied by rate
+- One or more item rows, each with Project task, Supplier, Item details,
+  Quantity, Rate, and Amount
+- Each row's amount is calculated automatically as quantity multiplied by rate
 
-The screen does not include tax, attachments, scanning, bulk actions, or multiple item rows.
+The screen does not include tax, attachments, scanning, or bulk actions.
 
 ## Layout
 
 - Use the existing dashboard shell and project breadcrumb.
-- Place receipt metadata above a single-line item table.
-- Match the supplied reference's clear table hierarchy: Item details, Quantity, Rate, and Amount.
+- Place receipt metadata above a multi-line item table.
+- Match the supplied reference's clear table hierarchy: Item details, Project task,
+  Supplier, Quantity, Rate, and Amount.
+- Provide Add item and Remove item controls.
 - Keep Quantity and Rate editable, Amount read-only and emphasized.
 - Show the calculated receipt total below the table.
 - Keep Cancel and Save expense actions visible at the bottom of the form.
 
 ## Data behavior
 
-- Validate supplier, date, task, item details, positive quantity, and non-negative rate.
-- Calculate the amount in the client and do not accept a manually entered total.
+- Validate date and every row's supplier, task, item details, positive quantity,
+  and non-negative rate.
+- Calculate every row amount and the receipt total in the client.
 - Store locally created expenses under the project id because no expense mutation endpoint currently exists.
 - Merge locally stored expenses into the project detail expense list so the new receipt appears after navigation.
-- Store the calculated amount as the existing expense record's amount.
+- Store each line item as a project expense using its calculated amount.
 
 ## Responsive behavior
 

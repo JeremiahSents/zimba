@@ -1,8 +1,6 @@
 "use client"
 
 import {
-  Analytics02Icon,
-  Calendar03Icon,
   FolderKanbanIcon,
   MoneyBag02Icon,
   PlusSignIcon,
@@ -11,34 +9,24 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Button } from "@workspace/ui/components/button"
 import { Card } from "@workspace/ui/components/card"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@workspace/ui/components/select"
 import Link from "next/link"
 import { useEffect, useState } from "react"
 
 import { ProjectsSection } from "@/components/dashboard/projects-section"
 import { RecentActivity } from "@/components/dashboard/recent-activity"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
-import { getAttentionItems } from "@/lib/dashboard-home"
 import { formatCurrency } from "@/lib/format"
 import { mergeStoredProjects } from "@/lib/project-store"
 import type { DashboardOverviewData } from "@/lib/types"
 
 export function DashboardPage({ data }: { data: DashboardOverviewData }) {
   const [projects, setProjects] = useState(data.projects)
-  const [period, setPeriod] = useState("30")
   useEffect(() => {
     const sync = () => setProjects(mergeStoredProjects(data.projects))
     sync()
     window.addEventListener("zimba-projects-updated", sync)
     return () => window.removeEventListener("zimba-projects-updated", sync)
   }, [data.projects])
-  const attentionItems = getAttentionItems(projects)
   const totalBudget = projects.reduce((sum, project) => sum + project.budget, 0)
   const totalSpent = projects.reduce((sum, project) => sum + project.spent, 0)
   const stats = [
@@ -46,33 +34,16 @@ export function DashboardPage({ data }: { data: DashboardOverviewData }) {
       label: "Active projects",
       value: String(projects.length),
       icon: FolderKanbanIcon,
-      trend: "+12%",
-      trendLabel: "from last month",
-      trendTone: "positive",
-    },
-    {
-      label: "Needs attention",
-      value: String(attentionItems.length),
-      icon: Analytics02Icon,
-      trend: "-8%",
-      trendLabel: "from last month",
-      trendTone: "positive",
     },
     {
       label: "Total budget",
       value: formatCurrency(totalBudget),
       icon: Wallet02Icon,
-      trend: "+5.4%",
-      trendLabel: "from last month",
-      trendTone: "positive",
     },
     {
       label: "Total spent",
       value: formatCurrency(totalSpent),
       icon: MoneyBag02Icon,
-      trend: "+2.1%",
-      trendLabel: "from last month",
-      trendTone: "negative",
     },
   ]
 
@@ -88,41 +59,30 @@ export function DashboardPage({ data }: { data: DashboardOverviewData }) {
           Overview
         </h2>
         <div className="flex items-center gap-2">
-          <Select
-            value={period}
-            onValueChange={(value) => setPeriod(value ?? "30")}
-          >
-            <SelectTrigger size="sm" className="min-w-32 px-3 text-xs">
-              <HugeiconsIcon
-                icon={Calendar03Icon}
-                strokeWidth={1.8}
-                className="size-3.5 text-muted-foreground"
-              />
-              <SelectValue placeholder="Select range" />
-            </SelectTrigger>
-            <SelectContent side="bottom" align="end" sideOffset={6}>
-              <SelectItem value="7">Last 7 days</SelectItem>
-              <SelectItem value="30">Last 30 days</SelectItem>
-            </SelectContent>
-          </Select>
           <Button
+            variant="outline"
             size="sm"
             nativeButton={false}
             render={<Link href="/admin/projects/new" />}
           >
+            <HugeiconsIcon icon={FolderKanbanIcon} strokeWidth={2} />
+            New project
+          </Button>
+          <Button
+            size="sm"
+            nativeButton={false}
+            render={<Link href="/admin/expenses" />}
+          >
             <HugeiconsIcon icon={PlusSignIcon} strokeWidth={2} />
-            Create project
+            Add expense
           </Button>
         </div>
       </section>
 
-      <Card className="-mt-2 gap-0 py-0">
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4">
-          {stats.map((stat) => (
-            <div
-              key={stat.label}
-              className="border-t p-5 first:border-t-0 sm:nth-[2]:border-t-0 lg:border-t-0 lg:border-l lg:first:border-l-0"
-            >
+      <div className="-mt-2 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {stats.map((stat) => (
+          <Card key={stat.label} className="gap-0 py-0">
+            <div className="p-4">
               <div className="flex items-center justify-between gap-3">
                 <p className="font-medium text-muted-foreground text-xs">
                   {stat.label}
@@ -133,25 +93,13 @@ export function DashboardPage({ data }: { data: DashboardOverviewData }) {
                   className="size-4 text-primary"
                 />
               </div>
-              <p className="mt-4 font-heading font-semibold text-xl tracking-tight">
+              <p className="mt-2 font-heading font-semibold text-xl tracking-tight">
                 {stat.value}
               </p>
-              <p className="mt-2 flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                <span
-                  className={
-                    stat.trendTone === "positive"
-                      ? "rounded-full bg-green-50 px-1.5 py-0.5 font-medium text-green-600"
-                      : "rounded-full bg-destructive/10 px-1.5 py-0.5 font-medium text-destructive"
-                  }
-                >
-                  {stat.trend}
-                </span>
-                {stat.trendLabel}
-              </p>
             </div>
-          ))}
-        </div>
-      </Card>
+          </Card>
+        ))}
+      </div>
 
       <ProjectsSection projects={projects} />
       <RecentActivity expenses={data.expenses.slice(0, 4)} />

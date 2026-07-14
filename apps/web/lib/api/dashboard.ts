@@ -130,6 +130,7 @@ function enrichExpenses(expenses: ExpenseResponse[]): ExpenseTableRow[] {
   return expenses.map((expense) => ({
     ...expense,
     project_name: "Project pending from API",
+    status: "Not paid",
   }))
 }
 
