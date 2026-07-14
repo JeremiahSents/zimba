@@ -5,6 +5,9 @@
   "private": true,
   "scripts": {
     "api:generate": "openapi-typescript https://zimba-backend-779644650318.us-central1.run.app/openapi.json --output types/api.ts",
+    "auth:generate": "auth generate --config lib/auth.ts --output lib/auth-schema.ts --yes",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
@@ -15,14 +18,18 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
+    "@better-auth/drizzle-adapter": "^1.6.23",
     "@hugeicons/core-free-icons": "^4.2.2",
     "@hugeicons/react": "^1.1.9",
     "@tanstack/react-table": "^8.21.3",
     "@workspace/ui": "workspace:*",
+    "better-auth": "^1.6.23",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "drizzle-orm": "^0.45.2",
     "next": "16.2.6",
     "next-themes": "^0.4.6",
+    "pg": "^8.22.0",
     "react": "19.2.4",
     "react-day-picker": "^10.0.1",
     "react-dom": "19.2.4",
@@ -34,9 +41,13 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/pg": "^8.20.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@workspace/typescript-config": "workspace:*",
+    "auth": "^1.6.23",
+    "dotenv": "^17.4.2",
+    "drizzle-kit": "^0.31.10",
     "openapi-typescript": "7.13.0",
     "typescript": "^5"
   }

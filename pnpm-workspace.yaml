@@ -7,3 +7,5 @@ allowBuilds:
   unrs-resolver: true
   msw: false
   esbuild: true
+  '@prisma/client': false
+  better-sqlite3: false

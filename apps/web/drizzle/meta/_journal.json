@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1784055840597,
+      "tag": "0000_dusty_storm",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1784056197318,
+      "tag": "0001_session-user-cascade",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1784058737866,
+      "tag": "0002_organization-membership-indexes",
+      "breakpoints": true
+    }
+  ]
+}

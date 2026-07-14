@@ -1,32 +1,29 @@
 import type { Metadata } from "next"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
-import { LoginForm } from "@/components/auth/login-form"
+import { OnboardingForm } from "@/components/auth/onboarding-form"
 import { auth } from "@/lib/auth"
 import { getOrganizationMembership } from "@/lib/organization"
 
 export const metadata: Metadata = {
-  title: "Sign in | Zimba",
-  description: "Sign in to your Zimba construction expense dashboard.",
+  title: "Set up your workspace | Zimba",
+  description: "Create your Zimba company workspace.",
 }
 
-export default async function LoginPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ error?: string }>
-}) {
+export default async function OnboardingPage() {
   const session = await auth.api.getSession({ headers: await headers() })
-  if (session) {
-    const membership = await getOrganizationMembership(session.user.id)
-    redirect(membership ? "/admin/home" : "/onboarding")
-  }
+  if (!session) redirect("/login")
 
-  const { error } = await searchParams
+  const membership = await getOrganizationMembership(session.user.id)
+  if (membership) redirect("/admin/home")
 
   return (
     <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-background p-6 md:p-10">
       <div className="w-full max-w-sm">
-        <LoginForm oauthError={error === "oauth"} />
+        <OnboardingForm
+          defaultName={session.user.name}
+          email={session.user.email}
+        />
       </div>
     </div>
   )

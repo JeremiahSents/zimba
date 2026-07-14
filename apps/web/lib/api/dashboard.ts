@@ -23,7 +23,7 @@ import { formatCurrency, formatPercent } from "@/lib/format"
 import type { DashboardOverviewData } from "@/lib/types"
 
 export async function getDashboardOverviewData(): Promise<DashboardOverviewData> {
-  const session = getZimbaApiSession()
+  const session = await getZimbaApiSession()
 
   if (!session) return getMockDashboardData()
 

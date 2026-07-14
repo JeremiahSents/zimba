@@ -51,7 +51,7 @@ export async function createProjectAction(
 
   let projectId: number
   try {
-    const created = await createProject(requireZimbaApiSession(), project)
+    const created = await createProject(await requireZimbaApiSession(), project)
     projectId = created.id
   } catch (error) {
     return actionError(error)
@@ -66,7 +66,7 @@ export async function updateProjectAction(
   project: ProjectUpdate
 ): Promise<ActionResult> {
   try {
-    await updateProject(requireZimbaApiSession(), projectId, project)
+    await updateProject(await requireZimbaApiSession(), projectId, project)
     revalidateConnectedRoutes(projectId)
     return { ok: true, data: undefined }
   } catch (error) {
@@ -81,7 +81,7 @@ export async function updateAllocationAction(
 ): Promise<ActionResult> {
   try {
     await updateAllocation(
-      requireZimbaApiSession(),
+      await requireZimbaApiSession(),
       projectId,
       allocationId,
       allocation
@@ -113,7 +113,11 @@ export async function createExpenseReceiptAction(
   }
 
   try {
-    await createExpenseReceipt(requireZimbaApiSession(), projectId, receipt)
+    await createExpenseReceipt(
+      await requireZimbaApiSession(),
+      projectId,
+      receipt
+    )
   } catch (error) {
     return actionError(error)
   }
@@ -128,7 +132,7 @@ export async function updateExpenseStatusAction(
   status: ExpenseStatus
 ): Promise<ActionResult> {
   try {
-    await updateExpense(requireZimbaApiSession(), expenseId, {
+    await updateExpense(await requireZimbaApiSession(), expenseId, {
       payment_status: toApiExpenseStatus(status),
     })
     revalidateConnectedRoutes(projectId)
@@ -147,7 +151,11 @@ export async function createUpcomingPaymentAction(
   }
 
   try {
-    await createUpcomingPayment(requireZimbaApiSession(), projectId, payment)
+    await createUpcomingPayment(
+      await requireZimbaApiSession(),
+      projectId,
+      payment
+    )
     revalidateConnectedRoutes(projectId)
     return { ok: true, data: undefined }
   } catch (error) {
@@ -162,7 +170,7 @@ export async function updateUpcomingPaymentAction(
 ): Promise<ActionResult> {
   try {
     await updateUpcomingPayment(
-      requireZimbaApiSession(),
+      await requireZimbaApiSession(),
       projectId,
       paymentId,
       payment
@@ -179,7 +187,11 @@ export async function deleteUpcomingPaymentAction(
   paymentId: number
 ): Promise<ActionResult> {
   try {
-    await deleteUpcomingPayment(requireZimbaApiSession(), projectId, paymentId)
+    await deleteUpcomingPayment(
+      await requireZimbaApiSession(),
+      projectId,
+      paymentId
+    )
     revalidateConnectedRoutes(projectId)
     return { ok: true, data: undefined }
   } catch (error) {
@@ -195,7 +207,7 @@ export async function requestFileUploadAction(
   }
 
   try {
-    const upload = await requestFileUpload(requireZimbaApiSession(), file)
+    const upload = await requestFileUpload(await requireZimbaApiSession(), file)
     return { ok: true, data: upload }
   } catch (error) {
     return actionError(error)
@@ -208,7 +220,10 @@ export async function completeFileUploadAction(
   if (!fileId) return { ok: false, error: "The upload is missing its file ID." }
 
   try {
-    const completed = await completeFileUpload(requireZimbaApiSession(), fileId)
+    const completed = await completeFileUpload(
+      await requireZimbaApiSession(),
+      fileId
+    )
     return { ok: true, data: { id: completed.id } }
   } catch (error) {
     return actionError(error)
@@ -217,7 +232,7 @@ export async function completeFileUploadAction(
 
 function actionError(error: unknown): { ok: false; error: string } {
   if (error instanceof ZimbaApiError) return { ok: false, error: error.message }
-  if (error instanceof Error && error.message.startsWith("Set ZIMBA_")) {
+  if (error instanceof Error && error.message.startsWith("Sign in")) {
     return { ok: false, error: error.message }
   }
   console.error("Zimba API mutation failed", error)

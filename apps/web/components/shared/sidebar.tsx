@@ -32,8 +32,9 @@ import {
 } from "@workspace/ui/components/tooltip"
 import Image from "next/image"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import type { ComponentProps } from "react"
+import { authClient } from "@/lib/auth-client"
 
 const navItems = [
   { title: "Home", href: "/admin/home", icon: DashboardSquare02Icon },
@@ -136,6 +137,13 @@ function SidebarBrand() {
 
 function TenantCard() {
   const { state } = useSidebar()
+  const router = useRouter()
+
+  async function handleSignOut() {
+    await authClient.signOut()
+    router.push("/login")
+    router.refresh()
+  }
 
   if (state === "collapsed") {
     return (
@@ -174,6 +182,15 @@ function TenantCard() {
           Admin
         </span>
       </span>
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        className="ml-auto h-7 px-2 text-[10px]"
+        onClick={handleSignOut}
+      >
+        Sign out
+      </Button>
     </div>
   )
 }

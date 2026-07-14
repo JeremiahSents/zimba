@@ -12,7 +12,7 @@ import type { ProjectDetailResponse } from "@/lib/types"
 export async function getProjectDetail(
   id: number
 ): Promise<ProjectDetailResponse | undefined> {
-  const session = getZimbaApiSession()
+  const session = await getZimbaApiSession()
   if (!session) return mockProjectDetails.find((project) => project.id === id)
 
   const [project, upcomingPayments] = await Promise.all([

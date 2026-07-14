@@ -1,27 +1,36 @@
 import "server-only"
 
+import { headers } from "next/headers"
+import { auth } from "@/lib/auth"
+import { getOrganizationMembership } from "@/lib/organization"
+
 export type ZimbaApiSession = {
   token: string
   organizationId: string
 }
 
-export function getZimbaApiSession(): ZimbaApiSession | null {
-  const token = process.env.ZIMBA_API_SESSION_TOKEN
-  const organizationId = process.env.ZIMBA_ORGANIZATION_ID
+export async function getZimbaApiSession(): Promise<ZimbaApiSession | null> {
+  const authSession = await auth.api.getSession({
+    headers: await headers(),
+  })
 
-  if (!token || !organizationId) {
+  if (!authSession?.session.token) {
     return null
   }
 
-  return { token, organizationId }
+  const membership = await getOrganizationMembership(authSession.user.id)
+  if (!membership) return null
+
+  return {
+    token: authSession.session.token,
+    organizationId: membership.organizationId,
+  }
 }
 
-export function requireZimbaApiSession(): ZimbaApiSession {
-  const session = getZimbaApiSession()
+export async function requireZimbaApiSession(): Promise<ZimbaApiSession> {
+  const session = await getZimbaApiSession()
   if (!session) {
-    throw new Error(
-      "Set ZIMBA_API_SESSION_TOKEN and ZIMBA_ORGANIZATION_ID to use the Zimba API."
-    )
+    throw new Error("Sign in and complete company setup to use the Zimba API.")
   }
   return session
 }
