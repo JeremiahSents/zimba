@@ -88,9 +88,12 @@ export function ProjectsPage({ data }: { data: DashboardOverviewData }) {
         </Button>
       </section>
 
-      <div className="-mt-2 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {stats.map((stat) => (
-          <Card key={stat.label} className="gap-0 py-0">
+      <div className="-mt-2 grid grid-cols-2 gap-3 lg:grid-cols-3">
+        {stats.map((stat, index) => (
+          <Card
+            key={stat.label}
+            className={`gap-0 py-0 ${index === 0 ? "col-span-2 lg:col-span-1" : ""}`}
+          >
             <div className="p-4">
               <div className="flex items-center justify-between gap-3">
                 <p className="font-medium text-muted-foreground text-xs">
@@ -102,7 +105,7 @@ export function ProjectsPage({ data }: { data: DashboardOverviewData }) {
                   className="size-4 text-primary"
                 />
               </div>
-              <p className="mt-2 font-heading font-semibold text-xl tracking-tight">
+              <p className="mt-2 break-words font-heading font-semibold text-lg tracking-tight sm:text-xl">
                 {stat.value}
               </p>
             </div>
@@ -154,7 +157,7 @@ export function ProjectsPage({ data }: { data: DashboardOverviewData }) {
           <p className="text-muted-foreground text-xs">
             Page {safePageIndex + 1} of {pageCount}
           </p>
-          <div className="flex items-center gap-2">
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center">
             <Button
               variant="outline"
               size="sm"

@@ -22,6 +22,11 @@ import {
   TableRow,
 } from "@workspace/ui/components/table"
 import { useMemo, useState } from "react"
+import {
+  MobileDataCard,
+  MobileDataMeta,
+} from "@/components/shared/mobile-data-card"
+import { ResponsiveDataView } from "@/components/shared/responsive-data-view"
 import { formatCurrency, formatPercent } from "@/lib/format"
 import type { ProjectDashboardResponse } from "@/lib/types"
 
@@ -80,41 +85,73 @@ export function ReportsTable({
         placeholder="Search reports..."
         className="max-w-xs"
       />
-      <Table>
-        <TableHeader>
-          {table.getHeaderGroups().map((group) => (
-            <TableRow key={group.id}>
-              {group.headers.map((header) => (
-                <TableHead key={header.id}>
-                  <Button
-                    variant="ghost"
-                    size="xs"
-                    className="px-0 text-inherit"
-                    onClick={header.column.getToggleSortingHandler()}
-                  >
-                    {flexRender(
-                      header.column.columnDef.header,
-                      header.getContext()
-                    )}
-                  </Button>
-                </TableHead>
+      <ResponsiveDataView
+        mobile={
+          <div className="space-y-3">
+            {table.getRowModel().rows.map((row) => {
+              const project = row.original
+              return (
+                <MobileDataCard
+                  key={row.id}
+                  eyebrow="Project report"
+                  title={project.name}
+                  value={formatPercent(project.pct)}
+                >
+                  <Progress value={project.pct} className="mb-4" />
+                  <dl className="grid grid-cols-2 gap-4">
+                    <MobileDataMeta label="Budget">
+                      {formatCurrency(project.budget)}
+                    </MobileDataMeta>
+                    <MobileDataMeta label="Remaining">
+                      {formatCurrency(project.remaining)}
+                    </MobileDataMeta>
+                  </dl>
+                </MobileDataCard>
+              )
+            })}
+          </div>
+        }
+        desktop={
+          <Table>
+            <TableHeader>
+              {table.getHeaderGroups().map((group) => (
+                <TableRow key={group.id}>
+                  {group.headers.map((header) => (
+                    <TableHead key={header.id}>
+                      <Button
+                        variant="ghost"
+                        size="xs"
+                        className="px-0 text-inherit"
+                        onClick={header.column.getToggleSortingHandler()}
+                      >
+                        {flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                      </Button>
+                    </TableHead>
+                  ))}
+                </TableRow>
               ))}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody>
-          {table.getRowModel().rows.map((row) => (
-            <TableRow key={row.id}>
-              {row.getVisibleCells().map((cell) => (
-                <TableCell key={cell.id}>
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </TableCell>
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows.map((row) => (
+                <TableRow key={row.id}>
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
               ))}
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-      <div className="flex justify-end gap-2 border-t pt-3">
+            </TableBody>
+          </Table>
+        }
+      />
+      <div className="grid grid-cols-2 gap-2 border-t pt-3 sm:flex sm:justify-end">
         <Button
           variant="outline"
           size="sm"

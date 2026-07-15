@@ -84,11 +84,11 @@ export function SuppliersPage({ data }: { data: DashboardOverviewData }) {
       dataSource={data.source}
     >
       <Card className="gap-0 overflow-hidden py-0">
-        <div className="grid md:grid-cols-4">
+        <div className="grid grid-cols-2 md:grid-cols-4">
           {stats.map((stat) => (
             <div
               key={stat.label}
-              className="border-t p-5 first:border-t-0 md:border-t-0 md:border-l md:first:border-l-0"
+              className="border-t p-4 first:border-t-0 even:border-l md:border-t-0 md:border-l md:p-5 md:first:border-l-0"
             >
               <div className="flex items-center justify-between gap-3">
                 <p className="font-medium text-muted-foreground text-xs">

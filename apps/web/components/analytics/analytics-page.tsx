@@ -42,7 +42,7 @@ export function AnalyticsPage({ data }: { data: DashboardOverviewData }) {
       </section>
 
       <Card className="gap-0 py-0">
-        <div className="grid sm:grid-cols-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 [&>*:first-child]:col-span-2 sm:[&>*:first-child]:col-span-1">
           {[
             ["Portfolio budget", formatCurrency(totalBudget)],
             ["Spent to date", formatCurrency(totalSpent)],

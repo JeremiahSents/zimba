@@ -3,6 +3,7 @@
 import { Calendar03Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Button } from "@workspace/ui/components/button"
+import { Input } from "@workspace/ui/components/input"
 import { useLayoutEffect, useRef, useState } from "react"
 import { createPortal } from "react-dom"
 
@@ -83,45 +84,54 @@ export function DatePicker({
   }, [open])
 
   return (
-    <div ref={triggerRef} className="relative">
-      <Button
-        type="button"
-        variant="outline"
-        className="w-full justify-start gap-2 font-normal"
-        onClick={() => setOpen((current) => !current)}
-        aria-expanded={open}
-      >
-        <HugeiconsIcon
-          icon={Calendar03Icon}
-          strokeWidth={1.8}
-          className="size-4 text-muted-foreground"
-        />
-        {selected.toLocaleDateString("en-GB", {
-          day: "numeric",
-          month: "short",
-          timeZone: "Africa/Nairobi",
-          year: "numeric",
-        })}
-      </Button>
-      {open &&
-        createPortal(
-          <div
-            ref={popupRef}
-            className="fixed z-[70] rounded-lg border bg-popover p-2 shadow-md"
-            style={{ left: position.left, top: position.top }}
-          >
-            <Calendar
-              mode="single"
-              selected={selected}
-              onSelect={(date) => {
-                if (!date) return
-                onChange(formatDateValue(date))
-                setOpen(false)
-              }}
-            />
-          </div>,
-          document.body
-        )}
-    </div>
+    <>
+      <Input
+        type="date"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        aria-label="Select date"
+        className="md:hidden"
+      />
+      <div ref={triggerRef} className="relative hidden md:block">
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full justify-start gap-2 font-normal"
+          onClick={() => setOpen((current) => !current)}
+          aria-expanded={open}
+        >
+          <HugeiconsIcon
+            icon={Calendar03Icon}
+            strokeWidth={1.8}
+            className="size-4 text-muted-foreground"
+          />
+          {selected.toLocaleDateString("en-GB", {
+            day: "numeric",
+            month: "short",
+            timeZone: "Africa/Nairobi",
+            year: "numeric",
+          })}
+        </Button>
+        {open &&
+          createPortal(
+            <div
+              ref={popupRef}
+              className="fixed z-[70] rounded-lg border bg-popover p-2 shadow-md"
+              style={{ left: position.left, top: position.top }}
+            >
+              <Calendar
+                mode="single"
+                selected={selected}
+                onSelect={(date) => {
+                  if (!date) return
+                  onChange(formatDateValue(date))
+                  setOpen(false)
+                }}
+              />
+            </div>,
+            document.body
+          )}
+      </div>
+    </>
   )
 }

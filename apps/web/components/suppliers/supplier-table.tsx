@@ -16,7 +16,13 @@ import {
   TableHeader,
   TableRow,
 } from "@workspace/ui/components/table"
+import Link from "next/link"
 import { useMemo, useState } from "react"
+import {
+  MobileDataCard,
+  MobileDataMeta,
+} from "@/components/shared/mobile-data-card"
+import { ResponsiveDataView } from "@/components/shared/responsive-data-view"
 import { formatCurrency } from "@/lib/format"
 import { getSupplierSlug, type SupplierListItem } from "@/lib/supplier-data"
 
@@ -66,122 +72,194 @@ export function SupplierTable({
           {rows.length} suppliers · {filterLabel}
         </span>
       </div>
-      <div className="overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>
-                <SortButton
-                  label="Supplier"
-                  active={sorting === "name"}
-                  onClick={() => setSorting("name")}
-                />
-              </TableHead>
-              <TableHead>Categories</TableHead>
-              <TableHead>
-                <SortButton
-                  label="Receipt value"
-                  active={sorting === "amount"}
-                  onClick={() => setSorting("amount")}
-                />
-              </TableHead>
-              <TableHead>Amount paid</TableHead>
-              <TableHead>
-                <SortButton
-                  label="Remaining"
-                  active={sorting === "remaining"}
-                  onClick={() => setSorting("remaining")}
-                />
-              </TableHead>
-              <TableHead className="w-10" />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {rows.map((supplier) => {
-              const paidPercent = supplier.amount
-                ? Math.round((supplier.paid / supplier.amount) * 100)
-                : 0
-              const href = `/admin/suppliers/${getSupplierSlug(supplier.name)}`
-              return (
-                <TableRow
-                  key={supplier.name}
-                  tabIndex={0}
-                  role="link"
-                  aria-label={`Open ${supplier.name} details`}
-                  className="group cursor-pointer hover:bg-muted/40"
-                  onClick={() => {
-                    window.location.href = href
-                  }}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter" || event.key === " ")
-                      window.location.href = href
-                  }}
-                >
-                  <TableCell>
-                    <div className="font-medium text-foreground">
-                      {supplier.name}
-                    </div>
-                    <div className="mt-1 text-muted-foreground text-xs">
-                      {supplier.payments} recorded payments
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <span className="inline-flex rounded-full border border-primary/40 bg-primary/5 px-2 py-1 font-medium text-primary text-xs capitalize">
-                      {supplier.category}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <div className="font-medium">
-                      {formatCurrency(supplier.amount)}
-                    </div>
-                    <div className="mt-1 text-muted-foreground text-xs">
-                      {supplier.statusSummary.Full} full ·{" "}
-                      {supplier.statusSummary.Partial} partial ·{" "}
-                      {supplier.statusSummary["Not paid"]} unpaid
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="font-medium">
-                      {formatCurrency(supplier.paid)}
-                    </div>
-                    <div className="mt-2 h-1.5 w-24 overflow-hidden rounded-full bg-muted">
-                      <div
-                        className="h-full rounded-full bg-primary"
-                        style={{ width: `${paidPercent}%` }}
-                      />
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="font-semibold text-rose-700">
-                      {formatCurrency(supplier.remaining)}
-                    </div>
-                    <div className="mt-1 text-muted-foreground text-xs">
-                      {paidPercent}% settled
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <HugeiconsIcon
-                      icon={ArrowUpRight01Icon}
-                      strokeWidth={1.8}
-                      className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+      <fieldset className="flex gap-2 overflow-x-auto pb-1 md:hidden">
+        <legend className="sr-only">Sort suppliers</legend>
+        {(["name", "amount", "remaining"] as const).map((option) => (
+          <Button
+            key={option}
+            type="button"
+            variant={sorting === option ? "secondary" : "outline"}
+            size="sm"
+            onClick={() => setSorting(option)}
+            className="shrink-0 capitalize"
+          >
+            {option === "name"
+              ? "Name"
+              : option === "amount"
+                ? "Receipt value"
+                : "Remaining"}
+          </Button>
+        ))}
+      </fieldset>
+      <ResponsiveDataView
+        mobile={
+          rows.length ? (
+            <div className="space-y-3">
+              {rows.map((supplier) => {
+                const paidPercent = supplier.amount
+                  ? Math.round((supplier.paid / supplier.amount) * 100)
+                  : 0
+                const href = `/admin/suppliers/${getSupplierSlug(supplier.name)}`
+                return (
+                  <Link
+                    key={supplier.name}
+                    href={href}
+                    className="block rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-ring/45"
+                  >
+                    <MobileDataCard
+                      eyebrow={`${supplier.payments} recorded payments`}
+                      title={supplier.name}
+                      value={formatCurrency(supplier.remaining)}
+                      status={
+                        <span className="inline-flex rounded-full border border-primary/35 bg-primary/6 px-2 py-1 font-medium text-[10px] text-primary capitalize">
+                          {supplier.category}
+                        </span>
+                      }
+                    >
+                      <div className="mb-4 h-1.5 overflow-hidden rounded-full bg-muted">
+                        <div
+                          className="h-full rounded-full bg-primary"
+                          style={{ width: `${paidPercent}%` }}
+                        />
+                      </div>
+                      <dl className="grid grid-cols-2 gap-4">
+                        <MobileDataMeta label="Receipt value">
+                          {formatCurrency(supplier.amount)}
+                        </MobileDataMeta>
+                        <MobileDataMeta label="Amount paid">
+                          {formatCurrency(supplier.paid)}
+                        </MobileDataMeta>
+                      </dl>
+                    </MobileDataCard>
+                  </Link>
+                )
+              })}
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-dashed p-8 text-center text-muted-foreground text-sm">
+              No suppliers match your search.
+            </div>
+          )
+        }
+        desktop={
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>
+                    <SortButton
+                      label="Supplier"
+                      active={sorting === "name"}
+                      onClick={() => setSorting("name")}
                     />
-                  </TableCell>
+                  </TableHead>
+                  <TableHead>Categories</TableHead>
+                  <TableHead>
+                    <SortButton
+                      label="Receipt value"
+                      active={sorting === "amount"}
+                      onClick={() => setSorting("amount")}
+                    />
+                  </TableHead>
+                  <TableHead>Amount paid</TableHead>
+                  <TableHead>
+                    <SortButton
+                      label="Remaining"
+                      active={sorting === "remaining"}
+                      onClick={() => setSorting("remaining")}
+                    />
+                  </TableHead>
+                  <TableHead className="w-10" />
                 </TableRow>
-              )
-            })}
-            {rows.length === 0 && (
-              <TableRow>
-                <TableCell
-                  colSpan={6}
-                  className="h-28 text-center text-muted-foreground"
-                >
-                  No suppliers match your search.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
+              </TableHeader>
+              <TableBody>
+                {rows.map((supplier) => {
+                  const paidPercent = supplier.amount
+                    ? Math.round((supplier.paid / supplier.amount) * 100)
+                    : 0
+                  const href = `/admin/suppliers/${getSupplierSlug(supplier.name)}`
+                  return (
+                    <TableRow
+                      key={supplier.name}
+                      tabIndex={0}
+                      role="link"
+                      aria-label={`Open ${supplier.name} details`}
+                      className="group cursor-pointer hover:bg-muted/40"
+                      onClick={() => {
+                        window.location.href = href
+                      }}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ")
+                          window.location.href = href
+                      }}
+                    >
+                      <TableCell>
+                        <div className="font-medium text-foreground">
+                          {supplier.name}
+                        </div>
+                        <div className="mt-1 text-muted-foreground text-xs">
+                          {supplier.payments} recorded payments
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <span className="inline-flex rounded-full border border-primary/40 bg-primary/5 px-2 py-1 font-medium text-primary text-xs capitalize">
+                          {supplier.category}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <div className="font-medium">
+                          {formatCurrency(supplier.amount)}
+                        </div>
+                        <div className="mt-1 text-muted-foreground text-xs">
+                          {supplier.statusSummary.Full} full ·{" "}
+                          {supplier.statusSummary.Partial} partial ·{" "}
+                          {supplier.statusSummary["Not paid"]} unpaid
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="font-medium">
+                          {formatCurrency(supplier.paid)}
+                        </div>
+                        <div className="mt-2 h-1.5 w-24 overflow-hidden rounded-full bg-muted">
+                          <div
+                            className="h-full rounded-full bg-primary"
+                            style={{ width: `${paidPercent}%` }}
+                          />
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="font-semibold text-rose-700">
+                          {formatCurrency(supplier.remaining)}
+                        </div>
+                        <div className="mt-1 text-muted-foreground text-xs">
+                          {paidPercent}% settled
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <HugeiconsIcon
+                          icon={ArrowUpRight01Icon}
+                          strokeWidth={1.8}
+                          className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                        />
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
+                {rows.length === 0 && (
+                  <TableRow>
+                    <TableCell
+                      colSpan={6}
+                      className="h-28 text-center text-muted-foreground"
+                    >
+                      No suppliers match your search.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        }
+      />
     </div>
   )
 }

@@ -140,7 +140,7 @@ export function ProjectDetailPage({
       notifications={upcoming}
       onAddNotification={() => setPaymentDialogOpen(true)}
     >
-      <div className="flex flex-wrap items-end justify-between gap-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <div className="mb-2 flex items-center gap-2 text-muted-foreground text-xs">
             <Link
@@ -162,6 +162,7 @@ export function ProjectDetailPage({
         </div>
         <Button
           size="sm"
+          className="w-full sm:w-auto"
           nativeButton={false}
           render={<Link href={`/admin/projects/${project.id}/expenses/new`} />}
         >
@@ -169,12 +170,14 @@ export function ProjectDetailPage({
         </Button>
       </div>
 
-      <div className="mb-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Metric
-          label="Total budget"
-          value={formatCurrency(project.budget)}
-          icon="budget"
-        />
+      <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-3 lg:gap-4">
+        <div className="col-span-2 lg:col-span-1">
+          <Metric
+            label="Total budget"
+            value={formatCurrency(project.budget)}
+            icon="budget"
+          />
+        </div>
         <Metric
           label="Total spent"
           value={formatCurrency(spent)}

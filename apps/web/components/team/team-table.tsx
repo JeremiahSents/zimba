@@ -22,6 +22,11 @@ import {
   TableRow,
 } from "@workspace/ui/components/table"
 import { useMemo, useState } from "react"
+import {
+  MobileDataCard,
+  MobileDataMeta,
+} from "@/components/shared/mobile-data-card"
+import { ResponsiveDataView } from "@/components/shared/responsive-data-view"
 import type { TeamMember } from "@/lib/types"
 
 export function TeamTable({ members }: { members: TeamMember[] }) {
@@ -61,7 +66,7 @@ export function TeamTable({ members }: { members: TeamMember[] }) {
   })
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <Input
           value={filter}
           onChange={(event) => setFilter(event.target.value)}
@@ -72,42 +77,70 @@ export function TeamTable({ members }: { members: TeamMember[] }) {
           {table.getFilteredRowModel().rows.length} members
         </span>
       </div>
-      <Table>
-        <TableHeader>
-          {table.getHeaderGroups().map((group) => (
-            <TableRow key={group.id}>
-              {group.headers.map((header) => (
-                <TableHead key={header.id}>
-                  <Button
-                    variant="ghost"
-                    size="xs"
-                    className="px-0 text-inherit"
-                    onClick={header.column.getToggleSortingHandler()}
-                    disabled={!header.column.getCanSort()}
-                  >
-                    {flexRender(
-                      header.column.columnDef.header,
-                      header.getContext()
-                    )}
-                  </Button>
-                </TableHead>
+      <ResponsiveDataView
+        mobile={
+          <div className="space-y-3">
+            {table.getRowModel().rows.map((row) => {
+              const member = row.original
+              return (
+                <MobileDataCard
+                  key={row.id}
+                  eyebrow={member.role}
+                  title={member.name}
+                  status={<Badge variant="success">Active</Badge>}
+                >
+                  <dl>
+                    <MobileDataMeta label="Responsibility">
+                      {member.responsibility}
+                    </MobileDataMeta>
+                  </dl>
+                </MobileDataCard>
+              )
+            })}
+          </div>
+        }
+        desktop={
+          <Table>
+            <TableHeader>
+              {table.getHeaderGroups().map((group) => (
+                <TableRow key={group.id}>
+                  {group.headers.map((header) => (
+                    <TableHead key={header.id}>
+                      <Button
+                        variant="ghost"
+                        size="xs"
+                        className="px-0 text-inherit"
+                        onClick={header.column.getToggleSortingHandler()}
+                        disabled={!header.column.getCanSort()}
+                      >
+                        {flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                      </Button>
+                    </TableHead>
+                  ))}
+                </TableRow>
               ))}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody>
-          {table.getRowModel().rows.map((row) => (
-            <TableRow key={row.id}>
-              {row.getVisibleCells().map((cell) => (
-                <TableCell key={cell.id}>
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </TableCell>
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows.map((row) => (
+                <TableRow key={row.id}>
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
               ))}
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-      <div className="flex justify-end gap-2 border-t pt-3">
+            </TableBody>
+          </Table>
+        }
+      />
+      <div className="grid grid-cols-2 gap-2 border-t pt-3 sm:flex sm:justify-end">
         <Button
           variant="outline"
           size="sm"

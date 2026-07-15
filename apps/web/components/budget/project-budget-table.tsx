@@ -19,6 +19,11 @@ import {
 } from "@workspace/ui/components/table"
 import { useMemo, useState } from "react"
 
+import {
+  MobileDataCard,
+  MobileDataMeta,
+} from "@/components/shared/mobile-data-card"
+import { ResponsiveDataView } from "@/components/shared/responsive-data-view"
 import { formatCurrency, formatPercent } from "@/lib/format"
 import type { ProjectDashboardResponse } from "@/lib/types"
 
@@ -89,33 +94,70 @@ export function ProjectBudgetTable({
         placeholder="Search project budgets..."
         className="max-w-xs"
       />
-      <Table>
-        <TableHeader>
-          {table.getHeaderGroups().map((group) => (
-            <TableRow key={group.id}>
-              {group.headers.map((header) => (
-                <TableHead key={header.id}>
-                  {flexRender(
-                    header.column.columnDef.header,
-                    header.getContext()
-                  )}
-                </TableHead>
+      <ResponsiveDataView
+        mobile={
+          <div className="space-y-3">
+            {table.getRowModel().rows.map((row) => {
+              const project = row.original
+              return (
+                <MobileDataCard
+                  key={row.id}
+                  eyebrow={project.location}
+                  title={project.name}
+                  value={formatPercent(project.pct)}
+                >
+                  <Progress value={project.pct} className="mb-4" />
+                  <dl className="grid grid-cols-2 gap-x-4 gap-y-3">
+                    <MobileDataMeta label="Allocated">
+                      {formatCurrency(project.budget)}
+                    </MobileDataMeta>
+                    <MobileDataMeta label="Spent">
+                      {formatCurrency(project.spent)}
+                    </MobileDataMeta>
+                    <div className="col-span-2">
+                      <MobileDataMeta label="Remaining">
+                        {formatCurrency(project.remaining)}
+                      </MobileDataMeta>
+                    </div>
+                  </dl>
+                </MobileDataCard>
+              )
+            })}
+          </div>
+        }
+        desktop={
+          <Table>
+            <TableHeader>
+              {table.getHeaderGroups().map((group) => (
+                <TableRow key={group.id}>
+                  {group.headers.map((header) => (
+                    <TableHead key={header.id}>
+                      {flexRender(
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
+                    </TableHead>
+                  ))}
+                </TableRow>
               ))}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody>
-          {table.getRowModel().rows.map((row) => (
-            <TableRow key={row.id}>
-              {row.getVisibleCells().map((cell) => (
-                <TableCell key={cell.id}>
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </TableCell>
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows.map((row) => (
+                <TableRow key={row.id}>
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
               ))}
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+            </TableBody>
+          </Table>
+        }
+      />
     </div>
   )
 }

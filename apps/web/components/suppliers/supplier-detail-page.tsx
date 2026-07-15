@@ -122,7 +122,7 @@ export function SupplierDetailPage({
           <CardHeader className="pb-3">
             <CardTitle className="text-sm">Company contact</CardTitle>
           </CardHeader>
-          <CardContent className="grid grid-cols-2 gap-4 text-sm">
+          <CardContent className="grid gap-4 text-sm min-[400px]:grid-cols-2">
             <Contact
               icon={MapsLocation01Icon}
               label="Company contact"
@@ -138,7 +138,7 @@ export function SupplierDetailPage({
           </CardContent>
         </Card>
       </section>
-      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {[
           ["Receipt value", formatCurrency(supplier.amount), "All receipts"],
           [
@@ -270,7 +270,81 @@ export function SupplierDetailPage({
             </span>
           </CardHeader>
           <CardContent>
-            <div className="overflow-x-auto">
+            <div className="space-y-3 md:hidden">
+              {ledger.map((entry) => {
+                const remaining = entry.receiptValue - entry.paid
+                const paidPct = entry.receiptValue
+                  ? Math.round((entry.paid / entry.receiptValue) * 100)
+                  : 0
+
+                return (
+                  <article
+                    key={entry.id}
+                    className="rounded-2xl border bg-background p-4 shadow-sm"
+                  >
+                    <div className="flex items-start gap-3">
+                      <span
+                        className={`mt-1 h-10 w-1 shrink-0 rounded-full ${entry.status === "Full" ? "bg-green-500" : entry.status === "Partial" ? "bg-amber-500" : "bg-rose-500"}`}
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="truncate font-medium">{entry.item}</p>
+                            <p className="mt-1 text-muted-foreground text-xs">
+                              {entry.project} · {formatShortDate(entry.date)}
+                            </p>
+                          </div>
+                          <span
+                            className={`shrink-0 rounded-full px-2 py-1 font-medium text-xs ${statusStyles[entry.status]}`}
+                          >
+                            {remaining > 0
+                              ? formatCurrency(remaining)
+                              : "Settled"}
+                          </span>
+                        </div>
+                        <div className="mt-4 grid grid-cols-2 gap-3 border-t pt-3 text-xs">
+                          <div>
+                            <p className="text-muted-foreground">
+                              Receipt value
+                            </p>
+                            <p className="mt-1 font-semibold tabular-nums">
+                              {formatCurrency(entry.receiptValue)}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-muted-foreground">Paid</p>
+                            <p className="mt-1 font-semibold tabular-nums">
+                              {formatCurrency(entry.paid)} · {paidPct}%
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </article>
+                )
+              })}
+              <div className="grid grid-cols-3 gap-2 rounded-2xl bg-muted/50 p-4 text-xs">
+                <div>
+                  <p className="text-muted-foreground">Total</p>
+                  <p className="mt-1 font-semibold tabular-nums">
+                    {formatCurrency(totalReceipts)}
+                  </p>
+                </div>
+                <div className="text-center">
+                  <p className="text-muted-foreground">Paid</p>
+                  <p className="mt-1 font-semibold text-green-700 tabular-nums">
+                    {formatCurrency(supplier.paid)}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-muted-foreground">Remaining</p>
+                  <p className="mt-1 font-semibold text-rose-600 tabular-nums">
+                    {formatCurrency(supplier.remaining)}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="hidden overflow-x-auto md:block">
               <table className="w-full min-w-[560px] text-sm">
                 <thead>
                   <tr className="border-b text-left text-muted-foreground text-xs uppercase tracking-wider">

@@ -36,6 +36,11 @@ import {
 } from "@workspace/ui/components/table"
 import { useMemo, useState } from "react"
 
+import {
+  MobileDataCard,
+  MobileDataMeta,
+} from "@/components/shared/mobile-data-card"
+import { ResponsiveDataView } from "@/components/shared/responsive-data-view"
 import { formatCurrency, formatShortDate } from "@/lib/format"
 import type { ExpenseResponse, ExpenseStatus } from "@/lib/types"
 
@@ -177,74 +182,135 @@ export function ProjectExpensesTable({
             : "expenses"}
         </p>
       </div>
-      <Table className="table-fixed border-y">
-        <TableHeader className="bg-muted/25">
-          {table.getHeaderGroups().map((group) => (
-            <TableRow key={group.id}>
-              {group.headers.map((header) => (
-                <TableHead
-                  key={header.id}
-                  className={`min-w-0 border-l px-4 first:border-l-0 ${columnWidths[header.id] ?? ""} ${header.id === "amount" ? "text-right" : ""}`}
-                >
-                  {header.isPlaceholder ? null : (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="xs"
-                      className={`inline-flex items-center gap-1.5 text-inherit ${header.id === "amount" ? "ml-auto" : ""}`}
-                      onClick={header.column.getToggleSortingHandler()}
-                      disabled={!header.column.getCanSort()}
-                    >
-                      {flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
-                      {header.column.getCanSort() && (
-                        <HugeiconsIcon
-                          icon={Sorting05Icon}
-                          strokeWidth={1.5}
-                          className="size-3.5"
-                        />
-                      )}
-                    </Button>
-                  )}
-                </TableHead>
-              ))}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody>
-          {rows.length ? (
-            rows.map((row) => (
-              <TableRow key={row.id} className="hover:bg-muted/25">
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell
-                    key={cell.id}
-                    className={`min-w-0 overflow-hidden border-l px-4 py-4 align-middle first:border-l-0 ${cell.column.id === "amount" ? "text-right font-semibold" : ""}`}
+      <ResponsiveDataView
+        mobile={
+          rows.length ? (
+            <div className="space-y-3">
+              {rows.map((row) => {
+                const expense = row.original
+                const status = expense.status ?? "Full"
+                return (
+                  <MobileDataCard
+                    key={row.id}
+                    eyebrow={expense.task_name}
+                    title={expense.item_description}
+                    value={formatCurrency(expense.amount)}
+                    status={
+                      <Select
+                        value={status}
+                        onValueChange={(value) =>
+                          onStatusChange(
+                            expense.id,
+                            (value as ExpenseStatus) ?? "Full"
+                          )
+                        }
+                      >
+                        <SelectTrigger
+                          className={`w-full max-w-40 rounded-lg px-3 font-medium text-xs ${statusPillClasses[status]}`}
+                          aria-label={`Update payment status for ${expense.item_description}`}
+                        >
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Full">Paid in full</SelectItem>
+                          <SelectItem value="Partial">Partial</SelectItem>
+                          <SelectItem value="Not paid">Not paid</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    }
                   >
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))
+                    <dl className="grid grid-cols-2 gap-4">
+                      <MobileDataMeta label="Supplier">
+                        {expense.supplier_name}
+                      </MobileDataMeta>
+                      <MobileDataMeta label="Date">
+                        {formatShortDate(expense.date)}
+                      </MobileDataMeta>
+                    </dl>
+                  </MobileDataCard>
+                )
+              })}
+            </div>
           ) : (
-            <TableRow>
-              <TableCell
-                colSpan={columns.length}
-                className="h-24 text-center text-muted-foreground"
-              >
-                No expenses match your search.
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+            <div className="rounded-2xl border border-dashed p-8 text-center text-muted-foreground text-sm">
+              No expenses match your search.
+            </div>
+          )
+        }
+        desktop={
+          <Table className="table-fixed border-y">
+            <TableHeader className="bg-muted/25">
+              {table.getHeaderGroups().map((group) => (
+                <TableRow key={group.id}>
+                  {group.headers.map((header) => (
+                    <TableHead
+                      key={header.id}
+                      className={`min-w-0 border-l px-4 first:border-l-0 ${columnWidths[header.id] ?? ""} ${header.id === "amount" ? "text-right" : ""}`}
+                    >
+                      {header.isPlaceholder ? null : (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="xs"
+                          className={`inline-flex items-center gap-1.5 text-inherit ${header.id === "amount" ? "ml-auto" : ""}`}
+                          onClick={header.column.getToggleSortingHandler()}
+                          disabled={!header.column.getCanSort()}
+                        >
+                          {flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                          {header.column.getCanSort() && (
+                            <HugeiconsIcon
+                              icon={Sorting05Icon}
+                              strokeWidth={1.5}
+                              className="size-3.5"
+                            />
+                          )}
+                        </Button>
+                      )}
+                    </TableHead>
+                  ))}
+                </TableRow>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {rows.length ? (
+                rows.map((row) => (
+                  <TableRow key={row.id} className="hover:bg-muted/25">
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell
+                        key={cell.id}
+                        className={`min-w-0 overflow-hidden border-l px-4 py-4 align-middle first:border-l-0 ${cell.column.id === "amount" ? "text-right font-semibold" : ""}`}
+                      >
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-24 text-center text-muted-foreground"
+                  >
+                    No expenses match your search.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        }
+      />
       <div className="flex flex-col gap-3 border-t pt-5 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-muted-foreground text-xs">
           Page {table.getState().pagination.pageIndex + 1} of{" "}
           {Math.max(table.getPageCount(), 1)}
         </p>
-        <div className="flex items-center gap-2">
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center">
           <Button
             variant="outline"
             size="sm"

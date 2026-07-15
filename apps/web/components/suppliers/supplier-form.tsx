@@ -138,7 +138,7 @@ export function SupplierForm({
           </label>
         )}
       </div>
-      <div className="flex flex-col-reverse gap-3 border-t pt-4 sm:flex-row sm:justify-end">
+      <div className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-2 gap-2 border-t bg-background/96 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-18px_45px_-28px_rgba(15,23,42,0.45)] backdrop-blur-xl sm:static sm:flex sm:flex-row sm:justify-end sm:border-t sm:bg-transparent sm:p-0 sm:pt-4 sm:shadow-none sm:backdrop-blur-none">
         {onCancel && (
           <Button type="button" variant="outline" onClick={onCancel}>
             Cancel

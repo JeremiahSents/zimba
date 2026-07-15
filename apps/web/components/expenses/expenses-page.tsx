@@ -30,23 +30,27 @@ export function ExpensesPage({ data }: { data: DashboardOverviewData }) {
       subtitle="Review payments, tasks, suppliers, and site spend."
       dataSource={data.source}
     >
-      <div className="flex items-center justify-between pb-4">
-        <Tabs defaultValue={expenseFilters[0]}>
-          <TabsList>
-            {expenseFilters.map((filter) => (
-              <TabsTrigger key={filter} value={filter}>
-                {filter}
-              </TabsTrigger>
-            ))}
-          </TabsList>
+      <div className="min-w-0 pb-2">
+        <Tabs defaultValue={expenseFilters[0]} className="min-w-0">
+          <div className="overflow-x-auto pb-2">
+            <TabsList className="min-w-max">
+              {expenseFilters.map((filter) => (
+                <TabsTrigger key={filter} value={filter}>
+                  {filter}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </div>
         </Tabs>
       </div>
-      <div className="mb-6 grid gap-4 lg:grid-cols-3">
-        <ExpenseMetric
-          detail="Current period"
-          label="This month"
-          value={formatCurrency(totalSpent)}
-        />
+      <div className="mb-2 grid grid-cols-2 gap-3 lg:grid-cols-3">
+        <div className="col-span-2 lg:col-span-1">
+          <ExpenseMetric
+            detail="Current period"
+            label="This month"
+            value={formatCurrency(totalSpent)}
+          />
+        </div>
         <ExpenseMetric
           detail="Needs attention"
           label="Pending approval"

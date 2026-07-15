@@ -1,14 +1,9 @@
 "use client"
 
 import {
-  Analytics02Icon,
   Building01Icon,
-  DashboardSquare02Icon,
-  FolderKanbanIcon,
   LayoutAlignLeftIcon,
   LayoutAlignRightIcon,
-  MoneyBag02Icon,
-  UserGroupIcon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Button } from "@workspace/ui/components/button"
@@ -35,19 +30,14 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import type { ComponentProps } from "react"
 import {
+  dashboardNavigation,
+  isDashboardRouteActive,
+} from "@/components/shared/dashboard-navigation"
+import {
   formatRole,
   useWorkspace,
 } from "@/components/shared/workspace-provider"
 import { authClient } from "@/lib/auth-client"
-
-const navItems = [
-  { title: "Home", href: "/admin/home", icon: DashboardSquare02Icon },
-  { title: "Projects", href: "/admin/projects", icon: FolderKanbanIcon },
-  { title: "Suppliers", href: "/admin/suppliers", icon: MoneyBag02Icon },
-  { title: "Team", href: "/admin/team", icon: UserGroupIcon },
-  { title: "Analytics", href: "/admin/analytics", icon: Analytics02Icon },
-  { title: "Reports", href: "/admin/reports", icon: Analytics02Icon },
-]
 
 export function DashboardSidebar() {
   const pathname = usePathname()
@@ -68,15 +58,11 @@ export function DashboardSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="gap-2">
-              {navItems.map((item) => (
+              {dashboardNavigation.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
                     tooltip={item.title}
-                    isActive={
-                      item.href === "/admin/home"
-                        ? pathname === item.href
-                        : pathname.startsWith(item.href)
-                    }
+                    isActive={isDashboardRouteActive(pathname, item.href)}
                     className="relative h-10 rounded-md px-3 font-medium text-[13px] text-sidebar-foreground/75 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground data-active:bg-primary/10 data-active:text-primary group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:grid group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:place-items-center group-data-[collapsible=icon]:p-0! group-data-[collapsible=icon]:[&_span]:hidden [&_svg]:size-4! [&_svg]:text-sidebar-foreground/50 data-active:[&_svg]:text-primary"
                     render={
                       <Link href={item.href}>

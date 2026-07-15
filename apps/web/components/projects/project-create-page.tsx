@@ -99,7 +99,7 @@ export function ProjectCreatePage() {
   }
 
   return (
-    <DashboardShell title="New project" subtitle="">
+    <DashboardShell title="New project" subtitle="" focusedTask>
       <form onSubmit={goToAllocation} className="grid gap-6">
         <PageHeader
           pending={uploading}
@@ -126,7 +126,25 @@ export function ProjectCreatePage() {
                 )
               }
             />
-            <div className="lg:sticky lg:top-4">
+            <details className="group rounded-xl border bg-card lg:hidden">
+              <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between px-4 font-medium text-sm">
+                Preview project
+                <span className="text-primary transition-transform group-open:rotate-45">
+                  +
+                </span>
+              </summary>
+              <div className="border-t p-4">
+                <ProjectPreviewCard
+                  name={details.name}
+                  location={details.location}
+                  buildingType={details.buildingType}
+                  landSize={details.landSize}
+                  files={files}
+                  totalBudget={draftBudget}
+                />
+              </div>
+            </details>
+            <div className="hidden lg:sticky lg:top-4 lg:block">
               <ProjectPreviewCard
                 name={details.name}
                 location={details.location}
@@ -171,7 +189,20 @@ function PageHeader({
           Add the project details before setting its initial allocation.
         </p>
       </div>
-      <div className="flex gap-2">
+      <div className="hidden gap-2 sm:flex">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onCancel}
+          disabled={pending}
+        >
+          Cancel
+        </Button>
+        <Button type="submit" disabled={pending}>
+          {pending ? "Uploading..." : "Next"}
+        </Button>
+      </div>
+      <div className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-2 gap-2 border-t bg-background/96 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-18px_45px_-28px_rgba(15,23,42,0.45)] backdrop-blur-xl sm:hidden">
         <Button
           type="button"
           variant="outline"

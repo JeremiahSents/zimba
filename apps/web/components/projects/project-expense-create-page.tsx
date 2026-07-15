@@ -168,6 +168,7 @@ export function ProjectExpenseCreatePage({
       title="New expense"
       subtitle={`Create a receipt for ${project.name}.`}
       dataSource="mock"
+      focusedTask
     >
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
@@ -283,8 +284,145 @@ export function ProjectExpenseCreatePage({
               </Button>
             </CardAction>
           </CardHeader>
-          <CardContent className="overflow-x-auto p-0">
-            <div className="min-w-[880px]">
+          <CardContent className="p-0 md:overflow-x-auto">
+            <div className="space-y-3 p-4 md:hidden">
+              {items.map((item, index) => {
+                const amount =
+                  Number(item.quantity || 0) * Number(item.rate || 0)
+                return (
+                  <details
+                    key={item.id}
+                    className="group overflow-hidden rounded-2xl border bg-background"
+                  >
+                    <summary className="flex min-h-14 cursor-pointer list-none items-center gap-3 px-4">
+                      <span className="grid size-8 shrink-0 place-items-center rounded-xl bg-primary/10 font-semibold text-primary text-xs">
+                        {index + 1}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate font-medium text-sm">
+                          {item.itemDetails || `Expense item ${index + 1}`}
+                        </span>
+                        <span className="mt-0.5 block text-muted-foreground text-xs">
+                          {item.taskName || "Choose a project task"}
+                        </span>
+                      </span>
+                      <span className="shrink-0 font-heading font-semibold text-sm tabular-nums">
+                        {formatCurrency(amount)}
+                      </span>
+                    </summary>
+                    <div className="grid gap-4 border-t p-4">
+                      <label className="grid gap-2 font-medium text-xs">
+                        Item details
+                        <Input
+                          required
+                          value={item.itemDetails}
+                          onChange={(event) =>
+                            updateItem(
+                              item.id,
+                              "itemDetails",
+                              event.target.value
+                            )
+                          }
+                          placeholder="Type the purchased item"
+                        />
+                      </label>
+                      <label className="grid gap-2 font-medium text-xs">
+                        Project task
+                        <Select
+                          value={item.taskName}
+                          onValueChange={(value) =>
+                            updateItem(item.id, "taskName", value ?? "")
+                          }
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select task" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {project.tasks.map((task) => (
+                              <SelectItem key={task.id} value={task.name}>
+                                {task.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </label>
+                      <label className="grid gap-2 font-medium text-xs">
+                        Supplier
+                        <Select
+                          value={item.supplierName}
+                          onValueChange={(value) =>
+                            updateItem(item.id, "supplierName", value ?? "")
+                          }
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select supplier" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {supplierOptions.map((supplier) => (
+                              <SelectItem key={supplier} value={supplier}>
+                                {supplier}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </label>
+                      <div className="grid grid-cols-2 gap-3">
+                        <label className="grid gap-2 font-medium text-xs">
+                          Quantity
+                          <Input
+                            required
+                            min="0.01"
+                            step="0.01"
+                            type="number"
+                            inputMode="decimal"
+                            value={item.quantity}
+                            onChange={(event) =>
+                              updateItem(
+                                item.id,
+                                "quantity",
+                                event.target.value
+                              )
+                            }
+                          />
+                        </label>
+                        <label className="grid gap-2 font-medium text-xs">
+                          Rate
+                          <Input
+                            required
+                            min="0"
+                            step="0.01"
+                            type="number"
+                            inputMode="decimal"
+                            value={item.rate}
+                            onChange={(event) =>
+                              updateItem(item.id, "rate", event.target.value)
+                            }
+                            placeholder="0"
+                          />
+                        </label>
+                      </div>
+                      <div className="flex items-center justify-between rounded-xl bg-muted/45 px-4 py-3">
+                        <span className="text-muted-foreground text-xs">
+                          Item amount
+                        </span>
+                        <span className="font-heading font-semibold text-base tabular-nums">
+                          {formatCurrency(amount)}
+                        </span>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        disabled={items.length === 1}
+                        onClick={() => removeItem(item.id)}
+                      >
+                        Remove item
+                      </Button>
+                    </div>
+                  </details>
+                )
+              })}
+            </div>
+            <div className="hidden min-w-[880px] md:block">
               <div className="grid grid-cols-[minmax(10rem,1.1fr)_9rem_minmax(13rem,1.2fr)_5.5rem_8rem_8rem_3rem] border-b bg-muted/30 font-semibold text-[11px] text-muted-foreground uppercase tracking-wide">
                 <div className="px-5 py-3">Item details</div>
                 <div className="border-l px-4 py-3">Project task</div>
@@ -424,7 +562,7 @@ export function ProjectExpenseCreatePage({
           </CardFooter>
         </Card>
 
-        <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+        <div className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-2 gap-2 border-t bg-background/96 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-18px_45px_-28px_rgba(15,23,42,0.45)] backdrop-blur-xl sm:static sm:flex sm:flex-row sm:justify-end sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none sm:backdrop-blur-none">
           <Button
             type="button"
             variant="outline"

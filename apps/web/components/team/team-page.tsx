@@ -25,11 +25,11 @@ export function TeamPage() {
       dataSource="mock"
     >
       <Card className="gap-0 py-0">
-        <div className="grid md:grid-cols-3">
+        <div className="grid grid-cols-2 md:grid-cols-3 [&>*:first-child]:col-span-2 md:[&>*:first-child]:col-span-1">
           {stats.map(([label, value, detail]) => (
             <div
               key={label}
-              className="border-t p-5 first:border-t-0 md:border-t-0 md:border-l md:first:border-l-0"
+              className="border-t p-4 first:border-t-0 even:border-l md:border-t-0 md:border-l md:p-5 md:first:border-l-0"
             >
               <p className="font-medium text-foreground text-xs">{label}</p>
               <p className="mt-5 font-heading font-semibold text-base text-foreground">
@@ -41,7 +41,7 @@ export function TeamPage() {
         </div>
       </Card>
       <Card>
-        <CardHeader className="flex flex-row items-start justify-between gap-4">
+        <CardHeader className="flex flex-col items-stretch justify-between gap-4 sm:flex-row sm:items-start">
           <div>
             <CardTitle>Team access</CardTitle>
             <CardDescription>

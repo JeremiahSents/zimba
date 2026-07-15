@@ -23,7 +23,7 @@ import { storeSupplier } from "@/lib/supplier-store"
 export function NewSupplierPage() {
   const router = useRouter()
   return (
-    <DashboardShell title="New supplier" subtitle="">
+    <DashboardShell title="New supplier" subtitle="" focusedTask>
       <div className="grid gap-6">
         <div className="flex items-center justify-between gap-4">
           <div>

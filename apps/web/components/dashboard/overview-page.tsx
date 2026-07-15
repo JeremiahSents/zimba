@@ -96,9 +96,12 @@ export function DashboardPage({ data }: { data: DashboardOverviewData }) {
         </div>
       </section>
 
-      <div className="-mt-2 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {stats.map((stat) => (
-          <Card key={stat.label} className="gap-0 py-0">
+      <div className="-mt-2 grid grid-cols-2 gap-3 lg:grid-cols-3">
+        {stats.map((stat, index) => (
+          <Card
+            key={stat.label}
+            className={`gap-0 py-0 ${index === 0 ? "col-span-2 lg:col-span-1" : ""}`}
+          >
             <div className="p-4">
               <div className="flex items-center justify-between gap-3">
                 <p className="font-medium text-muted-foreground text-xs">
@@ -110,7 +113,7 @@ export function DashboardPage({ data }: { data: DashboardOverviewData }) {
                   className="size-4 text-primary"
                 />
               </div>
-              <p className="mt-2 font-heading font-semibold text-xl tracking-tight">
+              <p className="mt-2 break-words font-heading font-semibold text-lg tracking-tight sm:text-xl">
                 {stat.value}
               </p>
             </div>
@@ -126,7 +129,7 @@ export function DashboardPage({ data }: { data: DashboardOverviewData }) {
 
 function FirstProjectEmptyState() {
   return (
-    <section className="relative isolate flex min-h-[28rem] items-center justify-center overflow-hidden rounded-2xl px-6 py-16 text-center sm:px-10">
+    <section className="relative isolate flex min-h-[20rem] items-center justify-center overflow-hidden rounded-2xl px-6 py-12 text-center sm:min-h-[28rem] sm:px-10 sm:py-16">
       <div aria-hidden className="absolute inset-0 -z-20 opacity-45" />
       <div
         aria-hidden

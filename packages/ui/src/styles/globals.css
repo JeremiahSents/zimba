@@ -45,6 +45,14 @@
   --success: #496b28;
   --success-soft: #eef4e7;
   --radius: 0.375rem;
+  --navbar-height: 72px;
+  --navbar-offset: max(8px, env(safe-area-inset-bottom, 0px));
+  --mobile-bottom-space: calc(
+    var(--navbar-height) +
+    var(--navbar-offset) +
+    16px
+  );
+  --ease-out-ui: cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 @theme inline {
@@ -91,6 +99,9 @@
   --radius-lg: 0.625rem;
   --radius-xl: 0.75rem;
   --radius-2xl: 1rem;
+  --spacing-navbar-height: var(--navbar-height);
+  --spacing-navbar-offset: var(--navbar-offset);
+  --spacing-mobile-bottom-space: var(--mobile-bottom-space);
 }
 
 @layer base {

@@ -41,6 +41,80 @@ function persistRows(rows: InitialAllocation[]) {
   if (draft) writeProjectCreateDraft({ ...draft, allocations: rows })
 }
 
+function MobileAllocationCards({
+  rows,
+  total,
+  onUpdate,
+  onRemove,
+}: {
+  rows: InitialAllocation[]
+  total: number
+  onUpdate: (id: number, field: "name" | "amount", value: string) => void
+  onRemove: (id: number) => void
+}) {
+  return (
+    <div className="space-y-3 p-4 md:hidden">
+      {rows.map((row, index) => (
+        <div key={row.id} className="rounded-2xl border bg-background p-4">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <span className="font-semibold text-[10px] text-muted-foreground uppercase tracking-[0.08em]">
+              Allocation {index + 1}
+            </span>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => onRemove(row.id)}
+              aria-label={`Remove ${row.name || "allocation item"}`}
+              className="text-muted-foreground hover:text-destructive"
+            >
+              <HugeiconsIcon icon={Delete02Icon} strokeWidth={1.8} />
+            </Button>
+          </div>
+          <label className="grid gap-2 font-medium text-xs">
+            Item name
+            <input
+              value={row.name}
+              onChange={(event) => onUpdate(row.id, "name", event.target.value)}
+              placeholder="e.g. Materials"
+              className="h-11 rounded-[10px] border bg-card px-4 font-normal text-base outline-none focus-visible:ring-2 focus-visible:ring-ring/25"
+            />
+          </label>
+          <label className="mt-4 grid gap-2 font-medium text-xs">
+            Initial allocation
+            <input
+              inputMode="decimal"
+              value={formatNumberInput(row.amount)}
+              onChange={(event) =>
+                onUpdate(
+                  row.id,
+                  "amount",
+                  sanitizeNumberInput(event.target.value)
+                )
+              }
+              placeholder="0"
+              className="h-11 rounded-[10px] border bg-card px-4 text-right font-normal text-base tabular-nums outline-none focus-visible:ring-2 focus-visible:ring-ring/25"
+            />
+          </label>
+        </div>
+      ))}
+      {!rows.length ? (
+        <div className="rounded-2xl border border-dashed p-8 text-center text-muted-foreground text-sm">
+          Add an item to start the project allocation.
+        </div>
+      ) : null}
+      <div className="flex items-center justify-between rounded-2xl bg-primary/8 px-4 py-4">
+        <span className="font-medium text-muted-foreground text-xs">
+          Total allocation
+        </span>
+        <span className="font-heading font-semibold text-lg text-primary tabular-nums">
+          {formatCurrency(total)}
+        </span>
+      </div>
+    </div>
+  )
+}
+
 export function ProjectAllocationCreatePage() {
   const router = useRouter()
   const [rows, setRows] = useState<InitialAllocation[]>(
@@ -134,7 +208,7 @@ export function ProjectAllocationCreatePage() {
   if (!ready) return null
 
   return (
-    <DashboardShell title="New project" subtitle="">
+    <DashboardShell title="New project" subtitle="" focusedTask>
       <div className="grid gap-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -164,7 +238,7 @@ export function ProjectAllocationCreatePage() {
               Add the starting budget items for this project.
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="hidden items-center gap-2 sm:flex">
             <Button
               type="button"
               variant="outline"
@@ -201,7 +275,14 @@ export function ProjectAllocationCreatePage() {
             </Button>
           </div>
 
-          <div className="[&_[data-slot=table-container]]:overflow-x-hidden">
+          <MobileAllocationCards
+            rows={rows}
+            total={total}
+            onUpdate={updateRow}
+            onRemove={removeRow}
+          />
+
+          <div className="hidden md:block [&_[data-slot=table-container]]:overflow-x-hidden">
             <Table className="table-fixed">
               <TableHeader className="bg-muted/25">
                 <TableRow>
@@ -281,6 +362,19 @@ export function ProjectAllocationCreatePage() {
             </Table>
           </div>
         </Card>
+        <div className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-2 gap-2 border-t bg-background/96 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-18px_45px_-28px_rgba(15,23,42,0.45)] backdrop-blur-xl sm:hidden">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={saveDraftAndGoBack}
+            disabled={submitting}
+          >
+            Back
+          </Button>
+          <Button type="button" onClick={createProject} disabled={submitting}>
+            {submitting ? "Creating..." : "Create project"}
+          </Button>
+        </div>
       </div>
     </DashboardShell>
   )
