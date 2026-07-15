@@ -33,7 +33,7 @@ import { uploadZimbaFile } from "@/lib/upload-file"
 function formatNumberInput(value: string) {
   if (!value) return ""
   const parts = value.split(".")
-  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+  parts[0] = (parts[0] ?? "").replace(/\B(?=(\d{3})+(?!\d))/g, ",")
   return parts.join(".")
 }
 

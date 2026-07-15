@@ -8,7 +8,8 @@
     "GOOGLE_CLIENT_SECRET",
     "ZIMBA_API_BASE_URL",
     "ZIMBA_API_SESSION_TOKEN",
-    "ZIMBA_ORGANIZATION_ID"
+    "ZIMBA_ORGANIZATION_ID",
+    "ZIMBA_DATA_MODE"
   ],
   "ui": "tui",
   "tasks": {
