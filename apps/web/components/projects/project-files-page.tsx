@@ -1,0 +1,147 @@
+import {
+  ArrowLeft01Icon,
+  File02Icon,
+  Image02Icon,
+} from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
+import Link from "next/link"
+import { DashboardShell } from "@/components/shared/dashboard-shell"
+import type { ProjectAttachment, ProjectDetailResponse } from "@/lib/types"
+
+export function ProjectFilesPage({
+  project,
+}: {
+  project: ProjectDetailResponse
+}) {
+  const files = project.attachments ?? []
+  const images = files.filter((file) => file.content_type.startsWith("image/"))
+  const documents = files.filter(
+    (file) => !file.content_type.startsWith("image/")
+  )
+  return (
+    <DashboardShell
+      title="Project files"
+      subtitle={`Files and images for ${project.name}.`}
+    >
+      <div className="mb-6 grid gap-3">
+        <Link
+          href={`/admin/projects/${project.id}`}
+          className="inline-flex items-center gap-2 text-primary text-xs font-semibold hover:underline"
+        >
+          <HugeiconsIcon icon={ArrowLeft01Icon} size={15} /> Back to project
+        </Link>
+        <div>
+          <h1 className="font-heading font-semibold text-2xl tracking-tight">
+            {project.name}
+          </h1>
+          <p className="mt-1 text-muted-foreground text-xs">
+            {project.location}
+          </p>
+        </div>
+      </div>
+      {files.length === 0 ? (
+        <div className="rounded-xl border border-dashed p-10 text-center">
+          <HugeiconsIcon
+            icon={File02Icon}
+            size={28}
+            className="mx-auto text-muted-foreground"
+          />
+          <h2 className="mt-3 font-heading font-semibold text-base">
+            No files uploaded yet
+          </h2>
+          <p className="mx-auto mt-1 max-w-sm text-muted-foreground text-xs">
+            Project images and documents will appear here when they have been
+            uploaded.
+          </p>
+        </div>
+      ) : (
+        <div className="grid gap-8">
+          {images.length > 0 && <FileImageGrid files={images} />}
+          {documents.length > 0 && <DocumentList files={documents} />}
+        </div>
+      )}
+    </DashboardShell>
+  )
+}
+
+function FileImageGrid({ files }: { files: ProjectAttachment[] }) {
+  return (
+    <section>
+      <Heading icon={Image02Icon} title="Images" count={files.length} />
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        {files.map((file) => (
+          <a
+            key={file.id}
+            href={file.url}
+            target="_blank"
+            rel="noreferrer"
+            className="group overflow-hidden rounded-xl border bg-muted/20"
+          >
+            <div className="aspect-square bg-muted">
+              <img
+                src={file.url}
+                alt={file.filename}
+                className="size-full object-cover transition-transform group-hover:scale-[1.03]"
+              />
+            </div>
+            <p className="truncate px-3 py-2 text-xs font-medium">
+              {file.filename}
+            </p>
+          </a>
+        ))}
+      </div>
+    </section>
+  )
+}
+function DocumentList({ files }: { files: ProjectAttachment[] }) {
+  return (
+    <section>
+      <Heading icon={File02Icon} title="Documents" count={files.length} />
+      <div className="divide-y rounded-xl border">
+        {files.map((file) => (
+          <a
+            key={file.id}
+            href={file.url}
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center gap-3 p-4 hover:bg-muted/30"
+          >
+            <HugeiconsIcon
+              icon={File02Icon}
+              size={20}
+              className="shrink-0 text-muted-foreground"
+            />
+            <span className="min-w-0 flex-1 truncate text-sm font-medium">
+              {file.filename}
+            </span>
+            <span className="shrink-0 text-muted-foreground text-xs">
+              {formatBytes(file.size_bytes)}
+            </span>
+          </a>
+        ))}
+      </div>
+    </section>
+  )
+}
+function Heading({
+  icon,
+  title,
+  count,
+}: {
+  icon: typeof File02Icon
+  title: string
+  count: number
+}) {
+  return (
+    <div className="mb-3 flex items-center gap-2">
+      <HugeiconsIcon icon={icon} size={17} className="text-primary" />
+      <h2 className="font-heading font-semibold text-base">{title}</h2>
+      <span className="text-muted-foreground text-xs">{count}</span>
+    </div>
+  )
+}
+function formatBytes(bytes: number) {
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}

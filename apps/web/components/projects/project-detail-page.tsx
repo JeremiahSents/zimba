@@ -145,7 +145,8 @@ export function ProjectDetailPage({
   return (
     <DashboardShell
       title={project.name}
-      subtitle="Project financial position and delivery tracking."      notifications={upcoming}
+      subtitle="Project financial position and delivery tracking."
+      notifications={upcoming}
       onAddNotification={() => setPaymentDialogOpen(true)}
     >
       <div className="mb-3">
@@ -167,7 +168,9 @@ export function ProjectDetailPage({
             size="sm"
             className="shrink-0"
             nativeButton={false}
-            render={<Link href={`/admin/projects/${project.id}/expenses/new`} />}
+            render={
+              <Link href={`/admin/projects/${project.id}/expenses/new`} />
+            }
           >
             + New expense
           </Button>
@@ -175,6 +178,12 @@ export function ProjectDetailPage({
         <p className="mt-1 text-muted-foreground text-xs">
           {project.location}
           {project.plot_size ? ` · ${project.plot_size}` : ""}
+          <Link
+            href={`/admin/projects/${project.id}/files`}
+            className="ml-2 inline-flex font-medium text-primary hover:underline"
+          >
+            View files and images
+          </Link>
         </p>
       </div>
 
@@ -346,7 +355,7 @@ export function ProjectDetailPage({
                   {formatShortDate(payment.due_date)}
                 </p>
               </div>
-              
+
               <div className="flex items-center justify-between gap-4 sm:w-auto sm:justify-end">
                 <div className="flex items-center gap-3 sm:flex-col sm:items-end sm:gap-1.5">
                   <p className="font-heading font-semibold text-sm tabular-nums">
@@ -356,7 +365,7 @@ export function ProjectDetailPage({
                     {payment.status.replaceAll("_", " ")}
                   </span>
                 </div>
-                
+
                 <div className="flex shrink-0 items-center gap-2">
                   {payment.status === "planned" && (
                     <Button
@@ -609,9 +618,7 @@ function TaskExpenseSection({
               value={String(task.id)}
               className="group/task overflow-hidden rounded-lg border border-border/70 bg-card"
             >
-              <Accordion.Trigger
-                className="relative block w-full cursor-pointer touch-manipulation text-left outline-none transition-[background-color,transform] duration-150 hover:bg-muted/30 focus-visible:ring-2 focus-visible:ring-ring/45 focus-visible:ring-inset active:scale-[0.995]"
-              >
+              <Accordion.Trigger className="relative block w-full cursor-pointer touch-manipulation text-left outline-none transition-[background-color,transform] duration-150 hover:bg-muted/30 focus-visible:ring-2 focus-visible:ring-ring/45 focus-visible:ring-inset active:scale-[0.995]">
                 <div className="pointer-events-none grid w-full items-center gap-3 px-4 py-3 pr-11 sm:grid-cols-[minmax(9rem,0.85fr)_minmax(10rem,1.6fr)_minmax(12rem,1fr)]">
                   <div className="flex min-w-0 items-center gap-3">
                     <span

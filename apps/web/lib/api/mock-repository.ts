@@ -260,6 +260,16 @@ export function createMockProject(
   )
   const project: ProjectDetailResponse = {
     allocations,
+    attachments: (input.attachment_ids ?? [])
+      .map((id) => workspace.uploads.get(id))
+      .filter((upload): upload is MockUpload => Boolean(upload))
+      .map((upload) => ({
+        content_type: upload.content_type,
+        filename: upload.filename,
+        id: upload.id,
+        size_bytes: upload.size_bytes,
+        url: `mock://file/${upload.id}`,
+      })),
     budget,
     building_type: input.building_type,
     client_name: input.client_name,

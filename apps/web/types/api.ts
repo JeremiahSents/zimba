@@ -4,1599 +4,1601 @@
  */
 
 export interface paths {
-    "/api/v1/projects": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Projects */
-        get: operations["list_projects_api_v1_projects_get"];
-        put?: never;
-        /** Create Project */
-        post: operations["create_project_api_v1_projects_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/projects/{project_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Project Detail */
-        get: operations["get_project_detail_api_v1_projects__project_id__get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Update Project */
-        patch: operations["update_project_api_v1_projects__project_id__patch"];
-        trace?: never;
-    };
-    "/api/v1/projects/{project_id}/allocations/{allocation_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Update Allocation */
-        patch: operations["update_allocation_api_v1_projects__project_id__allocations__allocation_id__patch"];
-        trace?: never;
-    };
-    "/api/v1/projects/{project_id}/upcoming-payments": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Upcoming Payments */
-        get: operations["list_upcoming_payments_api_v1_projects__project_id__upcoming_payments_get"];
-        put?: never;
-        /** Create Upcoming Payment */
-        post: operations["create_upcoming_payment_api_v1_projects__project_id__upcoming_payments_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/projects/{project_id}/upcoming-payments/{payment_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        /** Delete Upcoming Payment */
-        delete: operations["delete_upcoming_payment_api_v1_projects__project_id__upcoming_payments__payment_id__delete"];
-        options?: never;
-        head?: never;
-        /** Update Upcoming Payment */
-        patch: operations["update_upcoming_payment_api_v1_projects__project_id__upcoming_payments__payment_id__patch"];
-        trace?: never;
-    };
-    "/api/v1/expenses": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Expenses */
-        get: operations["list_expenses_api_v1_expenses_get"];
-        put?: never;
-        /** Log Expense */
-        post: operations["log_expense_api_v1_expenses_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/projects/{project_id}/expense-receipts": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Create Expense Receipt */
-        post: operations["create_expense_receipt_api_v1_projects__project_id__expense_receipts_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/expenses/{expense_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Update Expense */
-        patch: operations["update_expense_api_v1_expenses__expense_id__patch"];
-        trace?: never;
-    };
-    "/api/v1/suppliers": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Suppliers */
-        get: operations["get_suppliers_api_v1_suppliers_get"];
-        put?: never;
-        /** Create Supplier */
-        post: operations["create_supplier_api_v1_suppliers_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/files/upload-url": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Get Upload Url */
-        post: operations["get_upload_url_api_v1_files_upload_url_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/files/direct-upload/{file_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /** Direct Upload */
-        put: operations["direct_upload_api_v1_files_direct_upload__file_id__put"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/files/{file_id}/complete": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Complete Upload */
-        post: operations["complete_upload_api_v1_files__file_id__complete_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/dashboard/overview": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Dashboard Overview */
-        get: operations["get_dashboard_overview_api_v1_dashboard_overview_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Read Root */
-        get: operations["read_root__get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
+  "/api/v1/projects": {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** List Projects */
+    get: operations["list_projects_api_v1_projects_get"]
+    put?: never
+    /** Create Project */
+    post: operations["create_project_api_v1_projects_post"]
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/projects/{project_id}": {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Get Project Detail */
+    get: operations["get_project_detail_api_v1_projects__project_id__get"]
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    /** Update Project */
+    patch: operations["update_project_api_v1_projects__project_id__patch"]
+    trace?: never
+  }
+  "/api/v1/projects/{project_id}/allocations/{allocation_id}": {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    /** Update Allocation */
+    patch: operations["update_allocation_api_v1_projects__project_id__allocations__allocation_id__patch"]
+    trace?: never
+  }
+  "/api/v1/projects/{project_id}/upcoming-payments": {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** List Upcoming Payments */
+    get: operations["list_upcoming_payments_api_v1_projects__project_id__upcoming_payments_get"]
+    put?: never
+    /** Create Upcoming Payment */
+    post: operations["create_upcoming_payment_api_v1_projects__project_id__upcoming_payments_post"]
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/projects/{project_id}/upcoming-payments/{payment_id}": {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post?: never
+    /** Delete Upcoming Payment */
+    delete: operations["delete_upcoming_payment_api_v1_projects__project_id__upcoming_payments__payment_id__delete"]
+    options?: never
+    head?: never
+    /** Update Upcoming Payment */
+    patch: operations["update_upcoming_payment_api_v1_projects__project_id__upcoming_payments__payment_id__patch"]
+    trace?: never
+  }
+  "/api/v1/expenses": {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** List Expenses */
+    get: operations["list_expenses_api_v1_expenses_get"]
+    put?: never
+    /** Log Expense */
+    post: operations["log_expense_api_v1_expenses_post"]
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/projects/{project_id}/expense-receipts": {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Create Expense Receipt */
+    post: operations["create_expense_receipt_api_v1_projects__project_id__expense_receipts_post"]
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/expenses/{expense_id}": {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    /** Update Expense */
+    patch: operations["update_expense_api_v1_expenses__expense_id__patch"]
+    trace?: never
+  }
+  "/api/v1/suppliers": {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Get Suppliers */
+    get: operations["get_suppliers_api_v1_suppliers_get"]
+    put?: never
+    /** Create Supplier */
+    post: operations["create_supplier_api_v1_suppliers_post"]
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/files/upload-url": {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Get Upload Url */
+    post: operations["get_upload_url_api_v1_files_upload_url_post"]
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/files/direct-upload/{file_id}": {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    /** Direct Upload */
+    put: operations["direct_upload_api_v1_files_direct_upload__file_id__put"]
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/files/{file_id}/complete": {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Complete Upload */
+    post: operations["complete_upload_api_v1_files__file_id__complete_post"]
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/v1/dashboard/overview": {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Get Dashboard Overview */
+    get: operations["get_dashboard_overview_api_v1_dashboard_overview_get"]
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/": {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Read Root */
+    get: operations["read_root__get"]
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
 }
-export type webhooks = Record<string, never>;
+export type webhooks = Record<string, never>
 export interface components {
-    schemas: {
-        /** AllocationUpdate */
-        AllocationUpdate: {
-            /** Name */
-            name?: string | null;
-            /** Budget */
-            budget?: number | null;
-        };
-        /** DashboardOverviewResponse */
-        DashboardOverviewResponse: {
-            /**
-             * Currency
-             * @default UGX
-             */
-            currency: string;
-            totals: components["schemas"]["DashboardTotals"];
-            /** Spend By Period */
-            spend_by_period: components["schemas"]["SpendPeriod"][];
-            /** Utilization By Period */
-            utilization_by_period: components["schemas"]["UtilizationPeriod"][];
-            recent_expenses: components["schemas"]["PaginatedExpensesResponse"];
-            budget_risks: components["schemas"]["PaginatedProjectsResponse"];
-        };
-        /** DashboardTotals */
-        DashboardTotals: {
-            /** Active Projects */
-            active_projects: number;
-            /** Budget */
-            budget: number;
-            /** Spent */
-            spent: number;
-            /** Remaining */
-            remaining: number;
-            /** Utilization Pct */
-            utilization_pct: number;
-        };
-        /** ExpenseCreate */
-        ExpenseCreate: {
-            /** Project Id */
-            project_id: number;
-            /** Task Id */
-            task_id: number;
-            /** Amount */
-            amount: number;
-            /**
-             * Date
-             * Format: date
-             */
-            date: string;
-            /** Supplier Name */
-            supplier_name: string;
-            /** Item Description */
-            item_description: string;
-            /** Receipt Url */
-            receipt_url?: string | null;
-            /**
-             * Quantity
-             * @default 1
-             */
-            quantity: number;
-            /**
-             * Unit Rate
-             * @default 0
-             */
-            unit_rate: number;
-            /**
-             * Payment Status
-             * @default paid
-             */
-            payment_status: string;
-            /** Receipt File Id */
-            receipt_file_id?: string | null;
-        };
-        /** ExpenseReceiptCreate */
-        ExpenseReceiptCreate: {
-            /**
-             * Expense Date
-             * Format: date
-             */
-            expense_date: string;
-            /** Payment Status */
-            payment_status: string;
-            /** Receipt File Id */
-            receipt_file_id?: string | null;
-            /** Items */
-            items: components["schemas"]["ExpenseReceiptItemCreate"][];
-        };
-        /** ExpenseReceiptItemCreate */
-        ExpenseReceiptItemCreate: {
-            /** Allocation Id */
-            allocation_id: number;
-            /** Supplier Name */
-            supplier_name: string;
-            /** Item Description */
-            item_description: string;
-            /** Quantity */
-            quantity: number;
-            /** Unit Rate */
-            unit_rate: number;
-        };
-        /** ExpenseResponse */
-        ExpenseResponse: {
-            /** Id */
-            id: number;
-            /** Receipt Id */
-            receipt_id?: number | null;
-            /** Project Id */
-            project_id: number;
-            /** Project Name */
-            project_name: string;
-            /** Allocation Id */
-            allocation_id: number;
-            /** Allocation Name */
-            allocation_name: string;
-            supplier?: components["schemas"]["SupplierSubResponse"] | null;
-            /** Item Description */
-            item_description: string;
-            /** Quantity */
-            quantity: number;
-            /** Unit Rate */
-            unit_rate: number;
-            /** Amount */
-            amount: number;
-            /**
-             * Currency
-             * @default UGX
-             */
-            currency: string;
-            /**
-             * Expense Date
-             * Format: date
-             */
-            expense_date: string;
-            /** Payment Status */
-            payment_status: string;
-            receipt_file?: components["schemas"]["ReceiptFileSubResponse"] | null;
-            /**
-             * Created At
-             * Format: date-time
-             */
-            created_at: string;
-            /**
-             * Updated At
-             * Format: date-time
-             */
-            updated_at: string;
-            /** Task Name */
-            task_name?: string | null;
-            /** Supplier Name */
-            supplier_name?: string | null;
-            /** Date */
-            date?: string | null;
-        };
-        /** ExpenseUpdate */
-        ExpenseUpdate: {
-            /** Payment Status */
-            payment_status?: string | null;
-        };
-        /** FileCompleteResponse */
-        FileCompleteResponse: {
-            /** Id */
-            id: string;
-            /** Filename */
-            filename: string;
-            /** Content Type */
-            content_type: string;
-            /** Size Bytes */
-            size_bytes: number;
-            /** Url */
-            url: string;
-        };
-        /** FileUploadRequest */
-        FileUploadRequest: {
-            /** Filename */
-            filename: string;
-            /** Content Type */
-            content_type: string;
-            /** Size Bytes */
-            size_bytes: number;
-            /** Purpose */
-            purpose: string;
-        };
-        /** FileUploadResponse */
-        FileUploadResponse: {
-            /** File Id */
-            file_id: string;
-            /** Upload Url */
-            upload_url: string;
-            /**
-             * Headers
-             * @default {}
-             */
-            headers: {
-                [key: string]: unknown;
-            };
-            /**
-             * Expires At
-             * Format: date-time
-             */
-            expires_at: string;
-        };
-        /** HTTPValidationError */
-        HTTPValidationError: {
-            /** Detail */
-            detail?: components["schemas"]["ValidationError"][];
-        };
-        /** PaginatedExpensesResponse */
-        PaginatedExpensesResponse: {
-            /** Items */
-            items: components["schemas"]["ExpenseResponse"][];
-            /** Page */
-            page: number;
-            /** Page Size */
-            page_size: number;
-            /** Total */
-            total: number;
-        };
-        /** PaginatedProjectsResponse */
-        PaginatedProjectsResponse: {
-            /** Items */
-            items: components["schemas"]["ProjectSummaryResponse"][];
-            /** Page */
-            page: number;
-            /** Page Size */
-            page_size: number;
-            /** Total */
-            total: number;
-        };
-        /** ProjectAllocationCreate */
-        ProjectAllocationCreate: {
-            /** Name */
-            name: string;
-            /** Budget */
-            budget: number;
-        };
-        /** ProjectAllocationResponse */
-        ProjectAllocationResponse: {
-            /** Id */
-            id: number;
-            /** Name */
-            name: string;
-            /** Budget */
-            budget: number;
-            /** Spent */
-            spent: number;
-            /** Remaining */
-            remaining: number;
-            /** Utilization Pct */
-            utilization_pct: number;
-        };
-        /** ProjectCreate */
-        ProjectCreate: {
-            /** Name */
-            name: string;
-            /** Location */
-            location: string;
-            /** Land Size */
-            land_size: string;
-            /** Building Type */
-            building_type: string;
-            /** Client Name */
-            client_name?: string | null;
-            /** Start Date */
-            start_date?: string | null;
-            /** Target End Date */
-            target_end_date?: string | null;
-            /** Attachment Ids */
-            attachment_ids?: string[] | null;
-            /** Allocations */
-            allocations: components["schemas"]["ProjectAllocationCreate"][];
-        };
-        /** ProjectDetailResponse */
-        ProjectDetailResponse: {
-            /** Id */
-            id: number;
-            /** Name */
-            name: string;
-            /** Location */
-            location: string;
-            /** Plot Size */
-            plot_size?: string | null;
-            /** Land Size */
-            land_size?: string | null;
-            /** Building Type */
-            building_type?: string | null;
-            /** Client Name */
-            client_name?: string | null;
-            /** Status */
-            status: string;
-            /** Start Date */
-            start_date?: string | null;
-            /** Target End Date */
-            target_end_date?: string | null;
-            /**
-             * Currency
-             * @default UGX
-             */
-            currency: string;
-            /** Budget */
-            budget: number;
-            /** Spent */
-            spent: number;
-            /** Remaining */
-            remaining: number;
-            /** Utilization Pct */
-            utilization_pct: number;
-            /**
-             * Created At
-             * Format: date-time
-             */
-            created_at: string;
-            /**
-             * Updated At
-             * Format: date-time
-             */
-            updated_at: string;
-            /** Allocations */
-            allocations: components["schemas"]["ProjectAllocationResponse"][];
-            /** Tasks */
-            tasks: components["schemas"]["TaskResponse"][];
-            /** Suppliers */
-            suppliers: components["schemas"]["SupplierBreakdown"][];
-            expenses: components["schemas"]["PaginatedExpensesResponse"];
-            /** Upcoming Payments */
-            upcoming_payments: components["schemas"]["UpcomingPaymentResponse"][];
-        };
-        /** ProjectSummaryResponse */
-        ProjectSummaryResponse: {
-            /** Id */
-            id: number;
-            /** Name */
-            name: string;
-            /** Location */
-            location: string;
-            /** Plot Size */
-            plot_size?: string | null;
-            /** Land Size */
-            land_size?: string | null;
-            /** Building Type */
-            building_type?: string | null;
-            /** Client Name */
-            client_name?: string | null;
-            /** Status */
-            status: string;
-            /** Start Date */
-            start_date?: string | null;
-            /** Target End Date */
-            target_end_date?: string | null;
-            /**
-             * Currency
-             * @default UGX
-             */
-            currency: string;
-            /** Budget */
-            budget: number;
-            /** Spent */
-            spent: number;
-            /** Remaining */
-            remaining: number;
-            /** Utilization Pct */
-            utilization_pct: number;
-            /**
-             * Created At
-             * Format: date-time
-             */
-            created_at: string;
-            /**
-             * Updated At
-             * Format: date-time
-             */
-            updated_at: string;
-        };
-        /** ProjectUpdate */
-        ProjectUpdate: {
-            /** Name */
-            name?: string | null;
-            /** Location */
-            location?: string | null;
-            /** Land Size */
-            land_size?: string | null;
-            /** Building Type */
-            building_type?: string | null;
-            /** Client Name */
-            client_name?: string | null;
-            /** Start Date */
-            start_date?: string | null;
-            /** Target End Date */
-            target_end_date?: string | null;
-            /** Status */
-            status?: string | null;
-        };
-        /** ReceiptFileSubResponse */
-        ReceiptFileSubResponse: {
-            /** Id */
-            id: string;
-            /** Url */
-            url: string;
-        };
-        /** SpendPeriod */
-        SpendPeriod: {
-            /** Period */
-            period: string;
-            /** Budget */
-            budget: number;
-            /** Spent */
-            spent: number;
-        };
-        /** SupplierBreakdown */
-        SupplierBreakdown: {
-            /** Supplier Id */
-            supplier_id?: number | null;
-            /** Name */
-            name: string;
-            /** Amount */
-            amount: number;
-        };
-        /** SupplierCreate */
-        SupplierCreate: {
-            /** Name */
-            name: string;
-            /** Phone */
-            phone?: string | null;
-            /**
-             * Category
-             * @default other
-             */
-            category: string | null;
-        };
-        /** SupplierResponse */
-        SupplierResponse: {
-            /** Id */
-            id: number;
-            /** Name */
-            name: string;
-            /** Phone */
-            phone?: string | null;
-            /** Payments Count */
-            payments_count: number;
-            /** Last Paid */
-            last_paid?: string | null;
-            /** Total Paid */
-            total_paid: number;
-            /**
-             * Category
-             * @default other
-             */
-            category: string;
-            /**
-             * Paid Amount
-             * @default 0
-             */
-            paid_amount: number;
-            /**
-             * Outstanding Amount
-             * @default 0
-             */
-            outstanding_amount: number;
-            /**
-             * Currency
-             * @default UGX
-             */
-            currency: string;
-            /**
-             * Status
-             * @default active
-             */
-            status: string;
-        };
-        /** SupplierSubResponse */
-        SupplierSubResponse: {
-            /** Id */
-            id: number;
-            /** Name */
-            name: string;
-        };
-        /** TaskResponse */
-        TaskResponse: {
-            /** Id */
-            id: number;
-            /** Name */
-            name: string;
-            /** Budget */
-            budget: number;
-            /** Spent */
-            spent: number;
-            /** Pct */
-            pct: number;
-        };
-        /** UpcomingPaymentCreate */
-        UpcomingPaymentCreate: {
-            /** Title */
-            title: string;
-            /** Description */
-            description?: string | null;
-            /** Supplier Name */
-            supplier_name?: string | null;
-            /** Amount */
-            amount: number;
-            /**
-             * Currency
-             * @default UGX
-             */
-            currency: string;
-            /**
-             * Due Date
-             * Format: date
-             */
-            due_date: string;
-        };
-        /** UpcomingPaymentResponse */
-        UpcomingPaymentResponse: {
-            /** Id */
-            id: number;
-            /** Project Id */
-            project_id: number;
-            /** Title */
-            title: string;
-            /** Description */
-            description?: string | null;
-            /** Supplier Name */
-            supplier_name?: string | null;
-            /** Amount */
-            amount: number;
-            /**
-             * Currency
-             * @default UGX
-             */
-            currency: string;
-            /**
-             * Due Date
-             * Format: date
-             */
-            due_date: string;
-            /** Status */
-            status: string;
-            /**
-             * Created At
-             * Format: date-time
-             */
-            created_at: string;
-            /**
-             * Updated At
-             * Format: date-time
-             */
-            updated_at: string;
-        };
-        /** UpcomingPaymentUpdate */
-        UpcomingPaymentUpdate: {
-            /** Title */
-            title?: string | null;
-            /** Description */
-            description?: string | null;
-            /** Supplier Name */
-            supplier_name?: string | null;
-            /** Amount */
-            amount?: number | null;
-            /** Currency */
-            currency?: string | null;
-            /** Due Date */
-            due_date?: string | null;
-            /** Status */
-            status?: string | null;
-        };
-        /** UtilizationPeriod */
-        UtilizationPeriod: {
-            /** Period */
-            period: string;
-            /** Utilization Pct */
-            utilization_pct: number;
-        };
-        /** ValidationError */
-        ValidationError: {
-            /** Location */
-            loc: (string | number)[];
-            /** Message */
-            msg: string;
-            /** Error Type */
-            type: string;
-            /** Input */
-            input?: unknown;
-            /** Context */
-            ctx?: Record<string, never>;
-        };
-    };
-    responses: never;
-    parameters: never;
-    requestBodies: never;
-    headers: never;
-    pathItems: never;
+  schemas: {
+    /** AllocationUpdate */
+    AllocationUpdate: {
+      /** Name */
+      name?: string | null
+      /** Budget */
+      budget?: number | null
+    }
+    /** DashboardOverviewResponse */
+    DashboardOverviewResponse: {
+      /**
+       * Currency
+       * @default UGX
+       */
+      currency: string
+      totals: components["schemas"]["DashboardTotals"]
+      /** Spend By Period */
+      spend_by_period: components["schemas"]["SpendPeriod"][]
+      /** Utilization By Period */
+      utilization_by_period: components["schemas"]["UtilizationPeriod"][]
+      recent_expenses: components["schemas"]["PaginatedExpensesResponse"]
+      budget_risks: components["schemas"]["PaginatedProjectsResponse"]
+    }
+    /** DashboardTotals */
+    DashboardTotals: {
+      /** Active Projects */
+      active_projects: number
+      /** Budget */
+      budget: number
+      /** Spent */
+      spent: number
+      /** Remaining */
+      remaining: number
+      /** Utilization Pct */
+      utilization_pct: number
+    }
+    /** ExpenseCreate */
+    ExpenseCreate: {
+      /** Project Id */
+      project_id: number
+      /** Task Id */
+      task_id: number
+      /** Amount */
+      amount: number
+      /**
+       * Date
+       * Format: date
+       */
+      date: string
+      /** Supplier Name */
+      supplier_name: string
+      /** Item Description */
+      item_description: string
+      /** Receipt Url */
+      receipt_url?: string | null
+      /**
+       * Quantity
+       * @default 1
+       */
+      quantity: number
+      /**
+       * Unit Rate
+       * @default 0
+       */
+      unit_rate: number
+      /**
+       * Payment Status
+       * @default paid
+       */
+      payment_status: string
+      /** Receipt File Id */
+      receipt_file_id?: string | null
+    }
+    /** ExpenseReceiptCreate */
+    ExpenseReceiptCreate: {
+      /**
+       * Expense Date
+       * Format: date
+       */
+      expense_date: string
+      /** Payment Status */
+      payment_status: string
+      /** Receipt File Id */
+      receipt_file_id?: string | null
+      /** Items */
+      items: components["schemas"]["ExpenseReceiptItemCreate"][]
+    }
+    /** ExpenseReceiptItemCreate */
+    ExpenseReceiptItemCreate: {
+      /** Allocation Id */
+      allocation_id: number
+      /** Supplier Name */
+      supplier_name: string
+      /** Item Description */
+      item_description: string
+      /** Quantity */
+      quantity: number
+      /** Unit Rate */
+      unit_rate: number
+    }
+    /** ExpenseResponse */
+    ExpenseResponse: {
+      /** Id */
+      id: number
+      /** Receipt Id */
+      receipt_id?: number | null
+      /** Project Id */
+      project_id: number
+      /** Project Name */
+      project_name: string
+      /** Allocation Id */
+      allocation_id: number
+      /** Allocation Name */
+      allocation_name: string
+      supplier?: components["schemas"]["SupplierSubResponse"] | null
+      /** Item Description */
+      item_description: string
+      /** Quantity */
+      quantity: number
+      /** Unit Rate */
+      unit_rate: number
+      /** Amount */
+      amount: number
+      /**
+       * Currency
+       * @default UGX
+       */
+      currency: string
+      /**
+       * Expense Date
+       * Format: date
+       */
+      expense_date: string
+      /** Payment Status */
+      payment_status: string
+      receipt_file?: components["schemas"]["ReceiptFileSubResponse"] | null
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at: string
+      /** Task Name */
+      task_name?: string | null
+      /** Supplier Name */
+      supplier_name?: string | null
+      /** Date */
+      date?: string | null
+    }
+    /** ExpenseUpdate */
+    ExpenseUpdate: {
+      /** Payment Status */
+      payment_status?: string | null
+    }
+    /** FileCompleteResponse */
+    FileCompleteResponse: {
+      /** Id */
+      id: string
+      /** Filename */
+      filename: string
+      /** Content Type */
+      content_type: string
+      /** Size Bytes */
+      size_bytes: number
+      /** Url */
+      url: string
+    }
+    /** FileUploadRequest */
+    FileUploadRequest: {
+      /** Filename */
+      filename: string
+      /** Content Type */
+      content_type: string
+      /** Size Bytes */
+      size_bytes: number
+      /** Purpose */
+      purpose: string
+    }
+    /** FileUploadResponse */
+    FileUploadResponse: {
+      /** File Id */
+      file_id: string
+      /** Upload Url */
+      upload_url: string
+      /**
+       * Headers
+       * @default {}
+       */
+      headers: {
+        [key: string]: unknown
+      }
+      /**
+       * Expires At
+       * Format: date-time
+       */
+      expires_at: string
+    }
+    /** HTTPValidationError */
+    HTTPValidationError: {
+      /** Detail */
+      detail?: components["schemas"]["ValidationError"][]
+    }
+    /** PaginatedExpensesResponse */
+    PaginatedExpensesResponse: {
+      /** Items */
+      items: components["schemas"]["ExpenseResponse"][]
+      /** Page */
+      page: number
+      /** Page Size */
+      page_size: number
+      /** Total */
+      total: number
+    }
+    /** PaginatedProjectsResponse */
+    PaginatedProjectsResponse: {
+      /** Items */
+      items: components["schemas"]["ProjectSummaryResponse"][]
+      /** Page */
+      page: number
+      /** Page Size */
+      page_size: number
+      /** Total */
+      total: number
+    }
+    /** ProjectAllocationCreate */
+    ProjectAllocationCreate: {
+      /** Name */
+      name: string
+      /** Budget */
+      budget: number
+    }
+    /** ProjectAllocationResponse */
+    ProjectAllocationResponse: {
+      /** Id */
+      id: number
+      /** Name */
+      name: string
+      /** Budget */
+      budget: number
+      /** Spent */
+      spent: number
+      /** Remaining */
+      remaining: number
+      /** Utilization Pct */
+      utilization_pct: number
+    }
+    /** ProjectCreate */
+    ProjectCreate: {
+      /** Name */
+      name: string
+      /** Location */
+      location: string
+      /** Land Size */
+      land_size: string
+      /** Building Type */
+      building_type: string
+      /** Client Name */
+      client_name?: string | null
+      /** Start Date */
+      start_date?: string | null
+      /** Target End Date */
+      target_end_date?: string | null
+      /** Attachment Ids */
+      attachment_ids?: string[] | null
+      /** Allocations */
+      allocations: components["schemas"]["ProjectAllocationCreate"][]
+    }
+    /** ProjectDetailResponse */
+    ProjectDetailResponse: {
+      /** Id */
+      id: number
+      /** Name */
+      name: string
+      /** Location */
+      location: string
+      /** Plot Size */
+      plot_size?: string | null
+      /** Land Size */
+      land_size?: string | null
+      /** Building Type */
+      building_type?: string | null
+      /** Client Name */
+      client_name?: string | null
+      /** Status */
+      status: string
+      /** Start Date */
+      start_date?: string | null
+      /** Target End Date */
+      target_end_date?: string | null
+      /**
+       * Currency
+       * @default UGX
+       */
+      currency: string
+      /** Budget */
+      budget: number
+      /** Spent */
+      spent: number
+      /** Remaining */
+      remaining: number
+      /** Utilization Pct */
+      utilization_pct: number
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at: string
+      /** Allocations */
+      allocations: components["schemas"]["ProjectAllocationResponse"][]
+      /** Tasks */
+      tasks: components["schemas"]["TaskResponse"][]
+      /** Suppliers */
+      suppliers: components["schemas"]["SupplierBreakdown"][]
+      expenses: components["schemas"]["PaginatedExpensesResponse"]
+      /** Upcoming Payments */
+      upcoming_payments: components["schemas"]["UpcomingPaymentResponse"][]
+      /** Uploaded project attachments when supported by the backend */
+      attachments?: components["schemas"]["FileCompleteResponse"][]
+    }
+    /** ProjectSummaryResponse */
+    ProjectSummaryResponse: {
+      /** Id */
+      id: number
+      /** Name */
+      name: string
+      /** Location */
+      location: string
+      /** Plot Size */
+      plot_size?: string | null
+      /** Land Size */
+      land_size?: string | null
+      /** Building Type */
+      building_type?: string | null
+      /** Client Name */
+      client_name?: string | null
+      /** Status */
+      status: string
+      /** Start Date */
+      start_date?: string | null
+      /** Target End Date */
+      target_end_date?: string | null
+      /**
+       * Currency
+       * @default UGX
+       */
+      currency: string
+      /** Budget */
+      budget: number
+      /** Spent */
+      spent: number
+      /** Remaining */
+      remaining: number
+      /** Utilization Pct */
+      utilization_pct: number
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at: string
+    }
+    /** ProjectUpdate */
+    ProjectUpdate: {
+      /** Name */
+      name?: string | null
+      /** Location */
+      location?: string | null
+      /** Land Size */
+      land_size?: string | null
+      /** Building Type */
+      building_type?: string | null
+      /** Client Name */
+      client_name?: string | null
+      /** Start Date */
+      start_date?: string | null
+      /** Target End Date */
+      target_end_date?: string | null
+      /** Status */
+      status?: string | null
+    }
+    /** ReceiptFileSubResponse */
+    ReceiptFileSubResponse: {
+      /** Id */
+      id: string
+      /** Url */
+      url: string
+    }
+    /** SpendPeriod */
+    SpendPeriod: {
+      /** Period */
+      period: string
+      /** Budget */
+      budget: number
+      /** Spent */
+      spent: number
+    }
+    /** SupplierBreakdown */
+    SupplierBreakdown: {
+      /** Supplier Id */
+      supplier_id?: number | null
+      /** Name */
+      name: string
+      /** Amount */
+      amount: number
+    }
+    /** SupplierCreate */
+    SupplierCreate: {
+      /** Name */
+      name: string
+      /** Phone */
+      phone?: string | null
+      /**
+       * Category
+       * @default other
+       */
+      category: string | null
+    }
+    /** SupplierResponse */
+    SupplierResponse: {
+      /** Id */
+      id: number
+      /** Name */
+      name: string
+      /** Phone */
+      phone?: string | null
+      /** Payments Count */
+      payments_count: number
+      /** Last Paid */
+      last_paid?: string | null
+      /** Total Paid */
+      total_paid: number
+      /**
+       * Category
+       * @default other
+       */
+      category: string
+      /**
+       * Paid Amount
+       * @default 0
+       */
+      paid_amount: number
+      /**
+       * Outstanding Amount
+       * @default 0
+       */
+      outstanding_amount: number
+      /**
+       * Currency
+       * @default UGX
+       */
+      currency: string
+      /**
+       * Status
+       * @default active
+       */
+      status: string
+    }
+    /** SupplierSubResponse */
+    SupplierSubResponse: {
+      /** Id */
+      id: number
+      /** Name */
+      name: string
+    }
+    /** TaskResponse */
+    TaskResponse: {
+      /** Id */
+      id: number
+      /** Name */
+      name: string
+      /** Budget */
+      budget: number
+      /** Spent */
+      spent: number
+      /** Pct */
+      pct: number
+    }
+    /** UpcomingPaymentCreate */
+    UpcomingPaymentCreate: {
+      /** Title */
+      title: string
+      /** Description */
+      description?: string | null
+      /** Supplier Name */
+      supplier_name?: string | null
+      /** Amount */
+      amount: number
+      /**
+       * Currency
+       * @default UGX
+       */
+      currency: string
+      /**
+       * Due Date
+       * Format: date
+       */
+      due_date: string
+    }
+    /** UpcomingPaymentResponse */
+    UpcomingPaymentResponse: {
+      /** Id */
+      id: number
+      /** Project Id */
+      project_id: number
+      /** Title */
+      title: string
+      /** Description */
+      description?: string | null
+      /** Supplier Name */
+      supplier_name?: string | null
+      /** Amount */
+      amount: number
+      /**
+       * Currency
+       * @default UGX
+       */
+      currency: string
+      /**
+       * Due Date
+       * Format: date
+       */
+      due_date: string
+      /** Status */
+      status: string
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at: string
+    }
+    /** UpcomingPaymentUpdate */
+    UpcomingPaymentUpdate: {
+      /** Title */
+      title?: string | null
+      /** Description */
+      description?: string | null
+      /** Supplier Name */
+      supplier_name?: string | null
+      /** Amount */
+      amount?: number | null
+      /** Currency */
+      currency?: string | null
+      /** Due Date */
+      due_date?: string | null
+      /** Status */
+      status?: string | null
+    }
+    /** UtilizationPeriod */
+    UtilizationPeriod: {
+      /** Period */
+      period: string
+      /** Utilization Pct */
+      utilization_pct: number
+    }
+    /** ValidationError */
+    ValidationError: {
+      /** Location */
+      loc: (string | number)[]
+      /** Message */
+      msg: string
+      /** Error Type */
+      type: string
+      /** Input */
+      input?: unknown
+      /** Context */
+      ctx?: Record<string, never>
+    }
+  }
+  responses: never
+  parameters: never
+  requestBodies: never
+  headers: never
+  pathItems: never
 }
-export type $defs = Record<string, never>;
+export type $defs = Record<string, never>
 export interface operations {
-    list_projects_api_v1_projects_get: {
-        parameters: {
-            query?: {
-                search?: string | null;
-                status?: string | null;
-                page?: number;
-                page_size?: number;
-                sort_by?: string;
-                sort_order?: string;
-            };
-            header: {
-                /** @description Bearer <session_token> */
-                authorization: string;
-                /** @description Active Organization ID */
-                "x-organization-id": string;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PaginatedProjectsResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    create_project_api_v1_projects_post: {
-        parameters: {
-            query?: never;
-            header: {
-                /** @description Bearer <session_token> */
-                authorization: string;
-                /** @description Active Organization ID */
-                "x-organization-id": string;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ProjectCreate"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ProjectDetailResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_project_detail_api_v1_projects__project_id__get: {
-        parameters: {
-            query?: never;
-            header: {
-                /** @description Bearer <session_token> */
-                authorization: string;
-                /** @description Active Organization ID */
-                "x-organization-id": string;
-            };
-            path: {
-                project_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ProjectDetailResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    update_project_api_v1_projects__project_id__patch: {
-        parameters: {
-            query?: never;
-            header: {
-                /** @description Bearer <session_token> */
-                authorization: string;
-                /** @description Active Organization ID */
-                "x-organization-id": string;
-            };
-            path: {
-                project_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ProjectUpdate"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ProjectSummaryResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    update_allocation_api_v1_projects__project_id__allocations__allocation_id__patch: {
-        parameters: {
-            query?: never;
-            header: {
-                /** @description Bearer <session_token> */
-                authorization: string;
-                /** @description Active Organization ID */
-                "x-organization-id": string;
-            };
-            path: {
-                project_id: number;
-                allocation_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AllocationUpdate"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ProjectAllocationResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    list_upcoming_payments_api_v1_projects__project_id__upcoming_payments_get: {
-        parameters: {
-            query?: {
-                status?: string | null;
-            };
-            header: {
-                /** @description Bearer <session_token> */
-                authorization: string;
-                /** @description Active Organization ID */
-                "x-organization-id": string;
-            };
-            path: {
-                project_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["UpcomingPaymentResponse"][];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    create_upcoming_payment_api_v1_projects__project_id__upcoming_payments_post: {
-        parameters: {
-            query?: never;
-            header: {
-                /** @description Bearer <session_token> */
-                authorization: string;
-                /** @description Active Organization ID */
-                "x-organization-id": string;
-            };
-            path: {
-                project_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UpcomingPaymentCreate"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["UpcomingPaymentResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    delete_upcoming_payment_api_v1_projects__project_id__upcoming_payments__payment_id__delete: {
-        parameters: {
-            query?: never;
-            header: {
-                /** @description Bearer <session_token> */
-                authorization: string;
-                /** @description Active Organization ID */
-                "x-organization-id": string;
-            };
-            path: {
-                project_id: number;
-                payment_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    update_upcoming_payment_api_v1_projects__project_id__upcoming_payments__payment_id__patch: {
-        parameters: {
-            query?: never;
-            header: {
-                /** @description Bearer <session_token> */
-                authorization: string;
-                /** @description Active Organization ID */
-                "x-organization-id": string;
-            };
-            path: {
-                project_id: number;
-                payment_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UpcomingPaymentUpdate"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["UpcomingPaymentResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    list_expenses_api_v1_expenses_get: {
-        parameters: {
-            query?: {
-                project_id?: number | null;
-                allocation_id?: number | null;
-                supplier_id?: number | null;
-                payment_status?: string | null;
-                date_from?: string | null;
-                date_to?: string | null;
-                search?: string | null;
-                page?: number;
-                page_size?: number;
-                sort_by?: string;
-                sort_order?: string;
-            };
-            header: {
-                /** @description Bearer <session_token> */
-                authorization: string;
-                /** @description Active Organization ID */
-                "x-organization-id": string;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PaginatedExpensesResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    log_expense_api_v1_expenses_post: {
-        parameters: {
-            query?: never;
-            header: {
-                /** @description Bearer <session_token> */
-                authorization: string;
-                /** @description Active Organization ID */
-                "x-organization-id": string;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ExpenseCreate"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ExpenseResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    create_expense_receipt_api_v1_projects__project_id__expense_receipts_post: {
-        parameters: {
-            query?: never;
-            header: {
-                /** @description Bearer <session_token> */
-                authorization: string;
-                /** @description Active Organization ID */
-                "x-organization-id": string;
-            };
-            path: {
-                project_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ExpenseReceiptCreate"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ExpenseResponse"][];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    update_expense_api_v1_expenses__expense_id__patch: {
-        parameters: {
-            query?: never;
-            header: {
-                /** @description Bearer <session_token> */
-                authorization: string;
-                /** @description Active Organization ID */
-                "x-organization-id": string;
-            };
-            path: {
-                expense_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ExpenseUpdate"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ExpenseResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_suppliers_api_v1_suppliers_get: {
-        parameters: {
-            query?: {
-                search?: string | null;
-                category?: string | null;
-                date_from?: string | null;
-                date_to?: string | null;
-                page?: number;
-                page_size?: number;
-            };
-            header: {
-                /** @description Bearer <session_token> */
-                authorization: string;
-                /** @description Active Organization ID */
-                "x-organization-id": string;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SupplierResponse"][];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    create_supplier_api_v1_suppliers_post: {
-        parameters: {
-            query?: never;
-            header: {
-                /** @description Bearer <session_token> */
-                authorization: string;
-                /** @description Active Organization ID */
-                "x-organization-id": string;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SupplierCreate"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SupplierResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_upload_url_api_v1_files_upload_url_post: {
-        parameters: {
-            query?: never;
-            header: {
-                /** @description Bearer <session_token> */
-                authorization: string;
-                /** @description Active Organization ID */
-                "x-organization-id": string;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["FileUploadRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["FileUploadResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    direct_upload_api_v1_files_direct_upload__file_id__put: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                file_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    complete_upload_api_v1_files__file_id__complete_post: {
-        parameters: {
-            query?: never;
-            header: {
-                /** @description Bearer <session_token> */
-                authorization: string;
-                /** @description Active Organization ID */
-                "x-organization-id": string;
-            };
-            path: {
-                file_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["FileCompleteResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_dashboard_overview_api_v1_dashboard_overview_get: {
-        parameters: {
-            query?: {
-                date_from?: string | null;
-                date_to?: string | null;
-                project_id?: number | null;
-            };
-            header: {
-                /** @description Bearer <session_token> */
-                authorization: string;
-                /** @description Active Organization ID */
-                "x-organization-id": string;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["DashboardOverviewResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    read_root__get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
-                };
-            };
-        };
-    };
+  list_projects_api_v1_projects_get: {
+    parameters: {
+      query?: {
+        search?: string | null
+        status?: string | null
+        page?: number
+        page_size?: number
+        sort_by?: string
+        sort_order?: string
+      }
+      header: {
+        /** @description Bearer <session_token> */
+        authorization: string
+        /** @description Active Organization ID */
+        "x-organization-id": string
+      }
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": components["schemas"]["PaginatedProjectsResponse"]
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"]
+        }
+      }
+    }
+  }
+  create_project_api_v1_projects_post: {
+    parameters: {
+      query?: never
+      header: {
+        /** @description Bearer <session_token> */
+        authorization: string
+        /** @description Active Organization ID */
+        "x-organization-id": string
+      }
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ProjectCreate"]
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": components["schemas"]["ProjectDetailResponse"]
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"]
+        }
+      }
+    }
+  }
+  get_project_detail_api_v1_projects__project_id__get: {
+    parameters: {
+      query?: never
+      header: {
+        /** @description Bearer <session_token> */
+        authorization: string
+        /** @description Active Organization ID */
+        "x-organization-id": string
+      }
+      path: {
+        project_id: number
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": components["schemas"]["ProjectDetailResponse"]
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"]
+        }
+      }
+    }
+  }
+  update_project_api_v1_projects__project_id__patch: {
+    parameters: {
+      query?: never
+      header: {
+        /** @description Bearer <session_token> */
+        authorization: string
+        /** @description Active Organization ID */
+        "x-organization-id": string
+      }
+      path: {
+        project_id: number
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ProjectUpdate"]
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": components["schemas"]["ProjectSummaryResponse"]
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"]
+        }
+      }
+    }
+  }
+  update_allocation_api_v1_projects__project_id__allocations__allocation_id__patch: {
+    parameters: {
+      query?: never
+      header: {
+        /** @description Bearer <session_token> */
+        authorization: string
+        /** @description Active Organization ID */
+        "x-organization-id": string
+      }
+      path: {
+        project_id: number
+        allocation_id: number
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["AllocationUpdate"]
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": components["schemas"]["ProjectAllocationResponse"]
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"]
+        }
+      }
+    }
+  }
+  list_upcoming_payments_api_v1_projects__project_id__upcoming_payments_get: {
+    parameters: {
+      query?: {
+        status?: string | null
+      }
+      header: {
+        /** @description Bearer <session_token> */
+        authorization: string
+        /** @description Active Organization ID */
+        "x-organization-id": string
+      }
+      path: {
+        project_id: number
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": components["schemas"]["UpcomingPaymentResponse"][]
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"]
+        }
+      }
+    }
+  }
+  create_upcoming_payment_api_v1_projects__project_id__upcoming_payments_post: {
+    parameters: {
+      query?: never
+      header: {
+        /** @description Bearer <session_token> */
+        authorization: string
+        /** @description Active Organization ID */
+        "x-organization-id": string
+      }
+      path: {
+        project_id: number
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["UpcomingPaymentCreate"]
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": components["schemas"]["UpcomingPaymentResponse"]
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"]
+        }
+      }
+    }
+  }
+  delete_upcoming_payment_api_v1_projects__project_id__upcoming_payments__payment_id__delete: {
+    parameters: {
+      query?: never
+      header: {
+        /** @description Bearer <session_token> */
+        authorization: string
+        /** @description Active Organization ID */
+        "x-organization-id": string
+      }
+      path: {
+        project_id: number
+        payment_id: number
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"]
+        }
+      }
+    }
+  }
+  update_upcoming_payment_api_v1_projects__project_id__upcoming_payments__payment_id__patch: {
+    parameters: {
+      query?: never
+      header: {
+        /** @description Bearer <session_token> */
+        authorization: string
+        /** @description Active Organization ID */
+        "x-organization-id": string
+      }
+      path: {
+        project_id: number
+        payment_id: number
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["UpcomingPaymentUpdate"]
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": components["schemas"]["UpcomingPaymentResponse"]
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"]
+        }
+      }
+    }
+  }
+  list_expenses_api_v1_expenses_get: {
+    parameters: {
+      query?: {
+        project_id?: number | null
+        allocation_id?: number | null
+        supplier_id?: number | null
+        payment_status?: string | null
+        date_from?: string | null
+        date_to?: string | null
+        search?: string | null
+        page?: number
+        page_size?: number
+        sort_by?: string
+        sort_order?: string
+      }
+      header: {
+        /** @description Bearer <session_token> */
+        authorization: string
+        /** @description Active Organization ID */
+        "x-organization-id": string
+      }
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": components["schemas"]["PaginatedExpensesResponse"]
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"]
+        }
+      }
+    }
+  }
+  log_expense_api_v1_expenses_post: {
+    parameters: {
+      query?: never
+      header: {
+        /** @description Bearer <session_token> */
+        authorization: string
+        /** @description Active Organization ID */
+        "x-organization-id": string
+      }
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ExpenseCreate"]
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": components["schemas"]["ExpenseResponse"]
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"]
+        }
+      }
+    }
+  }
+  create_expense_receipt_api_v1_projects__project_id__expense_receipts_post: {
+    parameters: {
+      query?: never
+      header: {
+        /** @description Bearer <session_token> */
+        authorization: string
+        /** @description Active Organization ID */
+        "x-organization-id": string
+      }
+      path: {
+        project_id: number
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ExpenseReceiptCreate"]
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": components["schemas"]["ExpenseResponse"][]
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"]
+        }
+      }
+    }
+  }
+  update_expense_api_v1_expenses__expense_id__patch: {
+    parameters: {
+      query?: never
+      header: {
+        /** @description Bearer <session_token> */
+        authorization: string
+        /** @description Active Organization ID */
+        "x-organization-id": string
+      }
+      path: {
+        expense_id: number
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ExpenseUpdate"]
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": components["schemas"]["ExpenseResponse"]
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"]
+        }
+      }
+    }
+  }
+  get_suppliers_api_v1_suppliers_get: {
+    parameters: {
+      query?: {
+        search?: string | null
+        category?: string | null
+        date_from?: string | null
+        date_to?: string | null
+        page?: number
+        page_size?: number
+      }
+      header: {
+        /** @description Bearer <session_token> */
+        authorization: string
+        /** @description Active Organization ID */
+        "x-organization-id": string
+      }
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": components["schemas"]["SupplierResponse"][]
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"]
+        }
+      }
+    }
+  }
+  create_supplier_api_v1_suppliers_post: {
+    parameters: {
+      query?: never
+      header: {
+        /** @description Bearer <session_token> */
+        authorization: string
+        /** @description Active Organization ID */
+        "x-organization-id": string
+      }
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["SupplierCreate"]
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": components["schemas"]["SupplierResponse"]
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"]
+        }
+      }
+    }
+  }
+  get_upload_url_api_v1_files_upload_url_post: {
+    parameters: {
+      query?: never
+      header: {
+        /** @description Bearer <session_token> */
+        authorization: string
+        /** @description Active Organization ID */
+        "x-organization-id": string
+      }
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["FileUploadRequest"]
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": components["schemas"]["FileUploadResponse"]
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"]
+        }
+      }
+    }
+  }
+  direct_upload_api_v1_files_direct_upload__file_id__put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        file_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": unknown
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"]
+        }
+      }
+    }
+  }
+  complete_upload_api_v1_files__file_id__complete_post: {
+    parameters: {
+      query?: never
+      header: {
+        /** @description Bearer <session_token> */
+        authorization: string
+        /** @description Active Organization ID */
+        "x-organization-id": string
+      }
+      path: {
+        file_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": components["schemas"]["FileCompleteResponse"]
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"]
+        }
+      }
+    }
+  }
+  get_dashboard_overview_api_v1_dashboard_overview_get: {
+    parameters: {
+      query?: {
+        date_from?: string | null
+        date_to?: string | null
+        project_id?: number | null
+      }
+      header: {
+        /** @description Bearer <session_token> */
+        authorization: string
+        /** @description Active Organization ID */
+        "x-organization-id": string
+      }
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": components["schemas"]["DashboardOverviewResponse"]
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"]
+        }
+      }
+    }
+  }
+  read_root__get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": unknown
+        }
+      }
+    }
+  }
 }

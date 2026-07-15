@@ -55,6 +55,14 @@ export type HTTPValidationError = ApiSchemas["HTTPValidationError"] & {
 
 export type FileUploadPurpose = "project_attachment" | "expense_receipt"
 
+export type ProjectAttachment = {
+  id: string
+  filename: string
+  content_type: string
+  size_bytes: number
+  url: string
+}
+
 // View models preserve the existing component API while normalizers isolate
 // backend compatibility aliases such as pct/tasks/date.
 export type ProjectDashboardResponse = {
@@ -104,6 +112,7 @@ export type SupplierResponse = SupplierBreakdown & {
 }
 
 export type ProjectDetailResponse = ProjectDashboardResponse & {
+  attachments?: ProjectAttachment[]
   tasks: TaskResponse[]
   allocations?: ProjectAllocationResponse[]
   expenses: ExpenseResponse[]

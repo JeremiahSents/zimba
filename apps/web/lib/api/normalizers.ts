@@ -126,6 +126,7 @@ export function toProjectDetail(
 
   return {
     ...toProjectSummary(project),
+    attachments: project.attachments,
     allocations,
     expenses: project.expenses.items.map(toExpense),
     suppliers: project.suppliers,
