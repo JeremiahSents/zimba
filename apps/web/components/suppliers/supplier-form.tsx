@@ -144,7 +144,7 @@ export function SupplierForm({
         {onCancel && (
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             onClick={onCancel}
             disabled={pending}
           >

@@ -225,7 +225,7 @@ export function ExpenseTable({ expenses }: { expenses: ExpenseTableRow[] }) {
         </p>
         <div className="flex items-center gap-2">
           <Button
-            variant="outline"
+            variant="secondary"
             size="sm"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
@@ -234,7 +234,7 @@ export function ExpenseTable({ expenses }: { expenses: ExpenseTableRow[] }) {
             Previous
           </Button>
           <Button
-            variant="outline"
+            variant="default"
             size="sm"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}

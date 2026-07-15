@@ -3,7 +3,14 @@
 import { Calendar03Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Button } from "@workspace/ui/components/button"
-import { Input } from "@workspace/ui/components/input"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@workspace/ui/components/dialog"
+import { useIsMobile } from "@workspace/ui/hooks/use-mobile"
 import { useLayoutEffect, useRef, useState } from "react"
 import { createPortal } from "react-dom"
 
@@ -32,10 +39,11 @@ export function DatePicker({
   const [position, setPosition] = useState({ left: 0, top: 0 })
   const triggerRef = useRef<HTMLDivElement>(null)
   const popupRef = useRef<HTMLDivElement>(null)
+  const isMobile = useIsMobile()
   const selected = parseDate(value)
 
   useLayoutEffect(() => {
-    if (!open) return
+    if (!open || isMobile) return
 
     const updatePosition = () => {
       const trigger = triggerRef.current?.getBoundingClientRect()
@@ -81,24 +89,24 @@ export function DatePicker({
       document.removeEventListener("pointerdown", closeOnOutsideClick)
       document.removeEventListener("keydown", closeOnEscape)
     }
-  }, [open])
+  }, [isMobile, open])
+
+  const handleSelect = (date: Date | undefined) => {
+    if (!date) return
+    onChange(formatDateValue(date))
+    setOpen(false)
+  }
 
   return (
-    <>
-      <Input
-        type="date"
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        aria-label="Select date"
-        className="md:hidden"
-      />
-      <div ref={triggerRef} className="relative hidden md:block">
+    <Dialog open={open} onOpenChange={setOpen}>
+      <div ref={triggerRef} className="relative">
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
           className="w-full justify-start gap-2 font-normal"
           onClick={() => setOpen((current) => !current)}
           aria-expanded={open}
+          aria-haspopup="dialog"
         >
           <HugeiconsIcon
             icon={Calendar03Icon}
@@ -112,7 +120,8 @@ export function DatePicker({
             year: "numeric",
           })}
         </Button>
-        {open &&
+        {!isMobile &&
+          open &&
           createPortal(
             <div
               ref={popupRef}
@@ -122,16 +131,57 @@ export function DatePicker({
               <Calendar
                 mode="single"
                 selected={selected}
-                onSelect={(date) => {
-                  if (!date) return
-                  onChange(formatDateValue(date))
-                  setOpen(false)
-                }}
+                onSelect={handleSelect}
               />
             </div>,
             document.body
           )}
       </div>
-    </>
+      {isMobile && (
+        <DialogContent className="max-w-[340px] rounded-[24px] p-5">
+          <DialogHeader className="relative mb-2 pr-8 text-left">
+            <DialogTitle>Select date</DialogTitle>
+            <DialogDescription>
+              Choose a date from the calendar below.
+            </DialogDescription>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              aria-label="Close calendar"
+              onClick={() => setOpen(false)}
+              className="absolute -top-2 -right-2 rounded-full text-muted-foreground"
+            >
+              ×
+            </Button>
+          </DialogHeader>
+          <div className="flex justify-center pb-2">
+            <Calendar
+              mode="single"
+              selected={selected}
+              onSelect={handleSelect}
+              classNames={{
+                root: "relative w-full p-0",
+                months: "w-full",
+                month: "w-full space-y-4",
+                month_caption: "flex h-11 items-center justify-center",
+                button_previous:
+                  "absolute top-2 left-1 grid size-11 place-items-center rounded-xl hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring",
+                button_next:
+                  "absolute top-2 right-1 grid size-11 place-items-center rounded-xl hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring",
+                month_grid: "w-full border-collapse",
+                weekdays: "grid grid-cols-7",
+                weekday:
+                  "grid h-11 place-items-center font-normal text-[11px] text-muted-foreground",
+                week: "grid w-full grid-cols-7",
+                day: "grid min-h-11 place-items-center p-0 text-center text-sm",
+                day_button:
+                  "grid size-11 place-items-center rounded-xl font-normal hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+              }}
+            />
+          </div>
+        </DialogContent>
+      )}
+    </Dialog>
   )
 }

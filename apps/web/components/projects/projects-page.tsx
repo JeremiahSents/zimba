@@ -76,7 +76,7 @@ export function ProjectsPage({ data }: { data: DashboardOverviewData }) {
           Overview
         </h2>
         <Button
-          variant="outline"
+          variant="secondary"
           size="sm"
           nativeButton={false}
           render={<Link href="/admin/projects/new" />}
@@ -157,7 +157,7 @@ export function ProjectsPage({ data }: { data: DashboardOverviewData }) {
           </p>
           <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center">
             <Button
-              variant="outline"
+              variant="secondary"
               size="sm"
               onClick={() =>
                 setPageIndex((current) => Math.max(current - 1, 0))
@@ -168,7 +168,7 @@ export function ProjectsPage({ data }: { data: DashboardOverviewData }) {
               Previous
             </Button>
             <Button
-              variant="outline"
+              variant="default"
               size="sm"
               onClick={() =>
                 setPageIndex((current) => Math.min(current + 1, pageCount - 1))

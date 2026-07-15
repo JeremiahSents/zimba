@@ -141,7 +141,7 @@ export function RecentActivity({
           No expenses yet.
         </p>
       )}
-      <div className="mt-4 flex justify-center border-t pt-3">
+      <div className="mt-4 flex justify-center">
         <Link
           href="/admin/expenses"
           className="inline-flex min-h-11 items-center rounded-md border border-border px-4 font-semibold text-foreground text-xs transition-colors hover:bg-muted md:min-h-0 md:py-1.5"

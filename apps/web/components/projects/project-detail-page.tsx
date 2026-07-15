@@ -1,6 +1,8 @@
 "use client"
 
+import { Accordion } from "@base-ui/react/accordion"
 import {
+  ArrowDown01Icon,
   FolderKanbanIcon,
   MoneyBag02Icon,
   Wallet02Icon,
@@ -146,34 +148,34 @@ export function ProjectDetailPage({
       subtitle="Project financial position and delivery tracking."      notifications={upcoming}
       onAddNotification={() => setPaymentDialogOpen(true)}
     >
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <div className="mb-2 flex items-center gap-2 text-muted-foreground text-xs">
-            <Link
-              href="/admin/projects"
-              className="font-semibold text-primary hover:underline"
-            >
-              Projects
-            </Link>
-            <span>/</span>
-            <span>{project.name}</span>
-          </div>
-          <h2 className="font-heading font-semibold text-2xl tracking-tight">
+      <div className="mb-3">
+        <div className="mb-2 flex items-center gap-2 text-muted-foreground text-xs">
+          <Link
+            href="/admin/projects"
+            className="font-semibold text-primary hover:underline"
+          >
+            Projects
+          </Link>
+          <span>/</span>
+          <span>{project.name}</span>
+        </div>
+        <div className="flex items-center justify-between gap-4">
+          <h2 className="min-w-0 truncate font-heading font-semibold text-2xl tracking-tight">
             {project.name}
           </h2>
-          <p className="mt-1 text-muted-foreground text-xs">
-            {project.location}
-            {project.plot_size ? ` · ${project.plot_size}` : ""}
-          </p>
+          <Button
+            size="sm"
+            className="shrink-0"
+            nativeButton={false}
+            render={<Link href={`/admin/projects/${project.id}/expenses/new`} />}
+          >
+            + New expense
+          </Button>
         </div>
-        <Button
-          size="sm"
-          className="w-full sm:w-auto"
-          nativeButton={false}
-          render={<Link href={`/admin/projects/${project.id}/expenses/new`} />}
-        >
-          + New expense
-        </Button>
+        <p className="mt-1 text-muted-foreground text-xs">
+          {project.location}
+          {project.plot_size ? ` · ${project.plot_size}` : ""}
+        </p>
       </div>
 
       <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-3 lg:gap-4">
@@ -325,7 +327,7 @@ export function ProjectDetailPage({
           </div>
           <Button
             size="sm"
-            variant="outline"
+            variant="secondary"
             onClick={() => setPaymentDialogOpen(true)}
           >
             + Add payment
@@ -344,50 +346,56 @@ export function ProjectDetailPage({
                   {formatShortDate(payment.due_date)}
                 </p>
               </div>
-              <p className="font-heading font-semibold text-sm tabular-nums">
-                {formatCurrency(payment.amount)}
-              </p>
-              <span className="rounded-full bg-muted px-2 py-1 text-[10px] capitalize">
-                {payment.status.replaceAll("_", " ")}
-              </span>
-              <div className="flex gap-2">
-                {payment.status === "planned" && (
+              
+              <div className="flex items-center justify-between gap-4 sm:w-auto sm:justify-end">
+                <div className="flex items-center gap-3 sm:flex-col sm:items-end sm:gap-1.5">
+                  <p className="font-heading font-semibold text-sm tabular-nums">
+                    {formatCurrency(payment.amount)}
+                  </p>
+                  <span className="inline-flex shrink-0 items-center rounded-full bg-muted px-2 py-0.5 font-medium text-[10px] capitalize text-muted-foreground">
+                    {payment.status.replaceAll("_", " ")}
+                  </span>
+                </div>
+                
+                <div className="flex shrink-0 items-center gap-2">
+                  {payment.status === "planned" && (
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={async () => {
+                        const result = await updateUpcomingPaymentAction(
+                          project.id,
+                          payment.id,
+                          { status: "due" }
+                        )
+                        if (!result.ok) setMutationError(result.error)
+                        else router.refresh()
+                      }}
+                    >
+                      Mark due
+                    </Button>
+                  )}
                   <Button
                     size="sm"
-                    variant="outline"
+                    variant="ghost"
+                    className="text-destructive"
                     onClick={async () => {
-                      const result = await updateUpcomingPaymentAction(
+                      const result = await deleteUpcomingPaymentAction(
                         project.id,
-                        payment.id,
-                        { status: "due" }
+                        payment.id
                       )
                       if (!result.ok) setMutationError(result.error)
-                      else router.refresh()
+                      else {
+                        setUpcomingPayments((current) =>
+                          current.filter((item) => item.id !== payment.id)
+                        )
+                        router.refresh()
+                      }
                     }}
                   >
-                    Mark due
+                    Delete
                   </Button>
-                )}
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="text-destructive"
-                  onClick={async () => {
-                    const result = await deleteUpcomingPaymentAction(
-                      project.id,
-                      payment.id
-                    )
-                    if (!result.ok) setMutationError(result.error)
-                    else {
-                      setUpcomingPayments((current) =>
-                        current.filter((item) => item.id !== payment.id)
-                      )
-                      router.refresh()
-                    }
-                  }}
-                >
-                  Delete
-                </Button>
+                </div>
               </div>
             </div>
           ))}
@@ -474,7 +482,7 @@ export function ProjectDetailPage({
           </div>
           <DialogFooter>
             <Button
-              variant="outline"
+              variant="secondary"
               onClick={() => {
                 setPaymentDialogOpen(false)
                 setNewUpcoming({
@@ -544,27 +552,27 @@ function Metric({
   pillClassName?: string
 }) {
   return (
-    <Card className="flex flex-row items-center justify-between gap-4 p-5">
-      <div>
+    <Card className="flex flex-col justify-between gap-2 p-4 sm:p-5">
+      <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2">
           <p className="font-medium text-muted-foreground text-xs">{label}</p>
           <HugeiconsIcon
             icon={metricIcons[icon]}
             strokeWidth={1.8}
-            className="size-4 text-primary"
+            className="size-4 shrink-0 text-primary"
           />
         </div>
-        <p className="mt-2 font-heading font-semibold text-xl tabular-nums tracking-tight">
-          {value}
-        </p>
+        {detail && (
+          <p
+            className={`shrink-0 whitespace-nowrap rounded-lg px-1.5 py-0.5 text-right font-medium text-[10px] ${pillClassName}`}
+          >
+            {detail}
+          </p>
+        )}
       </div>
-      {detail && (
-        <p
-          className={`shrink-0 whitespace-nowrap rounded-lg px-1.5 py-0.5 text-right font-medium text-[10px] ${pillClassName}`}
-        >
-          {detail}
-        </p>
-      )}
+      <p className="mt-1 font-heading font-semibold text-lg tracking-tight tabular-nums sm:text-xl">
+        {value}
+      </p>
     </Card>
   )
 }
@@ -576,8 +584,6 @@ function TaskExpenseSection({
   tasks: ProjectDetailResponse["tasks"]
   expenses: ProjectDetailResponse["expenses"]
 }) {
-  const [expandedTask, setExpandedTask] = useState<number | null>(null)
-
   return (
     <section className="mb-6">
       <div className="mb-3 flex items-center justify-between gap-4">
@@ -590,7 +596,7 @@ function TaskExpenseSection({
           </p>
         </div>
       </div>
-      <div className="grid gap-2">
+      <Accordion.Root className="grid gap-2">
         {tasks.map((task, index) => {
           const taskSpent = task.spent
           const percentage = task.budget
@@ -598,59 +604,60 @@ function TaskExpenseSection({
             : 0
           const budgetHealth = getBudgetHealth(percentage)
           return (
-            <div
+            <Accordion.Item
               key={task.id}
-              className="overflow-hidden rounded-lg border border-border/70 bg-card"
+              value={String(task.id)}
+              className="group/task overflow-hidden rounded-lg border border-border/70 bg-card"
             >
-              <button
-                type="button"
-                onClick={() =>
-                  setExpandedTask((current) =>
-                    current === task.id ? null : task.id
-                  )
-                }
-                aria-expanded={expandedTask === task.id}
-                className="grid w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-muted/30 sm:grid-cols-[minmax(9rem,0.85fr)_minmax(10rem,1.6fr)_minmax(12rem,1fr)]"
+              <Accordion.Trigger
+                className="relative block w-full cursor-pointer touch-manipulation text-left outline-none transition-[background-color,transform] duration-150 hover:bg-muted/30 focus-visible:ring-2 focus-visible:ring-ring/45 focus-visible:ring-inset active:scale-[0.995]"
               >
-                <div className="flex min-w-0 items-center gap-3">
-                  <span
-                    className="size-3 shrink-0 rounded-full"
-                    style={{ backgroundColor: colors[index % colors.length] }}
-                  />
-                  <div className="min-w-0">
-                    <span className="block truncate font-medium text-sm">
-                      {task.name}
-                    </span>
+                <div className="pointer-events-none grid w-full items-center gap-3 px-4 py-3 pr-11 sm:grid-cols-[minmax(9rem,0.85fr)_minmax(10rem,1.6fr)_minmax(12rem,1fr)]">
+                  <div className="flex min-w-0 items-center gap-3">
                     <span
-                      className={`mt-1 inline-flex rounded-lg px-1.5 py-0.5 font-medium text-[10px] ${budgetHealth.pill}`}
-                    >
-                      {budgetHealth.label}
-                    </span>
+                      className="size-3 shrink-0 rounded-full"
+                      style={{ backgroundColor: colors[index % colors.length] }}
+                    />
+                    <div className="min-w-0">
+                      <span className="block truncate font-medium text-sm">
+                        {task.name}
+                      </span>
+                      <span
+                        className={`mt-1 inline-flex rounded-lg px-1.5 py-0.5 font-medium text-[10px] ${budgetHealth.pill}`}
+                      >
+                        {budgetHealth.label}
+                      </span>
+                    </div>
                   </div>
+                  <Progress
+                    value={percentage}
+                    className={`h-1.5 ${budgetHealth.progress}`}
+                  />
+                  <p className="text-right text-muted-foreground text-xs tabular-nums">
+                    <span className="font-semibold text-foreground">
+                      {formatCurrency(taskSpent)}
+                    </span>{" "}
+                    of {formatCurrency(task.budget)}
+                  </p>
                 </div>
-                <Progress
-                  value={percentage}
-                  className={`h-1.5 ${budgetHealth.progress}`}
+                <HugeiconsIcon
+                  icon={ArrowDown01Icon}
+                  strokeWidth={1.8}
+                  className="pointer-events-none absolute top-1/2 right-4 size-4 -translate-y-1/2 text-muted-foreground transition-transform duration-150 ease-[var(--ease-out-ui)] group-data-[open]/task:rotate-180 motion-reduce:transition-none"
                 />
-                <p className="text-right text-muted-foreground text-xs tabular-nums">
-                  <span className="font-semibold text-foreground">
-                    {formatCurrency(taskSpent)}
-                  </span>{" "}
-                  of {formatCurrency(task.budget)}
-                </p>
-              </button>
-              {expandedTask === task.id && (
+              </Accordion.Trigger>
+              <Accordion.Panel>
                 <TaskExpenseDetails
                   taskName={task.name}
                   expenses={expenses.filter(
                     (expense) => expense.task_name === task.name
                   )}
                 />
-              )}
-            </div>
+              </Accordion.Panel>
+            </Accordion.Item>
           )
         })}
-      </div>
+      </Accordion.Root>
     </section>
   )
 }

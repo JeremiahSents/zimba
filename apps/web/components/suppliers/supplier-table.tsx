@@ -78,10 +78,11 @@ export function SupplierTable({
           <Button
             key={option}
             type="button"
-            variant={sorting === option ? "secondary" : "outline"}
+            variant="secondary"
             size="sm"
+            data-active={sorting === option}
             onClick={() => setSorting(option)}
-            className="shrink-0 capitalize"
+            className="shrink-0 capitalize data-[active=true]:bg-primary/15 data-[active=true]:text-primary"
           >
             {option === "name"
               ? "Name"

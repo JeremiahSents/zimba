@@ -43,7 +43,7 @@ export function ProjectsList({
   emptyDescription?: string
 }) {
   return projects.length ? (
-    <div className="divide-y rounded-xl border">
+    <div className="flex flex-col gap-4">
       {projects.map((project) => (
         <ProjectRow key={project.id} project={project} />
       ))}
@@ -83,7 +83,7 @@ export function ProjectRow({ project }: { project: ProjectDashboardResponse }) {
           }
 
   return (
-    <div className="grid gap-4 p-5 transition-colors hover:bg-muted/35 lg:grid-cols-[minmax(12rem,1.1fr)_minmax(15rem,1.5fr)] lg:items-center">
+    <div className="grid gap-4 rounded-xl border bg-card p-5 shadow-sm transition-colors hover:bg-muted/35 lg:grid-cols-[minmax(12rem,1.1fr)_minmax(15rem,1.5fr)] lg:items-center">
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-2">
           <HugeiconsIcon

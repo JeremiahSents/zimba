@@ -69,7 +69,7 @@ export function LoginForm({
 
         <Field>
           <Button
-            variant="outline"
+            variant="secondary"
             type="button"
             size="lg"
             className="h-11 w-full"

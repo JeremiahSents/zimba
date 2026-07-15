@@ -312,7 +312,7 @@ export function ProjectExpensesTable({
         </p>
         <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center">
           <Button
-            variant="outline"
+            variant="secondary"
             size="sm"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
@@ -321,7 +321,7 @@ export function ProjectExpensesTable({
             Previous
           </Button>
           <Button
-            variant="outline"
+            variant="default"
             size="sm"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}

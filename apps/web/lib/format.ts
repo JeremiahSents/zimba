@@ -1,6 +1,12 @@
+const standardCurrencyFormatter = new Intl.NumberFormat("en-UG", {
+  currency: "UGX",
+  maximumFractionDigits: 0,
+  style: "currency",
+})
+
 const compactCurrencyFormatter = new Intl.NumberFormat("en-UG", {
   currency: "UGX",
-  maximumFractionDigits: 1,
+  maximumFractionDigits: 2,
   notation: "compact",
   style: "currency",
 })
@@ -8,10 +14,14 @@ const compactCurrencyFormatter = new Intl.NumberFormat("en-UG", {
 const dateFormatter = new Intl.DateTimeFormat("en-UG", {
   day: "numeric",
   month: "short",
+  year: "numeric",
 })
 
 export function formatCurrency(amount: number) {
-  return compactCurrencyFormatter.format(amount).replace("UGX", "UGX ")
+  if (Math.abs(amount) >= 1_000_000) {
+    return compactCurrencyFormatter.format(amount).replace("UGX", "USh ")
+  }
+  return standardCurrencyFormatter.format(amount).replace("UGX", "USh ")
 }
 
 export function formatPercent(value: number) {

@@ -153,7 +153,7 @@ export function ReportsTable({
       />
       <div className="grid grid-cols-2 gap-2 border-t pt-3 sm:flex sm:justify-end">
         <Button
-          variant="outline"
+          variant="secondary"
           size="sm"
           onClick={() => table.previousPage()}
           disabled={!table.getCanPreviousPage()}
@@ -161,7 +161,7 @@ export function ReportsTable({
           Previous
         </Button>
         <Button
-          variant="outline"
+          variant="default"
           size="sm"
           onClick={() => table.nextPage()}
           disabled={!table.getCanNextPage()}

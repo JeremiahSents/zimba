@@ -30,6 +30,13 @@ import { formatCurrency } from "@/lib/format"
 import type { DashboardSource, ProjectDetailResponse } from "@/lib/types"
 import { uploadZimbaFile } from "@/lib/upload-file"
 
+function formatNumberInput(value: string) {
+  if (!value) return ""
+  const parts = value.split(".")
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+  return parts.join(".")
+}
+
 type ReceiptItem = {
   id: number
   itemDetails: string
@@ -371,32 +378,30 @@ export function ProjectExpenseCreatePage({
                           Quantity
                           <Input
                             required
-                            min="0.01"
-                            step="0.01"
-                            type="number"
+                            type="text"
                             inputMode="decimal"
-                            value={item.quantity}
-                            onChange={(event) =>
-                              updateItem(
-                                item.id,
-                                "quantity",
-                                event.target.value
-                              )
-                            }
+                            value={formatNumberInput(item.quantity)}
+                            onChange={(event) => {
+                              const raw = event.target.value.replace(/,/g, "")
+                              if (/^\d*\.?\d*$/.test(raw)) {
+                                updateItem(item.id, "quantity", raw)
+                              }
+                            }}
                           />
                         </label>
                         <label className="grid gap-2 font-medium text-xs">
                           Rate
                           <Input
                             required
-                            min="0"
-                            step="0.01"
-                            type="number"
+                            type="text"
                             inputMode="decimal"
-                            value={item.rate}
-                            onChange={(event) =>
-                              updateItem(item.id, "rate", event.target.value)
-                            }
+                            value={formatNumberInput(item.rate)}
+                            onChange={(event) => {
+                              const raw = event.target.value.replace(/,/g, "")
+                              if (/^\d*\.?\d*$/.test(raw)) {
+                                updateItem(item.id, "rate", raw)
+                              }
+                            }}
                             placeholder="0"
                           />
                         </label>
@@ -409,14 +414,27 @@ export function ProjectExpenseCreatePage({
                           {formatCurrency(amount)}
                         </span>
                       </div>
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        disabled={items.length === 1}
-                        onClick={() => removeItem(item.id)}
-                      >
-                        Remove item
-                      </Button>
+                      <div className="flex gap-3">
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          className="w-full"
+                          disabled={items.length === 1}
+                          onClick={() => removeItem(item.id)}
+                        >
+                          Remove item
+                        </Button>
+                        <Button
+                          type="button"
+                          className="w-full"
+                          onClick={(e) => {
+                            const details = (e.target as HTMLElement).closest("details")
+                            if (details) details.removeAttribute("open")
+                          }}
+                        >
+                          Done
+                        </Button>
+                      </div>
                     </div>
                   </details>
                 )

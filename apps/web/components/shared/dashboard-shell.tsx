@@ -79,7 +79,7 @@ export function DashboardShell({
           {children}
         </div>
         <footer
-          className={`mt-auto border-t px-4 py-4 text-center text-[10px] text-muted-foreground sm:px-7 lg:px-10 ${focusedTask ? "mb-20 md:mb-0" : "mb-mobile-bottom-space md:mb-0"}`}
+          className={`mt-auto border-t px-4 text-center text-[10px] text-muted-foreground sm:px-7 lg:px-10 ${focusedTask ? "py-4" : "pt-4 pb-[calc(var(--mobile-bottom-space)+2rem)] md:py-4"}`}
         >
           A product of Sents Holding Company
         </footer>
@@ -164,7 +164,7 @@ function DashboardTopbar({
                 </div>
                 {onAddNotification && (
                   <Button
-                    variant="outline"
+                    variant="secondary"
                     size="icon"
                     className="h-8 w-8 shrink-0 rounded-lg border-primary bg-primary text-primary-foreground hover:bg-primary/85 hover:text-primary-foreground"
                     onClick={onAddNotification}

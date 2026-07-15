@@ -206,7 +206,7 @@ export function AllocationTable({ rows, onRowsChange }: AllocationTableProps) {
       </Table>
       <Button
         type="button"
-        variant="outline"
+        variant="secondary"
         size="sm"
         className="mt-4"
         onClick={addRow}

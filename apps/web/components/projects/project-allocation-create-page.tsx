@@ -249,7 +249,7 @@ export function ProjectAllocationCreatePage({
           <div className="hidden items-center gap-2 sm:flex">
             <Button
               type="button"
-              variant="outline"
+              variant="secondary"
               onClick={saveDraftAndGoBack}
               disabled={submitting}
             >
@@ -277,7 +277,7 @@ export function ProjectAllocationCreatePage({
                 Set the opening amount for each budget item.
               </p>
             </div>
-            <Button type="button" variant="outline" size="sm" onClick={addRow}>
+            <Button type="button" variant="secondary" size="sm" onClick={addRow}>
               <HugeiconsIcon icon={PlusSignIcon} strokeWidth={2} />
               Add item
             </Button>
@@ -373,7 +373,7 @@ export function ProjectAllocationCreatePage({
         <div className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-2 gap-2 border-t bg-background/96 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-18px_45px_-28px_rgba(15,23,42,0.45)] backdrop-blur-xl sm:hidden">
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             onClick={saveDraftAndGoBack}
             disabled={submitting}
           >

@@ -28,11 +28,11 @@ export function MobileDataCard({
       <div className="flex items-start gap-3 p-4">
         <div className="min-w-0 flex-1">
           {eyebrow ? (
-            <div className="mb-1 font-medium text-[10px] text-muted-foreground uppercase tracking-[0.08em]">
+            <div className="mb-1 font-bold text-[10px] text-muted-foreground uppercase tracking-[0.08em]">
               {eyebrow}
             </div>
           ) : null}
-          <div className="break-words font-medium text-sm leading-5">
+          <div className="break-words font-normal text-sm leading-5">
             {title}
           </div>
           {status ? <div className="mt-2">{status}</div> : null}
@@ -58,7 +58,7 @@ export function MobileDataMeta({
 }) {
   return (
     <div className="min-w-0">
-      <dt className="text-[10px] text-muted-foreground uppercase tracking-[0.08em]">
+      <dt className="font-bold text-[10px] text-muted-foreground uppercase tracking-[0.08em]">
         {label}
       </dt>
       <dd className="mt-1 break-words text-foreground text-xs">{children}</dd>
