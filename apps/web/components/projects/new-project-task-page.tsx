@@ -56,7 +56,6 @@ export function NewProjectTaskPage({
                   return
                 }
                 router.push(`${returnTo}${returnTo.includes("?") ? "&" : "?"}task=${encodeURIComponent(name.trim())}`)
-                router.refresh()
               }}
             >
               {error ? <p className="text-destructive text-sm" role="alert">{error}</p> : null}

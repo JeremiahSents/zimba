@@ -9,7 +9,7 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import { Button } from "@workspace/ui/components/button"
 import { Card } from "@workspace/ui/components/card"
 import Link from "next/link"
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { SupplierTable } from "@/components/suppliers/supplier-table"
@@ -18,15 +18,40 @@ import {
   getSupplierListItems,
   type SupplierListItem,
 } from "@/lib/supplier-data"
-import type { DashboardOverviewData } from "@/lib/types"
+import { readStoredSuppliers } from "@/lib/supplier-store"
+import type { DashboardOverviewData, SupplierResponse } from "@/lib/types"
 
 export function SuppliersPage({ data }: { data: DashboardOverviewData }) {
   const [paymentFilter, setPaymentFilter] = useState<
     "all" | "Full" | "Partial" | "Not paid"
   >("all")
+  const [storedSuppliers, setStoredSuppliers] = useState<SupplierResponse[]>([])
+  useEffect(() => {
+    const updateStoredSuppliers = () => setStoredSuppliers(readStoredSuppliers())
+    updateStoredSuppliers()
+    window.addEventListener("zimba-suppliers-updated", updateStoredSuppliers)
+    return () =>
+      window.removeEventListener(
+        "zimba-suppliers-updated",
+        updateStoredSuppliers
+      )
+  }, [])
+  const allSuppliers = useMemo(
+    () => [
+      ...data.suppliers,
+      ...storedSuppliers.filter(
+        (storedSupplier) =>
+          !data.suppliers.some(
+            (supplier) =>
+              supplier.name.toLowerCase() === storedSupplier.name.toLowerCase()
+          )
+      ),
+    ],
+    [data.suppliers, storedSuppliers]
+  )
   const suppliers = useMemo<SupplierListItem[]>(
-    () => getSupplierListItems(data.suppliers, data.expenses),
-    [data.expenses, data.suppliers]
+    () => getSupplierListItems(allSuppliers, data.expenses),
+    [allSuppliers, data.expenses]
   )
   const totalReceiptValue = suppliers.reduce(
     (sum, supplier) => sum + supplier.amount,
@@ -58,7 +83,7 @@ export function SuppliersPage({ data }: { data: DashboardOverviewData }) {
     {
       label: "Paid to suppliers",
       value: formatCurrency(totalPaid),
-      detail: `${Math.round((totalPaid / totalReceiptValue) * 100)}% settled`,
+      detail: `${totalReceiptValue ? Math.round((totalPaid / totalReceiptValue) * 100) : 0}% settled`,
       icon: TaskDone01Icon,
       pillClassName: "bg-amber-50 text-amber-700",
     },

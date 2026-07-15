@@ -43,5 +43,6 @@ export function storeSupplier(values: NewSupplierValues) {
     ),
   ]
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(suppliers))
+  window.dispatchEvent(new Event("zimba-suppliers-updated"))
   return supplier
 }

@@ -90,7 +90,6 @@ export function NewSupplierPage({ returnTo }: { returnTo?: string }) {
                 router.push(
                   `${destination}${separator}supplier=${encodeURIComponent(values.name)}`
                 )
-                router.refresh()
               }}
               onCancel={() =>
                 router.push(
