@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { ProjectExpenseCreatePage } from "@/components/projects/project-expense-create-page"
+import { getDataMode } from "@/lib/api/data-mode"
 import { getProjectDetail } from "@/lib/api/projects"
 
 export const dynamic = "force-dynamic"
@@ -16,5 +17,10 @@ export default async function Page({
 
   if (!project) notFound()
 
-  return <ProjectExpenseCreatePage project={project} />
+  return (
+    <ProjectExpenseCreatePage
+      project={project}
+      source={getDataMode() === "mock" ? "mock" : "api"}
+    />
+  )
 }

@@ -197,7 +197,23 @@ export function getSupplierLedger(
   return [...realEntries, ...(extraLedgerEntries[supplier.name] ?? [])]
 }
 
-export function getSupplierProfile(name: string): SupplierProfile {
+export function getSupplierProfile(
+  name: string,
+  supplier?: SupplierResponse
+): SupplierProfile {
+  if (
+    supplier?.companyContact ||
+    supplier?.contactName ||
+    supplier?.phone ||
+    supplier?.email
+  ) {
+    return {
+      companyContact: supplier.companyContact ?? supplier.phone ?? "Pending",
+      contactName: supplier.contactName ?? "Contact pending",
+      email: supplier.email ?? "—",
+      phone: supplier.phone ?? "—",
+    }
+  }
   return (
     supplierProfiles[name] ?? {
       companyContact: "Supplier contact pending",

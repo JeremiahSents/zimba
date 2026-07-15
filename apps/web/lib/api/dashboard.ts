@@ -8,6 +8,8 @@ import {
   listSuppliers,
   ZimbaApiError,
 } from "@/lib/api/client"
+import { isMockDataMode } from "@/lib/api/data-mode"
+import { getMockDashboardData } from "@/lib/api/mock-repository"
 import {
   toExpenseTableRow,
   toProjectSummary,
@@ -17,6 +19,10 @@ import type { DashboardOverviewData } from "@/lib/types"
 
 export async function getDashboardOverviewData(): Promise<DashboardOverviewData> {
   const session = await requireZimbaApiSession()
+
+  if (isMockDataMode()) {
+    return getMockDashboardData(session.organizationId)
+  }
 
   const workspaceData = await Promise.all([
     getDashboardOverview(session),

@@ -16,6 +16,21 @@ import {
   updateUpcomingPayment,
   ZimbaApiError,
 } from "@/lib/api/client"
+import { isMockDataMode } from "@/lib/api/data-mode"
+import {
+  completeMockFileUpload,
+  createMockExpenseReceipt,
+  createMockProject,
+  createMockSupplier,
+  createMockUpcomingPayment,
+  deleteMockUpcomingPayment,
+  MockRepositoryError,
+  requestMockFileUpload,
+  updateMockAllocation,
+  updateMockExpenseStatus,
+  updateMockProject,
+  updateMockUpcomingPayment,
+} from "@/lib/api/mock-repository"
 import { toApiExpenseStatus } from "@/lib/api/normalizers"
 import type {
   AllocationUpdate,
@@ -51,7 +66,10 @@ export async function createProjectAction(
 
   let projectId: number
   try {
-    const created = await createProject(await requireZimbaApiSession(), project)
+    const session = await requireZimbaApiSession()
+    const created = isMockDataMode()
+      ? createMockProject(session.organizationId, project)
+      : await createProject(session, project)
     projectId = created.id
   } catch (error) {
     return actionError(error)
@@ -66,7 +84,12 @@ export async function updateProjectAction(
   project: ProjectUpdate
 ): Promise<ActionResult> {
   try {
-    await updateProject(await requireZimbaApiSession(), projectId, project)
+    const session = await requireZimbaApiSession()
+    if (isMockDataMode()) {
+      updateMockProject(session.organizationId, projectId, project)
+    } else {
+      await updateProject(session, projectId, project)
+    }
     revalidateConnectedRoutes(projectId)
     return { ok: true, data: undefined }
   } catch (error) {
@@ -80,12 +103,17 @@ export async function updateAllocationAction(
   allocation: AllocationUpdate
 ): Promise<ActionResult> {
   try {
-    await updateAllocation(
-      await requireZimbaApiSession(),
-      projectId,
-      allocationId,
-      allocation
-    )
+    const session = await requireZimbaApiSession()
+    if (isMockDataMode()) {
+      updateMockAllocation(
+        session.organizationId,
+        projectId,
+        allocationId,
+        allocation
+      )
+    } else {
+      await updateAllocation(session, projectId, allocationId, allocation)
+    }
     revalidateConnectedRoutes(projectId)
     return { ok: true, data: undefined }
   } catch (error) {
@@ -113,11 +141,12 @@ export async function createExpenseReceiptAction(
   }
 
   try {
-    await createExpenseReceipt(
-      await requireZimbaApiSession(),
-      projectId,
-      receipt
-    )
+    const session = await requireZimbaApiSession()
+    if (isMockDataMode()) {
+      createMockExpenseReceipt(session.organizationId, projectId, receipt)
+    } else {
+      await createExpenseReceipt(session, projectId, receipt)
+    }
   } catch (error) {
     return actionError(error)
   }
@@ -132,9 +161,19 @@ export async function updateExpenseStatusAction(
   status: ExpenseStatus
 ): Promise<ActionResult> {
   try {
-    await updateExpense(await requireZimbaApiSession(), expenseId, {
-      payment_status: toApiExpenseStatus(status),
-    })
+    const session = await requireZimbaApiSession()
+    if (isMockDataMode()) {
+      updateMockExpenseStatus(
+        session.organizationId,
+        projectId,
+        expenseId,
+        status
+      )
+    } else {
+      await updateExpense(session, expenseId, {
+        payment_status: toApiExpenseStatus(status),
+      })
+    }
     revalidateConnectedRoutes(projectId)
     return { ok: true, data: undefined }
   } catch (error) {
@@ -151,11 +190,12 @@ export async function createUpcomingPaymentAction(
   }
 
   try {
-    await createUpcomingPayment(
-      await requireZimbaApiSession(),
-      projectId,
-      payment
-    )
+    const session = await requireZimbaApiSession()
+    if (isMockDataMode()) {
+      createMockUpcomingPayment(session.organizationId, projectId, payment)
+    } else {
+      await createUpcomingPayment(session, projectId, payment)
+    }
     revalidateConnectedRoutes(projectId)
     return { ok: true, data: undefined }
   } catch (error) {
@@ -169,12 +209,17 @@ export async function updateUpcomingPaymentAction(
   payment: UpcomingPaymentUpdate
 ): Promise<ActionResult> {
   try {
-    await updateUpcomingPayment(
-      await requireZimbaApiSession(),
-      projectId,
-      paymentId,
-      payment
-    )
+    const session = await requireZimbaApiSession()
+    if (isMockDataMode()) {
+      updateMockUpcomingPayment(
+        session.organizationId,
+        projectId,
+        paymentId,
+        payment
+      )
+    } else {
+      await updateUpcomingPayment(session, projectId, paymentId, payment)
+    }
     revalidateConnectedRoutes(projectId)
     return { ok: true, data: undefined }
   } catch (error) {
@@ -187,13 +232,44 @@ export async function deleteUpcomingPaymentAction(
   paymentId: number
 ): Promise<ActionResult> {
   try {
-    await deleteUpcomingPayment(
-      await requireZimbaApiSession(),
-      projectId,
-      paymentId
-    )
+    const session = await requireZimbaApiSession()
+    if (isMockDataMode()) {
+      deleteMockUpcomingPayment(session.organizationId, projectId, paymentId)
+    } else {
+      await deleteUpcomingPayment(session, projectId, paymentId)
+    }
     revalidateConnectedRoutes(projectId)
     return { ok: true, data: undefined }
+  } catch (error) {
+    return actionError(error)
+  }
+}
+
+export async function createSupplierAction(input: {
+  name: string
+  category: "materials" | "labour" | "equipment" | "services" | "other"
+  companyContact?: string
+  contactName?: string
+  phone?: string
+  email?: string
+  notes?: string
+}): Promise<ActionResult<{ persistence: "mock" | "client" }>> {
+  if (!input.name.trim()) {
+    return { ok: false, error: "Add a supplier name." }
+  }
+
+  try {
+    if (!isMockDataMode()) {
+      return { ok: true, data: { persistence: "client" } }
+    }
+
+    const session = await requireZimbaApiSession()
+    createMockSupplier(session.organizationId, {
+      ...input,
+      name: input.name.trim(),
+    })
+    revalidatePath("/admin/suppliers")
+    return { ok: true, data: { persistence: "mock" } }
   } catch (error) {
     return actionError(error)
   }
@@ -207,7 +283,10 @@ export async function requestFileUploadAction(
   }
 
   try {
-    const upload = await requestFileUpload(await requireZimbaApiSession(), file)
+    const session = await requireZimbaApiSession()
+    const upload = isMockDataMode()
+      ? requestMockFileUpload(session.organizationId, file)
+      : await requestFileUpload(session, file)
     return { ok: true, data: upload }
   } catch (error) {
     return actionError(error)
@@ -220,10 +299,10 @@ export async function completeFileUploadAction(
   if (!fileId) return { ok: false, error: "The upload is missing its file ID." }
 
   try {
-    const completed = await completeFileUpload(
-      await requireZimbaApiSession(),
-      fileId
-    )
+    const session = await requireZimbaApiSession()
+    const completed = isMockDataMode()
+      ? completeMockFileUpload(session.organizationId, fileId)
+      : await completeFileUpload(session, fileId)
     return { ok: true, data: { id: completed.id } }
   } catch (error) {
     return actionError(error)
@@ -232,6 +311,9 @@ export async function completeFileUploadAction(
 
 function actionError(error: unknown): { ok: false; error: string } {
   if (error instanceof ZimbaApiError) return { ok: false, error: error.message }
+  if (error instanceof MockRepositoryError) {
+    return { ok: false, error: error.message }
+  }
   if (error instanceof Error && error.message.startsWith("Sign in")) {
     return { ok: false, error: error.message }
   }

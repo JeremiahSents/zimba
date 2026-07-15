@@ -61,6 +61,7 @@ export type NotificationItem = {
 export function DashboardShell({
   headerGreeting,
   title,
+  dataSource,
   notifications = [],
   onAddNotification,
   focusedTask = false,
@@ -73,6 +74,7 @@ export function DashboardShell({
         <DashboardTopbar
           title={title}
           headerGreeting={headerGreeting}
+          dataSource={dataSource}
           notifications={notifications}
           onAddNotification={onAddNotification}
         />
@@ -93,11 +95,13 @@ export function DashboardShell({
 function DashboardTopbar({
   headerGreeting,
   title,
+  dataSource,
   notifications,
   onAddNotification,
 }: {
   headerGreeting?: string
   title: string
+  dataSource?: "api" | "mock"
   notifications: NotificationItem[]
   onAddNotification?: () => void
 }) {
@@ -125,6 +129,17 @@ function DashboardTopbar({
           <h1 className="font-heading font-medium text-foreground text-lg leading-6 tracking-tight">
             {headerGreeting ?? title}
           </h1>
+          {dataSource ? (
+            <span
+              className={`rounded-full border px-2 py-1 font-semibold text-[9px] uppercase tracking-[0.08em] ${
+                dataSource === "mock"
+                  ? "border-amber-300 bg-amber-50 text-amber-800"
+                  : "border-green-300 bg-green-50 text-green-800"
+              }`}
+            >
+              {dataSource === "mock" ? "Mock data" : "Live data"}
+            </span>
+          ) : null}
         </div>
       </div>
 

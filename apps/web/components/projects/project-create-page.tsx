@@ -24,6 +24,7 @@ import {
   readProjectCreateDraft,
   writeProjectCreateDraft,
 } from "@/lib/project-create-draft"
+import type { DashboardSource } from "@/lib/types"
 import { uploadZimbaFile } from "@/lib/upload-file"
 
 const emptyDetails: ProjectDetails = {
@@ -33,7 +34,7 @@ const emptyDetails: ProjectDetails = {
   buildingType: "",
 }
 
-export function ProjectCreatePage() {
+export function ProjectCreatePage({ source }: { source: DashboardSource }) {
   const router = useRouter()
   const [details, setDetails] = useState<ProjectDetails>(emptyDetails)
   const [files, setFiles] = useState<File[]>([])
@@ -99,7 +100,12 @@ export function ProjectCreatePage() {
   }
 
   return (
-    <DashboardShell title="New project" subtitle="" focusedTask>
+    <DashboardShell
+      title="New project"
+      subtitle=""
+      dataSource={source}
+      focusedTask
+    >
       <form onSubmit={goToAllocation} className="grid gap-6">
         <PageHeader
           pending={uploading}

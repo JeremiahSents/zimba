@@ -35,6 +35,7 @@ import {
   readProjectCreateDraft,
   writeProjectCreateDraft,
 } from "@/lib/project-create-draft"
+import type { DashboardSource } from "@/lib/types"
 
 function persistRows(rows: InitialAllocation[]) {
   const draft = readProjectCreateDraft()
@@ -115,7 +116,11 @@ function MobileAllocationCards({
   )
 }
 
-export function ProjectAllocationCreatePage() {
+export function ProjectAllocationCreatePage({
+  source,
+}: {
+  source: DashboardSource
+}) {
   const router = useRouter()
   const [rows, setRows] = useState<InitialAllocation[]>(
     defaultInitialAllocations
@@ -208,7 +213,12 @@ export function ProjectAllocationCreatePage() {
   if (!ready) return null
 
   return (
-    <DashboardShell title="New project" subtitle="" focusedTask>
+    <DashboardShell
+      title="New project"
+      subtitle=""
+      dataSource={source}
+      focusedTask
+    >
       <div className="grid gap-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>

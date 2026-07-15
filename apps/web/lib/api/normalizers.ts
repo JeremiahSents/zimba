@@ -90,6 +90,7 @@ export function toSupplier(supplier: ApiSupplierResponse): SupplierResponse {
     name: supplier.name,
     outstanding_amount: supplier.outstanding_amount,
     payments: supplier.payments_count,
+    phone: supplier.phone,
     status: supplier.status,
     supplier_id: supplier.id,
   }

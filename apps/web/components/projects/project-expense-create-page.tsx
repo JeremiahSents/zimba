@@ -27,7 +27,7 @@ import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { DatePicker } from "@/components/shared/date-picker"
 import { toApiExpenseStatus } from "@/lib/api/normalizers"
 import { formatCurrency } from "@/lib/format"
-import type { ProjectDetailResponse } from "@/lib/types"
+import type { DashboardSource, ProjectDetailResponse } from "@/lib/types"
 import { uploadZimbaFile } from "@/lib/upload-file"
 
 type ReceiptItem = {
@@ -41,8 +41,10 @@ type ReceiptItem = {
 
 export function ProjectExpenseCreatePage({
   project,
+  source,
 }: {
   project: ProjectDetailResponse
+  source: DashboardSource
 }) {
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10))
   const [status, setStatus] = useState<"Partial" | "Full" | "Not paid">("Full")
@@ -167,7 +169,7 @@ export function ProjectExpenseCreatePage({
     <DashboardShell
       title="New expense"
       subtitle={`Create a receipt for ${project.name}.`}
-      dataSource="mock"
+      dataSource={source}
       focusedTask
     >
       <div className="flex flex-wrap items-end justify-between gap-4">

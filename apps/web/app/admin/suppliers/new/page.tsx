@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import { NewSupplierPage } from "@/components/suppliers/new-supplier-page"
+import { getDataMode } from "@/lib/api/data-mode"
 
 export const metadata: Metadata = {
   title: "New supplier | Zimba",
@@ -7,5 +8,5 @@ export const metadata: Metadata = {
 }
 
 export default function Page() {
-  return <NewSupplierPage />
+  return <NewSupplierPage source={getDataMode() === "mock" ? "mock" : "api"} />
 }

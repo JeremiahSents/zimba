@@ -46,7 +46,7 @@ export function SupplierDetailPage({
 }) {
   const [supplier] = getSupplierListItems([supplierRecord], expenses)
   if (!supplier) return null
-  const profile = getSupplierProfile(supplier.name)
+  const profile = getSupplierProfile(supplier.name, supplier)
   const ledger = getSupplierLedger(supplierRecord, expenses)
   const totalReceipts = ledger.reduce(
     (sum, entry) => sum + entry.receiptValue,

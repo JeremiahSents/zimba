@@ -16,14 +16,24 @@ import {
   CardTitle,
 } from "@workspace/ui/components/card"
 import { useRouter } from "next/navigation"
+import { useState } from "react"
+import { createSupplierAction } from "@/app/admin/actions"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { SupplierForm } from "@/components/suppliers/supplier-form"
 import { storeSupplier } from "@/lib/supplier-store"
+import type { DashboardSource } from "@/lib/types"
 
-export function NewSupplierPage() {
+export function NewSupplierPage({ source }: { source: DashboardSource }) {
   const router = useRouter()
+  const [error, setError] = useState("")
+  const [submitting, setSubmitting] = useState(false)
   return (
-    <DashboardShell title="New supplier" subtitle="" focusedTask>
+    <DashboardShell
+      title="New supplier"
+      subtitle=""
+      dataSource={source}
+      focusedTask
+    >
       <div className="grid gap-6">
         <div className="flex items-center justify-between gap-4">
           <div>
@@ -58,10 +68,25 @@ export function NewSupplierPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {error ? (
+              <p className="mb-4 text-destructive text-sm" role="alert">
+                {error}
+              </p>
+            ) : null}
             <SupplierForm
-              onSubmit={(values) => {
-                storeSupplier(values)
+              pending={submitting}
+              onSubmit={async (values) => {
+                setSubmitting(true)
+                setError("")
+                const result = await createSupplierAction(values)
+                if (!result.ok) {
+                  setError(result.error)
+                  setSubmitting(false)
+                  return
+                }
+                if (result.data.persistence === "client") storeSupplier(values)
                 router.push("/admin/suppliers")
+                router.refresh()
               }}
               onCancel={() => router.push("/admin/suppliers")}
             />

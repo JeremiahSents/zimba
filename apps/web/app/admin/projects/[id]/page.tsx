@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { ProjectDetailPageWrapper } from "@/components/projects/project-detail-page"
+import { getDataMode } from "@/lib/api/data-mode"
 import { getProjectDetail } from "@/lib/api/projects"
 
 export const dynamic = "force-dynamic"
@@ -15,5 +16,10 @@ export default async function Page({
   const project = await getProjectDetail(Number(id))
   if (!project) notFound()
 
-  return <ProjectDetailPageWrapper initialProject={project} />
+  return (
+    <ProjectDetailPageWrapper
+      initialProject={project}
+      source={getDataMode() === "mock" ? "mock" : "api"}
+    />
+  )
 }

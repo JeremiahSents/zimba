@@ -16,18 +16,20 @@ export async function uploadZimbaFile(
   })
   if (!requested.ok) throw new Error(requested.error)
 
-  const uploadHeaders = new Headers()
-  for (const [name, value] of Object.entries(requested.data.headers)) {
-    if (typeof value === "string") uploadHeaders.set(name, value)
-  }
+  if (!requested.data.upload_url.startsWith("mock://")) {
+    const uploadHeaders = new Headers()
+    for (const [name, value] of Object.entries(requested.data.headers)) {
+      if (typeof value === "string") uploadHeaders.set(name, value)
+    }
 
-  const uploaded = await fetch(toSecureUploadUrl(requested.data.upload_url), {
-    body: file,
-    headers: uploadHeaders,
-    method: "PUT",
-  })
-  if (!uploaded.ok) {
-    throw new Error(`File upload failed with status ${uploaded.status}.`)
+    const uploaded = await fetch(toSecureUploadUrl(requested.data.upload_url), {
+      body: file,
+      headers: uploadHeaders,
+      method: "PUT",
+    })
+    if (!uploaded.ok) {
+      throw new Error(`File upload failed with status ${uploaded.status}.`)
+    }
   }
 
   const completed = await completeFileUploadAction(requested.data.file_id)

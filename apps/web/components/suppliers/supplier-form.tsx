@@ -27,10 +27,12 @@ export function SupplierForm({
   onSubmit,
   onCancel,
   compact = false,
+  pending = false,
 }: {
-  onSubmit: (values: NewSupplierValues) => void
+  onSubmit: (values: NewSupplierValues) => void | Promise<void>
   onCancel?: () => void
   compact?: boolean
+  pending?: boolean
 }) {
   const [values, setValues] = useState(initialValues)
   const update = (key: keyof NewSupplierValues, value: string) =>
@@ -47,7 +49,7 @@ export function SupplierForm({
           !values.email.trim()
         )
           return
-        onSubmit({
+        void onSubmit({
           ...values,
           name: values.name.trim(),
           contactName: values.contactName.trim(),
@@ -140,11 +142,18 @@ export function SupplierForm({
       </div>
       <div className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-2 gap-2 border-t bg-background/96 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-18px_45px_-28px_rgba(15,23,42,0.45)] backdrop-blur-xl sm:static sm:flex sm:flex-row sm:justify-end sm:border-t sm:bg-transparent sm:p-0 sm:pt-4 sm:shadow-none sm:backdrop-blur-none">
         {onCancel && (
-          <Button type="button" variant="outline" onClick={onCancel}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onCancel}
+            disabled={pending}
+          >
             Cancel
           </Button>
         )}
-        <Button type="submit">Save supplier</Button>
+        <Button type="submit" disabled={pending}>
+          {pending ? "Saving..." : "Save supplier"}
+        </Button>
       </div>
     </form>
   )

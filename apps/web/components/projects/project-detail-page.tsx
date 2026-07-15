@@ -37,7 +37,11 @@ import { ProjectExpensesTable } from "@/components/projects/project-expenses-tab
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { DatePicker } from "@/components/shared/date-picker"
 import { formatCurrency, formatPercent, formatShortDate } from "@/lib/format"
-import type { ExpenseStatus, ProjectDetailResponse } from "@/lib/types"
+import type {
+  DashboardSource,
+  ExpenseStatus,
+  ProjectDetailResponse,
+} from "@/lib/types"
 
 const colors = ["#86efac", "#fcd34d", "#fca5a5", "#93c5fd", "#d8b4fe"]
 const taskLegendClasses = [
@@ -58,16 +62,20 @@ const metricIcons = {
 
 export function ProjectDetailPageWrapper({
   initialProject,
+  source,
 }: {
   initialProject: ProjectDetailResponse
+  source: DashboardSource
 }) {
-  return <ProjectDetailPage project={initialProject} />
+  return <ProjectDetailPage project={initialProject} source={source} />
 }
 
 export function ProjectDetailPage({
   project,
+  source,
 }: {
   project: ProjectDetailResponse
+  source: DashboardSource
 }) {
   const router = useRouter()
   const [expenses, setExpenses] = useState(project.expenses)
@@ -136,7 +144,7 @@ export function ProjectDetailPage({
     <DashboardShell
       title={project.name}
       subtitle="Project financial position and delivery tracking."
-      dataSource="mock"
+      dataSource={source}
       notifications={upcoming}
       onAddNotification={() => setPaymentDialogOpen(true)}
     >

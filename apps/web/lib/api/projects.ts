@@ -1,19 +1,22 @@
 import "server-only"
 
-import { getZimbaApiSession } from "@/lib/api/auth"
+import { requireZimbaApiSession } from "@/lib/api/auth"
 import {
   getProjectDetail as getProjectDetailFromApi,
   listUpcomingPayments,
 } from "@/lib/api/client"
-import { mockProjectDetails } from "@/lib/api/mock-data"
+import { isMockDataMode } from "@/lib/api/data-mode"
+import { getMockProjectDetail } from "@/lib/api/mock-repository"
 import { toProjectDetail } from "@/lib/api/normalizers"
 import type { ProjectDetailResponse } from "@/lib/types"
 
 export async function getProjectDetail(
   id: number
 ): Promise<ProjectDetailResponse | undefined> {
-  const session = await getZimbaApiSession()
-  if (!session) return mockProjectDetails.find((project) => project.id === id)
+  const session = await requireZimbaApiSession()
+  if (isMockDataMode()) {
+    return getMockProjectDetail(session.organizationId, id)
+  }
 
   const [project, upcomingPayments] = await Promise.all([
     getProjectDetailFromApi(session, id),

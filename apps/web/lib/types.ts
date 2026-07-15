@@ -93,6 +93,11 @@ export type SupplierResponse = SupplierBreakdown & {
   id?: number
   payments: number
   category: "materials" | "labour" | "equipment" | "services" | "other"
+  companyContact?: string
+  contactName?: string
+  phone?: string | null
+  email?: string
+  notes?: string
   outstanding_amount?: number
   status?: string
 }
