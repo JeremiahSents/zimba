@@ -36,11 +36,11 @@ export function Header() {
         <div className="flex items-center gap-5">
           <Link
             href="/login"
-            className="hidden font-normal text-sm text-white/75 transition hover:text-white sm:inline-flex"
+            className="inline-flex font-normal text-sm text-white/75 transition hover:text-white"
           >
             Sign in
           </Link>
-          <Button size="sm" className="px-4">
+          <Button size="sm" className="hidden px-4 sm:inline-flex">
             Learn more
           </Button>
         </div>
