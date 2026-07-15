@@ -363,6 +363,7 @@ export function createMockExpenseReceipt(
   const project = requireProject(workspace, projectId)
   const allExpenses = workspace.projects.flatMap((item) => item.expenses)
   let expenseId = nextId(allExpenses)
+  const receiptId = expenseId
   const expenses: ExpenseResponse[] = receipt.items.map((item) => {
     const allocation = project.allocations?.find(
       (candidate) => candidate.id === item.allocation_id
@@ -377,6 +378,7 @@ export function createMockExpenseReceipt(
       amount: item.quantity * item.unit_rate,
       date: receipt.expense_date,
       id: expenseId++,
+      receipt_id: receiptId,
       item_description: item.item_description,
       project_id: projectId,
       quantity: item.quantity,

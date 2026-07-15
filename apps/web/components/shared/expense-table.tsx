@@ -36,8 +36,10 @@ import {
 import { ResponsiveDataView } from "@/components/shared/responsive-data-view"
 import { formatCurrency, formatShortDate } from "@/lib/format"
 import type { ExpenseTableRow } from "@/lib/types"
+import Link from "next/link"
 
 export function ExpenseTable({ expenses }: { expenses: ExpenseTableRow[] }) {
+  const receiptRows = groupExpensesByReceipt(expenses)
   const [globalFilter, setGlobalFilter] = useState("")
   const [sorting, setSorting] = useState<SortingState>([])
 
@@ -59,7 +61,18 @@ export function ExpenseTable({ expenses }: { expenses: ExpenseTableRow[] }) {
       { accessorKey: "project_name", header: "Project" },
       { accessorKey: "task_name", header: "Task" },
       { accessorKey: "supplier_name", header: "Supplier" },
-      { accessorKey: "item_description", header: "Item" },
+      {
+        accessorKey: "item_description",
+        header: "Receipt",
+        cell: ({ getValue, row }) => (
+          <Link
+            href={`/admin/expenses/receipts/${row.original.receipt_id ?? row.original.id}`}
+            className="font-medium text-primary hover:underline"
+          >
+            {getValue<string>()}
+          </Link>
+        ),
+      },
       {
         accessorKey: "amount",
         header: "Amount",
@@ -70,7 +83,7 @@ export function ExpenseTable({ expenses }: { expenses: ExpenseTableRow[] }) {
   )
 
   const table = useReactTable({
-    data: expenses,
+    data: receiptRows,
     columns,
     state: { globalFilter, sorting },
     onGlobalFilterChange: setGlobalFilter,
@@ -117,7 +130,14 @@ export function ExpenseTable({ expenses }: { expenses: ExpenseTableRow[] }) {
                   <MobileDataCard
                     key={row.id}
                     eyebrow={expense.project_name}
-                    title={expense.item_description}
+                    title={
+                      <Link
+                        href={`/admin/expenses/receipts/${expense.receipt_id ?? expense.id}`}
+                        className="font-medium text-primary hover:underline"
+                      >
+                        {expense.item_description}
+                      </Link>
+                    }
                     value={formatCurrency(expense.amount)}
                     status={
                       <span className="inline-flex rounded-full border bg-muted/50 px-2 py-1 font-medium text-[10px] text-muted-foreground">
@@ -246,4 +266,24 @@ export function ExpenseTable({ expenses }: { expenses: ExpenseTableRow[] }) {
       </div>
     </div>
   )
+}
+
+function groupExpensesByReceipt(
+  expenses: ExpenseTableRow[]
+): ExpenseTableRow[] {
+  const groups = new Map<number, ExpenseTableRow[]>()
+  for (const expense of expenses) {
+    const id = expense.receipt_id ?? expense.id
+    const group = groups.get(id) ?? []
+    groups.set(id, [...group, expense])
+  }
+  return [...groups.values()].map((items) => {
+    const first = items[0]
+    if (!first) throw new Error("Receipt group cannot be empty")
+    return {
+      ...first,
+      item_description: `${items.length} item${items.length === 1 ? "" : "s"}`,
+      amount: items.reduce((sum, item) => sum + item.amount, 0),
+    }
+  })
 }

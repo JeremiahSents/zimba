@@ -60,6 +60,7 @@ export function toExpense(expense: ApiExpenseResponse): ExpenseResponse {
     amount: expense.amount,
     date: expense.expense_date || expense.date || "",
     id: expense.id,
+    receipt_id: expense.receipt_id ?? expense.id,
     item_description: expense.item_description,
     project_id: expense.project_id,
     quantity: expense.quantity,

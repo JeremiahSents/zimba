@@ -85,6 +85,7 @@ export type ProjectDashboardResponse = {
 
 export type ExpenseResponse = {
   id: number
+  receipt_id?: number | null
   project_id?: number
   allocation_id?: number
   date: string
