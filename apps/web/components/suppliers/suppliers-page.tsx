@@ -6,7 +6,9 @@ import {
   UserGroupIcon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
+import { Button } from "@workspace/ui/components/button"
 import { Card } from "@workspace/ui/components/card"
+import Link from "next/link"
 import { useMemo, useState } from "react"
 
 import { DashboardShell } from "@/components/shared/dashboard-shell"
@@ -119,21 +121,30 @@ export function SuppliersPage({ data }: { data: DashboardOverviewData }) {
               Receipt value and outstanding balances across active projects.
             </p>
           </div>
-          <label className="flex items-center gap-2 text-muted-foreground text-xs">
-            Show
-            <select
-              value={paymentFilter}
-              onChange={(event) =>
-                setPaymentFilter(event.target.value as typeof paymentFilter)
-              }
-              className="h-9 rounded-lg border bg-background px-3 font-medium text-foreground outline-none focus:ring-2 focus:ring-ring"
+          <div className="flex items-center gap-3">
+            <label className="flex items-center gap-2 text-muted-foreground text-xs">
+              Show
+              <select
+                value={paymentFilter}
+                onChange={(event) =>
+                  setPaymentFilter(event.target.value as typeof paymentFilter)
+                }
+                className="h-9 rounded-lg border bg-background px-3 font-medium text-foreground outline-none focus:ring-2 focus:ring-ring"
+              >
+                <option value="all">All receipts</option>
+                <option value="Full">Fully paid</option>
+                <option value="Partial">Partial</option>
+                <option value="Not paid">Unpaid</option>
+              </select>
+            </label>
+            <Button
+              size="sm"
+              nativeButton={false}
+              render={<Link href="/admin/suppliers/new" />}
             >
-              <option value="all">All receipts</option>
-              <option value="Full">Fully paid</option>
-              <option value="Partial">Partial</option>
-              <option value="Not paid">Unpaid</option>
-            </select>
-          </label>
+              + Create supplier
+            </Button>
+          </div>
         </div>
         <SupplierTable
           suppliers={filteredSuppliers}

@@ -21,9 +21,8 @@ import { createSupplierAction } from "@/app/admin/actions"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { SupplierForm } from "@/components/suppliers/supplier-form"
 import { storeSupplier } from "@/lib/supplier-store"
-import type { DashboardSource } from "@/lib/types"
 
-export function NewSupplierPage({ source }: { source: DashboardSource }) {
+export function NewSupplierPage({ returnTo }: { returnTo?: string }) {
   const router = useRouter()
   const [error, setError] = useState("")
   const [submitting, setSubmitting] = useState(false)
@@ -83,10 +82,23 @@ export function NewSupplierPage({ source }: { source: DashboardSource }) {
                   return
                 }
                 if (result.data.persistence === "client") storeSupplier(values)
-                router.push("/admin/suppliers")
+                const fallback = "/admin/suppliers"
+                const destination = returnTo?.startsWith("/admin/")
+                  ? returnTo
+                  : fallback
+                const separator = destination.includes("?") ? "&" : "?"
+                router.push(
+                  `${destination}${separator}supplier=${encodeURIComponent(values.name)}`
+                )
                 router.refresh()
               }}
-              onCancel={() => router.push("/admin/suppliers")}
+              onCancel={() =>
+                router.push(
+                  returnTo?.startsWith("/admin/")
+                    ? returnTo
+                    : "/admin/suppliers"
+                )
+              }
             />
           </CardContent>
         </Card>

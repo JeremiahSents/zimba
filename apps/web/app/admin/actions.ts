@@ -21,6 +21,7 @@ import {
   completeMockFileUpload,
   createMockExpenseReceipt,
   createMockProject,
+  createMockProjectTask,
   createMockSupplier,
   createMockUpcomingPayment,
   deleteMockUpcomingPayment,
@@ -90,6 +91,32 @@ export async function updateProjectAction(
     } else {
       await updateProject(session, projectId, project)
     }
+    revalidateConnectedRoutes(projectId)
+    return { ok: true, data: undefined }
+  } catch (error) {
+    return actionError(error)
+  }
+}
+
+export async function createProjectTaskAction(
+  projectId: number,
+  input: { budget: number; name: string }
+): Promise<ActionResult> {
+  if (!input.name.trim() || !Number.isFinite(input.budget) || input.budget <= 0) {
+    return { ok: false, error: "Add a task name and an initial budget." }
+  }
+  if (!isMockDataMode()) {
+    return {
+      ok: false,
+      error: "Creating project tasks is not yet supported by the connected API.",
+    }
+  }
+  try {
+    const session = await requireZimbaApiSession()
+    createMockProjectTask(session.organizationId, projectId, {
+      budget: input.budget,
+      name: input.name.trim(),
+    })
     revalidateConnectedRoutes(projectId)
     return { ok: true, data: undefined }
   } catch (error) {

@@ -79,7 +79,7 @@ export function TeamTable({ members }: { members: TeamMember[] }) {
       </div>
       <ResponsiveDataView
         mobile={
-          <div className="space-y-3">
+          table.getRowModel().rows.length ? <div className="space-y-3">
             {table.getRowModel().rows.map((row) => {
               const member = row.original
               return (
@@ -97,10 +97,10 @@ export function TeamTable({ members }: { members: TeamMember[] }) {
                 </MobileDataCard>
               )
             })}
-          </div>
+          </div> : <EmptyTeamState />
         }
         desktop={
-          <Table>
+          table.getRowModel().rows.length ? <Table>
             <TableHeader>
               {table.getHeaderGroups().map((group) => (
                 <TableRow key={group.id}>
@@ -137,7 +137,7 @@ export function TeamTable({ members }: { members: TeamMember[] }) {
                 </TableRow>
               ))}
             </TableBody>
-          </Table>
+          </Table> : <EmptyTeamState />
         }
       />
       <div className="grid grid-cols-2 gap-2 border-t pt-3 sm:flex sm:justify-end">
@@ -158,6 +158,17 @@ export function TeamTable({ members }: { members: TeamMember[] }) {
           Next
         </Button>
       </div>
+    </div>
+  )
+}
+
+function EmptyTeamState() {
+  return (
+    <div className="rounded-xl border border-dashed px-5 py-10 text-center">
+      <p className="font-medium text-sm">No team members yet</p>
+      <p className="mt-1 text-muted-foreground text-xs">
+        Invite a member to give them access to this workspace.
+      </p>
     </div>
   )
 }

@@ -20,15 +20,21 @@ import {
   SelectValue,
 } from "@workspace/ui/components/select"
 import Link from "next/link"
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { createExpenseReceiptAction } from "@/app/admin/actions"
 import { UploadZone } from "@/components/projects/upload-zone"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { DatePicker } from "@/components/shared/date-picker"
 import { toApiExpenseStatus } from "@/lib/api/normalizers"
+import {
+  readExpenseDraft,
+  storeExpenseDraft,
+} from "@/lib/expense-draft-store"
 import { formatCurrency } from "@/lib/format"
+import { readStoredSuppliers } from "@/lib/supplier-store"
 import type { DashboardSource, ProjectDetailResponse } from "@/lib/types"
 import { uploadZimbaFile } from "@/lib/upload-file"
+import { useRouter, useSearchParams } from "next/navigation"
 
 function formatNumberInput(value: string) {
   if (!value) return ""
@@ -46,6 +52,9 @@ type ReceiptItem = {
   rate: string
 }
 
+const CREATE_SUPPLIER = "__create_supplier__"
+const CREATE_TASK = "__create_task__"
+
 export function ProjectExpenseCreatePage({
   project,
   source,
@@ -53,8 +62,15 @@ export function ProjectExpenseCreatePage({
   project: ProjectDetailResponse
   source: DashboardSource
 }) {
-  const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10))
-  const [status, setStatus] = useState<"Partial" | "Full" | "Not paid">("Full")
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const draft = readExpenseDraft(project.id)
+  const [date, setDate] = useState(
+    () => draft?.date ?? new Date().toISOString().slice(0, 10)
+  )
+  const [status, setStatus] = useState<"Partial" | "Full" | "Not paid">(
+    () => draft?.status ?? "Full"
+  )
   const [files, setFiles] = useState<File[]>([])
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState("")
@@ -64,20 +80,24 @@ export function ProjectExpenseCreatePage({
         new Set([
           ...project.suppliers.map((supplier) => supplier.name),
           ...project.expenses.map((expense) => expense.supplier_name),
+          ...readStoredSuppliers().map((supplier) => supplier.name),
         ])
       ).filter(Boolean),
     [project.expenses, project.suppliers]
   )
-  const [items, setItems] = useState<ReceiptItem[]>(() => [
-    {
-      id: 1,
-      itemDetails: "",
-      taskName: project.tasks[0]?.name ?? "",
-      supplierName: supplierOptions[0] ?? "",
-      quantity: "1",
-      rate: "",
-    },
-  ])
+  const [items, setItems] = useState<ReceiptItem[]>(
+    () =>
+      draft?.items ?? [
+        {
+          id: 1,
+          itemDetails: "",
+          taskName: project.tasks[0]?.name ?? "",
+          supplierName: supplierOptions[0] ?? "",
+          quantity: "1",
+          rate: "",
+        },
+      ]
+  )
 
   const total = useMemo(
     () =>
@@ -89,6 +109,38 @@ export function ProjectExpenseCreatePage({
     [items]
   )
   const projectHref = `/admin/projects/${project.id}`
+  const expenseHref = `${projectHref}/expenses/new`
+
+  useEffect(() => {
+    storeExpenseDraft(project.id, { date, items, status })
+  }, [date, items, project.id, status])
+
+  useEffect(() => {
+    const itemId = Number(searchParams.get("item"))
+    const supplier = searchParams.get("supplier")
+    const task = searchParams.get("task")
+    if (!Number.isInteger(itemId) || (!supplier && !task)) return
+    setItems((current) =>
+      current.map((item) =>
+        item.id === itemId
+          ? {
+              ...item,
+              ...(supplier ? { supplierName: supplier } : {}),
+              ...(task ? { taskName: task } : {}),
+            }
+          : item
+      )
+    )
+  }, [searchParams])
+
+  function beginCreate(kind: "supplier" | "task", itemId: number) {
+    const returnTo = `${expenseHref}?item=${itemId}`
+    const destination =
+      kind === "supplier"
+        ? `/admin/suppliers/new?returnTo=${encodeURIComponent(returnTo)}`
+        : `${projectHref}/tasks/new?returnTo=${encodeURIComponent(returnTo)}`
+    router.push(destination)
+  }
 
   function updateItem(
     id: number,
@@ -337,9 +389,13 @@ export function ProjectExpenseCreatePage({
                         Project task
                         <Select
                           value={item.taskName}
-                          onValueChange={(value) =>
+                          onValueChange={(value) => {
+                            if (value === CREATE_TASK) {
+                              beginCreate("task", item.id)
+                              return
+                            }
                             updateItem(item.id, "taskName", value ?? "")
-                          }
+                          }}
                         >
                           <SelectTrigger className="w-full">
                             <SelectValue placeholder="Select task" />
@@ -350,6 +406,9 @@ export function ProjectExpenseCreatePage({
                                 {task.name}
                               </SelectItem>
                             ))}
+                            <SelectItem value={CREATE_TASK}>
+                              + Create new task
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                       </label>
@@ -357,9 +416,13 @@ export function ProjectExpenseCreatePage({
                         Supplier
                         <Select
                           value={item.supplierName}
-                          onValueChange={(value) =>
+                          onValueChange={(value) => {
+                            if (value === CREATE_SUPPLIER) {
+                              beginCreate("supplier", item.id)
+                              return
+                            }
                             updateItem(item.id, "supplierName", value ?? "")
-                          }
+                          }}
                         >
                           <SelectTrigger className="w-full">
                             <SelectValue placeholder="Select supplier" />
@@ -370,6 +433,9 @@ export function ProjectExpenseCreatePage({
                                 {supplier}
                               </SelectItem>
                             ))}
+                            <SelectItem value={CREATE_SUPPLIER}>
+                              + Create new supplier
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                       </label>
@@ -473,9 +539,13 @@ export function ProjectExpenseCreatePage({
                     <div className="border-l">
                       <Select
                         value={item.taskName}
-                        onValueChange={(value) =>
+                        onValueChange={(value) => {
+                          if (value === CREATE_TASK) {
+                            beginCreate("task", item.id)
+                            return
+                          }
                           updateItem(item.id, "taskName", value ?? "")
-                        }
+                        }}
                       >
                         <SelectTrigger
                           className="w-full rounded-none border-0 bg-transparent px-4 focus-visible:border-transparent focus-visible:bg-muted/25 focus-visible:ring-0"
@@ -489,15 +559,22 @@ export function ProjectExpenseCreatePage({
                               {task.name}
                             </SelectItem>
                           ))}
+                          <SelectItem value={CREATE_TASK}>
+                            + Create new task
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                     <div className="border-l">
                       <Select
                         value={item.supplierName}
-                        onValueChange={(value) =>
+                        onValueChange={(value) => {
+                          if (value === CREATE_SUPPLIER) {
+                            beginCreate("supplier", item.id)
+                            return
+                          }
                           updateItem(item.id, "supplierName", value ?? "")
-                        }
+                        }}
                       >
                         <SelectTrigger
                           className="w-full rounded-none border-0 bg-transparent px-4 focus-visible:border-transparent focus-visible:bg-muted/25 focus-visible:ring-0"
@@ -511,6 +588,9 @@ export function ProjectExpenseCreatePage({
                               {supplier}
                             </SelectItem>
                           ))}
+                          <SelectItem value={CREATE_SUPPLIER}>
+                            + Create new supplier
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                     </div>

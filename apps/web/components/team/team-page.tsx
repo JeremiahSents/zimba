@@ -10,13 +10,14 @@ import {
 } from "@workspace/ui/components/card"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { TeamTable } from "@/components/team/team-table"
-import { mockTeamMembers } from "@/lib/api/mock-data"
+import type { TeamMember } from "@/lib/types"
 
 export function TeamPage() {
+  const members: TeamMember[] = []
   const stats = [
-    ["Team members", String(mockTeamMembers.length), "With dashboard access"],
-    ["Approvers", "2", "Owner and accountant roles"],
-    ["Open reviews", "3", "Items awaiting action"],
+    ["Team members", "0", "With dashboard access"],
+    ["Approvers", "0", "Owner and accountant roles"],
+    ["Open reviews", "0", "Items awaiting action"],
   ]
   return (
     <DashboardShell
@@ -52,7 +53,7 @@ export function TeamPage() {
           </Button>
         </CardHeader>
         <CardContent>
-          <TeamTable members={mockTeamMembers} />
+          <TeamTable members={members} />
         </CardContent>
       </Card>
     </DashboardShell>

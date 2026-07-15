@@ -301,6 +301,29 @@ export function updateMockProject(
   return clone(project)
 }
 
+export function createMockProjectTask(
+  organizationId: string,
+  projectId: number,
+  input: { budget: number; name: string }
+) {
+  const project = requireProject(getWorkspace(organizationId), projectId)
+  const allocations = project.allocations ?? []
+  if (allocations.some((allocation) => allocation.name === input.name)) {
+    throw new MockRepositoryError("A task with that name already exists.")
+  }
+  const allocation = {
+    budget: input.budget,
+    id: nextId(allocations),
+    name: input.name,
+    remaining: input.budget,
+    spent: 0,
+    utilization_pct: 0,
+  }
+  project.allocations = [...allocations, allocation]
+  recalculateProject(project)
+  return clone(allocation)
+}
+
 export function updateMockAllocation(
   organizationId: string,
   projectId: number,
