@@ -72,7 +72,6 @@ export function DashboardPage({ data }: { data: DashboardOverviewData }) {
         </h2>
         <div className="flex items-center gap-2">
           <Button
-            variant="secondary"
             size="sm"
             nativeButton={false}
             render={<Link href="/admin/projects/new" />}
@@ -80,14 +79,14 @@ export function DashboardPage({ data }: { data: DashboardOverviewData }) {
             <HugeiconsIcon icon={FolderKanbanIcon} strokeWidth={2} />
             New project
           </Button>
-          <Button
+          {/* <Button
             size="sm"
             nativeButton={false}
             render={<Link href="/admin/expenses" />}
           >
             <HugeiconsIcon icon={PlusSignIcon} strokeWidth={2} />
             Add expense
-          </Button>
+          </Button> */}
         </div>
       </section>
 
