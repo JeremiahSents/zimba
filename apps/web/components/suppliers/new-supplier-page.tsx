@@ -20,7 +20,6 @@ import { useState } from "react"
 import { createSupplierAction } from "@/app/admin/actions"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { SupplierForm } from "@/components/suppliers/supplier-form"
-import { storeSupplier } from "@/lib/supplier-store"
 
 export function NewSupplierPage({ returnTo }: { returnTo?: string }) {
   const router = useRouter()
@@ -81,7 +80,6 @@ export function NewSupplierPage({ returnTo }: { returnTo?: string }) {
                   setSubmitting(false)
                   return
                 }
-                if (result.data.persistence === "client") storeSupplier(values)
                 const fallback = "/admin/suppliers"
                 const destination = returnTo?.startsWith("/admin/")
                   ? returnTo

@@ -20,6 +20,7 @@ import type {
   ProjectDetailApiResponse,
   ProjectSummaryResponse,
   ProjectUpdate,
+  SupplierCreate,
   UpcomingPaymentCreate,
   UpcomingPaymentResponse,
   UpcomingPaymentUpdate,
@@ -250,6 +251,16 @@ export function listSuppliers(
 ) {
   return zimbaFetch<ApiSupplierResponse[]>("/api/v1/suppliers", session, {
     query,
+  })
+}
+
+export function createSupplier(
+  session: ZimbaApiSession,
+  supplier: SupplierCreate
+) {
+  return zimbaFetch<ApiSupplierResponse>("/api/v1/suppliers", session, {
+    body: supplier,
+    method: "POST",
   })
 }
 

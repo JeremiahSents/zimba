@@ -7,6 +7,7 @@ import {
   completeFileUpload,
   createExpenseReceipt,
   createProject,
+  createSupplier,
   createUpcomingPayment,
   deleteUpcomingPayment,
   requestFileUpload,
@@ -41,6 +42,7 @@ import type {
   FileUploadResponse,
   ProjectCreate,
   ProjectUpdate,
+  SupplierCreate,
   UpcomingPaymentCreate,
   UpcomingPaymentUpdate,
 } from "@/lib/types"
@@ -280,23 +282,28 @@ export async function createSupplierAction(input: {
   phone?: string
   email?: string
   notes?: string
-}): Promise<ActionResult<{ persistence: "mock" | "client" }>> {
+}): Promise<ActionResult> {
   if (!input.name.trim()) {
     return { ok: false, error: "Add a supplier name." }
   }
 
   try {
-    if (!isMockDataMode()) {
-      return { ok: true, data: { persistence: "client" } }
-    }
-
     const session = await requireZimbaApiSession()
-    createMockSupplier(session.organizationId, {
-      ...input,
-      name: input.name.trim(),
-    })
-    revalidatePath("/admin/suppliers")
-    return { ok: true, data: { persistence: "mock" } }
+    if (isMockDataMode()) {
+      createMockSupplier(session.organizationId, {
+        ...input,
+        name: input.name.trim(),
+      })
+    } else {
+      const supplier: SupplierCreate = {
+        category: input.category,
+        name: input.name.trim(),
+        phone: input.phone?.trim() || null,
+      }
+      await createSupplier(session, supplier)
+    }
+    revalidateConnectedRoutes()
+    return { ok: true, data: undefined }
   } catch (error) {
     return actionError(error)
   }
