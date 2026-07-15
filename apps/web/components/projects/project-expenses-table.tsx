@@ -51,12 +51,12 @@ const statusPillClasses = {
 }
 
 const columnWidths: Record<string, string> = {
-  item_description: "w-[27%]",
-  task_name: "w-[15%]",
-  supplier_name: "w-[20%]",
-  amount: "w-[15%]",
-  date: "w-[11%]",
-  status: "w-[12%]",
+  item_description: "w-[23%]",
+  task_name: "w-[13%]",
+  supplier_name: "w-[18%]",
+  amount: "w-[16%]",
+  date: "w-[14%]",
+  status: "w-[14%]",
 }
 
 export function ProjectExpensesTable({
@@ -74,7 +74,7 @@ export function ProjectExpensesTable({
         accessorKey: "item_description",
         header: "Item",
         cell: ({ getValue }) => (
-          <span className="font-medium text-foreground">
+          <span className="block truncate font-medium text-foreground">
             {getValue<string>()}
           </span>
         ),
@@ -104,7 +104,7 @@ export function ProjectExpensesTable({
         accessorKey: "date",
         header: "Date",
         cell: ({ getValue }) => (
-          <span className="text-muted-foreground tabular-nums">
+          <span className="whitespace-nowrap text-foreground tabular-nums">
             {formatShortDate(getValue<string>())}
           </span>
         ),
@@ -159,7 +159,7 @@ export function ProjectExpensesTable({
   const rows = table.getRowModel().rows
 
   return (
-    <div className="space-y-5 [&_[data-slot=table-container]]:overflow-x-hidden">
+    <div className="space-y-5 [&_[data-slot=table-container]]:overflow-x-auto">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative w-full max-w-xs">
           <HugeiconsIcon
@@ -238,7 +238,7 @@ export function ProjectExpensesTable({
           )
         }
         desktop={
-          <Table className="table-fixed border-y">
+          <Table className="min-w-[58rem] table-fixed border-y">
             <TableHeader className="bg-muted/25">
               {table.getHeaderGroups().map((group) => (
                 <TableRow key={group.id}>
