@@ -25,7 +25,7 @@ export function AnalyticsPage({ data }: { data: DashboardOverviewData }) {
   const utilization = totalBudget ? (totalSpent / totalBudget) * 100 : 0
 
   return (
-    <DashboardShell title="Analytics" subtitle="" dataSource={data.source}>
+    <DashboardShell title="Analytics" subtitle="">
       <section className="flex flex-col gap-4 border-b pb-6 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="mb-2 font-semibold text-[10px] text-primary uppercase tracking-[0.16em]">

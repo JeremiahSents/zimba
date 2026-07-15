@@ -33,10 +33,7 @@ import {
   dashboardNavigation,
   isDashboardRouteActive,
 } from "@/components/shared/dashboard-navigation"
-import {
-  formatRole,
-  useWorkspace,
-} from "@/components/shared/workspace-provider"
+import { formatRole, useWorkspace } from "@/components/shared/workspace-context"
 import { authClient } from "@/lib/auth-client"
 
 export function DashboardSidebar() {

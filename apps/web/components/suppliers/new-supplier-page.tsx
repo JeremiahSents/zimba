@@ -30,9 +30,7 @@ export function NewSupplierPage({ source }: { source: DashboardSource }) {
   return (
     <DashboardShell
       title="New supplier"
-      subtitle=""
-      dataSource={source}
-      focusedTask
+      subtitle=""      focusedTask
     >
       <div className="grid gap-6">
         <div className="flex items-center justify-between gap-4">

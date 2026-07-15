@@ -168,9 +168,7 @@ export function ProjectExpenseCreatePage({
   return (
     <DashboardShell
       title="New expense"
-      subtitle={`Create a receipt for ${project.name}.`}
-      dataSource={source}
-      focusedTask
+      subtitle={`Create a receipt for ${project.name}.`}      focusedTask
     >
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>

@@ -215,9 +215,7 @@ export function ProjectAllocationCreatePage({
   return (
     <DashboardShell
       title="New project"
-      subtitle=""
-      dataSource={source}
-      focusedTask
+      subtitle=""      focusedTask
     >
       <div className="grid gap-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

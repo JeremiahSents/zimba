@@ -15,7 +15,6 @@ import Link from "next/link"
 import { ProjectsSection } from "@/components/dashboard/projects-section"
 import { RecentActivity } from "@/components/dashboard/recent-activity"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
-import { useWorkspace } from "@/components/shared/workspace-provider"
 import { formatCurrency } from "@/lib/format"
 import type { DashboardOverviewData } from "@/lib/types"
 
@@ -27,16 +26,13 @@ function getGreeting() {
 }
 
 export function DashboardPage({ data }: { data: DashboardOverviewData }) {
-  const user = useWorkspace()
-  const firstName = user.name.trim().split(/\s+/)[0] || "there"
   const projects = data.projects
 
   if (projects.length === 0) {
     return (
       <DashboardShell
         title="Home"
-        dataSource={data.source}
-        headerGreeting={`${getGreeting()}, ${firstName}`}
+        headerGreeting={getGreeting()}
         subtitle=""
       >
         <FirstProjectEmptyState />
@@ -67,8 +63,7 @@ export function DashboardPage({ data }: { data: DashboardOverviewData }) {
   return (
     <DashboardShell
       title="Home"
-      dataSource={data.source}
-      headerGreeting={`${getGreeting()}, ${firstName}`}
+      headerGreeting={getGreeting()}
       subtitle=""
     >
       <section className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
@@ -77,7 +72,7 @@ export function DashboardPage({ data }: { data: DashboardOverviewData }) {
         </h2>
         <div className="flex items-center gap-2">
           <Button
-            variant="outline"
+            variant="secondary"
             size="sm"
             nativeButton={false}
             render={<Link href="/admin/projects/new" />}

@@ -70,7 +70,7 @@ export function SupplierDetailPage({
     .toUpperCase()
 
   return (
-    <DashboardShell title={supplier.name} subtitle="" dataSource={source}>
+    <DashboardShell title={supplier.name} subtitle="">
       <div className="flex items-center justify-between gap-4">
         <div>
           <Breadcrumb>

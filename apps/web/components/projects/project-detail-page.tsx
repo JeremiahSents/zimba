@@ -143,9 +143,7 @@ export function ProjectDetailPage({
   return (
     <DashboardShell
       title={project.name}
-      subtitle="Project financial position and delivery tracking."
-      dataSource={source}
-      notifications={upcoming}
+      subtitle="Project financial position and delivery tracking."      notifications={upcoming}
       onAddNotification={() => setPaymentDialogOpen(true)}
     >
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">

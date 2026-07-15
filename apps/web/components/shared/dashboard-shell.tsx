@@ -35,13 +35,12 @@ import {
   formatRole,
   getInitials,
   useWorkspace,
-} from "@/components/shared/workspace-provider"
+} from "@/components/shared/workspace-context"
 import { formatCurrency, formatShortDate } from "@/lib/format"
 
 type DashboardShellProps = {
   title: string
   subtitle: string
-  dataSource?: "api" | "mock"
   headerGreeting?: string
   notifications?: NotificationItem[]
   onAddNotification?: () => void
@@ -61,7 +60,6 @@ export type NotificationItem = {
 export function DashboardShell({
   headerGreeting,
   title,
-  dataSource,
   notifications = [],
   onAddNotification,
   focusedTask = false,
@@ -70,11 +68,10 @@ export function DashboardShell({
   return (
     <div className="flex min-h-svh w-full bg-sidebar">
       <DashboardSidebar />
-      <SidebarInset className="relative z-10 flex min-w-0 flex-1 flex-col border-t border-l bg-background">
+      <SidebarInset className="relative z-10 flex min-w-0 flex-1 flex-col border-l bg-background">
         <DashboardTopbar
           title={title}
           headerGreeting={headerGreeting}
-          dataSource={dataSource}
           notifications={notifications}
           onAddNotification={onAddNotification}
         />
@@ -86,8 +83,8 @@ export function DashboardShell({
         >
           A product of Sents Holding Company
         </footer>
-        {!focusedTask ? <MobileDashboardNav /> : null}
       </SidebarInset>
+      {!focusedTask ? <MobileDashboardNav /> : null}
     </div>
   )
 }
@@ -95,13 +92,11 @@ export function DashboardShell({
 function DashboardTopbar({
   headerGreeting,
   title,
-  dataSource,
   notifications,
   onAddNotification,
 }: {
   headerGreeting?: string
   title: string
-  dataSource?: "api" | "mock"
   notifications: NotificationItem[]
   onAddNotification?: () => void
 }) {
@@ -118,7 +113,7 @@ function DashboardTopbar({
   }, [])
 
   return (
-    <header className="flex min-h-14 shrink-0 flex-wrap items-center justify-between gap-3 border-b bg-background px-4 py-2.5 sm:min-h-16 sm:px-7 sm:py-3 lg:px-10">
+    <header className="flex min-h-14 shrink-0 flex-wrap items-center justify-between gap-3 bg-background px-4 py-2.5 sm:min-h-16 sm:px-7 sm:py-3 lg:px-10">
       <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-4 gap-y-2">
         <div className="flex items-center gap-2">
           <DashboardSidebarToggle
@@ -126,20 +121,20 @@ function DashboardTopbar({
             className="-ml-1 hidden size-9 rounded-md hover:bg-muted hover:text-foreground md:inline-flex [&_svg]:size-5"
             icon="open"
           />
-          <h1 className="font-heading font-medium text-foreground text-lg leading-6 tracking-tight">
-            {headerGreeting ?? title}
-          </h1>
-          {dataSource ? (
-            <span
-              className={`rounded-full border px-2 py-1 font-semibold text-[9px] uppercase tracking-[0.08em] ${
-                dataSource === "mock"
-                  ? "border-amber-300 bg-amber-50 text-amber-800"
-                  : "border-green-300 bg-green-50 text-green-800"
-              }`}
-            >
-              {dataSource === "mock" ? "Mock data" : "Live data"}
-            </span>
-          ) : null}
+          {headerGreeting ? (
+            <div className="flex min-w-0 flex-col">
+              <span className="text-muted-foreground text-xs leading-4">
+                {headerGreeting}
+              </span>
+              <h1 className="truncate font-heading font-medium text-foreground text-lg leading-6 tracking-tight">
+                {user.name.trim().split(/\s+/)[0] || title}
+              </h1>
+            </div>
+          ) : (
+            <h1 className="font-heading font-medium text-foreground text-lg leading-6 tracking-tight">
+              {title}
+            </h1>
+          )}
         </div>
       </div>
 

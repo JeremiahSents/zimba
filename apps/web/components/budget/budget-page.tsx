@@ -56,9 +56,7 @@ export function BudgetPage({ data }: { data: DashboardOverviewData }) {
   return (
     <DashboardShell
       title="Budget"
-      subtitle="Set spending limits and keep every project financially on track."
-      dataSource={data.source}
-    >
+      subtitle="Set spending limits and keep every project financially on track."    >
       <Card className="gap-0 py-0">
         <div className="grid grid-cols-2 md:grid-cols-3 [&>*:first-child]:col-span-2 md:[&>*:first-child]:col-span-1">
           {stats.map((stat) => (

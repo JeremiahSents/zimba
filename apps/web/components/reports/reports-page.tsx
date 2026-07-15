@@ -32,9 +32,7 @@ export function ReportsPage({ data }: { data: DashboardOverviewData }) {
   return (
     <DashboardShell
       title="Reports"
-      subtitle="Summarize budget performance and export project updates."
-      dataSource={data.source}
-    >
+      subtitle="Summarize budget performance and export project updates."    >
       <Card className="gap-0 py-0">
         <div className="grid grid-cols-2 md:grid-cols-3 [&>*:first-child]:col-span-2 md:[&>*:first-child]:col-span-1">
           {stats.map(([label, value, detail]) => (
