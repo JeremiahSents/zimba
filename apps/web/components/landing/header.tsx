@@ -34,12 +34,13 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-5">
-          <Link
-            href="/login"
-            className="inline-flex font-normal text-sm text-white/75 transition hover:text-white"
+          <Button
+            size="sm"
+            nativeButton={false}
+            render={<Link href="/login" />}
           >
             Sign in
-          </Link>
+          </Button>
           <Button size="sm" className="hidden px-4 sm:inline-flex">
             Learn more
           </Button>
