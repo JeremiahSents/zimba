@@ -18,5 +18,9 @@ export default async function Page({
     (expense) => (expense.receipt_id ?? expense.id) === receiptId
   )
   if (!items.length) notFound()
-  return <ReceiptDetailPage items={items} />
+  
+  const firstItem = items[0]
+  const supplier = data.suppliers.find(s => s.name === firstItem?.supplier_name)
+
+  return <ReceiptDetailPage items={items} supplier={supplier} />
 }

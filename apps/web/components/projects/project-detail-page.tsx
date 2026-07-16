@@ -27,23 +27,18 @@ import { Label } from "@workspace/ui/components/label"
 import { Progress } from "@workspace/ui/components/progress"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useCallback, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { Cell, Pie, PieChart } from "recharts"
 import {
   createUpcomingPaymentAction,
   deleteUpcomingPaymentAction,
-  updateExpenseStatusAction,
   updateUpcomingPaymentAction,
 } from "@/app/admin/actions"
 import { ProjectExpensesTable } from "@/components/projects/project-expenses-table"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { DatePicker } from "@/components/shared/date-picker"
 import { formatCurrency, formatPercent, formatShortDate } from "@/lib/format"
-import type {
-  DashboardSource,
-  ExpenseStatus,
-  ProjectDetailResponse,
-} from "@/lib/types"
+import type { DashboardSource, ProjectDetailResponse } from "@/lib/types"
 
 const colors = ["#86efac", "#fcd34d", "#fca5a5", "#93c5fd", "#d8b4fe"]
 const taskLegendClasses = [
@@ -106,30 +101,6 @@ export function ProjectDetailPage({
     setExpenses(project.expenses)
     setUpcomingPayments(project.upcoming_payments ?? [])
   }, [project])
-
-  const updateExpenseStatus = useCallback(
-    async (expenseId: number, status: ExpenseStatus) => {
-      const previous = expenses
-      setExpenses((current) =>
-        current.map((expense) =>
-          expense.id === expenseId ? { ...expense, status } : expense
-        )
-      )
-      const result = await updateExpenseStatusAction(
-        project.id,
-        expenseId,
-        status
-      )
-      if (!result.ok) {
-        setExpenses(previous)
-        setMutationError(result.error)
-      } else {
-        setMutationError("")
-        router.refresh()
-      }
-    },
-    [expenses, project.id, router]
-  )
 
   const spent = project.spent
   const taskData = project.tasks.reduce<Array<{ name: string; value: number }>>(
@@ -339,7 +310,7 @@ export function ProjectDetailPage({
             variant="secondary"
             onClick={() => setPaymentDialogOpen(true)}
           >
-            + Add payment
+            + Schedule obligation
           </Button>
         </div>
         <div className="divide-y rounded-xl border">
@@ -428,22 +399,21 @@ export function ProjectDetailPage({
               Expenses
             </h2>
             <p className="mt-1 text-muted-foreground text-xs">
-              Every payment recorded against this project.
+              Legacy expense records. Payment status is read-only and will be
+              derived from the payment ledger after migration.
             </p>
           </div>
-          <ProjectExpensesTable
-            expenses={expenses}
-            onStatusChange={updateExpenseStatus}
-          />
+          <ProjectExpensesTable expenses={expenses} />
         </section>
       </div>
 
       <Dialog open={paymentDialogOpen} onOpenChange={setPaymentDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add upcoming payment</DialogTitle>
+            <DialogTitle>Schedule an upcoming obligation</DialogTitle>
             <DialogDescription>
-              Record a planned payment for {project.name}.
+              Add a planned obligation for {project.name}. This does not record
+              a cash payment.
             </DialogDescription>
           </DialogHeader>
           <div className="mt-5 grid gap-4">
@@ -538,7 +508,7 @@ export function ProjectDetailPage({
                 router.refresh()
               }}
             >
-              {savingPayment ? "Adding..." : "Add payment"}
+              {savingPayment ? "Adding..." : "Schedule obligation"}
             </Button>
           </DialogFooter>
         </DialogContent>

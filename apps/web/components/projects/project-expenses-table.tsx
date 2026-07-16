@@ -20,13 +20,6 @@ import {
 import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@workspace/ui/components/select"
-import {
   Table,
   TableBody,
   TableCell,
@@ -61,10 +54,8 @@ const columnWidths: Record<string, string> = {
 
 export function ProjectExpensesTable({
   expenses,
-  onStatusChange,
 }: {
   expenses: ExpenseResponse[]
-  onStatusChange: (expenseId: number, status: ExpenseStatus) => void
 }) {
   const [globalFilter, setGlobalFilter] = useState("")
   const [sorting, setSorting] = useState<SortingState>([])
@@ -113,36 +104,19 @@ export function ProjectExpensesTable({
         id: "status",
         accessorFn: (expense) => expense.status ?? "Full",
         header: "Status",
-        cell: ({ getValue, row }) => {
+        cell: ({ getValue }) => {
           const status = getValue<ExpenseStatus>()
           return (
-            <Select
-              value={status}
-              onValueChange={(value) =>
-                onStatusChange(
-                  row.original.id,
-                  (value as ExpenseStatus) ?? "Full"
-                )
-              }
+            <span
+              className={`inline-flex rounded-md border px-2 py-1 font-medium text-[10px] ${statusPillClasses[status]}`}
             >
-              <SelectTrigger
-                size="sm"
-                className={`w-full min-w-0 rounded-md px-2 font-medium text-[10px] ${statusPillClasses[status]}`}
-                aria-label={`Update payment status for ${row.original.item_description}`}
-              >
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Full">Paid in full</SelectItem>
-                <SelectItem value="Partial">Partial</SelectItem>
-                <SelectItem value="Not paid">Not paid</SelectItem>
-              </SelectContent>
-            </Select>
+              {status === "Full" ? "Paid in full" : status}
+            </span>
           )
         },
       },
     ],
-    [onStatusChange]
+    []
   )
   const table = useReactTable({
     data: expenses,
@@ -196,27 +170,11 @@ export function ProjectExpensesTable({
                     title={expense.item_description}
                     value={formatCurrency(expense.amount)}
                     status={
-                      <Select
-                        value={status}
-                        onValueChange={(value) =>
-                          onStatusChange(
-                            expense.id,
-                            (value as ExpenseStatus) ?? "Full"
-                          )
-                        }
+                      <span
+                        className={`inline-flex rounded-lg border px-3 py-2 font-medium text-xs ${statusPillClasses[status]}`}
                       >
-                        <SelectTrigger
-                          className={`w-full max-w-40 rounded-lg px-3 font-medium text-xs ${statusPillClasses[status]}`}
-                          aria-label={`Update payment status for ${expense.item_description}`}
-                        >
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Full">Paid in full</SelectItem>
-                          <SelectItem value="Partial">Partial</SelectItem>
-                          <SelectItem value="Not paid">Not paid</SelectItem>
-                        </SelectContent>
-                      </Select>
+                        {status === "Full" ? "Paid in full" : status}
+                      </span>
                     }
                   >
                     <dl className="grid grid-cols-2 gap-4">

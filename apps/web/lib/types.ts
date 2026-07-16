@@ -35,9 +35,62 @@ export type SupplierSubResponse = ApiSchemas["SupplierSubResponse"]
 export type ReceiptFileResponse = ApiSchemas["ReceiptFileSubResponse"]
 export type ApiExpenseResponse = ApiSchemas["ExpenseResponse"]
 export type ExpenseCreate = ApiSchemas["ExpenseCreate"]
-export type ExpenseReceiptItemCreate = ApiSchemas["ExpenseReceiptItemCreate"]
+export type ExpenseReceiptItemCreate =
+  ApiSchemas["ExpenseReceiptItemCreate"] & {
+    payment_status?: string
+    amount_paid?: number
+  }
 export type ExpenseReceiptCreate = ApiSchemas["ExpenseReceiptCreate"] & {
   amount_paid?: number
+}
+
+export type PayableExpenseLineCreate = {
+  allocation_id: number
+  description: string
+  quantity: number
+  unit_amount: number
+  tax_amount?: number
+}
+
+export type PayableExpenseCreate = {
+  project_id: number
+  supplier_id: number
+  currency: string
+  vendor_reference?: string
+  expense_date?: string
+  due_date?: string
+  lifecycle_status: "planned" | "incurred"
+  submit_for_approval: boolean
+  record_as_receipt?: boolean
+  receipt_file_id?: string
+  amount_paid?: number
+  payment_date?: string
+  payment_method?: string
+  payment_reference?: string
+  lines: PayableExpenseLineCreate[]
+}
+
+export type PayableExpenseResponse = {
+  id: number
+  project_id: number
+  supplier_id: number
+  currency: string
+  vendor_reference?: string | null
+  receipt_number?: string | null
+  expense_date?: string | null
+  due_date?: string | null
+  approval_status: "draft" | "submitted" | "approved" | "rejected"
+  lifecycle_status: "planned" | "incurred" | "cancelled" | "voided"
+  gross_amount: number
+  net_amount: number
+  paid_amount: number
+  outstanding_amount: number
+  settlement_status:
+    | "unpaid"
+    | "partially_paid"
+    | "paid"
+    | "overpaid"
+    | "refunded"
 }
 export type ExpenseUpdate = ApiSchemas["ExpenseUpdate"]
 export type SupplierBreakdown = ApiSchemas["SupplierBreakdown"]

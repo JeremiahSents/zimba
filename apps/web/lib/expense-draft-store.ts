@@ -7,6 +7,8 @@ export type ExpenseDraftItem = {
   supplierName: string
   quantity: string
   rate: string
+  paymentStatus?: "Partial" | "Full" | "Not paid"
+  amountPaid?: string
 }
 
 export type ExpenseDraft = {

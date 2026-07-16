@@ -7,6 +7,8 @@ import type {
   ApiSupplierResponse,
   DashboardOverviewResponse,
   ExpenseCreate,
+  PayableExpenseCreate,
+  PayableExpenseResponse,
   ExpenseReceiptCreate,
   ExpenseUpdate,
   FileCompleteResponse,
@@ -209,6 +211,16 @@ export function listExpenses(
 
 export function logExpense(session: ZimbaApiSession, expense: ExpenseCreate) {
   return zimbaFetch<ApiExpenseResponse>("/api/v1/expenses", session, {
+    body: expense,
+    method: "POST",
+  })
+}
+
+export function createPayableExpense(
+  session: ZimbaApiSession,
+  expense: PayableExpenseCreate
+) {
+  return zimbaFetch<PayableExpenseResponse>("/api/v2/expenses", session, {
     body: expense,
     method: "POST",
   })

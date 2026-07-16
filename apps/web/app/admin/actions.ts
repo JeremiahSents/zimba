@@ -6,6 +6,7 @@ import { requireZimbaApiSession } from "@/lib/api/auth"
 import {
   completeFileUpload,
   createExpenseReceipt,
+  createPayableExpense,
   createProject,
   createSupplier,
   createUpcomingPayment,
@@ -37,6 +38,8 @@ import { toApiExpenseStatus } from "@/lib/api/normalizers"
 import type {
   AllocationUpdate,
   ExpenseReceiptCreate,
+  PayableExpenseCreate,
+  PayableExpenseResponse,
   ExpenseStatus,
   FileUploadRequest,
   FileUploadResponse,
@@ -50,6 +53,41 @@ import type {
 type ActionResult<T = undefined> =
   | { ok: true; data: T }
   | { ok: false; error: string }
+
+export async function createPayableExpenseAction(
+  expense: PayableExpenseCreate
+): Promise<ActionResult<PayableExpenseResponse>> {
+  if (
+    !expense.project_id ||
+    !expense.supplier_id ||
+    expense.lines.length === 0 ||
+    expense.lines.some(
+      (line) =>
+        !line.allocation_id ||
+        !line.description.trim() ||
+        line.quantity <= 0 ||
+        line.unit_amount < 0
+    )
+  ) {
+    return { ok: false, error: "Complete the supplier and every expense line." }
+  }
+
+  if (isMockDataMode()) {
+    return {
+      ok: false,
+      error: "The new payable workflow requires API data mode.",
+    }
+  }
+
+  try {
+    const session = await requireZimbaApiSession()
+    const created = await createPayableExpense(session, expense)
+    revalidateConnectedRoutes()
+    return { ok: true, data: created }
+  } catch (error) {
+    return actionError(error)
+  }
+}
 
 export async function createProjectAction(
   project: ProjectCreate

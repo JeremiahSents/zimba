@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { ProjectExpenseCreatePage } from "@/components/projects/project-expense-create-page"
 import { getDataMode } from "@/lib/api/data-mode"
+import { getDashboardOverviewData } from "@/lib/api/dashboard"
 import { getProjectDetail } from "@/lib/api/projects"
 
 export const dynamic = "force-dynamic"
@@ -13,13 +14,17 @@ export default async function Page({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const project = await getProjectDetail(Number(id))
+  const [project, dashboard] = await Promise.all([
+    getProjectDetail(Number(id)),
+    getDashboardOverviewData(),
+  ])
 
   if (!project) notFound()
 
   return (
     <ProjectExpenseCreatePage
       project={project}
+      vendors={dashboard.suppliers}
       source={getDataMode() === "mock" ? "mock" : "api"}
     />
   )
