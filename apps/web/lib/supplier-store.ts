@@ -46,3 +46,14 @@ export function storeSupplier(values: NewSupplierValues) {
   window.dispatchEvent(new Event("zimba-suppliers-updated"))
   return supplier
 }
+
+export function updateStoredSupplier(
+  supplierId: number,
+  values: NewSupplierValues
+) {
+  const suppliers = readStore().map((supplier) =>
+    supplier.id === supplierId ? { ...supplier, ...values } : supplier
+  )
+  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(suppliers))
+  window.dispatchEvent(new Event("zimba-suppliers-updated"))
+}

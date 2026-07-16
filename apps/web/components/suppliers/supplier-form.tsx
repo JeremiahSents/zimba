@@ -42,13 +42,7 @@ export function SupplierForm({
       className="grid gap-4"
       onSubmit={(event) => {
         event.preventDefault()
-        if (
-          !values.name.trim() ||
-          !values.contactName.trim() ||
-          !values.phone.trim() ||
-          !values.email.trim()
-        )
-          return
+        if (!values.name.trim()) return
         void onSubmit({
           ...values,
           name: values.name.trim(),
@@ -62,7 +56,6 @@ export function SupplierForm({
         <label className="grid gap-2 sm:col-span-2">
           <Label>Company name</Label>
           <Input
-            required
             value={values.name}
             onChange={(event) => update("name", event.target.value)}
             placeholder="e.g. Prime Cement"
@@ -88,7 +81,6 @@ export function SupplierForm({
         <label className="grid gap-2">
           <Label>Company contact</Label>
           <Input
-            required
             value={values.companyContact}
             onChange={(event) => update("companyContact", event.target.value)}
             placeholder="Company phone or office"
@@ -97,7 +89,6 @@ export function SupplierForm({
         <label className="grid gap-2">
           <Label>Person of contact</Label>
           <Input
-            required
             value={values.contactName}
             onChange={(event) => update("contactName", event.target.value)}
             placeholder="Full name"
@@ -106,7 +97,6 @@ export function SupplierForm({
         <label className="grid gap-2">
           <Label>Phone</Label>
           <Input
-            required
             type="tel"
             inputMode="tel"
             maxLength={16}
@@ -123,7 +113,6 @@ export function SupplierForm({
         <label className="grid gap-2">
           <Label>Email</Label>
           <Input
-            required
             type="email"
             value={values.email}
             onChange={(event) => update("email", event.target.value)}

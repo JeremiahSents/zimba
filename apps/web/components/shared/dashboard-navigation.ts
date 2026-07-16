@@ -22,7 +22,6 @@ export const mobilePrimaryNavigation = dashboardNavigation.slice(0, 4)
 export const mobileMoreNavigation = [
   dashboardNavigation[4],
   dashboardNavigation[5],
-  { title: "Expenses", href: "/admin/expenses", icon: MoneyBag02Icon },
   { title: "Budget", href: "/admin/budget", icon: Wallet02Icon },
   { title: "Settings", href: "/admin/settings", icon: Settings02Icon },
 ] as const

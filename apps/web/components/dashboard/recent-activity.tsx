@@ -34,7 +34,7 @@ export function RecentActivity({
           Recent expenses
         </h2>
         <Link
-          href="/admin/expenses"
+          href="/admin/projects"
           className="font-semibold text-primary text-xs transition-colors hover:text-primary/75"
         >
           View expenses
@@ -143,7 +143,7 @@ export function RecentActivity({
       )}
       <div className="mt-4 flex justify-center">
         <Link
-          href="/admin/expenses"
+          href="/admin/projects"
           className="inline-flex min-h-11 items-center rounded-md border border-border px-4 font-semibold text-foreground text-xs transition-colors hover:bg-muted md:min-h-0 md:py-1.5"
         >
           View more

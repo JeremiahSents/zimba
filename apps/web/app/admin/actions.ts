@@ -448,7 +448,6 @@ function actionError(error: unknown): { ok: false; error: string } {
 function revalidateConnectedRoutes(projectId?: number) {
   revalidatePath("/admin/home")
   revalidatePath("/admin/projects")
-  revalidatePath("/admin/expenses")
   revalidatePath("/admin/suppliers")
   revalidatePath("/admin/analytics")
   revalidatePath("/admin/budget")

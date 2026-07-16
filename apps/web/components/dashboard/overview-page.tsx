@@ -74,7 +74,7 @@ export function DashboardPage({ data }: { data: DashboardOverviewData }) {
           {/* <Button
             size="sm"
             nativeButton={false}
-            render={<Link href="/admin/expenses" />}
+            render={<Link href="/admin/projects" />}
           >
             <HugeiconsIcon icon={PlusSignIcon} strokeWidth={2} />
             Add expense

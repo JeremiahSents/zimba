@@ -61,10 +61,10 @@ export function ReceiptDetailPage({
     >
       <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <Link
-          href="/admin/expenses"
+          href="/admin/projects"
           className="inline-flex items-center gap-2 font-semibold text-primary text-sm transition-colors hover:underline"
         >
-          <HugeiconsIcon icon={ArrowLeft01Icon} size={16} /> Back to expenses
+          <HugeiconsIcon icon={ArrowLeft01Icon} size={16} /> Back to projects
         </Link>
         <div className="flex flex-wrap items-center gap-3">
           {payable && outstanding > 0 && (
