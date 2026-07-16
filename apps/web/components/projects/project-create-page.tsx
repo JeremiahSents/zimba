@@ -100,10 +100,7 @@ export function ProjectCreatePage({ source }: { source: DashboardSource }) {
   }
 
   return (
-    <DashboardShell
-      title="New project"
-      subtitle=""      focusedTask
-    >
+    <DashboardShell title="New project" subtitle="" focusedTask>
       <form onSubmit={goToAllocation} className="grid gap-6">
         <PageHeader
           pending={uploading}

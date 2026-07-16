@@ -12,6 +12,7 @@ export type ExpenseDraftItem = {
 export type ExpenseDraft = {
   date: string
   status: "Partial" | "Full" | "Not paid"
+  amountPaid?: string
   items: ExpenseDraftItem[]
 }
 
@@ -34,5 +35,6 @@ export function storeExpenseDraft(projectId: number, draft: ExpenseDraft) {
 }
 
 export function clearExpenseDraft(projectId: number) {
-  if (typeof window !== "undefined") window.sessionStorage.removeItem(key(projectId))
+  if (typeof window !== "undefined")
+    window.sessionStorage.removeItem(key(projectId))
 }

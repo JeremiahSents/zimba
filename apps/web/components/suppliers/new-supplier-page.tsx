@@ -26,10 +26,7 @@ export function NewSupplierPage({ returnTo }: { returnTo?: string }) {
   const [error, setError] = useState("")
   const [submitting, setSubmitting] = useState(false)
   return (
-    <DashboardShell
-      title="New supplier"
-      subtitle=""      focusedTask
-    >
+    <DashboardShell title="New supplier" subtitle="" focusedTask>
       <div className="grid gap-6">
         <div className="flex items-center justify-between gap-4">
           <div>

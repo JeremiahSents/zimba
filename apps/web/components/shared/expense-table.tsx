@@ -27,8 +27,8 @@ import {
   TableHeader,
   TableRow,
 } from "@workspace/ui/components/table"
+import Link from "next/link"
 import { useMemo, useState } from "react"
-
 import {
   MobileDataCard,
   MobileDataMeta,
@@ -36,7 +36,6 @@ import {
 import { ResponsiveDataView } from "@/components/shared/responsive-data-view"
 import { formatCurrency, formatShortDate } from "@/lib/format"
 import type { ExpenseTableRow } from "@/lib/types"
-import Link from "next/link"
 
 export function ExpenseTable({ expenses }: { expenses: ExpenseTableRow[] }) {
   const receiptRows = groupExpensesByReceipt(expenses)

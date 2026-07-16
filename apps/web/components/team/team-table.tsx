@@ -79,65 +79,73 @@ export function TeamTable({ members }: { members: TeamMember[] }) {
       </div>
       <ResponsiveDataView
         mobile={
-          table.getRowModel().rows.length ? <div className="space-y-3">
-            {table.getRowModel().rows.map((row) => {
-              const member = row.original
-              return (
-                <MobileDataCard
-                  key={row.id}
-                  eyebrow={member.role}
-                  title={member.name}
-                  status={<Badge variant="success">Active</Badge>}
-                >
-                  <dl>
-                    <MobileDataMeta label="Responsibility">
-                      {member.responsibility}
-                    </MobileDataMeta>
-                  </dl>
-                </MobileDataCard>
-              )
-            })}
-          </div> : <EmptyTeamState />
+          table.getRowModel().rows.length ? (
+            <div className="space-y-3">
+              {table.getRowModel().rows.map((row) => {
+                const member = row.original
+                return (
+                  <MobileDataCard
+                    key={row.id}
+                    eyebrow={member.role}
+                    title={member.name}
+                    status={<Badge variant="success">Active</Badge>}
+                  >
+                    <dl>
+                      <MobileDataMeta label="Responsibility">
+                        {member.responsibility}
+                      </MobileDataMeta>
+                    </dl>
+                  </MobileDataCard>
+                )
+              })}
+            </div>
+          ) : (
+            <EmptyTeamState />
+          )
         }
         desktop={
-          table.getRowModel().rows.length ? <Table>
-            <TableHeader>
-              {table.getHeaderGroups().map((group) => (
-                <TableRow key={group.id}>
-                  {group.headers.map((header) => (
-                    <TableHead key={header.id}>
-                      <Button
-                        variant="ghost"
-                        size="xs"
-                        className="px-0 text-inherit"
-                        onClick={header.column.getToggleSortingHandler()}
-                        disabled={!header.column.getCanSort()}
-                      >
+          table.getRowModel().rows.length ? (
+            <Table>
+              <TableHeader>
+                {table.getHeaderGroups().map((group) => (
+                  <TableRow key={group.id}>
+                    {group.headers.map((header) => (
+                      <TableHead key={header.id}>
+                        <Button
+                          variant="ghost"
+                          size="xs"
+                          className="px-0 text-inherit"
+                          onClick={header.column.getToggleSortingHandler()}
+                          disabled={!header.column.getCanSort()}
+                        >
+                          {flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                        </Button>
+                      </TableHead>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableHeader>
+              <TableBody>
+                {table.getRowModel().rows.map((row) => (
+                  <TableRow key={row.id}>
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
                         {flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
+                          cell.column.columnDef.cell,
+                          cell.getContext()
                         )}
-                      </Button>
-                    </TableHead>
-                  ))}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id}>
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table> : <EmptyTeamState />
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : (
+            <EmptyTeamState />
+          )
         }
       />
       <div className="grid grid-cols-2 gap-2 border-t pt-3 sm:flex sm:justify-end">

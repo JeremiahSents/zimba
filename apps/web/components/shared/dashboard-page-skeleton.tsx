@@ -19,10 +19,7 @@ export function DashboardPageSkeleton() {
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:gap-4">
         {metricSlots.map((slot) => (
-          <div
-            key={slot}
-            className="rounded-xl border bg-card p-5 shadow-sm"
-          >
+          <div key={slot} className="rounded-xl border bg-card p-5 shadow-sm">
             <div className="flex items-center justify-between">
               <Skeleton className="h-3 w-24" />
               <Skeleton className="size-4 rounded-md" />

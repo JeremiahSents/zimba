@@ -213,10 +213,7 @@ export function ProjectAllocationCreatePage({
   if (!ready) return null
 
   return (
-    <DashboardShell
-      title="New project"
-      subtitle=""      focusedTask
-    >
+    <DashboardShell title="New project" subtitle="" focusedTask>
       <div className="grid gap-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -277,7 +274,12 @@ export function ProjectAllocationCreatePage({
                 Set the opening amount for each budget item.
               </p>
             </div>
-            <Button type="button" variant="secondary" size="sm" onClick={addRow}>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={addRow}
+            >
               <HugeiconsIcon icon={PlusSignIcon} strokeWidth={2} />
               Add item
             </Button>

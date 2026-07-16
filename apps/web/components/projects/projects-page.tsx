@@ -70,7 +70,8 @@ export function ProjectsPage({ data }: { data: DashboardOverviewData }) {
   return (
     <DashboardShell
       title="Projects"
-      subtitle="See every project, its financial position, and delivery status."    >
+      subtitle="See every project, its financial position, and delivery status."
+    >
       <section className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
         <h2 className="font-heading font-semibold text-base text-foreground tracking-tight">
           Overview

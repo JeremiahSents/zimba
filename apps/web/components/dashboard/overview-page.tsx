@@ -30,11 +30,7 @@ export function DashboardPage({ data }: { data: DashboardOverviewData }) {
 
   if (projects.length === 0) {
     return (
-      <DashboardShell
-        title="Home"
-        headerGreeting={getGreeting()}
-        subtitle=""
-      >
+      <DashboardShell title="Home" headerGreeting={getGreeting()} subtitle="">
         <FirstProjectEmptyState />
       </DashboardShell>
     )
@@ -61,11 +57,7 @@ export function DashboardPage({ data }: { data: DashboardOverviewData }) {
   ]
 
   return (
-    <DashboardShell
-      title="Home"
-      headerGreeting={getGreeting()}
-      subtitle=""
-    >
+    <DashboardShell title="Home" headerGreeting={getGreeting()} subtitle="">
       <section className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
         <h2 className="font-heading font-semibold text-base text-foreground tracking-tight">
           Overview

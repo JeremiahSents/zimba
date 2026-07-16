@@ -78,7 +78,7 @@ export function ReceiptDetailPage({ items }: { items: ExpenseTableRow[] }) {
               href={first.receipt_url}
               target="_blank"
               rel="noreferrer"
-              className="mt-2 inline-flex text-primary text-xs font-medium hover:underline"
+              className="mt-2 inline-flex font-medium text-primary text-xs hover:underline"
             >
               View uploaded receipt
             </a>

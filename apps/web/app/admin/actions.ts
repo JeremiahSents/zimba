@@ -104,13 +104,18 @@ export async function createProjectTaskAction(
   projectId: number,
   input: { budget: number; name: string }
 ): Promise<ActionResult> {
-  if (!input.name.trim() || !Number.isFinite(input.budget) || input.budget <= 0) {
+  if (
+    !input.name.trim() ||
+    !Number.isFinite(input.budget) ||
+    input.budget <= 0
+  ) {
     return { ok: false, error: "Add a task name and an initial budget." }
   }
   if (!isMockDataMode()) {
     return {
       ok: false,
-      error: "Creating project tasks is not yet supported by the connected API.",
+      error:
+        "Creating project tasks is not yet supported by the connected API.",
     }
   }
   try {

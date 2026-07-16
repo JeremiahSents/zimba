@@ -108,8 +108,15 @@ export function SupplierForm({
           <Input
             required
             type="tel"
+            inputMode="tel"
+            maxLength={16}
             value={values.phone}
-            onChange={(event) => update("phone", event.target.value)}
+            onChange={(event) =>
+              update(
+                "phone",
+                event.target.value.replace(/[^0-9+ ]/g, "").slice(0, 16)
+              )
+            }
             placeholder="+256 ..."
           />
         </label>

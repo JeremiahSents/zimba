@@ -10,6 +10,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components/card"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@workspace/ui/components/dialog"
 import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
 import {
@@ -20,21 +28,25 @@ import {
   SelectValue,
 } from "@workspace/ui/components/select"
 import Link from "next/link"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useMemo, useState } from "react"
-import { createExpenseReceiptAction } from "@/app/admin/actions"
+import {
+  createExpenseReceiptAction,
+  createSupplierAction,
+} from "@/app/admin/actions"
 import { UploadZone } from "@/components/projects/upload-zone"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { DatePicker } from "@/components/shared/date-picker"
 import { toApiExpenseStatus } from "@/lib/api/normalizers"
-import {
-  readExpenseDraft,
-  storeExpenseDraft,
-} from "@/lib/expense-draft-store"
+import { readExpenseDraft, storeExpenseDraft } from "@/lib/expense-draft-store"
 import { formatCurrency } from "@/lib/format"
-import { readStoredSuppliers } from "@/lib/supplier-store"
+import {
+  type NewSupplierValues,
+  readStoredSuppliers,
+  storeSupplier,
+} from "@/lib/supplier-store"
 import type { DashboardSource, ProjectDetailResponse } from "@/lib/types"
 import { uploadZimbaFile } from "@/lib/upload-file"
-import { useRouter, useSearchParams } from "next/navigation"
 
 function formatNumberInput(value: string) {
   if (!value) return ""
@@ -71,7 +83,20 @@ export function ProjectExpenseCreatePage({
   const [status, setStatus] = useState<"Partial" | "Full" | "Not paid">(
     () => draft?.status ?? "Full"
   )
+  const [amountPaid, setAmountPaid] = useState(() => draft?.amountPaid ?? "")
   const [files, setFiles] = useState<File[]>([])
+  const [supplierDialogOpen, setSupplierDialogOpen] = useState(false)
+  const [supplierItemId, setSupplierItemId] = useState<number | null>(null)
+  const [supplierValues, setSupplierValues] = useState<NewSupplierValues>({
+    name: "",
+    category: "materials",
+    companyContact: "",
+    contactName: "",
+    phone: "",
+    email: "",
+    notes: "",
+  })
+  const [supplierSaving, setSupplierSaving] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState("")
   const supplierOptions = useMemo(
@@ -112,8 +137,8 @@ export function ProjectExpenseCreatePage({
   const expenseHref = `${projectHref}/expenses/new`
 
   useEffect(() => {
-    storeExpenseDraft(project.id, { date, items, status })
-  }, [date, items, project.id, status])
+    storeExpenseDraft(project.id, { date, items, status, amountPaid })
+  }, [amountPaid, date, items, project.id, status])
 
   useEffect(() => {
     const itemId = Number(searchParams.get("item"))
@@ -134,6 +159,11 @@ export function ProjectExpenseCreatePage({
   }, [searchParams])
 
   function beginCreate(kind: "supplier" | "task", itemId: number) {
+    if (kind === "supplier") {
+      setSupplierItemId(itemId)
+      setSupplierDialogOpen(true)
+      return
+    }
     const returnTo = `${expenseHref}?item=${itemId}`
     const destination =
       kind === "supplier"
@@ -187,6 +217,15 @@ export function ProjectExpenseCreatePage({
       setError("Complete every required receipt field.")
       return
     }
+    if (
+      status === "Partial" &&
+      (Number(amountPaid) <= 0 || Number(amountPaid) > total)
+    ) {
+      setError(
+        "Enter an amount paid greater than zero and no more than the receipt total."
+      )
+      return
+    }
 
     setSubmitting(true)
     setError("")
@@ -216,6 +255,12 @@ export function ProjectExpenseCreatePage({
         unit_rate: Number(item.rate),
       })),
       payment_status: toApiExpenseStatus(status),
+      amount_paid:
+        status === "Partial"
+          ? Number(amountPaid)
+          : status === "Full"
+            ? total
+            : 0,
       receipt_file_id: receiptFileId,
     })
     if (!result.ok) {
@@ -227,7 +272,8 @@ export function ProjectExpenseCreatePage({
   return (
     <DashboardShell
       title="New expense"
-      subtitle={`Create a receipt for ${project.name}.`}      focusedTask
+      subtitle={`Create a receipt for ${project.name}.`}
+      focusedTask
     >
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
@@ -318,8 +364,12 @@ export function ProjectExpenseCreatePage({
           <CardContent>
             <UploadZone
               files={files}
-              onFiles={(incoming) => setFiles(incoming.slice(0, 1))}
-              onRemove={() => setFiles([])}
+              onFiles={(incoming) =>
+                setFiles((current) => [...current, ...incoming].slice(0, 8))
+              }
+              onRemove={(index) =>
+                setFiles((current) => current.filter((_, i) => i !== index))
+              }
             />
           </CardContent>
         </Card>
@@ -494,7 +544,9 @@ export function ProjectExpenseCreatePage({
                           type="button"
                           className="w-full"
                           onClick={(e) => {
-                            const details = (e.target as HTMLElement).closest("details")
+                            const details = (e.target as HTMLElement).closest(
+                              "details"
+                            )
                             if (details) details.removeAttribute("open")
                           }}
                         >
@@ -660,6 +712,41 @@ export function ProjectExpenseCreatePage({
           </CardFooter>
         </Card>
 
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-semibold text-base">
+              Payment summary
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-3 sm:grid-cols-3">
+            <div>
+              <p className="text-muted-foreground text-xs">Receipt total</p>
+              <p className="font-semibold">{formatCurrency(total)}</p>
+            </div>
+            {status === "Partial" && (
+              <label className="grid gap-2">
+                <Label>Amount paid</Label>
+                <Input
+                  inputMode="decimal"
+                  value={amountPaid}
+                  onChange={(e) =>
+                    setAmountPaid(e.target.value.replace(/[^0-9.]/g, ""))
+                  }
+                  placeholder="0"
+                />
+              </label>
+            )}
+            <div>
+              <p className="text-muted-foreground text-xs">Payment status</p>
+              <p className="font-semibold">
+                {status === "Partial"
+                  ? `Partial · ${formatCurrency(Math.max(total - Number(amountPaid || 0), 0))} remaining`
+                  : status}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
         <div className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-2 gap-2 border-t bg-background/96 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-18px_45px_-28px_rgba(15,23,42,0.45)] backdrop-blur-xl sm:static sm:flex sm:flex-row sm:justify-end sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none sm:backdrop-blur-none">
           <Button
             type="button"
@@ -674,6 +761,99 @@ export function ProjectExpenseCreatePage({
           </Button>
         </div>
       </form>
+      <Dialog open={supplierDialogOpen} onOpenChange={setSupplierDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create supplier</DialogTitle>
+            <DialogDescription>
+              Add a supplier without leaving this receipt.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-3">
+            <Input
+              placeholder="Company name"
+              value={supplierValues.name}
+              onChange={(e) =>
+                setSupplierValues((v) => ({ ...v, name: e.target.value }))
+              }
+            />
+            <Input
+              placeholder="Phone (+256...)"
+              inputMode="tel"
+              maxLength={16}
+              value={supplierValues.phone}
+              onChange={(e) =>
+                setSupplierValues((v) => ({
+                  ...v,
+                  phone: e.target.value.replace(/[^0-9+ ]/g, "").slice(0, 16),
+                }))
+              }
+            />
+            <Select
+              value={supplierValues.category}
+              onValueChange={(value) =>
+                setSupplierValues((v) => ({
+                  ...v,
+                  category: (value ??
+                    "materials") as NewSupplierValues["category"],
+                }))
+              }
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {["materials", "labour", "equipment", "services", "other"].map(
+                  (value) => (
+                    <SelectItem key={value} value={value}>
+                      {value[0].toUpperCase() + value.slice(1)}
+                    </SelectItem>
+                  )
+                )}
+              </SelectContent>
+            </Select>
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setSupplierDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              disabled={supplierSaving || !supplierValues.name.trim()}
+              onClick={async () => {
+                setSupplierSaving(true)
+                const result = await createSupplierAction(supplierValues)
+                if (result.ok) {
+                  storeSupplier(supplierValues)
+                  if (supplierItemId !== null)
+                    updateItem(
+                      supplierItemId,
+                      "supplierName",
+                      supplierValues.name.trim()
+                    )
+                  setSupplierDialogOpen(false)
+                  setSupplierValues({
+                    name: "",
+                    category: "materials",
+                    companyContact: "",
+                    contactName: "",
+                    phone: "",
+                    email: "",
+                    notes: "",
+                  })
+                } else setError(result.error)
+                setSupplierSaving(false)
+              }}
+            >
+              {supplierSaving ? "Saving…" : "Create supplier"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardShell>
   )
 }

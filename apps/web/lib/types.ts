@@ -23,7 +23,9 @@ export type BuildingType =
 // API contract types are generated from the backend OpenAPI document.
 export type ProjectAllocationCreate = ApiSchemas["ProjectAllocationCreate"]
 export type ProjectCreate = ApiSchemas["ProjectCreate"]
-export type ProjectUpdate = ApiSchemas["ProjectUpdate"]
+export type ProjectUpdate = ApiSchemas["ProjectUpdate"] & {
+  attachment_ids?: string[]
+}
 export type AllocationUpdate = ApiSchemas["AllocationUpdate"]
 export type SupplierCreate = ApiSchemas["SupplierCreate"]
 export type ProjectSummaryResponse = ApiSchemas["ProjectSummaryResponse"]
@@ -34,7 +36,9 @@ export type ReceiptFileResponse = ApiSchemas["ReceiptFileSubResponse"]
 export type ApiExpenseResponse = ApiSchemas["ExpenseResponse"]
 export type ExpenseCreate = ApiSchemas["ExpenseCreate"]
 export type ExpenseReceiptItemCreate = ApiSchemas["ExpenseReceiptItemCreate"]
-export type ExpenseReceiptCreate = ApiSchemas["ExpenseReceiptCreate"]
+export type ExpenseReceiptCreate = ApiSchemas["ExpenseReceiptCreate"] & {
+  amount_paid?: number
+}
 export type ExpenseUpdate = ApiSchemas["ExpenseUpdate"]
 export type SupplierBreakdown = ApiSchemas["SupplierBreakdown"]
 export type ApiSupplierResponse = ApiSchemas["SupplierResponse"]

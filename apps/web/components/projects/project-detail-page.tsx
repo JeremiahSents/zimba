@@ -361,7 +361,7 @@ export function ProjectDetailPage({
                   <p className="font-heading font-semibold text-sm tabular-nums">
                     {formatCurrency(payment.amount)}
                   </p>
-                  <span className="inline-flex shrink-0 items-center rounded-full bg-muted px-2 py-0.5 font-medium text-[10px] capitalize text-muted-foreground">
+                  <span className="inline-flex shrink-0 items-center rounded-full bg-muted px-2 py-0.5 font-medium text-[10px] text-muted-foreground capitalize">
                     {payment.status.replaceAll("_", " ")}
                   </span>
                 </div>
@@ -579,7 +579,7 @@ function Metric({
           </p>
         )}
       </div>
-      <p className="mt-1 font-heading font-semibold text-lg tracking-tight tabular-nums sm:text-xl">
+      <p className="mt-1 font-heading font-semibold text-lg tabular-nums tracking-tight sm:text-xl">
         {value}
       </p>
     </Card>

@@ -27,7 +27,8 @@ export function SuppliersPage({ data }: { data: DashboardOverviewData }) {
   >("all")
   const [storedSuppliers, setStoredSuppliers] = useState<SupplierResponse[]>([])
   useEffect(() => {
-    const updateStoredSuppliers = () => setStoredSuppliers(readStoredSuppliers())
+    const updateStoredSuppliers = () =>
+      setStoredSuppliers(readStoredSuppliers())
     updateStoredSuppliers()
     window.addEventListener("zimba-suppliers-updated", updateStoredSuppliers)
     return () =>
@@ -107,7 +108,8 @@ export function SuppliersPage({ data }: { data: DashboardOverviewData }) {
   return (
     <DashboardShell
       title="Suppliers"
-      subtitle="Track receipts, payments, and the balance owed to every supplier."    >
+      subtitle="Track receipts, payments, and the balance owed to every supplier."
+    >
       <Card className="gap-0 overflow-hidden py-0">
         <div className="grid grid-cols-2 md:grid-cols-4">
           {stats.map((stat) => (

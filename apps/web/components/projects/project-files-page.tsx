@@ -1,18 +1,27 @@
+"use client"
+
 import {
   ArrowLeft01Icon,
   File02Icon,
   Image02Icon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
+import { Button } from "@workspace/ui/components/button"
 import Link from "next/link"
+import { useRef, useState } from "react"
+import { updateProjectAction } from "@/app/admin/actions"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import type { ProjectAttachment, ProjectDetailResponse } from "@/lib/types"
+import { uploadZimbaFile } from "@/lib/upload-file"
 
 export function ProjectFilesPage({
   project,
 }: {
   project: ProjectDetailResponse
 }) {
+  const inputRef = useRef<HTMLInputElement>(null)
+  const [uploading, setUploading] = useState(false)
+  const [error, setError] = useState("")
   const files = project.attachments ?? []
   const images = files.filter((file) => file.content_type.startsWith("image/"))
   const documents = files.filter(
@@ -26,7 +35,7 @@ export function ProjectFilesPage({
       <div className="mb-6 grid gap-3">
         <Link
           href={`/admin/projects/${project.id}`}
-          className="inline-flex items-center gap-2 text-primary text-xs font-semibold hover:underline"
+          className="inline-flex items-center gap-2 font-semibold text-primary text-xs hover:underline"
         >
           <HugeiconsIcon icon={ArrowLeft01Icon} size={15} /> Back to project
         </Link>
@@ -38,7 +47,54 @@ export function ProjectFilesPage({
             {project.location}
           </p>
         </div>
+        <div className="flex justify-end">
+          <input
+            ref={inputRef}
+            hidden
+            type="file"
+            multiple
+            accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"
+            onChange={async (event) => {
+              const selected = Array.from(event.target.files ?? [])
+              if (!selected.length) return
+              setUploading(true)
+              setError("")
+              try {
+                const ids = await Promise.all(
+                  selected.map((file) =>
+                    uploadZimbaFile(file, "project_attachment")
+                  )
+                )
+                const result = await updateProjectAction(project.id, {
+                  attachment_ids: ids,
+                })
+                if (!result.ok) setError(result.error)
+                else window.location.reload()
+              } catch (uploadError) {
+                setError(
+                  uploadError instanceof Error
+                    ? uploadError.message
+                    : "The files could not be uploaded."
+                )
+              }
+              setUploading(false)
+              event.target.value = ""
+            }}
+          />
+          <Button
+            type="button"
+            disabled={uploading}
+            onClick={() => inputRef.current?.click()}
+          >
+            {uploading ? "Uploading…" : "Upload files"}
+          </Button>
+        </div>
       </div>
+      {error && (
+        <p className="mb-4 text-destructive text-xs" role="alert">
+          {error}
+        </p>
+      )}
       {files.length === 0 ? (
         <div className="rounded-xl border border-dashed p-10 text-center">
           <HugeiconsIcon
@@ -69,7 +125,7 @@ function FileImageGrid({ files }: { files: ProjectAttachment[] }) {
     <section>
       <Heading icon={Image02Icon} title="Images" count={files.length} />
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-        {files.map((file) => (
+        {files.map((file, index) => (
           <a
             key={file.id}
             href={file.url}
@@ -84,8 +140,8 @@ function FileImageGrid({ files }: { files: ProjectAttachment[] }) {
                 className="size-full object-cover transition-transform group-hover:scale-[1.03]"
               />
             </div>
-            <p className="truncate px-3 py-2 text-xs font-medium">
-              {file.filename}
+            <p className="truncate px-3 py-2 font-medium text-xs">
+              File {index + 1} · {file.filename}
             </p>
           </a>
         ))}
@@ -98,7 +154,7 @@ function DocumentList({ files }: { files: ProjectAttachment[] }) {
     <section>
       <Heading icon={File02Icon} title="Documents" count={files.length} />
       <div className="divide-y rounded-xl border">
-        {files.map((file) => (
+        {files.map((file, index) => (
           <a
             key={file.id}
             href={file.url}
@@ -111,8 +167,8 @@ function DocumentList({ files }: { files: ProjectAttachment[] }) {
               size={20}
               className="shrink-0 text-muted-foreground"
             />
-            <span className="min-w-0 flex-1 truncate text-sm font-medium">
-              {file.filename}
+            <span className="min-w-0 flex-1 truncate font-medium text-sm">
+              File {index + 1} · {file.filename}
             </span>
             <span className="shrink-0 text-muted-foreground text-xs">
               {formatBytes(file.size_bytes)}
