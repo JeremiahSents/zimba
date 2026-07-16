@@ -1,6 +1,5 @@
 import {
   Call02Icon,
-  File02Icon,
   Mail01Icon,
   MapsLocation01Icon,
 } from "@hugeicons/core-free-icons"
@@ -156,7 +155,7 @@ export function SupplierDetailPage({
           </div>
         ))}
       </section>
-      <section className="grid gap-5 lg:grid-cols-2">
+      <section>
         <Card>
           <CardHeader>
             <CardTitle>Payment breakdown</CardTitle>
@@ -219,43 +218,6 @@ export function SupplierDetailPage({
                     % of value
                   </p>
                 </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Uploaded media</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {[
-              ["Invoice scan", "PDF"],
-              ["Delivery note", "PDF"],
-              ["Receipt photo", "JPG"],
-              ["Payment proof", "PNG"],
-            ].map(([label, type], index) => (
-              <div
-                key={label}
-                className="group flex items-center gap-3 rounded-lg border p-2.5 transition-colors hover:bg-muted/40"
-              >
-                <div
-                  className={`flex size-10 shrink-0 items-center justify-center rounded-lg ${index % 2 === 0 ? "bg-primary/10" : "bg-amber-100/60"}`}
-                >
-                  <HugeiconsIcon
-                    icon={File02Icon}
-                    strokeWidth={1.5}
-                    className="size-5 text-primary/70"
-                  />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate font-medium text-xs">{label}</p>
-                  <p className="mt-0.5 text-[10px] text-muted-foreground">
-                    Jun {18 - index}, 2026
-                  </p>
-                </div>
-                <span className="rounded-full bg-muted px-2 py-0.5 font-medium text-[10px] text-muted-foreground">
-                  {type}
-                </span>
               </div>
             ))}
           </CardContent>
