@@ -48,7 +48,7 @@ export function ProjectFilesPage({
             {project.location}
           </p>
         </div>
-        <div className="flex justify-end">
+        <div className="flex w-full justify-end sm:w-auto">
           <input
             ref={inputRef}
             hidden
@@ -84,6 +84,7 @@ export function ProjectFilesPage({
           />
           <Button
             type="button"
+            className="w-full sm:w-auto"
             disabled={uploading}
             onClick={() => inputRef.current?.click()}
           >
@@ -135,14 +136,7 @@ function FileImageGrid({ files }: { files: ProjectAttachment[] }) {
             className="group overflow-hidden rounded-xl border bg-muted/20"
           >
             <div className="relative aspect-square bg-muted">
-              <Image
-                src={file.url}
-                alt={file.filename}
-                fill
-                unoptimized
-                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                className="size-full object-cover transition-transform group-hover:scale-[1.03]"
-              />
+              <ProjectImage file={file} />
             </div>
             <p className="truncate px-3 py-2 font-medium text-xs">
               File {index + 1} · {file.filename}
@@ -154,6 +148,28 @@ function FileImageGrid({ files }: { files: ProjectAttachment[] }) {
         ))}
       </div>
     </section>
+  )
+}
+function ProjectImage({ file }: { file: ProjectAttachment }) {
+  const [failed, setFailed] = useState(false)
+  if (failed) {
+    return (
+      <div className="flex size-full flex-col items-center justify-center gap-2 p-3 text-center text-muted-foreground">
+        <HugeiconsIcon icon={Image02Icon} size={24} />
+        <span className="text-[10px]">File unavailable. Upload it again.</span>
+      </div>
+    )
+  }
+  return (
+    <Image
+      src={file.url}
+      alt={file.filename}
+      fill
+      unoptimized
+      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+      onError={() => setFailed(true)}
+      className="size-full object-cover transition-transform group-hover:scale-[1.03]"
+    />
   )
 }
 function DocumentList({ files }: { files: ProjectAttachment[] }) {

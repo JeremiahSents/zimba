@@ -66,9 +66,11 @@ export function ReceiptDetailPage({
         >
           <HugeiconsIcon icon={ArrowLeft01Icon} size={16} /> Back to expenses
         </Link>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           {payable && outstanding > 0 && (
-            <Button onClick={() => setPaymentOpen(true)}>Record payment</Button>
+            <Button className="shrink-0" onClick={() => setPaymentOpen(true)}>
+              Record payment
+            </Button>
           )}
           <button
             type="button"
@@ -82,7 +84,7 @@ export function ReceiptDetailPage({
               href={first.receipt_url}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 font-medium text-primary-foreground text-sm shadow-sm transition-all hover:bg-primary/90"
+              className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-lg bg-primary px-4 py-2 font-medium text-primary-foreground text-sm shadow-sm transition-all hover:bg-primary/90"
             >
               <HugeiconsIcon icon={Download01Icon} size={16} />
               View Original File

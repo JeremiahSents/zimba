@@ -228,11 +228,21 @@ export function createPayableExpense(
   })
 }
 
-export function getPayableExpense(session: ZimbaApiSession, expenseId: number) {
-  return zimbaFetch<PayableExpenseResponse>(
+export async function getPayableExpense(
+  session: ZimbaApiSession,
+  expenseId: number
+) {
+  const expense = await zimbaFetch<PayableExpenseResponse>(
     `/api/v2/expenses/${expenseId}`,
     session
   )
+  if (expense.receipt_file_url?.startsWith("/")) {
+    expense.receipt_file_url = new URL(
+      expense.receipt_file_url.slice(1),
+      getApiBaseUrl()
+    ).toString()
+  }
+  return expense
 }
 
 export function createLedgerPayment(
