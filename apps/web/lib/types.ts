@@ -91,6 +91,51 @@ export type PayableExpenseResponse = {
     | "paid"
     | "overpaid"
     | "refunded"
+  project_name?: string | null
+  supplier_name?: string | null
+  receipt_file_url?: string | null
+  lines: Array<{
+    id: number
+    allocation_id: number
+    allocation_name: string
+    description: string
+    quantity: number
+    unit_amount: number
+    tax_amount: number
+    line_amount: number
+  }>
+  payments: Array<{
+    id: number
+    amount: number
+    payment_date: string
+    method: string
+    reference?: string | null
+    status: string
+  }>
+}
+
+export type LedgerPaymentCreate = {
+  supplier_id: number
+  amount: number
+  currency: string
+  payment_date: string
+  method: string
+  reference?: string
+  idempotency_key: string
+  allocations: Array<{ expense_id: number; amount: number }>
+}
+
+export type LedgerPaymentResponse = {
+  id: number
+  supplier_id: number
+  amount: number
+  currency: string
+  payment_date: string
+  method: string
+  reference?: string | null
+  status: string
+  posted_at: string
+  voucher_number: string
 }
 export type ExpenseUpdate = ApiSchemas["ExpenseUpdate"]
 export type SupplierBreakdown = ApiSchemas["SupplierBreakdown"]
@@ -118,6 +163,8 @@ export type ProjectAttachment = {
   content_type: string
   size_bytes: number
   url: string
+  purpose?: string
+  created_at?: string
 }
 
 // View models preserve the existing component API while normalizers isolate
@@ -154,6 +201,9 @@ export type ExpenseResponse = {
   quantity?: number
   unit_rate?: number
   receipt_url?: string | null
+  source?: string
+  paid_amount?: number | null
+  outstanding_amount?: number | null
 }
 
 export type SupplierResponse = SupplierBreakdown & {

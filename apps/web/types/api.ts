@@ -386,6 +386,10 @@ export interface components {
       expense_date: string
       /** Payment Status */
       payment_status: string
+      /** Paid Amount */
+      paid_amount?: number | null
+      /** Outstanding Amount */
+      outstanding_amount?: number | null
       receipt_file?: components["schemas"]["ReceiptFileSubResponse"] | null
       /**
        * Created At
@@ -403,6 +407,8 @@ export interface components {
       supplier_name?: string | null
       /** Date */
       date?: string | null
+      /** Source */
+      source: string
     }
     /** ExpenseUpdate */
     ExpenseUpdate: {
@@ -421,6 +427,23 @@ export interface components {
       size_bytes: number
       /** Url */
       url: string
+    }
+    /** ProjectFileResponse */
+    ProjectFileResponse: {
+      /** Id */
+      id: string
+      /** Filename */
+      filename: string
+      /** Content Type */
+      content_type: string
+      /** Size Bytes */
+      size_bytes: number
+      /** Url */
+      url: string
+      /** Purpose */
+      purpose: string
+      /** Created At */
+      created_at: string
     }
     /** FileUploadRequest */
     FileUploadRequest: {
@@ -577,7 +600,7 @@ export interface components {
       /** Upcoming Payments */
       upcoming_payments: components["schemas"]["UpcomingPaymentResponse"][]
       /** Uploaded project attachments when supported by the backend */
-      attachments?: components["schemas"]["FileCompleteResponse"][]
+      attachments?: components["schemas"]["ProjectFileResponse"][]
     }
     /** ProjectSummaryResponse */
     ProjectSummaryResponse: {

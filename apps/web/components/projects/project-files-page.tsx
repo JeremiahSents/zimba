@@ -7,6 +7,7 @@ import {
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Button } from "@workspace/ui/components/button"
+import Image from "next/image"
 import Link from "next/link"
 import { useRef, useState } from "react"
 import { updateProjectAction } from "@/app/admin/actions"
@@ -133,16 +134,22 @@ function FileImageGrid({ files }: { files: ProjectAttachment[] }) {
             rel="noreferrer"
             className="group overflow-hidden rounded-xl border bg-muted/20"
           >
-            <div className="aspect-square bg-muted">
-              <img
+            <div className="relative aspect-square bg-muted">
+              <Image
                 src={file.url}
                 alt={file.filename}
+                fill
+                unoptimized
+                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                 className="size-full object-cover transition-transform group-hover:scale-[1.03]"
               />
             </div>
             <p className="truncate px-3 py-2 font-medium text-xs">
               File {index + 1} · {file.filename}
             </p>
+            <div className="px-3 pb-2">
+              <FilePurpose purpose={file.purpose} />
+            </div>
           </a>
         ))}
       </div>
@@ -173,10 +180,25 @@ function DocumentList({ files }: { files: ProjectAttachment[] }) {
             <span className="shrink-0 text-muted-foreground text-xs">
               {formatBytes(file.size_bytes)}
             </span>
+            <FilePurpose purpose={file.purpose} />
           </a>
         ))}
       </div>
     </section>
+  )
+}
+function FilePurpose({ purpose }: { purpose?: string }) {
+  const isReceipt = purpose === "expense_receipt"
+  return (
+    <span
+      className={`inline-flex shrink-0 rounded-full px-2 py-0.5 font-medium text-[10px] ${
+        isReceipt
+          ? "bg-amber-50 text-amber-700"
+          : "bg-emerald-50 text-emerald-700"
+      }`}
+    >
+      {isReceipt ? "Receipt" : "Project file"}
+    </span>
   )
 }
 function Heading({

@@ -7,16 +7,18 @@ import type {
   ApiSupplierResponse,
   DashboardOverviewResponse,
   ExpenseCreate,
-  PayableExpenseCreate,
-  PayableExpenseResponse,
   ExpenseReceiptCreate,
   ExpenseUpdate,
   FileCompleteResponse,
   FileUploadRequest,
   FileUploadResponse,
   HTTPValidationError,
+  LedgerPaymentCreate,
+  LedgerPaymentResponse,
   PaginatedExpensesResponse,
   PaginatedProjectsResponse,
+  PayableExpenseCreate,
+  PayableExpenseResponse,
   ProjectAllocationResponse,
   ProjectCreate,
   ProjectDetailApiResponse,
@@ -222,6 +224,23 @@ export function createPayableExpense(
 ) {
   return zimbaFetch<PayableExpenseResponse>("/api/v2/expenses", session, {
     body: expense,
+    method: "POST",
+  })
+}
+
+export function getPayableExpense(session: ZimbaApiSession, expenseId: number) {
+  return zimbaFetch<PayableExpenseResponse>(
+    `/api/v2/expenses/${expenseId}`,
+    session
+  )
+}
+
+export function createLedgerPayment(
+  session: ZimbaApiSession,
+  payment: LedgerPaymentCreate
+) {
+  return zimbaFetch<LedgerPaymentResponse>("/api/v2/payments", session, {
+    body: payment,
     method: "POST",
   })
 }

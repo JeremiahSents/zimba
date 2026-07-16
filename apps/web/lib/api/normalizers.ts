@@ -65,6 +65,9 @@ export function toExpense(expense: ApiExpenseResponse): ExpenseResponse {
     project_id: expense.project_id,
     quantity: expense.quantity,
     receipt_url: expense.receipt_file?.url ?? null,
+    source: expense.source,
+    paid_amount: expense.paid_amount,
+    outstanding_amount: expense.outstanding_amount,
     status: toUiExpenseStatus(expense.payment_status),
     supplier_name:
       expense.supplier?.name ?? expense.supplier_name ?? "Unknown supplier",

@@ -70,6 +70,7 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
   const [paymentDate, setPaymentDate] = useState(today)
   const [paymentMethod, setPaymentMethod] = useState("cash")
   const [paymentReference, setPaymentReference] = useState("")
+  const [mobileStep, setMobileStep] = useState<"entry" | "preview">("entry")
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState("")
 
@@ -113,7 +114,7 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
     )
   }
 
-  async function saveReceipt() {
+  function validateReceiptDetails() {
     if (
       !supplierId ||
       !purchaseDate ||
@@ -126,8 +127,20 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
       )
     ) {
       setError("Choose a supplier and complete every item.")
-      return
+      return false
     }
+    return true
+  }
+
+  function continueToPreview() {
+    if (!validateReceiptDetails()) return
+    setError("")
+    setMobileStep("preview")
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }
+
+  async function saveReceipt() {
+    if (!validateReceiptDetails()) return
     if (paid > total) {
       setError("Amount paid cannot exceed the receipt total.")
       return
@@ -224,8 +237,10 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
         </div>
       )}
 
-      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,3fr)_minmax(22rem,2fr)]">
-        <div className="grid gap-5">
+      <div className="grid items-start gap-5 pb-20 md:pb-0 lg:grid-cols-[minmax(0,3fr)_minmax(22rem,2fr)]">
+        <div
+          className={`${mobileStep === "preview" ? "hidden md:grid" : "grid"} gap-5`}
+        >
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Receipt details</CardTitle>
@@ -290,97 +305,219 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
                 <div className="border-l px-2 py-2.5 text-right">Amount</div>
                 <div className="border-l" />
               </div>
-              {lines.map((line, index) => {
-                const amount =
-                  Number(line.quantity || 0) * Number(line.unitAmount || 0)
-                return (
-                  <div
-                    key={line.id}
-                    className="grid gap-3 border-t p-3 first:border-t-0 md:grid-cols-[minmax(10rem,1.4fr)_minmax(9rem,1fr)_5rem_8rem_8rem_3rem] md:gap-0 md:p-0"
-                  >
-                    <Input
-                      value={line.description}
-                      onChange={(event) =>
-                        updateLine(line.id, "description", event.target.value)
-                      }
-                      placeholder={`Item ${index + 1}`}
-                      className="md:rounded-none md:border-0 md:bg-transparent"
-                    />
-                    <Select
-                      value={line.allocationId}
-                      onValueChange={(value) =>
-                        updateLine(line.id, "allocationId", value ?? "")
-                      }
+              <div className="grid gap-3 p-3 md:hidden">
+                {lines.map((line, index) => {
+                  const amount =
+                    Number(line.quantity || 0) * Number(line.unitAmount || 0)
+                  return (
+                    <div
+                      key={line.id}
+                      className="overflow-hidden rounded-xl border bg-background"
                     >
-                      <SelectTrigger className="h-11 w-full px-3 text-sm md:h-11 md:rounded-none md:border-y-0 md:border-r-0 md:bg-transparent md:text-sm">
-                        <SelectValue placeholder="Category">
-                          {
-                            project.tasks.find(
-                              (task) => String(task.id) === line.allocationId
-                            )?.name
+                      <div className="flex min-h-11 items-center justify-between border-b bg-muted/25 px-3">
+                        <span className="font-semibold text-sm">
+                          Item {index + 1}
+                        </span>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-9 px-2 text-muted-foreground"
+                          disabled={lines.length === 1}
+                          onClick={() =>
+                            setLines((current) =>
+                              current.filter((item) => item.id !== line.id)
+                            )
                           }
-                        </SelectValue>
-                      </SelectTrigger>
-                      <SelectContent>
-                        {project.tasks.map((task) => (
-                          <SelectItem
-                            key={task.id}
-                            value={String(task.id)}
-                            className="min-h-11 px-3 py-2 text-sm md:min-h-10 md:px-3 md:py-2 md:text-sm"
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                      <div className="grid gap-4 p-3">
+                        <label className="grid gap-1.5">
+                          <Label htmlFor={`item-${line.id}`}>Item</Label>
+                          <Input
+                            id={`item-${line.id}`}
+                            value={line.description}
+                            onChange={(event) =>
+                              updateLine(
+                                line.id,
+                                "description",
+                                event.target.value
+                              )
+                            }
+                            placeholder="What was purchased?"
+                          />
+                        </label>
+                        <label className="grid gap-1.5">
+                          <Label>Category</Label>
+                          <Select
+                            value={line.allocationId}
+                            onValueChange={(value) =>
+                              updateLine(line.id, "allocationId", value ?? "")
+                            }
                           >
-                            {task.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Input
-                      inputMode="numeric"
-                      value={line.quantity}
-                      onChange={(event) =>
-                        updateLine(
-                          line.id,
-                          "quantity",
-                          event.target.value.replace(/\D/g, "")
-                        )
-                      }
-                      className="text-right md:rounded-none md:border-y-0 md:border-r-0 md:bg-transparent"
-                    />
-                    <Input
-                      inputMode="numeric"
-                      value={formatNumericInput(line.unitAmount)}
-                      onChange={(event) =>
-                        updateLine(
-                          line.id,
-                          "unitAmount",
-                          event.target.value.replace(/\D/g, "")
-                        )
-                      }
-                      placeholder="0"
-                      className="text-right md:rounded-none md:border-y-0 md:border-r-0 md:bg-transparent"
-                    />
-                    <div className="flex items-center justify-between bg-muted/20 px-3 py-2 text-sm md:justify-end md:border-l">
-                      <span className="text-muted-foreground md:hidden">
-                        Amount
-                      </span>
-                      <strong>{formatCurrency(amount)}</strong>
+                            <SelectTrigger className="h-11 w-full px-3 text-sm">
+                              <SelectValue placeholder="Choose category">
+                                {
+                                  project.tasks.find(
+                                    (task) =>
+                                      String(task.id) === line.allocationId
+                                  )?.name
+                                }
+                              </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent>
+                              {project.tasks.map((task) => (
+                                <SelectItem
+                                  key={task.id}
+                                  value={String(task.id)}
+                                  className="min-h-11 px-3 py-2 text-sm"
+                                >
+                                  {task.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </label>
+                        <div className="grid grid-cols-[minmax(0,0.7fr)_minmax(0,1.3fr)] gap-3">
+                          <label className="grid gap-1.5">
+                            <Label htmlFor={`quantity-${line.id}`}>
+                              Quantity
+                            </Label>
+                            <Input
+                              id={`quantity-${line.id}`}
+                              inputMode="numeric"
+                              value={line.quantity}
+                              onChange={(event) =>
+                                updateLine(
+                                  line.id,
+                                  "quantity",
+                                  event.target.value.replace(/\D/g, "")
+                                )
+                              }
+                              className="text-right"
+                            />
+                          </label>
+                          <label className="grid gap-1.5">
+                            <Label htmlFor={`rate-${line.id}`}>Rate</Label>
+                            <Input
+                              id={`rate-${line.id}`}
+                              inputMode="numeric"
+                              value={formatNumericInput(line.unitAmount)}
+                              onChange={(event) =>
+                                updateLine(
+                                  line.id,
+                                  "unitAmount",
+                                  event.target.value.replace(/\D/g, "")
+                                )
+                              }
+                              placeholder="0"
+                              className="text-right"
+                            />
+                          </label>
+                        </div>
+                        <div className="flex min-h-11 items-center justify-between rounded-lg bg-muted/35 px-3 text-sm">
+                          <span className="text-muted-foreground">Amount</span>
+                          <strong>{formatCurrency(amount)}</strong>
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex justify-end md:items-center md:justify-center md:border-l">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        disabled={lines.length === 1}
-                        onClick={() =>
-                          setLines((current) =>
-                            current.filter((item) => item.id !== line.id)
-                          )
+                  )
+                })}
+              </div>
+              <div className="hidden md:block">
+                {lines.map((line, index) => {
+                  const amount =
+                    Number(line.quantity || 0) * Number(line.unitAmount || 0)
+                  return (
+                    <div
+                      key={line.id}
+                      className="grid gap-3 border-t p-3 first:border-t-0 md:grid-cols-[minmax(10rem,1.4fr)_minmax(9rem,1fr)_5rem_8rem_8rem_3rem] md:gap-0 md:p-0"
+                    >
+                      <Input
+                        value={line.description}
+                        onChange={(event) =>
+                          updateLine(line.id, "description", event.target.value)
+                        }
+                        placeholder={`Item ${index + 1}`}
+                        className="md:rounded-none md:border-0 md:bg-transparent"
+                      />
+                      <Select
+                        value={line.allocationId}
+                        onValueChange={(value) =>
+                          updateLine(line.id, "allocationId", value ?? "")
                         }
                       >
-                        ×
-                      </Button>
+                        <SelectTrigger className="h-11 w-full px-3 text-sm md:h-11 md:rounded-none md:border-y-0 md:border-r-0 md:bg-transparent md:text-sm">
+                          <SelectValue placeholder="Category">
+                            {
+                              project.tasks.find(
+                                (task) => String(task.id) === line.allocationId
+                              )?.name
+                            }
+                          </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                          {project.tasks.map((task) => (
+                            <SelectItem
+                              key={task.id}
+                              value={String(task.id)}
+                              className="min-h-11 px-3 py-2 text-sm md:min-h-10 md:px-3 md:py-2 md:text-sm"
+                            >
+                              {task.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Input
+                        inputMode="numeric"
+                        value={line.quantity}
+                        onChange={(event) =>
+                          updateLine(
+                            line.id,
+                            "quantity",
+                            event.target.value.replace(/\D/g, "")
+                          )
+                        }
+                        className="text-right md:rounded-none md:border-y-0 md:border-r-0 md:bg-transparent"
+                      />
+                      <Input
+                        inputMode="numeric"
+                        value={formatNumericInput(line.unitAmount)}
+                        onChange={(event) =>
+                          updateLine(
+                            line.id,
+                            "unitAmount",
+                            event.target.value.replace(/\D/g, "")
+                          )
+                        }
+                        placeholder="0"
+                        className="text-right md:rounded-none md:border-y-0 md:border-r-0 md:bg-transparent"
+                      />
+                      <div className="flex items-center justify-between bg-muted/20 px-3 py-2 text-sm md:justify-end md:border-l">
+                        <span className="text-muted-foreground md:hidden">
+                          Amount
+                        </span>
+                        <strong>{formatCurrency(amount)}</strong>
+                      </div>
+                      <div className="flex justify-end md:items-center md:justify-center md:border-l">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          disabled={lines.length === 1}
+                          onClick={() =>
+                            setLines((current) =>
+                              current.filter((item) => item.id !== line.id)
+                            )
+                          }
+                        >
+                          ×
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                )
-              })}
+                  )
+                })}
+              </div>
               <div className="flex items-center justify-between border-t p-3">
                 <Button
                   size="sm"
@@ -498,7 +635,9 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
           </Card>
         </div>
 
-        <aside className="h-full self-stretch">
+        <aside
+          className={`${mobileStep === "entry" ? "hidden md:block" : "block"} h-full self-stretch`}
+        >
           <div className="flex h-full flex-col overflow-hidden rounded-2xl border bg-card shadow-sm">
             <div className="border-b bg-muted/20 p-6">
               <p className="text-muted-foreground text-xs">EXPENSE RECEIPT</p>
@@ -602,17 +741,34 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
         </aside>
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-2 gap-2 border-t bg-background/95 p-3 sm:hidden">
-        <Button
-          variant="outline"
-          nativeButton={false}
-          render={<Link href={projectHref} />}
-        >
-          Cancel
-        </Button>
-        <Button onClick={saveReceipt} disabled={saving}>
-          {saving ? "Saving…" : "Save receipt"}
-        </Button>
+      <div className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-2 gap-2 border-t bg-background/95 px-3 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur md:hidden">
+        {mobileStep === "entry" ? (
+          <>
+            <Button
+              variant="outline"
+              nativeButton={false}
+              render={<Link href={projectHref} />}
+            >
+              Cancel
+            </Button>
+            <Button onClick={continueToPreview}>Continue</Button>
+          </>
+        ) : (
+          <>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setMobileStep("entry")
+                window.scrollTo({ top: 0, behavior: "smooth" })
+              }}
+            >
+              Back to edit
+            </Button>
+            <Button onClick={saveReceipt} disabled={saving}>
+              {saving ? "Saving…" : "Save receipt"}
+            </Button>
+          </>
+        )}
       </div>
     </DashboardShell>
   )

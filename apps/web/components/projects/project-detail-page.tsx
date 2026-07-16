@@ -69,7 +69,6 @@ export function ProjectDetailPageWrapper({
 
 export function ProjectDetailPage({
   project,
-  source,
 }: {
   project: ProjectDetailResponse
   source: DashboardSource
@@ -666,15 +665,13 @@ function TaskExpenseDetails({
         <div className="divide-y divide-border/60 rounded-md border border-border/60 bg-background">
           {recent.map((expense) => {
             const paid =
-              expense.status === "Full"
-                ? expense.amount
-                : expense.status === "Partial"
-                  ? expense.amount / 2
-                  : 0
-            const owed = Math.max(expense.amount - paid, 0)
+              expense.paid_amount ??
+              (expense.status === "Full" ? expense.amount : 0)
+            const owed =
+              expense.outstanding_amount ?? Math.max(expense.amount - paid, 0)
             return (
               <div
-                key={expense.id}
+                key={`${expense.source ?? "legacy"}-${expense.id}`}
                 className="grid gap-2 px-3 py-2.5 text-xs sm:grid-cols-[1.25fr_0.7fr_0.8fr_0.8fr] sm:items-center"
               >
                 <div className="min-w-0">

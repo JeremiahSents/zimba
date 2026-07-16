@@ -27,6 +27,7 @@ import {
   TableHeader,
   TableRow,
 } from "@workspace/ui/components/table"
+import Link from "next/link"
 import { useMemo, useState } from "react"
 
 import {
@@ -165,9 +166,16 @@ export function ProjectExpensesTable({
                 const status = expense.status ?? "Full"
                 return (
                   <MobileDataCard
-                    key={row.id}
+                    key={`${expense.source ?? "legacy"}-${row.id}`}
                     eyebrow={expense.task_name}
-                    title={expense.item_description}
+                    title={
+                      <Link
+                        href={`/admin/expenses/receipts/${expense.receipt_id ?? expense.id}?source=${expense.source ?? "legacy"}`}
+                        className="font-medium text-primary hover:underline"
+                      >
+                        {expense.item_description}
+                      </Link>
+                    }
                     value={formatCurrency(expense.amount)}
                     status={
                       <span
@@ -235,15 +243,27 @@ export function ProjectExpensesTable({
             <TableBody>
               {rows.length ? (
                 rows.map((row) => (
-                  <TableRow key={row.id} className="hover:bg-muted/25">
+                  <TableRow
+                    key={`${row.original.source ?? "legacy"}-${row.id}`}
+                    className="hover:bg-muted/25"
+                  >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell
                         key={cell.id}
                         className={`min-w-0 overflow-hidden border-l px-4 py-4 align-middle first:border-l-0 ${cell.column.id === "amount" ? "text-right font-semibold" : ""}`}
                       >
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
+                        {cell.column.id === "item_description" ? (
+                          <Link
+                            href={`/admin/expenses/receipts/${row.original.receipt_id ?? row.original.id}?source=${row.original.source ?? "legacy"}`}
+                            className="block truncate font-medium text-primary hover:underline"
+                          >
+                            {row.original.item_description}
+                          </Link>
+                        ) : (
+                          flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )
                         )}
                       </TableCell>
                     ))}

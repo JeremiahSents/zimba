@@ -6,6 +6,7 @@ import { requireZimbaApiSession } from "@/lib/api/auth"
 import {
   completeFileUpload,
   createExpenseReceipt,
+  createLedgerPayment,
   createPayableExpense,
   createProject,
   createSupplier,
@@ -38,11 +39,11 @@ import { toApiExpenseStatus } from "@/lib/api/normalizers"
 import type {
   AllocationUpdate,
   ExpenseReceiptCreate,
-  PayableExpenseCreate,
-  PayableExpenseResponse,
   ExpenseStatus,
   FileUploadRequest,
   FileUploadResponse,
+  PayableExpenseCreate,
+  PayableExpenseResponse,
   ProjectCreate,
   ProjectUpdate,
   SupplierCreate,
@@ -84,6 +85,49 @@ export async function createPayableExpenseAction(
     const created = await createPayableExpense(session, expense)
     revalidateConnectedRoutes()
     return { ok: true, data: created }
+  } catch (error) {
+    return actionError(error)
+  }
+}
+
+export async function recordReceiptPaymentAction(input: {
+  expenseId: number
+  projectId: number
+  supplierId: number
+  amount: number
+  outstandingAmount: number
+  currency: string
+  paymentDate: string
+  method: string
+  reference?: string
+}): Promise<ActionResult> {
+  if (
+    input.amount <= 0 ||
+    input.amount > input.outstandingAmount ||
+    !input.paymentDate ||
+    !input.method.trim()
+  ) {
+    return {
+      ok: false,
+      error: "Enter a valid payment within the outstanding balance.",
+    }
+  }
+
+  try {
+    const session = await requireZimbaApiSession()
+    await createLedgerPayment(session, {
+      supplier_id: input.supplierId,
+      amount: input.amount,
+      currency: input.currency,
+      payment_date: input.paymentDate,
+      method: input.method,
+      reference: input.reference?.trim() || undefined,
+      idempotency_key: `receipt-${input.expenseId}-${crypto.randomUUID()}`,
+      allocations: [{ expense_id: input.expenseId, amount: input.amount }],
+    })
+    revalidateConnectedRoutes(input.projectId)
+    revalidatePath(`/admin/expenses/receipts/${input.expenseId}`)
+    return { ok: true, data: undefined }
   } catch (error) {
     return actionError(error)
   }
@@ -410,4 +454,5 @@ function revalidateConnectedRoutes(projectId?: number) {
   revalidatePath("/admin/budget")
   revalidatePath("/admin/reports")
   if (projectId) revalidatePath(`/admin/projects/${projectId}`)
+  if (projectId) revalidatePath(`/admin/projects/${projectId}/files`)
 }
