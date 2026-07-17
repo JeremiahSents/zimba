@@ -10,7 +10,7 @@ import { Button } from "@workspace/ui/components/button"
 import Image from "next/image"
 import Link from "next/link"
 import { useRef, useState } from "react"
-import { updateProjectAction } from "@/app/admin/actions"
+import { updateProjectAction } from "@/app/admin/projects/actions"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import type { ProjectAttachment, ProjectDetailResponse } from "@/lib/types"
 import { uploadZimbaFile } from "@/lib/upload-file"
@@ -69,7 +69,7 @@ export function ProjectFilesPage({
                 const result = await updateProjectAction(project.id, {
                   attachment_ids: ids,
                 })
-                if (!result.ok) setError(result.error)
+                if (!result.success) setError(result.error.message)
                 else window.location.reload()
               } catch (uploadError) {
                 setError(

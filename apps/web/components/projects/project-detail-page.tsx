@@ -33,7 +33,7 @@ import {
   createUpcomingPaymentAction,
   deleteUpcomingPaymentAction,
   updateUpcomingPaymentAction,
-} from "@/app/admin/actions"
+} from "@/app/admin/payments/actions"
 import { ProjectExpensesTable } from "@/components/projects/project-expenses-table"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { DatePicker } from "@/components/shared/date-picker"
@@ -347,7 +347,7 @@ export function ProjectDetailPage({
                           payment.id,
                           { status: "due" }
                         )
-                        if (!result.ok) setMutationError(result.error)
+                        if (!result.success) setMutationError(result.error.message)
                         else router.refresh()
                       }}
                     >
@@ -363,7 +363,7 @@ export function ProjectDetailPage({
                         project.id,
                         payment.id
                       )
-                      if (!result.ok) setMutationError(result.error)
+                      if (!result.success) setMutationError(result.error.message)
                       else {
                         setUpcomingPayments((current) =>
                           current.filter((item) => item.id !== payment.id)
@@ -491,8 +491,8 @@ export function ProjectDetailPage({
                   due_date: newUpcoming.date,
                   title: newUpcoming.title,
                 })
-                if (!result.ok) {
-                  setMutationError(result.error)
+                if (!result.success) {
+                  setMutationError(result.error.message)
                   setSavingPayment(false)
                   return
                 }

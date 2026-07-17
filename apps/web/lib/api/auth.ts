@@ -1,7 +1,6 @@
 import "server-only"
 
 import { headers } from "next/headers"
-import { isAuthBypassEnabled, MOCK_AUTH_IDENTITY } from "@/lib/api/auth-mode"
 import { auth } from "@/lib/auth"
 import { getOrganizationMembership } from "@/lib/organization"
 
@@ -11,13 +10,6 @@ export type ZimbaApiSession = {
 }
 
 export async function getZimbaApiSession(): Promise<ZimbaApiSession | null> {
-  if (isAuthBypassEnabled()) {
-    return {
-      token: "",
-      organizationId: MOCK_AUTH_IDENTITY.organizationId,
-    }
-  }
-
   const authSession = await auth.api.getSession({
     headers: await headers(),
   })

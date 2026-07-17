@@ -1,9 +1,6 @@
 import "server-only"
+import { getPayableExpense } from "@/core/expenses/service"
 
-import { requireZimbaApiSession } from "@/lib/api/auth"
-import { getPayableExpense } from "@/lib/api/client"
-
-export async function getPayableReceipt(expenseId: number) {
-  const session = await requireZimbaApiSession()
-  return getPayableExpense(session, expenseId)
+export async function getPayableReceipt(expenseId: string) {
+  return getPayableExpense(expenseId)
 }

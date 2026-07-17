@@ -9,3 +9,4 @@ allowBuilds:
   esbuild: true
   '@prisma/client': false
   better-sqlite3: false
+  msgpackr-extract: true

@@ -24,7 +24,7 @@ import {
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 
-import { createProjectAction } from "@/app/admin/actions"
+import { createProjectAction } from "@/app/admin/projects/actions"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { formatCurrency } from "@/lib/format"
 import {

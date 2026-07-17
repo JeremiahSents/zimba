@@ -19,7 +19,7 @@ import {
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useMemo, useState } from "react"
-import { createPayableExpenseAction } from "@/app/admin/actions"
+import { createPayableExpenseAction } from "@/app/admin/expenses/actions"
 import { UploadZone } from "@/components/projects/upload-zone"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { DatePicker } from "@/components/shared/date-picker"
@@ -187,8 +187,8 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
         unit_amount: Number(line.unitAmount),
       })),
     })
-    if (!result.ok) {
-      setError(result.error)
+    if (!result.success) {
+      setError(result.error.message)
       setSaving(false)
       return
     }

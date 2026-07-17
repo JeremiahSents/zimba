@@ -17,7 +17,7 @@ import {
 } from "@workspace/ui/components/card"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
-import { createSupplierAction } from "@/app/admin/actions"
+import { createSupplierAction } from "@/app/admin/suppliers/actions"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { SupplierForm } from "@/components/suppliers/supplier-form"
 
@@ -72,8 +72,8 @@ export function NewSupplierPage({ returnTo }: { returnTo?: string }) {
                 setSubmitting(true)
                 setError("")
                 const result = await createSupplierAction(values)
-                if (!result.ok) {
-                  setError(result.error)
+                if (!result.success) {
+                  setError(result.error.message)
                   setSubmitting(false)
                   return
                 }

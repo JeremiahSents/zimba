@@ -170,7 +170,7 @@ export type ProjectAttachment = {
 // View models preserve the existing component API while normalizers isolate
 // backend compatibility aliases such as pct/tasks/date.
 export type ProjectDashboardResponse = {
-  id: number
+  id: number | string
   name: string
   location: string
   plot_size?: string | null
@@ -188,7 +188,7 @@ export type ProjectDashboardResponse = {
 }
 
 export type ExpenseResponse = {
-  id: number
+  id: number | string
   receipt_id?: number | null
   project_id?: number
   allocation_id?: number

@@ -12,7 +12,7 @@ import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
-import { createProjectTaskAction } from "@/app/admin/actions"
+import { createProjectTaskAction } from "@/app/admin/projects/actions"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import type { ProjectDetailResponse } from "@/lib/types"
 
@@ -51,8 +51,8 @@ export function NewProjectTaskPage({
                   budget: Number(budget),
                   name,
                 })
-                if (!result.ok) {
-                  setError(result.error)
+                if (!result.success) {
+                  setError(result.error.message)
                   setSaving(false)
                   return
                 }

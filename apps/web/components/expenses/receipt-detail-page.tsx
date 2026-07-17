@@ -20,7 +20,7 @@ import { Label } from "@workspace/ui/components/label"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
-import { recordReceiptPaymentAction } from "@/app/admin/actions"
+import { recordReceiptPaymentAction } from "@/app/admin/payments/actions"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { DatePicker } from "@/components/shared/date-picker"
 import { formatCurrency, formatShortDate } from "@/lib/format"
@@ -377,8 +377,8 @@ export function ReceiptDetailPage({
                     method,
                     reference,
                   })
-                  if (!result.ok) {
-                    setError(result.error)
+                  if (!result.success) {
+                    setError(result.error.message)
                     setSaving(false)
                     return
                   }

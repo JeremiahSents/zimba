@@ -2,7 +2,6 @@ import { SidebarProvider } from "@workspace/ui/components/sidebar"
 import { cookies, headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { WorkspaceProvider } from "@/components/shared/workspace-provider"
-import { isAuthBypassEnabled, MOCK_AUTH_IDENTITY } from "@/lib/api/auth-mode"
 import { auth } from "@/lib/auth"
 import { getOrganizationMembership } from "@/lib/organization"
 
@@ -13,16 +12,7 @@ export default async function AdminLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const authBypass = isAuthBypassEnabled()
-  const user = authBypass
-    ? {
-        authBypass: true,
-        image: null,
-        name: MOCK_AUTH_IDENTITY.name,
-        organizationName: MOCK_AUTH_IDENTITY.organizationName,
-        role: MOCK_AUTH_IDENTITY.role,
-      }
-    : await getAuthenticatedWorkspaceUser()
+  const user = await getAuthenticatedWorkspaceUser()
 
   const cookieStore = await cookies()
   const sidebarCookie = cookieStore.get(SIDEBAR_COOKIE_NAME)?.value
@@ -48,7 +38,6 @@ async function getAuthenticatedWorkspaceUser() {
   if (!membership) redirect("/onboarding")
 
   return {
-    authBypass: false,
     image: session.user.image ?? null,
     name: session.user.name,
     organizationName: membership.organizationName,

@@ -1,0 +1,34 @@
+import { createUploadthing, type FileRouter } from "uploadthing/next"
+import { requireSession } from "@/core/auth/service"
+import { recordUploadedFile } from "@/core/files/service"
+
+const f = createUploadthing()
+
+export const ourFileRouter = {
+  zimbaUploader: f({
+    image: { maxFileSize: "4MB", maxFileCount: 5 },
+    pdf: { maxFileSize: "16MB", maxFileCount: 5 },
+  })
+    .middleware(async ({ req }) => {
+      const { user } = await requireSession()
+      
+      const purpose = req.headers.get("x-upload-purpose") || "attachment"
+
+      return { userId: user.id, purpose }
+    })
+    .onUploadComplete(async ({ metadata, file }) => {
+      // Record the file in the database
+      const dbFile = await recordUploadedFile({
+        key: file.key,
+        url: file.url,
+        filename: file.name,
+        contentType: file.type || "application/octet-stream",
+        sizeBytes: file.size,
+        purpose: metadata.purpose,
+      })
+
+      return { fileId: dbFile.id, url: file.url }
+    }),
+} satisfies FileRouter
+
+export type OurFileRouter = typeof ourFileRouter
