@@ -1,4 +1,4 @@
-import { integer, pgTable, text, timestamp, varchar } from "drizzle-orm/pg-core"
+import { bigint, integer, pgTable, text, timestamp, varchar } from "drizzle-orm/pg-core"
 import { organization } from "../organizations/schema"
 import { project } from "../projects/schema"
 import { allocation } from "../allocations/schema"
@@ -36,8 +36,8 @@ export const expenseLine = pgTable("expense_line", {
     .references(() => allocation.id, { onDelete: "cascade" }),
   itemDescription: text("item_description").notNull(),
   quantity: integer("quantity").notNull().default(1),
-  unitRateCents: integer("unit_rate_cents").notNull().default(0),
-  amountCents: integer("amount_cents").notNull().default(0),
+  unitRateCents: bigint("unit_rate_cents", { mode: "number" }).notNull().default(0),
+  amountCents: bigint("amount_cents", { mode: "number" }).notNull().default(0),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()

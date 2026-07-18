@@ -1,4 +1,4 @@
-import { integer, pgTable, text, timestamp, varchar } from "drizzle-orm/pg-core"
+import { bigint, pgTable, text, timestamp, varchar } from "drizzle-orm/pg-core"
 import { organization } from "../organizations/schema"
 import { project } from "../projects/schema"
 import { supplier } from "../suppliers/schema"
@@ -15,7 +15,7 @@ export const payable = pgTable("payable", {
     .references(() => supplier.id, { onDelete: "set null" }),
   title: text("title").notNull(),
   description: text("description"),
-  amountCents: integer("amount_cents").notNull().default(0),
+  amountCents: bigint("amount_cents", { mode: "number" }).notNull().default(0),
   currency: varchar("currency").notNull().default("UGX"),
   dueDate: timestamp("due_date", { mode: "date" }),
   status: varchar("status").notNull().default("pending"), // pending, paid
@@ -36,7 +36,7 @@ export const ledgerPayment = pgTable("ledger_payment", {
     .references(() => payable.id, { onDelete: "set null" }),
   supplierId: varchar("supplier_id")
     .references(() => supplier.id, { onDelete: "set null" }),
-  amountCents: integer("amount_cents").notNull().default(0),
+  amountCents: bigint("amount_cents", { mode: "number" }).notNull().default(0),
   currency: varchar("currency").notNull().default("UGX"),
   paymentDate: timestamp("payment_date", { mode: "date" }),
   method: varchar("method"),
