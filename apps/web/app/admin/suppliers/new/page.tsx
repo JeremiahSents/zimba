@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import { NewSupplierPage } from "@/components/suppliers/new-supplier-page"
+import { getSupplierCategories } from "@/core/suppliers/service"
 
 export const metadata: Metadata = {
   title: "New supplier | Zimba",
@@ -11,6 +12,6 @@ export default async function Page({
 }: {
   searchParams: Promise<{ returnTo?: string }>
 }) {
-  const { returnTo } = await searchParams
-  return <NewSupplierPage returnTo={returnTo} />
+  const [{ returnTo }, categories] = await Promise.all([searchParams, getSupplierCategories()])
+  return <NewSupplierPage returnTo={returnTo} categories={categories.map(({ name, slug }) => ({ name, slug }))} />
 }

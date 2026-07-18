@@ -21,7 +21,7 @@ import { createSupplierAction } from "@/app/admin/suppliers/actions"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { SupplierForm } from "@/components/suppliers/supplier-form"
 
-export function NewSupplierPage({ returnTo }: { returnTo?: string }) {
+export function NewSupplierPage({ returnTo, categories }: { returnTo?: string; categories: { name: string; slug: string }[] }) {
   const router = useRouter()
   const [error, setError] = useState("")
   const [submitting, setSubmitting] = useState(false)
@@ -67,6 +67,7 @@ export function NewSupplierPage({ returnTo }: { returnTo?: string }) {
               </p>
             ) : null}
             <SupplierForm
+              initialCategories={categories}
               pending={submitting}
               onSubmit={async (values) => {
                 setSubmitting(true)

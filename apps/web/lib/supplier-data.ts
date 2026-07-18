@@ -15,16 +15,22 @@ export function getSupplierBySlug(slug: string, suppliers: SupplierResponse[]) {
 
 export function getSupplierListItems(suppliers: SupplierResponse[], expenses: ExpenseTableRow[]): SupplierListItem[] {
   return suppliers.map((supplier) => {
-    const related = expenses.filter((expense) => expense.supplier_name === supplier.name)
-    const receiptValue = related.reduce((sum, expense) => sum + expense.amount, 0)
-    const paid = related.reduce((sum, expense) => sum + (expense.paid_amount ?? (expense.status === "Full" ? expense.amount : 0)), 0)
+    const supplierId = supplier.id ?? supplier.supplier_id
+    const related = expenses.filter((expense) =>
+      supplierId ? expense.supplier_id === supplierId : expense.supplier_name === supplier.name
+    )
+    const receiptValue = supplier.total_incurred ?? supplier.amount ?? related.reduce((sum, expense) => sum + expense.amount, 0)
+    const paid = supplier.total_paid ?? related.reduce((sum, expense) => sum + (expense.paid_amount ?? (expense.status === "Full" ? expense.amount : 0)), 0)
     const statusSummary = related.reduce<Record<SupplierPaymentStatus, number>>((summary, expense) => { summary[expense.status] += 1; return summary }, { Full: 0, Partial: 0, "Not paid": 0 })
     return { ...supplier, amount: receiptValue, paid, remaining: Math.max(0, receiptValue - paid), statusSummary }
   })
 }
 
 export function getSupplierLedger(supplier: SupplierResponse, expenses: ExpenseTableRow[]): SupplierLedgerEntry[] {
-  return expenses.filter((expense) => expense.supplier_name === supplier.name).map((expense) => {
+  const supplierId = supplier.id ?? supplier.supplier_id
+  return expenses.filter((expense) =>
+    supplierId ? expense.supplier_id === supplierId : expense.supplier_name === supplier.name
+  ).map((expense) => {
     const paid = expense.paid_amount ?? (expense.status === "Full" ? expense.amount : 0)
     return { id: `expense-${expense.id}`, date: expense.date, project: expense.project_name, item: expense.item_description, receiptValue: expense.amount, paid, remaining: Math.max(0, expense.amount - paid), status: expense.status }
   })

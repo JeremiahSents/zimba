@@ -20,6 +20,7 @@ export async function listExpenseRows(): Promise<ExpenseTableRow[]> {
       id: expense.id,
       receipt_id: expense.id,
       project_id: expense.projectId ?? undefined,
+      supplier_id: expense.supplierId ?? undefined,
       allocation_id: first?.line.allocationId,
       date: (expense.expenseDate ?? expense.createdAt).toISOString(),
       task_name: first?.allocationName ?? "General",
@@ -78,12 +79,21 @@ export async function createExpenseReceipt(projectId: string, data: ExpenseRecei
     if (!supplier) [supplier] = await tx.insert(schema.supplier).values({ organizationId, name: supplierName }).returning()
     if (!supplier) throw new Error("Supplier insert failed")
     const expenseId = crypto.randomUUID()
-    await tx.insert(schema.expense).values({ id: expenseId, organizationId, projectId, supplierId: supplier.id, receiptFileId: data.receipt_file_id, paymentStatus: data.payment_status === "partially_paid" ? "partial" : data.payment_status ?? "paid", expenseDate: new Date(data.expense_date) })
+    const grossCents = data.items.reduce((sum, item) => sum + Math.round(item.quantity * item.unit_rate * 100), 0)
+    const paidCents = Math.min(
+      grossCents,
+      Math.max(0, Math.round((data.amount_paid ?? data.items.reduce((sum, item) => sum + (item.amount_paid ?? 0), 0)) * 100))
+    )
+    const paymentStatus = paidCents >= grossCents && grossCents > 0 ? "paid" : paidCents > 0 ? "partial" : "unpaid"
+    await tx.insert(schema.expense).values({ id: expenseId, organizationId, projectId, supplierId: supplier.id, receiptFileId: data.receipt_file_id, paymentStatus, expenseDate: new Date(data.expense_date) })
     for (const item of data.items) {
       const allocationId = String(item.allocation_id)
       const [allocation] = await tx.select().from(schema.allocation).where(and(eq(schema.allocation.id, allocationId), eq(schema.allocation.projectId, projectId), eq(schema.allocation.organizationId, organizationId))).limit(1)
       if (!allocation) badRequest("An allocation does not belong to this project.")
       await tx.insert(schema.expenseLine).values({ organizationId, expenseId, allocationId, itemDescription: item.item_description, quantity: item.quantity, unitRateCents: Math.round(item.unit_rate * 100), amountCents: Math.round(item.quantity * item.unit_rate * 100) })
+    }
+    if (paidCents > 0) {
+      await tx.insert(schema.ledgerPayment).values({ organizationId, expenseId, supplierId: supplier.id, amountCents: paidCents, currency: "UGX", paymentDate: new Date(data.expense_date), method: "receipt_payment" })
     }
     return { id: expenseId }
   })
@@ -91,9 +101,27 @@ export async function createExpenseReceipt(projectId: string, data: ExpenseRecei
 
 export async function updateExpenseStatus(expenseId: string, status: ExpenseStatus) {
   const { organization } = await requireSession()
-  const expense = await expenseRepo.updateExpense(organization.organizationId, expenseId, { paymentStatus: status === "Full" ? "paid" : status === "Partial" ? "partial" : "unpaid" })
-  if (!expense) notFound("Expense not found.")
-  return expense
+  if (status !== "Full") {
+    const expense = await expenseRepo.updateExpense(organization.organizationId, expenseId, { paymentStatus: status === "Partial" ? "partial" : "unpaid" })
+    if (!expense) notFound("Expense not found.")
+    return expense
+  }
+
+  return db.transaction(async (tx) => {
+    const [expense] = await tx.select().from(schema.expense).where(and(eq(schema.expense.id, expenseId), eq(schema.expense.organizationId, organization.organizationId))).limit(1)
+    if (!expense) notFound("Expense not found.")
+    const lines = await tx.select().from(schema.expenseLine).where(and(eq(schema.expenseLine.expenseId, expenseId), eq(schema.expenseLine.organizationId, organization.organizationId)))
+    const payments = await tx.select().from(schema.ledgerPayment).where(and(eq(schema.ledgerPayment.expenseId, expenseId), eq(schema.ledgerPayment.organizationId, organization.organizationId)))
+    const totalCents = lines.reduce((sum, line) => sum + line.amountCents, 0)
+    const paidCents = payments.reduce((sum, payment) => sum + payment.amountCents, 0)
+    const outstandingCents = totalCents - paidCents
+    if (outstandingCents > 0) {
+      await tx.insert(schema.ledgerPayment).values({ organizationId: organization.organizationId, expenseId, supplierId: expense.supplierId, amountCents: outstandingCents, currency: "UGX", paymentDate: new Date(), method: "full_payment" })
+    }
+    const [updated] = await tx.update(schema.expense).set({ paymentStatus: "paid", updatedAt: new Date() }).where(and(eq(schema.expense.id, expenseId), eq(schema.expense.organizationId, organization.organizationId))).returning()
+    if (!updated) notFound("Expense not found.")
+    return updated
+  })
 }
 
 export async function getPayableExpense(expenseId: string): Promise<PayableExpenseResponse> {

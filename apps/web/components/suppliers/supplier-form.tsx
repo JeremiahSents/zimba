@@ -3,6 +3,7 @@
 import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@workspace/ui/components/dialog"
 import {
   Select,
   SelectContent,
@@ -12,6 +13,14 @@ import {
 } from "@workspace/ui/components/select"
 import { useState } from "react"
 import type { NewSupplierValues } from "@/lib/types"
+import { createSupplierCategoryAction } from "@/app/admin/suppliers/actions"
+
+const builtInCategories = [
+  { name: "Materials", slug: "materials" },
+  { name: "Labour", slug: "labour" },
+  { name: "Equipment", slug: "equipment" },
+  { name: "Services", slug: "services" },
+]
 
 const initialValues: NewSupplierValues = {
   name: "",
@@ -28,13 +37,20 @@ export function SupplierForm({
   onCancel,
   compact = false,
   pending = false,
+  initialCategories = [],
 }: {
   onSubmit: (values: NewSupplierValues) => void | Promise<void>
   onCancel?: () => void
   compact?: boolean
   pending?: boolean
+  initialCategories?: { name: string; slug: string }[]
 }) {
   const [values, setValues] = useState(initialValues)
+  const [categories, setCategories] = useState(initialCategories)
+  const [categoryOpen, setCategoryOpen] = useState(false)
+  const [categoryName, setCategoryName] = useState("")
+  const [categoryError, setCategoryError] = useState("")
+  const [categoryPending, setCategoryPending] = useState(false)
   const update = (key: keyof NewSupplierValues, value: string) =>
     setValues((current) => ({ ...current, [key]: value }))
   return (
@@ -61,7 +77,7 @@ export function SupplierForm({
             placeholder="e.g. Prime Cement"
           />
         </label>
-        <label className="grid gap-2">
+        <div className="grid gap-2 self-start">
           <Label>Category</Label>
           <Select
             value={values.category}
@@ -71,14 +87,12 @@ export function SupplierForm({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="materials">Materials</SelectItem>
-              <SelectItem value="labour">Labour</SelectItem>
-              <SelectItem value="equipment">Equipment</SelectItem>
-              <SelectItem value="services">Services</SelectItem>
+              {[...builtInCategories, ...categories].map((category) => <SelectItem key={category.slug} value={category.slug}>{category.name}</SelectItem>)}
             </SelectContent>
           </Select>
-        </label>
-        <label className="grid gap-2">
+          <button type="button" className="w-fit font-medium text-primary text-xs hover:underline" onClick={() => { setCategoryError(""); setCategoryOpen(true) }}>+ Create category</button>
+        </div>
+        <label className="grid gap-2 self-start">
           <Label>Company contact</Label>
           <Input
             value={values.companyContact}
@@ -86,7 +100,7 @@ export function SupplierForm({
             placeholder="Company phone or office"
           />
         </label>
-        <label className="grid gap-2">
+        <label className="grid gap-2 self-start">
           <Label>Person of contact</Label>
           <Input
             value={values.contactName}
@@ -94,7 +108,7 @@ export function SupplierForm({
             placeholder="Full name"
           />
         </label>
-        <label className="grid gap-2">
+        <label className="grid gap-2 self-start">
           <Label>Phone</Label>
           <Input
             type="tel"
@@ -110,7 +124,7 @@ export function SupplierForm({
             placeholder="+256 ..."
           />
         </label>
-        <label className="grid gap-2">
+        <label className="grid gap-2 self-start">
           <Label>Email</Label>
           <Input
             type="email"
@@ -136,6 +150,20 @@ export function SupplierForm({
           </label>
         )}
       </div>
+      <Dialog open={categoryOpen} onOpenChange={setCategoryOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader><DialogTitle>Create supplier category</DialogTitle><DialogDescription>This category will only be available inside your organization.</DialogDescription></DialogHeader>
+          <div className="grid gap-2"><Label htmlFor="new-category">Category name</Label><Input id="new-category" value={categoryName} onChange={(event) => setCategoryName(event.target.value)} placeholder="e.g. Transport" autoFocus />{categoryError && <p className="text-destructive text-sm" role="alert">{categoryError}</p>}</div>
+          <DialogFooter><Button type="button" variant="secondary" onClick={() => setCategoryOpen(false)}>Cancel</Button><Button type="button" disabled={categoryPending || !categoryName.trim()} onClick={async () => {
+            setCategoryPending(true); setCategoryError("")
+            const result = await createSupplierCategoryAction(categoryName)
+            setCategoryPending(false)
+            if (!result.success) return setCategoryError(result.error.message)
+            setCategories((current) => [...current, result.data].sort((a, b) => a.name.localeCompare(b.name)))
+            update("category", result.data.slug); setCategoryName(""); setCategoryOpen(false)
+          }}>{categoryPending ? "Creating…" : "Create category"}</Button></DialogFooter>
+        </DialogContent>
+      </Dialog>
       <div className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-2 gap-2 border-t bg-background/96 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-18px_45px_-28px_rgba(15,23,42,0.45)] backdrop-blur-xl sm:static sm:flex sm:flex-row sm:justify-end sm:border-t sm:bg-transparent sm:p-0 sm:pt-4 sm:shadow-none sm:backdrop-blur-none">
         {onCancel && (
           <Button

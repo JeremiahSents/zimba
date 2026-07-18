@@ -15,12 +15,29 @@ import { TeamTable } from "@/components/team/team-table"
 import type { TeamMember } from "@/lib/types"
 import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@workspace/ui/components/select"
 import { useState } from "react"
 import { inviteMemberAction } from "@/app/admin/team/actions"
+
+const inviteRoles = [
+  { label: "Site manager", value: "site_manager" },
+  { label: "Accountant", value: "accountant" },
+  { label: "Viewer", value: "viewer" },
+  { label: "Owner", value: "owner" },
+] as const
+
+type InviteRole = (typeof inviteRoles)[number]["value"]
 
 export function TeamPage({ members, invitations, canInvite }: { members: TeamMember[]; invitations: { id: string; name: string; email: string; role: string }[]; canInvite: boolean }) {
   const [showInvite, setShowInvite] = useState(false)
   const [message, setMessage] = useState("")
+  const [inviteRole, setInviteRole] = useState<InviteRole>("site_manager")
   const stats = [
     ["Team members", String(members.length), "With dashboard access"],
     ["Managers", String(members.filter((member) => ["owner", "site_manager", "Owner / Admin", "Site manager"].includes(member.role)).length), "Owner and site manager roles"],
@@ -62,7 +79,7 @@ export function TeamPage({ members, invitations, canInvite }: { members: TeamMem
         </CardHeader>
         <CardContent>
           {showInvite && <form className="mb-6 grid gap-4 rounded-xl border bg-muted/30 p-4 sm:grid-cols-2" action={async (formData) => {
-            const result = await inviteMemberAction({ name: String(formData.get("name")), email: String(formData.get("email")), role: String(formData.get("role")) as "owner" | "site_manager" | "accountant" | "viewer", responsibility: String(formData.get("responsibility")) })
+            const result = await inviteMemberAction({ name: String(formData.get("name")), email: String(formData.get("email")), role: inviteRole, responsibility: String(formData.get("responsibility")) })
             if (!result.success) return setMessage(result.error.message)
             const url = `${window.location.origin}${result.data.path}`
             await navigator.clipboard.writeText(url)
@@ -70,9 +87,23 @@ export function TeamPage({ members, invitations, canInvite }: { members: TeamMem
           }}>
             <div><Label htmlFor="invite-name">Name</Label><Input id="invite-name" name="name" required /></div>
             <div><Label htmlFor="invite-email">Email</Label><Input id="invite-email" name="email" type="email" required /></div>
-            <div><Label htmlFor="invite-role">Role</Label><select id="invite-role" name="role" className="mt-1 h-10 w-full rounded-lg border bg-background px-3 text-sm"><option value="site_manager">Site manager</option><option value="accountant">Accountant</option><option value="viewer">Viewer</option><option value="owner">Owner</option></select></div>
+            <div>
+              <Label htmlFor="invite-role">Role</Label>
+              <Select value={inviteRole} onValueChange={(value) => setInviteRole((value ?? "site_manager") as InviteRole)}>
+                <SelectTrigger id="invite-role" className="mt-1 w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {inviteRoles.map((role) => (
+                    <SelectItem key={role.value} value={role.value}>
+                      {role.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div><Label htmlFor="responsibility">Responsibility</Label><Input id="responsibility" name="responsibility" placeholder="e.g. Kampala site" /></div>
-            <div className="sm:col-span-2"><Button type="submit">Create and copy invitation</Button>{message && <p className="mt-2 text-sm text-muted-foreground">{message}</p>}</div>
+            <div className="sm:col-span-2"><Button type="submit">Create and copy invitation</Button>{message && <p className="mt-2 text-muted-foreground text-sm">{message}</p>}</div>
           </form>}
           <TeamTable members={members} />
         </CardContent>

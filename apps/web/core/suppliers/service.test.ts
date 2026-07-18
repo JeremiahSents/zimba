@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 vi.mock("server-only", () => ({}))
-import { getSuppliersList, createSupplier } from "./service"
+import { getSuppliersList, createSupplier, createSupplierCategory } from "./service"
 import * as supplierRepo from "./repository"
 import * as authService from "../auth/service"
 
@@ -61,5 +61,12 @@ describe("Suppliers Service", () => {
       category: "labour",
       organizationId: "org-1",
     }))
+  })
+
+  it("creates a normalized category inside the active organization", async () => {
+    vi.mocked(supplierRepo.getSupplierCategoryBySlug).mockResolvedValue(null)
+    vi.mocked(supplierRepo.createSupplierCategory).mockResolvedValue({ id: "category-1", organizationId: "org-1", name: "Heavy Transport", slug: "heavy-transport", createdAt: new Date(), updatedAt: new Date() })
+    await createSupplierCategory("  Heavy   Transport ")
+    expect(supplierRepo.createSupplierCategory).toHaveBeenCalledWith(expect.objectContaining({ organizationId: "org-1", name: "Heavy Transport", slug: "heavy-transport" }))
   })
 })

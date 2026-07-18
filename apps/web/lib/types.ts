@@ -22,6 +22,8 @@ export type SupplierCreate = {
   phone?: string | null
   email?: string | null
   notes?: string | null
+  companyContact?: string | null
+  contactName?: string | null
 }
 export type NewSupplierValues = {
   name: string
@@ -139,6 +141,7 @@ export type ExpenseResponse = {
   id: string
   receipt_id?: string | null
   project_id?: string
+  supplier_id?: string
   allocation_id?: string
   date: string
   task_name: string
@@ -155,7 +158,7 @@ export type ExpenseResponse = {
 export type SupplierResponse = SupplierBreakdown & {
   id?: string
   payments: number
-  category: "materials" | "labour" | "equipment" | "services" | "other"
+  category: string
   companyContact?: string
   contactName?: string
   phone?: string | null

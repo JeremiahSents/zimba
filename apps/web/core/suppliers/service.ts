@@ -2,6 +2,7 @@ import "server-only"
 import { requireSession } from "../auth/service"
 import * as supplierRepo from "./repository"
 import type { SupplierCreate, SupplierResponse } from "@/lib/types"
+import { badRequest, conflict } from "../shared/errors"
 
 export async function getSuppliersList(): Promise<SupplierResponse[]> {
   const { organization } = await requireSession()
@@ -39,7 +40,27 @@ export async function createSupplier(data: SupplierCreate) {
     phone: data.phone,
     email: data.email,
     notes: data.notes,
+    companyContact: data.companyContact,
+    contactName: data.contactName,
   })
 
   return supplier
+}
+
+export async function getSupplierCategories() {
+  const { organization } = await requireSession()
+  return supplierRepo.listSupplierCategories(organization.organizationId)
+}
+
+export async function createSupplierCategory(name: string) {
+  const { organization } = await requireSession()
+  const displayName = name.trim().replace(/\s+/g, " ")
+  if (!displayName) badRequest("Enter a category name.")
+  const slug = displayName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")
+  if (!slug) badRequest("Enter a category name containing letters or numbers.")
+  if (["materials", "labour", "equipment", "services"].includes(slug)) conflict("That category already exists in this organization.")
+  if (await supplierRepo.getSupplierCategoryBySlug(organization.organizationId, slug)) conflict("That category already exists in this organization.")
+  const category = await supplierRepo.createSupplierCategory({ organizationId: organization.organizationId, name: displayName, slug })
+  if (!category) throw new Error("Supplier category insert failed")
+  return category
 }

@@ -123,6 +123,7 @@ function actionError(error: unknown): { success: false; error: { code: string; m
 function revalidateConnectedRoutes(projectId?: string) {
   revalidatePath("/admin/home")
   revalidatePath("/admin/projects")
+  revalidatePath("/admin/suppliers")
   revalidatePath("/admin/analytics")
   revalidatePath("/admin/budget")
   revalidatePath("/admin/reports")
