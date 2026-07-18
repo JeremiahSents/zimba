@@ -57,7 +57,12 @@ export async function createPayableExpense(data: PayableExpenseCreate): Promise<
       createdLines.push({ id, allocation_id: allocationId, allocation_name: allocation.name, description: line.description, quantity: line.quantity, unit_amount: line.unit_amount, tax_amount: line.tax_amount ?? 0, line_amount: amount })
     }
     const gross = createdLines.reduce((sum, line) => sum + line.line_amount, 0)
-    return { id: expense.id, project_id: projectId, supplier_id: supplierId, currency: data.currency, vendor_reference: data.vendor_reference, expense_date: expense.expenseDate?.toISOString() ?? null, due_date: data.due_date ?? null, approval_status: data.submit_for_approval ? "submitted" : "draft", lifecycle_status: data.lifecycle_status, gross_amount: gross, net_amount: gross, paid_amount: data.amount_paid ?? 0, outstanding_amount: Math.max(0, gross - (data.amount_paid ?? 0)), settlement_status: data.amount_paid ? "partially_paid" : "unpaid", project_name: project.name, supplier_name: supplier.name, lines: createdLines, payments: [] }
+    const paidAmount = Math.min(data.amount_paid ?? 0, gross)
+    if (paidAmount > 0) {
+      await tx.insert(schema.ledgerPayment).values({ organizationId, expenseId: expense.id, supplierId, amountCents: Math.round(paidAmount * 100), currency: data.currency, paymentDate: data.payment_date ? new Date(data.payment_date) : new Date(), method: data.payment_method ?? "cash", reference: data.payment_reference })
+      await tx.update(schema.expense).set({ paymentStatus: paidAmount >= gross ? "paid" : "partial" }).where(eq(schema.expense.id, expense.id))
+    }
+    return { id: expense.id, project_id: projectId, supplier_id: supplierId, currency: data.currency, vendor_reference: data.vendor_reference, expense_date: expense.expenseDate?.toISOString() ?? null, due_date: data.due_date ?? null, approval_status: data.submit_for_approval ? "submitted" : "draft", lifecycle_status: data.lifecycle_status, gross_amount: gross, net_amount: gross, paid_amount: paidAmount, outstanding_amount: Math.max(0, gross - paidAmount), settlement_status: paidAmount >= gross && gross > 0 ? "paid" : paidAmount > 0 ? "partially_paid" : "unpaid", project_name: project.name, supplier_name: supplier.name, lines: createdLines, payments: [] }
   })
 }
 

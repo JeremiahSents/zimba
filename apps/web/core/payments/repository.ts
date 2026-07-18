@@ -1,5 +1,5 @@
 import "server-only"
-import { and, desc, eq } from "drizzle-orm"
+import { and, desc, eq, sql } from "drizzle-orm"
 import { db, schema } from "../shared/db"
 
 export async function createPayable(data: typeof schema.payable.$inferInsert) {
@@ -27,4 +27,12 @@ export async function deletePayable(organizationId: string, id: string) {
 export async function createLedgerPayment(data: typeof schema.ledgerPayment.$inferInsert) {
   const [payment] = await db.insert(schema.ledgerPayment).values(data).returning()
   return payment
+}
+
+export async function syncExpensePaymentStatus(organizationId: string, expenseId: string) {
+  const [totals] = await db.select({ total: sql<number>`coalesce((select sum(${schema.expenseLine.amountCents}) from ${schema.expenseLine} where ${schema.expenseLine.expenseId} = ${expenseId} and ${schema.expenseLine.organizationId} = ${organizationId}), 0)`, paid: sql<number>`coalesce((select sum(${schema.ledgerPayment.amountCents}) from ${schema.ledgerPayment} where ${schema.ledgerPayment.expenseId} = ${expenseId} and ${schema.ledgerPayment.organizationId} = ${organizationId}), 0)` }).from(schema.expense).where(and(eq(schema.expense.id, expenseId), eq(schema.expense.organizationId, organizationId))).limit(1)
+  if (!totals) return
+  const total = Number(totals.total)
+  const paid = Number(totals.paid)
+  await db.update(schema.expense).set({ paymentStatus: paid >= total && total > 0 ? "paid" : paid > 0 ? "partial" : "unpaid" }).where(and(eq(schema.expense.id, expenseId), eq(schema.expense.organizationId, organizationId)))
 }

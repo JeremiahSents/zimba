@@ -68,6 +68,7 @@ export async function updateAllocationAction(
 }
 
 export async function archiveProjectAction(projectId: string): Promise<ActionResult> {
+  await requireSession()
   try {
     await archiveProject(projectId)
     revalidateConnectedRoutes(projectId)
