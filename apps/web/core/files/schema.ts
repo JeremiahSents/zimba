@@ -3,7 +3,7 @@ import { organization } from "../organizations/schema"
 import { user } from "../auth/schema"
 
 export const uploadedFile = pgTable("uploaded_file", {
-  id: varchar("id").primaryKey(),
+  id: varchar("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   organizationId: varchar("organization_id")
     .notNull()
     .references(() => organization.id, { onDelete: "cascade" }),
@@ -25,7 +25,7 @@ export const uploadedFile = pgTable("uploaded_file", {
 })
 
 export const projectAttachment = pgTable("project_attachment", {
-  id: varchar("id").primaryKey(),
+  id: varchar("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   organizationId: varchar("organization_id")
     .notNull()
     .references(() => organization.id, { onDelete: "cascade" }),

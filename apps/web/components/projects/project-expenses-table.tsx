@@ -166,11 +166,11 @@ export function ProjectExpensesTable({
                 const status = expense.status ?? "Full"
                 return (
                   <MobileDataCard
-                    key={`${expense.source ?? "legacy"}-${row.id}`}
+                    key={row.id}
                     eyebrow={expense.task_name}
                     title={
                       <Link
-                        href={`/admin/expenses/receipts/${expense.receipt_id ?? expense.id}?source=${expense.source ?? "legacy"}`}
+                        href={`/admin/expenses/receipts/${expense.receipt_id ?? expense.id}`}
                         className="font-medium text-primary hover:underline"
                       >
                         {expense.item_description}
@@ -244,7 +244,7 @@ export function ProjectExpensesTable({
               {rows.length ? (
                 rows.map((row) => (
                   <TableRow
-                    key={`${row.original.source ?? "legacy"}-${row.id}`}
+                    key={row.id}
                     className="hover:bg-muted/25"
                   >
                     {row.getVisibleCells().map((cell) => (
@@ -254,7 +254,7 @@ export function ProjectExpensesTable({
                       >
                         {cell.column.id === "item_description" ? (
                           <Link
-                            href={`/admin/expenses/receipts/${row.original.receipt_id ?? row.original.id}?source=${row.original.source ?? "legacy"}`}
+                            href={`/admin/expenses/receipts/${row.original.receipt_id ?? row.original.id}`}
                             className="block truncate font-medium text-primary hover:underline"
                           >
                             {row.original.item_description}

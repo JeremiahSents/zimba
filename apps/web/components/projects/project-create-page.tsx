@@ -24,7 +24,6 @@ import {
   readProjectCreateDraft,
   writeProjectCreateDraft,
 } from "@/lib/project-create-draft"
-import type { DashboardSource } from "@/lib/types"
 import { uploadZimbaFile } from "@/lib/upload-file"
 
 const emptyDetails: ProjectDetails = {
@@ -34,7 +33,7 @@ const emptyDetails: ProjectDetails = {
   buildingType: "",
 }
 
-export function ProjectCreatePage({ source }: { source: DashboardSource }) {
+export function ProjectCreatePage() {
   const router = useRouter()
   const [details, setDetails] = useState<ProjectDetails>(emptyDetails)
   const [files, setFiles] = useState<File[]>([])

@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 
 import { BudgetPage } from "@/components/budget/budget-page"
-import { getDashboardOverviewData } from "@/lib/api/dashboard"
+import { getDashboardOverviewData } from "@/core/dashboard/service"
 
 export const dynamic = "force-dynamic"
 

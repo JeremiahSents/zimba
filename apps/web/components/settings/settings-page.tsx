@@ -8,9 +8,8 @@ import {
 import { ActivityRow } from "@/components/shared/activity-row"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { SettingField } from "@/components/shared/setting-field"
-import { mockCompanySettings, mockTeamMembers } from "@/lib/api/mock-data"
 
-export function SettingsPage() {
+export function SettingsPage({ company, role }: { company: string; role: string }) {
   return (
     <DashboardShell
       title="Settings"
@@ -28,19 +27,19 @@ export function SettingsPage() {
             <CardContent className="grid gap-4 sm:grid-cols-2">
               <SettingField
                 label="Company"
-                value={mockCompanySettings.company}
+                value={company}
               />
               <SettingField
                 label="Currency"
-                value={mockCompanySettings.currency}
+                value="UGX"
               />
               <SettingField
                 label="Default region"
-                value={mockCompanySettings.defaultRegion}
+                value="Uganda"
               />
               <SettingField
                 label="Fiscal period"
-                value={mockCompanySettings.fiscalPeriod}
+                value="Monthly"
               />
             </CardContent>
           </Card>
@@ -79,14 +78,10 @@ export function SettingsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              {mockTeamMembers.map((member) => (
-                <div key={member.role} className="py-2">
-                  <p className="font-medium">{member.role}</p>
-                  <p className="text-muted-foreground text-sm">
-                    Can view assigned projects and payment context.
-                  </p>
-                </div>
-              ))}
+              <div className="py-2">
+                <p className="font-medium">{role}</p>
+                <p className="text-muted-foreground text-sm">Your current workspace role.</p>
+              </div>
             </CardContent>
           </Card>
         </aside>

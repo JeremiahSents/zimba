@@ -5,6 +5,6 @@ import { env } from "@/core/shared/env"
 export const { GET, POST } = createRouteHandler({
   router: ourFileRouter,
   config: {
-    uploadthingSecret: env.UPLOADTHING_SECRET,
+    token: env.UPLOADTHING_TOKEN,
   },
 })

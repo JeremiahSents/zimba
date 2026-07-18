@@ -1,5 +1,5 @@
 import "server-only"
-import { eq, and } from "drizzle-orm"
+import { and, desc, eq } from "drizzle-orm"
 import { db, schema } from "../shared/db"
 
 export async function createPayable(data: typeof schema.payable.$inferInsert) {
@@ -7,17 +7,21 @@ export async function createPayable(data: typeof schema.payable.$inferInsert) {
   return payable
 }
 
-export async function updatePayable(id: string, data: Partial<typeof schema.payable.$inferInsert>) {
+export async function listProjectPayables(organizationId: string, projectId: string) {
+  return db.select().from(schema.payable).where(and(eq(schema.payable.organizationId, organizationId), eq(schema.payable.projectId, projectId))).orderBy(desc(schema.payable.dueDate))
+}
+
+export async function updatePayable(organizationId: string, id: string, data: Partial<typeof schema.payable.$inferInsert>) {
   const [payable] = await db
     .update(schema.payable)
     .set(data)
-    .where(eq(schema.payable.id, id))
+    .where(and(eq(schema.payable.id, id), eq(schema.payable.organizationId, organizationId)))
     .returning()
   return payable
 }
 
-export async function deletePayable(id: string) {
-  await db.delete(schema.payable).where(eq(schema.payable.id, id))
+export async function deletePayable(organizationId: string, id: string) {
+  await db.delete(schema.payable).where(and(eq(schema.payable.id, id), eq(schema.payable.organizationId, organizationId)))
 }
 
 export async function createLedgerPayment(data: typeof schema.ledgerPayment.$inferInsert) {

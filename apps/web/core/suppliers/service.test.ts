@@ -1,7 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 vi.mock("server-only", () => ({}))
-vi.mock("@/lib/auth", () => ({}))
-vi.mock("@/lib/organization", () => ({}))
 import { getSuppliersList, createSupplier } from "./service"
 import * as supplierRepo from "./repository"
 import * as authService from "../auth/service"
@@ -57,7 +55,7 @@ describe("Suppliers Service", () => {
       category: "labour",
     })
 
-    expect(created.id).toBe("sup-2")
+    expect(created?.id).toBe("sup-2")
     expect(supplierRepo.createSupplier).toHaveBeenCalledWith(expect.objectContaining({
       name: "New Supplier",
       category: "labour",

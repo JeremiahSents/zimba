@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { SupplierDetailPage } from "@/components/suppliers/supplier-detail-page"
-import { getDashboardOverviewData } from "@/lib/api/dashboard"
+import { getDashboardOverviewData } from "@/core/dashboard/service"
 import { getSupplierBySlug } from "@/lib/supplier-data"
 
 export const dynamic = "force-dynamic"
@@ -32,7 +32,6 @@ export default async function Page({
     <SupplierDetailPage
       supplier={supplier}
       expenses={data.expenses}
-      source={data.source}
     />
   )
 }

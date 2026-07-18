@@ -29,7 +29,7 @@ import { formatCurrency, formatPercent } from "@/lib/format"
 import type { ProjectDashboardResponse } from "@/lib/types"
 
 type Details = Record<
-  number,
+  string,
   { client: string; timeline: string; status: "On track" | "At risk" }
 >
 

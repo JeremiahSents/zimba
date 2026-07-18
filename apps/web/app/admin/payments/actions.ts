@@ -5,11 +5,13 @@ import { ApplicationError } from "@/core/shared/errors"
 import { createUpcomingPayment, updateUpcomingPayment, deleteUpcomingPayment, createLedgerPayment } from "@/core/payments/service"
 import type { ActionResult } from "@/core/shared/action-result"
 import type { UpcomingPaymentCreate, UpcomingPaymentUpdate } from "@/lib/types"
+import { requireSession } from "@/core/auth/service"
 
 export async function createUpcomingPaymentAction(
   projectId: string,
   payment: UpcomingPaymentCreate
 ): Promise<ActionResult> {
+  await requireSession()
   if (!payment.title.trim() || payment.amount <= 0 || !payment.due_date) {
     return { success: false, error: { code: "bad_request", message: "Add a title, amount, and due date." } }
   }
@@ -28,6 +30,7 @@ export async function updateUpcomingPaymentAction(
   paymentId: string,
   payment: UpcomingPaymentUpdate
 ): Promise<ActionResult> {
+  await requireSession()
   try {
     await updateUpcomingPayment(paymentId, payment)
     revalidateConnectedRoutes(projectId)
@@ -41,6 +44,7 @@ export async function deleteUpcomingPaymentAction(
   projectId: string,
   paymentId: string
 ): Promise<ActionResult> {
+  await requireSession()
   try {
     await deleteUpcomingPayment(paymentId)
     revalidateConnectedRoutes(projectId)
@@ -61,6 +65,7 @@ export async function recordReceiptPaymentAction(input: {
   method: string
   reference?: string
 }): Promise<ActionResult> {
+  await requireSession()
   if (
     input.amount <= 0 ||
     input.amount > input.outstandingAmount ||

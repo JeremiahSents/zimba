@@ -25,11 +25,7 @@ import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { DatePicker } from "@/components/shared/date-picker"
 import { useWorkspace } from "@/components/shared/workspace-context"
 import { formatCurrency, formatShortDate } from "@/lib/format"
-import type {
-  DashboardSource,
-  ProjectDetailResponse,
-  SupplierResponse,
-} from "@/lib/types"
+import type { ProjectDetailResponse, SupplierResponse } from "@/lib/types"
 import { uploadZimbaFile } from "@/lib/upload-file"
 
 type ExpenseLine = {
@@ -42,10 +38,9 @@ type ExpenseLine = {
 type Props = {
   project: ProjectDetailResponse
   vendors: SupplierResponse[]
-  source: DashboardSource
 }
 
-const makeLine = (id: number, allocationId?: number): ExpenseLine => ({
+const makeLine = (id: number, allocationId?: string): ExpenseLine => ({
   id,
   allocationId: allocationId ? String(allocationId) : "",
   description: "",
@@ -77,8 +72,8 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
   const suppliers = useMemo(
     () =>
       vendors.filter(
-        (vendor): vendor is SupplierResponse & { id: number } =>
-          typeof vendor.id === "number"
+        (vendor): vendor is SupplierResponse & { id: string } =>
+          typeof vendor.id === "string"
       ),
     [vendors]
   )
@@ -168,7 +163,7 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
 
     const result = await createPayableExpenseAction({
       project_id: project.id,
-      supplier_id: Number(supplierId),
+      supplier_id: supplierId,
       currency: project.currency ?? "UGX",
       receipt_file_id: receiptFileId,
       expense_date: purchaseDate,

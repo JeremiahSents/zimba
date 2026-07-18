@@ -35,7 +35,6 @@ import {
   readProjectCreateDraft,
   writeProjectCreateDraft,
 } from "@/lib/project-create-draft"
-import type { DashboardSource } from "@/lib/types"
 
 function persistRows(rows: InitialAllocation[]) {
   const draft = readProjectCreateDraft()
@@ -116,11 +115,7 @@ function MobileAllocationCards({
   )
 }
 
-export function ProjectAllocationCreatePage({
-  source,
-}: {
-  source: DashboardSource
-}) {
+export function ProjectAllocationCreatePage() {
   const router = useRouter()
   const [rows, setRows] = useState<InitialAllocation[]>(
     defaultInitialAllocations
@@ -202,8 +197,8 @@ export function ProjectAllocationCreatePage({
       location: draft.details.location.trim(),
       name: draft.details.name.trim(),
     })
-    if (!result.ok) {
-      setError(result.error)
+    if (!result.success) {
+      setError(result.error.message)
       setSubmitting(false)
       return
     }

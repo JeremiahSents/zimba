@@ -3,7 +3,6 @@
 import { createContext, useContext } from "react"
 
 export type WorkspaceUser = {
-  authBypass: boolean
   name: string
   image: string | null
   organizationName: string
@@ -16,7 +15,6 @@ export function useWorkspace(): WorkspaceUser {
   const context = useContext(WorkspaceContext)
   return (
     context ?? {
-      authBypass: false,
       name: "Account",
       image: null,
       organizationName: "Workspace",

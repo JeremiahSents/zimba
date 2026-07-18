@@ -9,7 +9,7 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import { Button } from "@workspace/ui/components/button"
 import { Card } from "@workspace/ui/components/card"
 import Link from "next/link"
-import { useEffect, useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { SupplierTable } from "@/components/suppliers/supplier-table"
@@ -18,41 +18,15 @@ import {
   getSupplierListItems,
   type SupplierListItem,
 } from "@/lib/supplier-data"
-import { readStoredSuppliers } from "@/lib/supplier-store"
-import type { DashboardOverviewData, SupplierResponse } from "@/lib/types"
+import type { DashboardOverviewData } from "@/lib/types"
 
 export function SuppliersPage({ data }: { data: DashboardOverviewData }) {
   const [paymentFilter, setPaymentFilter] = useState<
     "all" | "Full" | "Partial" | "Not paid"
   >("all")
-  const [storedSuppliers, setStoredSuppliers] = useState<SupplierResponse[]>([])
-  useEffect(() => {
-    const updateStoredSuppliers = () =>
-      setStoredSuppliers(readStoredSuppliers())
-    updateStoredSuppliers()
-    window.addEventListener("zimba-suppliers-updated", updateStoredSuppliers)
-    return () =>
-      window.removeEventListener(
-        "zimba-suppliers-updated",
-        updateStoredSuppliers
-      )
-  }, [])
-  const allSuppliers = useMemo(
-    () => [
-      ...data.suppliers,
-      ...storedSuppliers.filter(
-        (storedSupplier) =>
-          !data.suppliers.some(
-            (supplier) =>
-              supplier.name.toLowerCase() === storedSupplier.name.toLowerCase()
-          )
-      ),
-    ],
-    [data.suppliers, storedSuppliers]
-  )
   const suppliers = useMemo<SupplierListItem[]>(
-    () => getSupplierListItems(allSuppliers, data.expenses),
-    [allSuppliers, data.expenses]
+    () => getSupplierListItems(data.suppliers, data.expenses),
+    [data.suppliers, data.expenses]
   )
   const totalReceiptValue = suppliers.reduce(
     (sum, supplier) => sum + supplier.amount,

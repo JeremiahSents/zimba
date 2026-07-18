@@ -4,8 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "api:generate": "openapi-typescript https://zimba-backend-779644650318.us-central1.run.app/openapi.json --output types/api.ts",
-    "auth:generate": "auth generate --config lib/auth.ts --output lib/auth-schema.ts --yes",
+    "auth:generate": "auth generate --config core/auth/auth.ts --output core/auth/schema.ts --yes",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "tsx core/shared/seed.ts",
@@ -17,6 +16,7 @@
     "format": "biome format --write .",
     "check": "biome check --write .",
     "typecheck": "tsc --noEmit"
+    ,"test": "vitest run"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
@@ -54,7 +54,7 @@
     "auth": "^1.6.23",
     "dotenv": "^17.4.2",
     "drizzle-kit": "^0.31.10",
-    "openapi-typescript": "7.13.0",
+    "vitest": "^4.1.10",
     "typescript": "^5"
   }
 }

@@ -2,8 +2,8 @@ import type { Metadata } from "next"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { OnboardingForm } from "@/components/auth/onboarding-form"
-import { auth } from "@/lib/auth"
-import { getOrganizationMembership } from "@/lib/organization"
+import { auth } from "@/core/auth/auth"
+import { getOrganizationMembership } from "@/core/organizations/service"
 
 export const metadata: Metadata = {
   title: "Set up your workspace | Zimba",

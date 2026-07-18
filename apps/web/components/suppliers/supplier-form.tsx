@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from "@workspace/ui/components/select"
 import { useState } from "react"
-import type { NewSupplierValues } from "@/lib/supplier-store"
+import type { NewSupplierValues } from "@/lib/types"
 
 const initialValues: NewSupplierValues = {
   name: "",

@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 
 import { ReportsPage } from "@/components/reports/reports-page"
-import { getDashboardOverviewData } from "@/lib/api/dashboard"
+import { getDashboardOverviewData } from "@/core/dashboard/service"
 
 export const dynamic = "force-dynamic"
 

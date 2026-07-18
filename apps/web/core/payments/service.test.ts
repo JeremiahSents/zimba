@@ -1,8 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 vi.mock("server-only", () => ({}))
-vi.mock("@/lib/auth", () => ({}))
-vi.mock("@/lib/organization", () => ({}))
-import { createUpcomingPayment, updateUpcomingPayment, deleteUpcomingPayment, createLedgerPayment } from "./service"
+import { createUpcomingPayment, updateUpcomingPayment, createLedgerPayment } from "./service"
 import * as paymentRepo from "./repository"
 import * as authService from "../auth/service"
 
@@ -27,10 +25,11 @@ describe("Payments Service", () => {
     const result = await createUpcomingPayment("proj-1", {
       title: "Material payment",
       amount: 100,
+      currency: "UGX",
       due_date: "2024-01-15",
     })
 
-    expect(result.id).toBe("pay-1")
+    expect(result?.id).toBe("pay-1")
     expect(paymentRepo.createPayable).toHaveBeenCalledWith(expect.objectContaining({
       organizationId: "org-1",
       projectId: "proj-1",
@@ -49,9 +48,7 @@ describe("Payments Service", () => {
       status: "paid",
     })
 
-    expect(paymentRepo.updatePayable).toHaveBeenCalledWith("pay-2", {
-      status: "paid",
-    })
+    expect(paymentRepo.updatePayable).toHaveBeenCalledWith("org-1", "pay-2", expect.objectContaining({ status: "paid" }))
   })
 
   it("should create ledger payment", async () => {

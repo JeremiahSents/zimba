@@ -4,7 +4,7 @@ import { project } from "../projects/schema"
 import { supplier } from "../suppliers/schema"
 
 export const payable = pgTable("payable", {
-  id: varchar("id").primaryKey(),
+  id: varchar("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   organizationId: varchar("organization_id")
     .notNull()
     .references(() => organization.id, { onDelete: "cascade" }),
@@ -27,7 +27,8 @@ export const payable = pgTable("payable", {
 })
 
 export const ledgerPayment = pgTable("ledger_payment", {
-  id: varchar("id").primaryKey(),
+  id: varchar("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  expenseId: varchar("expense_id"),
   organizationId: varchar("organization_id")
     .notNull()
     .references(() => organization.id, { onDelete: "cascade" }),
@@ -38,6 +39,8 @@ export const ledgerPayment = pgTable("ledger_payment", {
   amountCents: integer("amount_cents").notNull().default(0),
   currency: varchar("currency").notNull().default("UGX"),
   paymentDate: timestamp("payment_date", { mode: "date" }),
+  method: varchar("method"),
+  reference: text("reference"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()

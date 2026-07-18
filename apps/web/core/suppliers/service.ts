@@ -8,13 +8,15 @@ export async function getSuppliersList(): Promise<SupplierResponse[]> {
   const suppliers = await supplierRepo.listSuppliers(organization.organizationId)
   
   return suppliers.map(s => ({
-    id: s.id as any,
-    supplier_id: s.id as any,
+    id: s.id,
+    supplier_id: s.id,
     name: s.name,
     category: (s.category || "other") as SupplierResponse["category"],
     phone: s.phone,
     email: s.email,
     notes: s.notes,
+    companyContact: s.companyContact ?? undefined,
+    contactName: s.contactName ?? undefined,
     status: s.status,
     payments: 0, // Mocked for now until expenses/payments are integrated
     amount: 0,

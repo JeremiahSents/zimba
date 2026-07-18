@@ -2,9 +2,8 @@ import type { Metadata } from "next"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { LoginForm } from "@/components/auth/login-form"
-import { isAuthBypassEnabled } from "@/lib/api/auth-mode"
-import { auth } from "@/lib/auth"
-import { getOrganizationMembership } from "@/lib/organization"
+import { auth } from "@/core/auth/auth"
+import { getOrganizationMembership } from "@/core/organizations/service"
 
 export const metadata: Metadata = {
   title: "Sign in | Zimba",
@@ -18,8 +17,6 @@ export default async function LoginPage({
 }: {
   searchParams: Promise<{ error?: string }>
 }) {
-  if (isAuthBypassEnabled()) redirect("/admin/home")
-
   const session = await auth.api.getSession({ headers: await headers() })
   if (session) {
     const membership = await getOrganizationMembership(session.user.id)

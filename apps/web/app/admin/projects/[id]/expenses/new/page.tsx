@@ -1,9 +1,8 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { ProjectExpenseCreatePage } from "@/components/projects/project-expense-create-page"
-import { getDataMode } from "@/lib/api/data-mode"
-import { getDashboardOverviewData } from "@/lib/api/dashboard"
-import { getProjectDetail } from "@/lib/api/projects"
+import { getDashboardOverviewData } from "@/core/dashboard/service"
+import { getProjectDetail } from "@/core/projects/service"
 
 export const dynamic = "force-dynamic"
 export const metadata: Metadata = { title: "New expense | Zimba" }
@@ -15,7 +14,7 @@ export default async function Page({
 }) {
   const { id } = await params
   const [project, dashboard] = await Promise.all([
-    getProjectDetail(Number(id)),
+    getProjectDetail(id),
     getDashboardOverviewData(),
   ])
 
@@ -25,7 +24,6 @@ export default async function Page({
     <ProjectExpenseCreatePage
       project={project}
       vendors={dashboard.suppliers}
-      source={getDataMode() === "mock" ? "mock" : "api"}
     />
   )
 }

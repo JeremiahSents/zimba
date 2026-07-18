@@ -2,8 +2,8 @@ import { SidebarProvider } from "@workspace/ui/components/sidebar"
 import { cookies, headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { WorkspaceProvider } from "@/components/shared/workspace-provider"
-import { auth } from "@/lib/auth"
-import { getOrganizationMembership } from "@/lib/organization"
+import { auth } from "@/core/auth/auth"
+import { getOrganizationMembership } from "@/core/organizations/service"
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 

@@ -1,8 +1,9 @@
 import "server-only"
-import { requireSession } from "../auth/service"
 import * as fileRepo from "./repository"
 
 export async function recordUploadedFile(data: {
+  organizationId: string
+  uploaderId: string
   key: string
   url: string
   filename: string
@@ -10,13 +11,9 @@ export async function recordUploadedFile(data: {
   sizeBytes: number
   purpose: string
 }) {
-  const { user, organization } = await requireSession()
-  
-  const fileId = crypto.randomUUID()
   const file = await fileRepo.createUploadedFile({
-    id: fileId,
-    organizationId: organization.organizationId,
-    uploaderId: user.id,
+    organizationId: data.organizationId,
+    uploaderId: data.uploaderId,
     key: data.key,
     url: data.url,
     filename: data.filename,

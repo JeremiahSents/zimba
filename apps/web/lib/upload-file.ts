@@ -17,7 +17,7 @@ export async function uploadZimbaFile(
   }
 
   const result = uploaded[0]
-  if (!result || !result.serverData || !result.serverData.fileId) {
+  if (!result?.serverData?.fileId) {
     throw new Error("Upload response did not return a file ID.")
   }
 

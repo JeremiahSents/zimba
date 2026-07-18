@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache"
 import { createSupplier } from "@/core/suppliers/service"
 import { ApplicationError } from "@/core/shared/errors"
 import type { ActionResult } from "@/core/shared/action-result"
+import { requireSession } from "@/core/auth/service"
 
 export async function createSupplierAction(input: {
   name: string
@@ -14,6 +15,7 @@ export async function createSupplierAction(input: {
   email?: string
   notes?: string
 }): Promise<ActionResult> {
+  await requireSession()
   if (!input.name.trim()) {
     return { success: false, error: { code: "bad_request", message: "Add a supplier name." } }
   }

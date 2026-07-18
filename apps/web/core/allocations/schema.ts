@@ -3,7 +3,7 @@ import { organization } from "../organizations/schema"
 import { project } from "../projects/schema"
 
 export const allocation = pgTable("allocation", {
-  id: varchar("id").primaryKey(),
+  id: varchar("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   organizationId: varchar("organization_id")
     .notNull()
     .references(() => organization.id, { onDelete: "cascade" }),

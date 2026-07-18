@@ -38,7 +38,7 @@ import { ProjectExpensesTable } from "@/components/projects/project-expenses-tab
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { DatePicker } from "@/components/shared/date-picker"
 import { formatCurrency, formatPercent, formatShortDate } from "@/lib/format"
-import type { DashboardSource, ProjectDetailResponse } from "@/lib/types"
+import type { ProjectDetailResponse } from "@/lib/types"
 
 const colors = ["#86efac", "#fcd34d", "#fca5a5", "#93c5fd", "#d8b4fe"]
 const taskLegendClasses = [
@@ -59,19 +59,16 @@ const metricIcons = {
 
 export function ProjectDetailPageWrapper({
   initialProject,
-  source,
 }: {
   initialProject: ProjectDetailResponse
-  source: DashboardSource
 }) {
-  return <ProjectDetailPage project={initialProject} source={source} />
+  return <ProjectDetailPage project={initialProject} />
 }
 
 export function ProjectDetailPage({
   project,
 }: {
   project: ProjectDetailResponse
-  source: DashboardSource
 }) {
   const router = useRouter()
   const [expenses, setExpenses] = useState(project.expenses)
@@ -671,7 +668,7 @@ function TaskExpenseDetails({
               expense.outstanding_amount ?? Math.max(expense.amount - paid, 0)
             return (
               <div
-                key={`${expense.source ?? "legacy"}-${expense.id}`}
+                key={expense.id}
                 className="grid gap-2 px-3 py-2.5 text-xs sm:grid-cols-[1.25fr_0.7fr_0.8fr_0.8fr] sm:items-center"
               >
                 <div className="min-w-0">

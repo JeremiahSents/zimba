@@ -37,11 +37,9 @@ const statusStyles: Record<SupplierPaymentStatus, string> = {
 export function SupplierDetailPage({
   supplier: supplierRecord,
   expenses,
-  source,
 }: {
   supplier: SupplierResponse
   expenses: ExpenseTableRow[]
-  source: "api" | "mock"
 }) {
   const [supplier] = getSupplierListItems([supplierRecord], expenses)
   if (!supplier) return null

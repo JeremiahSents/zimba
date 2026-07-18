@@ -23,6 +23,10 @@ export function ExpensesPage({ data }: { data: DashboardOverviewData }) {
     0,
     ...data.expenses.map((expense) => expense.amount)
   )
+  const outstanding = data.expenses.reduce(
+    (total, expense) => total + (expense.status === "Full" ? 0 : expense.outstanding_amount ?? expense.amount),
+    0
+  )
 
   return (
     <DashboardShell
@@ -53,7 +57,7 @@ export function ExpensesPage({ data }: { data: DashboardOverviewData }) {
         <ExpenseMetric
           detail="Needs attention"
           label="Pending approval"
-          value={formatCurrency(42_000_000)}
+          value={formatCurrency(outstanding)}
         />
         <ExpenseMetric
           detail="Largest logged item"

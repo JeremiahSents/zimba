@@ -270,7 +270,7 @@ export function ExpenseTable({ expenses }: { expenses: ExpenseTableRow[] }) {
 function groupExpensesByReceipt(
   expenses: ExpenseTableRow[]
 ): ExpenseTableRow[] {
-  const groups = new Map<number, ExpenseTableRow[]>()
+  const groups = new Map<string, ExpenseTableRow[]>()
   for (const expense of expenses) {
     const id = expense.receipt_id ?? expense.id
     const group = groups.get(id) ?? []

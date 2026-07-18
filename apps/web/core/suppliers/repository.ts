@@ -1,5 +1,5 @@
 import "server-only"
-import { eq, and, desc, sql } from "drizzle-orm"
+import { desc, eq } from "drizzle-orm"
 import { db, schema } from "../shared/db"
 
 export async function listSuppliers(organizationId: string) {

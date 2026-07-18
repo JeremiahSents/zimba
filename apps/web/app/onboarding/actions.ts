@@ -3,11 +3,11 @@
 import { eq } from "drizzle-orm"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
-import { auth } from "@/lib/auth"
-import { user } from "@/lib/auth-schema"
-import { db } from "@/lib/database"
-import { getOrganizationMembership } from "@/lib/organization"
-import { member, organization } from "@/lib/organization-schema"
+import { auth } from "@/core/auth/auth"
+import { user } from "@/core/auth/schema"
+import { db } from "@/core/shared/db"
+import { getOrganizationMembership } from "@/core/organizations/service"
+import { member, organization } from "@/core/organizations/schema"
 
 export type OnboardingState = {
   error?: string

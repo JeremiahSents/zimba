@@ -10,15 +10,17 @@ export const ourFileRouter = {
     pdf: { maxFileSize: "16MB", maxFileCount: 5 },
   })
     .middleware(async ({ req }) => {
-      const { user } = await requireSession()
+      const { user, organization } = await requireSession()
       
       const purpose = req.headers.get("x-upload-purpose") || "attachment"
 
-      return { userId: user.id, purpose }
+      return { userId: user.id, organizationId: organization.organizationId, purpose }
     })
     .onUploadComplete(async ({ metadata, file }) => {
       // Record the file in the database
       const dbFile = await recordUploadedFile({
+        organizationId: metadata.organizationId,
+        uploaderId: metadata.userId,
         key: file.key,
         url: file.url,
         filename: file.name,
@@ -27,6 +29,7 @@ export const ourFileRouter = {
         purpose: metadata.purpose,
       })
 
+      if (!dbFile) throw new Error("Uploaded file metadata could not be saved.")
       return { fileId: dbFile.id, url: file.url }
     }),
 } satisfies FileRouter

@@ -1,8 +1,8 @@
 import "server-only"
 
 import { headers } from "next/headers"
-import { auth } from "@/lib/auth"
-import { getOrganizationMembership, OrganizationMembership } from "@/lib/organization"
+import { auth } from "./auth"
+import { getOrganizationMembership, type OrganizationMembership } from "../organizations/service"
 import { unauthorized, forbidden } from "../shared/errors"
 
 export type SessionWithOrganization = {

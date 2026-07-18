@@ -49,7 +49,7 @@ type DashboardShellProps = {
 }
 
 export type NotificationItem = {
-  id: number
+  id: string
   name: string
   contractor: string
   item: string

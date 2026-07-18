@@ -6,10 +6,12 @@ import { createPayableExpense, createExpenseReceipt, updateExpenseStatus } from 
 import { ApplicationError } from "@/core/shared/errors"
 import type { ActionResult } from "@/core/shared/action-result"
 import type { PayableExpenseCreate, ExpenseReceiptCreate, ExpenseStatus, PayableExpenseResponse } from "@/lib/types"
+import { requireSession } from "@/core/auth/service"
 
 export async function createPayableExpenseAction(
   expense: PayableExpenseCreate
 ): Promise<ActionResult<PayableExpenseResponse>> {
+  await requireSession()
   if (
     !expense.project_id ||
     !expense.supplier_id ||
@@ -28,7 +30,7 @@ export async function createPayableExpenseAction(
   try {
     const created = await createPayableExpense(expense)
     revalidateConnectedRoutes()
-    return { success: true, data: created as any }
+    return { success: true, data: created }
   } catch (error) {
     return actionError(error)
   }
@@ -38,6 +40,7 @@ export async function createExpenseReceiptAction(
   projectId: string,
   receipt: ExpenseReceiptCreate
 ): Promise<ActionResult> {
+  await requireSession()
   if (
     !receipt.expense_date ||
     receipt.items.length === 0 ||
@@ -68,6 +71,7 @@ export async function updateExpenseStatusAction(
   expenseId: string,
   status: ExpenseStatus
 ): Promise<ActionResult> {
+  await requireSession()
   try {
     await updateExpenseStatus(expenseId, status)
     revalidateConnectedRoutes(projectId)

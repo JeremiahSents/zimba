@@ -6,10 +6,12 @@ import { createProject, updateProject, updateAllocation } from "@/core/projects/
 import { ApplicationError } from "@/core/shared/errors"
 import type { ActionResult } from "@/core/shared/action-result"
 import type { ProjectCreate, ProjectUpdate, AllocationUpdate } from "@/lib/types"
+import { requireSession } from "@/core/auth/service"
 
 export async function createProjectAction(
   project: ProjectCreate
 ): Promise<ActionResult> {
+  await requireSession()
   if (
     !project.name.trim() ||
     !project.location.trim() ||
@@ -26,6 +28,7 @@ export async function createProjectAction(
   let projectId: string
   try {
     const created = await createProject(project)
+    if (!created) throw new Error("Project could not be created.")
     projectId = created.id
   } catch (error) {
     return actionError(error)
@@ -39,6 +42,7 @@ export async function updateProjectAction(
   projectId: string,
   project: ProjectUpdate
 ): Promise<ActionResult> {
+  await requireSession()
   try {
     await updateProject(projectId, project)
     revalidateConnectedRoutes(projectId)
@@ -53,6 +57,7 @@ export async function updateAllocationAction(
   allocationId: string,
   allocation: AllocationUpdate
 ): Promise<ActionResult> {
+  await requireSession()
   try {
     await updateAllocation(projectId, allocationId, allocation)
     revalidateConnectedRoutes(projectId)
@@ -66,6 +71,7 @@ export async function createProjectTaskAction(
   projectId: string,
   input: { budget: number; name: string }
 ): Promise<ActionResult> {
+  await requireSession()
   if (!input.name.trim() || !Number.isFinite(input.budget) || input.budget <= 0) {
     return { success: false, error: { code: "bad_request", message: "Add a task name and an initial budget." } }
   }

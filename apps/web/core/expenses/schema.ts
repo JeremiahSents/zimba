@@ -5,7 +5,7 @@ import { allocation } from "../allocations/schema"
 import { supplier } from "../suppliers/schema"
 
 export const expense = pgTable("expense", {
-  id: varchar("id").primaryKey(),
+  id: varchar("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   organizationId: varchar("organization_id")
     .notNull()
     .references(() => organization.id, { onDelete: "cascade" }),
@@ -24,7 +24,7 @@ export const expense = pgTable("expense", {
 })
 
 export const expenseLine = pgTable("expense_line", {
-  id: varchar("id").primaryKey(),
+  id: varchar("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   organizationId: varchar("organization_id")
     .notNull()
     .references(() => organization.id, { onDelete: "cascade" }),

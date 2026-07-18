@@ -2,7 +2,9 @@ import "server-only"
 import { requireSession } from "../auth/service"
 import * as projectRepo from "./repository"
 import * as allocationRepo from "../allocations/repository"
-import { notFound } from "../shared/errors"
+import * as expenseRepo from "../expenses/repository"
+import * as fileRepo from "../files/repository"
+import * as paymentRepo from "../payments/repository"
 import type { ProjectDashboardResponse, ProjectDetailResponse } from "@/lib/types"
 
 export async function getProjectsList() {
@@ -10,7 +12,7 @@ export async function getProjectsList() {
   const projects = await projectRepo.listProjects(organization.organizationId)
   
   return projects.map((p): ProjectDashboardResponse => ({
-    id: p.id as any, // Cast to any to bypass type mismatch temporarily or update type
+    id: p.id,
     name: p.name,
     location: p.location,
     plot_size: p.plotSize,
@@ -28,18 +30,46 @@ export async function getProjectsList() {
   }))
 }
 
-export async function getProjectDetail(projectId: string): Promise<ProjectDetailResponse> {
+export async function getProjectDetail(projectId: string): Promise<ProjectDetailResponse | null> {
   const { organization } = await requireSession()
   const project = await projectRepo.getProject(organization.organizationId, projectId)
   
   if (!project) {
-    notFound("Project not found")
+    return null
   }
 
   const allocations = await allocationRepo.listAllocations(organization.organizationId, projectId)
+  const [expenseRows, attachments, payables] = await Promise.all([
+    expenseRepo.listExpenses(organization.organizationId),
+    fileRepo.listProjectAttachments(organization.organizationId, projectId),
+    paymentRepo.listProjectPayables(organization.organizationId, projectId),
+  ])
+  const projectExpenseRows = expenseRows.filter(({ expense }) => expense.projectId === projectId)
+  const expenses = await Promise.all(projectExpenseRows.map(async ({ expense, supplierName }) => {
+    const lines = await expenseRepo.getExpenseLines(organization.organizationId, expense.id)
+    return lines.map(({ line, allocationName }) => ({
+      id: line.id,
+      receipt_id: expense.id,
+      project_id: projectId,
+      allocation_id: line.allocationId,
+      date: (expense.expenseDate ?? expense.createdAt).toISOString(),
+      task_name: allocationName ?? "General",
+      supplier_name: supplierName ?? "Unknown supplier",
+      item_description: line.itemDescription,
+      amount: line.amountCents / 100,
+      quantity: line.quantity,
+      unit_rate: line.unitRateCents / 100,
+      status: expense.paymentStatus === "paid" ? "Full" as const : expense.paymentStatus === "partial" ? "Partial" as const : "Not paid" as const,
+    }))
+  }))
+  const flatExpenses = expenses.flat()
+  const supplierTotals = new Map<string, number>()
+  for (const expense of flatExpenses) supplierTotals.set(expense.supplier_name, (supplierTotals.get(expense.supplier_name) ?? 0) + expense.amount)
+  const allocationSpend = new Map<string, number>()
+  for (const expense of flatExpenses) if (expense.allocation_id) allocationSpend.set(expense.allocation_id, (allocationSpend.get(expense.allocation_id) ?? 0) + expense.amount)
 
   const dashboardResponse: ProjectDashboardResponse = {
-    id: project.id as any,
+    id: project.id,
     name: project.name,
     location: project.location,
     plot_size: project.plotSize,
@@ -58,24 +88,24 @@ export async function getProjectDetail(projectId: string): Promise<ProjectDetail
 
   return {
     ...dashboardResponse,
-    attachments: [], // Fetch from files repo later
+    attachments: attachments.map(({ file }) => ({ id: file.id, filename: file.filename, content_type: file.contentType, size_bytes: file.sizeBytes, url: file.url, purpose: file.purpose, created_at: file.createdAt.toISOString() })),
     tasks: allocations.map(a => ({
-      id: a.id as any,
+      id: a.id,
       name: a.name,
       budget: a.budgetCents / 100,
-      spent: 0, // Compute later
-      pct: 0,
+      spent: allocationSpend.get(a.id) ?? 0,
+      pct: a.budgetCents ? Math.round(((allocationSpend.get(a.id) ?? 0) * 10000) / a.budgetCents) : 0,
     })),
     allocations: allocations.map(a => ({
-      id: a.id as any,
+      id: a.id,
       name: a.name,
       budget: a.budgetCents / 100,
-      spent: 0,
-      remaining: a.budgetCents / 100,
-      utilization_pct: 0,
+      spent: allocationSpend.get(a.id) ?? 0,
+      remaining: Math.max(0, a.budgetCents / 100 - (allocationSpend.get(a.id) ?? 0)),
+      utilization_pct: a.budgetCents ? Math.round(((allocationSpend.get(a.id) ?? 0) * 10000) / a.budgetCents) : 0,
     })),
-    expenses: [], // Fetch from expenses repo later
-    suppliers: [], // Computed from expenses
-    upcoming_payments: [], // Fetch from payments repo later
+    expenses: flatExpenses,
+    suppliers: [...supplierTotals].map(([name, amount]) => ({ name, amount })),
+    upcoming_payments: payables.map((payment) => ({ id: payment.id, project_id: payment.projectId, title: payment.title, description: payment.description, amount: payment.amountCents / 100, currency: payment.currency, due_date: payment.dueDate?.toISOString() ?? "", supplier_name: null, status: payment.status, created_at: payment.createdAt.toISOString(), updated_at: payment.updatedAt.toISOString() })),
   }
 }
