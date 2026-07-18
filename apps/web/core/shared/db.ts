@@ -8,12 +8,19 @@ const globalForDatabase = globalThis as unknown as {
   zimbaPool?: Pool
 }
 
-export const pool =
-  globalForDatabase.zimbaPool ??
-  new Pool({
+function createPool() {
+  const pool = new Pool({
     connectionString: env.DATABASE_URL,
     max: 10,
+    onConnect: async (client) => {
+      await client.query("set search_path to public")
+    },
   })
+
+  return pool
+}
+
+export const pool = globalForDatabase.zimbaPool ?? createPool()
 
 if (process.env.NODE_ENV !== "production") {
   globalForDatabase.zimbaPool = pool
