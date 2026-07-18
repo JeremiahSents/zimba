@@ -1,12 +1,12 @@
 import "server-only"
-import { and, desc, eq, inArray } from "drizzle-orm"
+import { and, desc, eq, inArray, isNull } from "drizzle-orm"
 import { db, schema } from "../shared/db"
 
 export async function listProjects(organizationId: string) {
   const projects = await db
     .select()
     .from(schema.project)
-    .where(eq(schema.project.organizationId, organizationId))
+    .where(and(eq(schema.project.organizationId, organizationId), isNull(schema.project.archivedAt)))
     .orderBy(desc(schema.project.createdAt))
 
   const results = await Promise.all(projects.map(async (p) => {

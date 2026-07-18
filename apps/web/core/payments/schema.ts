@@ -1,4 +1,4 @@
-import { bigint, pgTable, text, timestamp, varchar } from "drizzle-orm/pg-core"
+import { bigint, pgTable, text, timestamp, uniqueIndex, varchar } from "drizzle-orm/pg-core"
 import { organization } from "../organizations/schema"
 import { project } from "../projects/schema"
 import { supplier } from "../suppliers/schema"
@@ -41,9 +41,10 @@ export const ledgerPayment = pgTable("ledger_payment", {
   paymentDate: timestamp("payment_date", { mode: "date" }),
   method: varchar("method"),
   reference: text("reference"),
+  idempotencyKey: varchar("idempotency_key"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()
     .$onUpdate(() => new Date())
     .notNull(),
-})
+}, (table) => [uniqueIndex("ledger_payment_org_idempotency_unique").on(table.organizationId, table.idempotencyKey)])

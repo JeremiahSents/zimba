@@ -4,13 +4,6 @@ const standardCurrencyFormatter = new Intl.NumberFormat("en-UG", {
   style: "currency",
 })
 
-const compactCurrencyFormatter = new Intl.NumberFormat("en-UG", {
-  currency: "UGX",
-  maximumFractionDigits: 2,
-  notation: "compact",
-  style: "currency",
-})
-
 const dateFormatter = new Intl.DateTimeFormat("en-UG", {
   day: "numeric",
   month: "short",
@@ -18,9 +11,6 @@ const dateFormatter = new Intl.DateTimeFormat("en-UG", {
 })
 
 export function formatCurrency(amount: number) {
-  if (Math.abs(amount) >= 1_000_000) {
-    return compactCurrencyFormatter.format(amount).replace("UGX", "USh ")
-  }
   return standardCurrencyFormatter.format(amount).replace("UGX", "USh ")
 }
 

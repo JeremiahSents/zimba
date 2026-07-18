@@ -34,6 +34,7 @@ import {
   deleteUpcomingPaymentAction,
   updateUpcomingPaymentAction,
 } from "@/app/admin/payments/actions"
+import { archiveProjectAction } from "@/app/admin/projects/actions"
 import { ProjectExpensesTable } from "@/components/projects/project-expenses-table"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { DatePicker } from "@/components/shared/date-picker"
@@ -131,7 +132,7 @@ export function ProjectDetailPage({
           <h2 className="min-w-0 truncate font-heading font-semibold text-2xl tracking-tight">
             {project.name}
           </h2>
-          <Button
+          <div className="flex shrink-0 gap-2"><Button variant="secondary" nativeButton={false} render={<Link href={`/admin/projects/${project.id}/edit`} />}>Edit</Button><Button variant="outline" onClick={async () => { if (window.confirm("Archive this project? It will be removed from active dashboards but its records will be preserved.")) await archiveProjectAction(project.id) }}>Archive</Button><Button
             size="sm"
             className="shrink-0"
             nativeButton={false}
@@ -140,7 +141,7 @@ export function ProjectDetailPage({
             }
           >
             + New expense
-          </Button>
+          </Button></div>
         </div>
         <p className="mt-1 text-muted-foreground text-xs">
           {project.location}

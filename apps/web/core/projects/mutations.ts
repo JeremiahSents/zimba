@@ -4,6 +4,8 @@ import * as projectRepo from "./repository"
 import * as allocationRepo from "../allocations/repository"
 import * as fileRepo from "../files/repository"
 import { badRequest } from "../shared/errors"
+import { requireRole } from "../auth/permissions"
+import { recordAudit } from "../audit/service"
 import type { ProjectCreate, ProjectUpdate, AllocationUpdate } from "@/lib/types"
 
 export async function createProject(data: ProjectCreate) {
@@ -55,7 +57,8 @@ export async function createAllocation(projectId: string, data: { name: string; 
 }
 
 export async function updateProject(projectId: string, data: ProjectUpdate) {
-  const { organization } = await requireSession()
+  const { user, organization } = await requireSession()
+  requireRole(organization.role, ["owner", "site_manager"])
   
   const project = await projectRepo.updateProject(organization.organizationId, projectId, {
     name: data.name ?? undefined,
@@ -65,13 +68,17 @@ export async function updateProject(projectId: string, data: ProjectUpdate) {
     landSize: data.land_size ?? undefined,
     startDate: data.start_date ? new Date(data.start_date) : null,
     targetEndDate: data.target_end_date ? new Date(data.target_end_date) : null,
+    status: data.status ?? undefined,
   })
+
+  await recordAudit({ organizationId: organization.organizationId, actorId: user.id, action: "project.update", entityType: "project", entityId: projectId, changes: data })
 
   return project
 }
 
 export async function updateAllocation(projectId: string, allocationId: string, data: AllocationUpdate) {
   const { organization } = await requireSession()
+  requireRole(organization.role, ["owner", "site_manager"])
   
   const allocation = await allocationRepo.updateAllocation(organization.organizationId, projectId, allocationId, {
     name: data.name ?? undefined,
@@ -79,4 +86,13 @@ export async function updateAllocation(projectId: string, allocationId: string, 
   })
 
   return allocation
+}
+
+export async function archiveProject(projectId: string) {
+  const { user, organization } = await requireSession()
+  requireRole(organization.role, ["owner"])
+  const project = await projectRepo.updateProject(organization.organizationId, projectId, { archivedAt: new Date(), archivedBy: user.id })
+  if (!project) badRequest("Project could not be archived.")
+  await recordAudit({ organizationId: organization.organizationId, actorId: user.id, action: "project.archive", entityType: "project", entityId: projectId })
+  return project
 }

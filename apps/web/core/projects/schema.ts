@@ -16,6 +16,8 @@ export const project = pgTable("project", {
   currency: varchar("currency").notNull().default("UGX"),
   startDate: timestamp("start_date", { mode: "date" }),
   targetEndDate: timestamp("target_end_date", { mode: "date" }),
+  archivedAt: timestamp("archived_at", { mode: "date" }),
+  archivedBy: varchar("archived_by"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()

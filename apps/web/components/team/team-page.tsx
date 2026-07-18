@@ -1,3 +1,5 @@
+"use client"
+
 import { UserAdd01Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Button } from "@workspace/ui/components/button"
@@ -11,13 +13,18 @@ import {
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { TeamTable } from "@/components/team/team-table"
 import type { TeamMember } from "@/lib/types"
+import { Input } from "@workspace/ui/components/input"
+import { Label } from "@workspace/ui/components/label"
+import { useState } from "react"
+import { inviteMemberAction } from "@/app/admin/team/actions"
 
-export function TeamPage() {
-  const members: TeamMember[] = []
+export function TeamPage({ members, invitations, canInvite }: { members: TeamMember[]; invitations: { id: string; name: string; email: string; role: string }[]; canInvite: boolean }) {
+  const [showInvite, setShowInvite] = useState(false)
+  const [message, setMessage] = useState("")
   const stats = [
-    ["Team members", "0", "With dashboard access"],
-    ["Approvers", "0", "Owner and accountant roles"],
-    ["Open reviews", "0", "Items awaiting action"],
+    ["Team members", String(members.length), "With dashboard access"],
+    ["Managers", String(members.filter((member) => ["owner", "site_manager", "Owner / Admin", "Site manager"].includes(member.role)).length), "Owner and site manager roles"],
+    ["Pending invites", String(invitations.length), "Invitation links awaiting acceptance"],
   ]
   return (
     <DashboardShell
@@ -48,12 +55,25 @@ export function TeamPage() {
               Roles and responsibilities across the dashboard.
             </CardDescription>
           </div>
-          <Button size="sm">
+          {canInvite && <Button size="sm" onClick={() => setShowInvite((value) => !value)}>
             <HugeiconsIcon icon={UserAdd01Icon} strokeWidth={1.5} />
             Invite member
-          </Button>
+          </Button>}
         </CardHeader>
         <CardContent>
+          {showInvite && <form className="mb-6 grid gap-4 rounded-xl border bg-muted/30 p-4 sm:grid-cols-2" action={async (formData) => {
+            const result = await inviteMemberAction({ name: String(formData.get("name")), email: String(formData.get("email")), role: String(formData.get("role")) as "owner" | "site_manager" | "accountant" | "viewer", responsibility: String(formData.get("responsibility")) })
+            if (!result.success) return setMessage(result.error.message)
+            const url = `${window.location.origin}${result.data.path}`
+            await navigator.clipboard.writeText(url)
+            setMessage("Invitation link copied. Share it with the team member; it expires in 7 days.")
+          }}>
+            <div><Label htmlFor="invite-name">Name</Label><Input id="invite-name" name="name" required /></div>
+            <div><Label htmlFor="invite-email">Email</Label><Input id="invite-email" name="email" type="email" required /></div>
+            <div><Label htmlFor="invite-role">Role</Label><select id="invite-role" name="role" className="mt-1 h-10 w-full rounded-lg border bg-background px-3 text-sm"><option value="site_manager">Site manager</option><option value="accountant">Accountant</option><option value="viewer">Viewer</option><option value="owner">Owner</option></select></div>
+            <div><Label htmlFor="responsibility">Responsibility</Label><Input id="responsibility" name="responsibility" placeholder="e.g. Kampala site" /></div>
+            <div className="sm:col-span-2"><Button type="submit">Create and copy invitation</Button>{message && <p className="mt-2 text-sm text-muted-foreground">{message}</p>}</div>
+          </form>}
           <TeamTable members={members} />
         </CardContent>
       </Card>

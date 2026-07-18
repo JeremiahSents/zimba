@@ -13,6 +13,8 @@ export async function listExpenseRows(): Promise<ExpenseTableRow[]> {
   return Promise.all(rows.map(async ({ expense, projectName, supplierName }) => {
     const lines = await expenseRepo.getExpenseLines(organization.organizationId, expense.id)
     const amount = lines.reduce((sum, { line }) => sum + line.amountCents, 0) / 100
+    const detail = await expenseRepo.getExpense(organization.organizationId, expense.id)
+    const paidAmount = (detail?.payments ?? []).reduce((sum, payment) => sum + payment.amountCents, 0) / 100
     const first = lines[0]
     return {
       id: expense.id,
@@ -24,6 +26,8 @@ export async function listExpenseRows(): Promise<ExpenseTableRow[]> {
       supplier_name: supplierName ?? "Unknown supplier",
       item_description: first?.line.itemDescription ?? "Expense",
       amount,
+      paid_amount: paidAmount,
+      outstanding_amount: Math.max(0, amount - paidAmount),
       project_name: projectName ?? "Unknown project",
       status: toUiStatus(expense.paymentStatus),
     }

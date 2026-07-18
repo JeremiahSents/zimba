@@ -18,7 +18,7 @@ import {
 } from "@workspace/ui/components/select"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { createPayableExpenseAction } from "@/app/admin/expenses/actions"
 import { UploadZone } from "@/components/projects/upload-zone"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
@@ -27,6 +27,7 @@ import { useWorkspace } from "@/components/shared/workspace-context"
 import { formatCurrency, formatShortDate } from "@/lib/format"
 import type { ProjectDetailResponse, SupplierResponse } from "@/lib/types"
 import { uploadZimbaFile } from "@/lib/upload-file"
+import { deleteReceiptDraft, readReceiptDraft, writeReceiptDraft } from "@/lib/receipt-draft"
 
 type ExpenseLine = {
   id: number
@@ -68,6 +69,23 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
   const [mobileStep, setMobileStep] = useState<"entry" | "preview">("entry")
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState("")
+  const draftReady = useRef(false)
+  const draftKey = `project:${project.id}:new-receipt`
+
+  useEffect(() => {
+    readReceiptDraft<{ supplierId: string; purchaseDate: string; lines: ExpenseLine[]; amountPaid: string; paymentDate: string; paymentMethod: string; paymentReference: string }>(draftKey).then((draft) => {
+      if (draft) {
+        setSupplierId(draft.value.supplierId); setPurchaseDate(draft.value.purchaseDate); setLines(draft.value.lines); setAmountPaid(draft.value.amountPaid); setPaymentDate(draft.value.paymentDate); setPaymentMethod(draft.value.paymentMethod); setPaymentReference(draft.value.paymentReference); setFiles(draft.files)
+      }
+      draftReady.current = true
+    }).catch(() => { draftReady.current = true })
+  }, [draftKey])
+
+  useEffect(() => {
+    if (!draftReady.current) return
+    const timer = window.setTimeout(() => void writeReceiptDraft(draftKey, { supplierId, purchaseDate, lines, amountPaid, paymentDate, paymentMethod, paymentReference }, files), 350)
+    return () => window.clearTimeout(timer)
+  }, [draftKey, supplierId, purchaseDate, lines, amountPaid, paymentDate, paymentMethod, paymentReference, files])
 
   const suppliers = useMemo(
     () =>
@@ -187,6 +205,7 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
       setSaving(false)
       return
     }
+    await deleteReceiptDraft(draftKey)
     router.push(projectHref)
     router.refresh()
   }
@@ -210,6 +229,12 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
           </h2>
         </div>
         <div className="hidden gap-2 sm:flex">
+          <Button variant="ghost" onClick={async () => {
+            await deleteReceiptDraft(draftKey)
+            setSupplierId(""); setPurchaseDate(today); setFiles([]); setLines([makeLine(1, project.tasks[0]?.id)]); setAmountPaid(""); setPaymentReference("")
+          }}>
+            Discard draft
+          </Button>
           <Button
             variant="outline"
             nativeButton={false}

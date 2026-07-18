@@ -4,6 +4,7 @@ import {
   ArrowLeft01Icon,
   Download01Icon,
   PrinterIcon,
+  Share08Icon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Button } from "@workspace/ui/components/button"
@@ -20,7 +21,7 @@ import { Label } from "@workspace/ui/components/label"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
-import { recordReceiptPaymentAction } from "@/app/admin/payments/actions"
+import { markReceiptFullyPaidAction, recordReceiptPaymentAction } from "@/app/admin/payments/actions"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { DatePicker } from "@/components/shared/date-picker"
 import { formatCurrency, formatShortDate } from "@/lib/format"
@@ -53,6 +54,7 @@ export function ReceiptDetailPage({
   const [reference, setReference] = useState("")
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState("")
+  const [markingPaid, setMarkingPaid] = useState(false)
 
   return (
     <DashboardShell
@@ -68,16 +70,35 @@ export function ReceiptDetailPage({
         </Link>
         <div className="flex flex-wrap items-center gap-3">
           {payable && outstanding > 0 && (
-            <Button className="shrink-0" onClick={() => setPaymentOpen(true)}>
-              Record payment
-            </Button>
+            <>
+              <Button className="shrink-0" disabled={markingPaid} onClick={async () => {
+                setMarkingPaid(true)
+                const result = await markReceiptFullyPaidAction(payable.id, payable.project_id, crypto.randomUUID())
+                setMarkingPaid(false)
+                if (!result.success) return setError(result.error.message)
+                router.refresh()
+              }}>
+                {markingPaid ? "Saving…" : "Mark fully paid"}
+              </Button>
+              <Button variant="secondary" className="shrink-0" onClick={() => setPaymentOpen(true)}>
+                Record partial payment
+              </Button>
+            </>
           )}
           <button
             type="button"
+            onClick={() => window.print()}
             className="inline-flex items-center gap-2 rounded-lg border bg-background px-4 py-2 font-medium text-sm shadow-sm transition-all hover:bg-accent hover:text-accent-foreground"
           >
             <HugeiconsIcon icon={PrinterIcon} size={16} />
             Print
+          </button>
+          <button type="button" onClick={async () => {
+            const data = { title: `Receipt ${payable?.receipt_number ?? first.id}`, text: `${first.supplier_name} · ${formatCurrency(total)}`, url: window.location.href }
+            if (navigator.share) await navigator.share(data)
+            else await navigator.clipboard.writeText(window.location.href)
+          }} className="inline-flex items-center gap-2 rounded-lg border bg-background px-4 py-2 font-medium text-sm shadow-sm transition-all hover:bg-accent">
+            <HugeiconsIcon icon={Share08Icon} size={16} /> Share
           </button>
           {first.receipt_url && (
             <a
@@ -95,7 +116,7 @@ export function ReceiptDetailPage({
 
       <div className="mx-auto max-w-4xl">
         {/* Receipt Paper Card */}
-        <div className="overflow-hidden rounded-xl border border-gray-100 bg-white text-gray-900 shadow-lg">
+        <div className="receipt-print-area overflow-hidden rounded-xl border border-gray-100 bg-white text-gray-900 shadow-lg">
           <div className="p-8 sm:p-12">
             {/* Header */}
             <div className="mb-8 flex flex-col items-start justify-between gap-6 border-gray-100 border-b pb-8 sm:flex-row sm:items-center">

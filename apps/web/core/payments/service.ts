@@ -1,6 +1,9 @@
 import "server-only"
 import { requireSession } from "../auth/service"
 import * as paymentRepo from "./repository"
+import { getExpense } from "../expenses/repository"
+import { badRequest, notFound } from "../shared/errors"
+import { recordAudit } from "../audit/service"
 import type { UpcomingPaymentCreate, UpcomingPaymentUpdate } from "@/lib/types"
 
 export async function createUpcomingPayment(projectId: string, data: UpcomingPaymentCreate) {
@@ -68,5 +71,18 @@ export async function createLedgerPayment(data: {
 
   // Optionally here we would also record the allocation to the expense, but we don't have that model yet.
   
+  return payment
+}
+
+export async function markExpenseFullyPaid(expenseId: string, idempotencyKey: string) {
+  const { user, organization } = await requireSession()
+  const current = await getExpense(organization.organizationId, expenseId)
+  if (!current) notFound("Receipt not found.")
+  const totalCents = current.lines.reduce((sum, item) => sum + item.line.amountCents, 0)
+  const paidCents = current.payments.reduce((sum, payment) => sum + payment.amountCents, 0)
+  const outstandingCents = totalCents - paidCents
+  if (outstandingCents <= 0) badRequest("This receipt is already fully paid.")
+  const payment = await paymentRepo.createLedgerPayment({ organizationId: organization.organizationId, expenseId, supplierId: current.expense.supplierId, amountCents: outstandingCents, currency: "UGX", paymentDate: new Date(), method: "full_payment", idempotencyKey })
+  await recordAudit({ organizationId: organization.organizationId, actorId: user.id, action: "receipt.mark_fully_paid", entityType: "expense", entityId: expenseId, changes: { amountCents: outstandingCents } })
   return payment
 }

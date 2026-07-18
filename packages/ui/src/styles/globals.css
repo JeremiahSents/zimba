@@ -55,6 +55,12 @@
   --ease-out-ui: cubic-bezier(0.23, 1, 0.32, 1);
 }
 
+@media print {
+  body * { visibility: hidden !important; }
+  .receipt-print-area, .receipt-print-area * { visibility: visible !important; }
+  .receipt-print-area { position: absolute; inset: 0; width: 100%; border: 0 !important; box-shadow: none !important; }
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

@@ -14,7 +14,7 @@ export type ProjectCreate = {
   attachment_ids?: string[] | null
   allocations: ProjectAllocationCreate[]
 }
-export type ProjectUpdate = Partial<Omit<ProjectCreate, "allocations">>
+export type ProjectUpdate = Partial<Omit<ProjectCreate, "allocations">> & { status?: string }
 export type AllocationUpdate = { name?: string | null; budget?: number | null }
 export type SupplierCreate = {
   name: string
@@ -174,9 +174,9 @@ export type ProjectDetailResponse = ProjectDashboardResponse & {
   suppliers: SupplierBreakdown[]
   upcoming_payments?: UpcomingPaymentResponse[]
 }
-export type TeamMember = { name: string; role: "Owner / Admin" | "Site manager" | "Accountant"; responsibility: string }
+export type TeamMember = { name: string; email?: string; role: string; responsibility: string }
 export type CompanySettings = { company: string; currency: "UGX"; defaultRegion: string; fiscalPeriod: "Monthly" | "Quarterly" | "Annual" }
-export type ExpenseTableRow = ExpenseResponse & { project_name: string; status: ExpenseStatus }
+export type ExpenseTableRow = ExpenseResponse & { project_name: string; status: ExpenseStatus; paid_amount?: number; outstanding_amount?: number }
 export type DashboardStat = { label: string; value: string; detail: string }
 export type SpendChartPoint = { month: string; spent: number; budget: number }
 export type UtilizationChartPoint = { month: string; utilization: number }

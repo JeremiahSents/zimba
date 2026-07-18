@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
-import { createProject, updateProject, updateAllocation } from "@/core/projects/mutations"
+import { archiveProject, createProject, updateProject, updateAllocation } from "@/core/projects/mutations"
 import { ApplicationError } from "@/core/shared/errors"
 import type { ActionResult } from "@/core/shared/action-result"
 import type { ProjectCreate, ProjectUpdate, AllocationUpdate } from "@/lib/types"
@@ -65,6 +65,16 @@ export async function updateAllocationAction(
   } catch (error) {
     return actionError(error)
   }
+}
+
+export async function archiveProjectAction(projectId: string): Promise<ActionResult> {
+  try {
+    await archiveProject(projectId)
+    revalidateConnectedRoutes(projectId)
+  } catch (error) {
+    return actionError(error)
+  }
+  redirect("/admin/projects")
 }
 
 export async function createProjectTaskAction(

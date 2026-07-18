@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { ApplicationError } from "@/core/shared/errors"
 import { createUpcomingPayment, updateUpcomingPayment, deleteUpcomingPayment, createLedgerPayment } from "@/core/payments/service"
+import { markExpenseFullyPaid } from "@/core/payments/service"
 import type { ActionResult } from "@/core/shared/action-result"
 import type { UpcomingPaymentCreate, UpcomingPaymentUpdate } from "@/lib/types"
 import { requireSession } from "@/core/auth/service"
@@ -90,6 +91,18 @@ export async function recordReceiptPaymentAction(input: {
     })
     revalidateConnectedRoutes(input.projectId)
     revalidatePath(`/admin/expenses/receipts/${input.expenseId}`)
+    return { success: true, data: undefined }
+  } catch (error) {
+    return actionError(error)
+  }
+}
+
+export async function markReceiptFullyPaidAction(expenseId: string, projectId: string, idempotencyKey: string): Promise<ActionResult> {
+  await requireSession()
+  try {
+    await markExpenseFullyPaid(expenseId, idempotencyKey)
+    revalidateConnectedRoutes(projectId)
+    revalidatePath(`/admin/expenses/receipts/${expenseId}`)
     return { success: true, data: undefined }
   } catch (error) {
     return actionError(error)
