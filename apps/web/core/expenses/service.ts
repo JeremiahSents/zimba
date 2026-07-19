@@ -192,8 +192,6 @@ export async function createPayableExpense(
         .set({ paymentStatus: paidAmount >= gross ? "paid" : "partial" })
         .where(eq(schema.expense.id, expense.id))
     }
-    const receiptNumber = payable.payable.title.startsWith("ZIMB/") ? payable.payable.title : undefined
-    const itemDescription = payable.payable.description || "Expense"
     return {
       id: expense.id,
       project_id: projectId,
@@ -421,6 +419,8 @@ export async function getPayableExpense(
     if (!payable) notFound("Receipt not found.")
     const gross = payable.payable.amountCents / 100
     const paid = payable.payments.reduce((sum, payment) => sum + payment.amountCents, 0) / 100
+    const receiptNumber = payable.payable.title.startsWith("ZIMB/") ? payable.payable.title : undefined
+    const itemDescription = payable.payable.description || "Expense"
     return {
       id: payable.payable.id,
       project_id: payable.payable.projectId,
