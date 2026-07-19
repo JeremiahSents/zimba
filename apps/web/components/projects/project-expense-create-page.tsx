@@ -32,7 +32,6 @@ import {
   readReceiptDraft,
   writeReceiptDraft,
 } from "@/lib/receipt-draft"
-import { hasValidPayableLines } from "@/lib/receipt-validation"
 import type { ProjectDetailResponse, SupplierResponse } from "@/lib/types"
 import { uploadZimbaFile } from "@/lib/upload-file"
 
@@ -69,8 +68,11 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
   const [purchaseDate, setPurchaseDate] = useState(today)
   const [files, setFiles] = useState<File[]>([])
   const [uploadedReceiptFileId, setUploadedReceiptFileId] = useState<string>()
+  const uploadPromiseRef = useRef<Promise<string> | null>(null)
   const [lines, setLines] = useState([makeLine(1, project.tasks[0]?.id)])
   const [amountPaid, setAmountPaid] = useState("")
+  const [paidInFull, setPaidInFull] = useState(false)
+  const [customPaymentOpen, setCustomPaymentOpen] = useState(false)
   const [paymentDate, setPaymentDate] = useState(today)
   const [paymentMethod, setPaymentMethod] = useState("cash")
   const [paymentReference, setPaymentReference] = useState("")
@@ -140,6 +142,19 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
     files,
   ])
 
+  useEffect(() => {
+    const file = files[0]
+    if (!file || uploadedReceiptFileId || uploadPromiseRef.current) return
+    const promise = uploadZimbaFile(file, "expense_receipt")
+    uploadPromiseRef.current = promise
+    void promise
+      .then((fileId) => setUploadedReceiptFileId(fileId))
+      .catch(() => setError("The file could not be uploaded. You can try again."))
+      .finally(() => {
+        uploadPromiseRef.current = null
+      })
+  }, [files, uploadedReceiptFileId])
+
   const suppliers = useMemo(
     () =>
       vendors.filter(
@@ -168,6 +183,12 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
         : "border-slate-200 bg-slate-100 text-slate-600"
   const projectHref = `/admin/projects/${project.id}`
 
+  function togglePaidInFull(checked: boolean) {
+    setPaidInFull(checked)
+    setAmountPaid(checked ? String(total) : "")
+    if (checked) setCustomPaymentOpen(false)
+  }
+
   function updateLine(
     id: number,
     field: Exclude<keyof ExpenseLine, "id">,
@@ -181,14 +202,40 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
   }
 
   function validateReceiptDetails() {
-    const payableLines = lines.map((line) => ({
-      allocation_id: Number(line.allocationId),
-      description: line.description,
-      quantity: Number(line.quantity),
-      unit_amount: Number(line.unitAmount),
-    }))
-    if (!supplierId || !purchaseDate || !hasValidPayableLines(payableLines)) {
-      setError("Choose a supplier and complete every item.")
+    if (!supplierId) {
+      setError("Choose a supplier before continuing.")
+      return false
+    }
+    if (!purchaseDate) {
+      setError("Choose the purchase date before continuing.")
+      return false
+    }
+    if (lines.length === 0) {
+      setError("Add at least one purchased item.")
+      return false
+    }
+
+    const invalidLine = lines.find((line) => {
+      const itemNumber = lines.indexOf(line) + 1
+      if (!line.description.trim()) {
+        setError(`Enter a description for item ${itemNumber}.`)
+        return true
+      }
+      if (!line.allocationId.trim()) {
+        setError(`Choose a category for item ${itemNumber}.`)
+        return true
+      }
+      if (!Number.isFinite(Number(line.quantity)) || Number(line.quantity) <= 0) {
+        setError(`Enter a quantity greater than zero for item ${itemNumber}.`)
+        return true
+      }
+      if (!Number.isFinite(Number(line.unitAmount)) || Number(line.unitAmount) < 0) {
+        setError(`Enter a valid rate for item ${itemNumber}.`)
+        return true
+      }
+      return false
+    })
+    if (invalidLine) {
       return false
     }
     return true
@@ -217,7 +264,7 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
     try {
       let receiptFileId = uploadedReceiptFileId
       if (files[0] && !receiptFileId) {
-        receiptFileId = await uploadZimbaFile(files[0], "expense_receipt")
+        receiptFileId = await (uploadPromiseRef.current ?? uploadZimbaFile(files[0], "expense_receipt"))
         setUploadedReceiptFileId(receiptFileId)
       }
 
@@ -236,7 +283,7 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
         payment_method: paid > 0 ? paymentMethod : undefined,
         payment_reference: paymentReference.trim() || undefined,
         lines: lines.map((line) => ({
-          allocation_id: Number(line.allocationId),
+          allocation_id: line.allocationId,
           description: line.description.trim(),
           quantity: Number(line.quantity),
           unit_amount: Number(line.unitAmount),
@@ -315,11 +362,9 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
         <div
           className={`${mobileStep === "preview" ? "hidden md:grid" : "grid"} gap-5`}
         >
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Receipt details</CardTitle>
-            </CardHeader>
-            <CardContent className="grid gap-4 sm:grid-cols-2">
+          <section className="grid gap-4">
+            <h3 className="font-medium text-base">Receipt details</h3>
+            <div className="grid gap-4 sm:grid-cols-2">
               <label className="grid gap-2 sm:col-span-2">
                 <Label>Supplier</Label>
                 <Select
@@ -369,14 +414,12 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
                   }}
                 />
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </section>
 
-          <Card className="overflow-hidden py-0">
-            <CardHeader className="border-b py-5">
-              <CardTitle className="text-base">Items purchased</CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
+          <section className="overflow-hidden border-t pt-5">
+            <h3 className="mb-4 font-medium text-base">Items purchased</h3>
+            <div>
               <div className="hidden grid-cols-[minmax(10rem,1.4fr)_minmax(9rem,1fr)_5rem_8rem_8rem_3rem] bg-muted/35 font-semibold text-[10px] text-muted-foreground uppercase tracking-wide md:grid">
                 <div className="px-3 py-2.5">Item</div>
                 <div className="border-l px-3 py-2.5">Category</div>
@@ -618,25 +661,48 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
                   {formatCurrency(total)}
                 </strong>
               </div>
-            </CardContent>
-          </Card>
+              <label className="mx-3 mb-3 flex cursor-pointer items-center gap-2 rounded-lg bg-muted/35 px-3 py-2.5 text-sm">
+                <input
+                  type="checkbox"
+                  checked={paidInFull}
+                  onChange={(event) => togglePaidInFull(event.target.checked)}
+                  className="size-4 accent-primary"
+                />
+                <span className="font-medium">Bill paid in full</span>
+              </label>
+            </div>
+          </section>
 
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Payment</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-4 sm:grid-cols-2">
-              <label className="grid gap-2">
-                <Label>Amount paid</Label>
-                <Input
-                  inputMode="numeric"
-                  value={formatNumericInput(amountPaid)}
-                  onChange={(event) =>
-                    setAmountPaid(event.target.value.replace(/\D/g, ""))
-                  }
-                  placeholder="0"
-                />
-              </label>
+              <div className="sm:col-span-2">
+                <button
+                  type="button"
+                  className="flex w-full items-center justify-between rounded-lg border bg-muted/20 px-3 py-2.5 text-left text-sm"
+                  onClick={() => setCustomPaymentOpen((open) => !open)}
+                  aria-expanded={customPaymentOpen}
+                >
+                  <span className="font-medium">Custom amount paid</span>
+                  <span className="text-muted-foreground">{customPaymentOpen ? "Hide" : "Add"}</span>
+                </button>
+                {customPaymentOpen && (
+                  <label className="mt-3 grid gap-2">
+                    <Label>Amount paid</Label>
+                    <Input
+                      inputMode="numeric"
+                      value={formatNumericInput(amountPaid)}
+                      onChange={(event) => {
+                        setPaidInFull(false)
+                        setAmountPaid(event.target.value.replace(/\D/g, ""))
+                      }}
+                      placeholder="0"
+                    />
+                  </label>
+                )}
+              </div>
               <div className="grid gap-2">
                 <Label>Status</Label>
                 <div className="flex h-10 items-center rounded-[10px] border bg-muted/20 px-3">

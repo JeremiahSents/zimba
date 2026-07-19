@@ -12,8 +12,15 @@ const globalForDatabase = globalThis as unknown as {
 }
 
 function createPool() {
+  // Keep the driver's current secure behavior explicit and silence the
+  // pg-connection-string forward-compatibility warning for sslmode=require.
+  const connectionUrl = new URL(env.DATABASE_URL)
+  if (connectionUrl.searchParams.get("sslmode") === "require") {
+    connectionUrl.searchParams.set("sslmode", "verify-full")
+  }
+
   const pool = new Pool({
-    connectionString: env.DATABASE_URL,
+    connectionString: connectionUrl.toString(),
     connectionTimeoutMillis: 5_000,
     idleTimeoutMillis: 30_000,
     max: 10,

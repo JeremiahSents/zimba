@@ -53,11 +53,6 @@ export function ErrorNotice({ error, onRetry, className }: ErrorNoticeProps) {
     >
       <div className="min-w-0">
         <p className="font-medium text-destructive text-sm">{message}</p>
-        {detail?.referenceId ? (
-          <p className="mt-1 text-muted-foreground text-xs">
-            Reference: <code>{detail.referenceId}</code>
-          </p>
-        ) : null}
       </div>
       {showAction ? (
         <Button type="button" variant="secondary" size="sm" onClick={recover}>

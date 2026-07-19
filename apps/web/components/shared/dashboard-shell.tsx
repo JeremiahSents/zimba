@@ -39,7 +39,7 @@ import {
 import { formatCurrency, formatShortDate } from "@/lib/format"
 
 type DashboardShellProps = {
-  title: string
+  title: ReactNode
   subtitle: string
   headerGreeting?: string
   notifications?: NotificationItem[]
@@ -96,7 +96,7 @@ function DashboardTopbar({
   onAddNotification,
 }: {
   headerGreeting?: string
-  title: string
+  title: ReactNode
   notifications: NotificationItem[]
   onAddNotification?: () => void
 }) {

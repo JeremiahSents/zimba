@@ -1,6 +1,7 @@
-const standardCurrencyFormatter = new Intl.NumberFormat("en-UG", {
+const compactCurrencyFormatter = new Intl.NumberFormat("en-UG", {
   currency: "UGX",
-  maximumFractionDigits: 0,
+  maximumFractionDigits: 3,
+  notation: "compact",
   style: "currency",
 })
 
@@ -11,7 +12,7 @@ const dateFormatter = new Intl.DateTimeFormat("en-UG", {
 })
 
 export function formatCurrency(amount: number) {
-  return standardCurrencyFormatter.format(amount).replace("UGX", "USh ")
+  return compactCurrencyFormatter.format(amount).replace("UGX", "USh ")
 }
 
 export function formatPercent(value: number) {

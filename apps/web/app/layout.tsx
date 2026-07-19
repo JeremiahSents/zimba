@@ -3,6 +3,7 @@ import { Geist, Inter } from "next/font/google"
 import "@workspace/ui/globals.css"
 import { TooltipProvider } from "@workspace/ui/components/tooltip"
 import { cn } from "@workspace/ui/lib/utils"
+import { PointerCaptureGuard } from "@/components/shared/pointer-capture-guard"
 
 const geist = Geist({
   subsets: ["latin"],
@@ -34,6 +35,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="Zimba" />
       </head>
       <body>
+        <PointerCaptureGuard />
         <TooltipProvider>{children}</TooltipProvider>
       </body>
     </html>

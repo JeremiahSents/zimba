@@ -18,7 +18,9 @@ export function hasValidPayableLines(lines: readonly PayableLine[]): boolean {
     lines.length > 0 &&
     lines.every(
       (line) =>
-        isFinitePositive(Number(line.allocation_id)) &&
+        (typeof line.allocation_id === "number"
+          ? isFinitePositive(line.allocation_id)
+          : line.allocation_id.trim().length > 0) &&
         line.description.trim().length > 0 &&
         isFinitePositive(line.quantity) &&
         isFiniteNonNegative(line.unit_amount)
