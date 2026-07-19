@@ -7,36 +7,19 @@ import {
   MoreHorizontalCircle01Icon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Button } from "@workspace/ui/components/button"
 import { Card, CardContent } from "@workspace/ui/components/card"
 import {
   type ChartConfig,
   ChartContainer,
 } from "@workspace/ui/components/chart"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@workspace/ui/components/dialog"
-import { Input } from "@workspace/ui/components/input"
-import { Label } from "@workspace/ui/components/label"
 import { Progress } from "@workspace/ui/components/progress"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { Cell, Pie, PieChart } from "recharts"
-import {
-  createUpcomingPaymentAction,
-  deleteUpcomingPaymentAction,
-  updateUpcomingPaymentAction,
-} from "@/app/admin/payments/actions"
 import { archiveProjectAction } from "@/app/admin/projects/actions"
 import { ProjectExpensesTable } from "@/components/projects/project-expenses-table"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
-import { DatePicker } from "@/components/shared/date-picker"
 import { ErrorNotice } from "@/components/shared/error-notice"
 import type { PublicError } from "@/core/shared/errors"
 import { formatCurrency, formatPercent, formatShortDate } from "@/lib/format"
@@ -68,30 +51,10 @@ export function ProjectDetailPage({
 }) {
   const router = useRouter()
   const [expenses, setExpenses] = useState(project.expenses)
-  const [upcomingPayments, setUpcomingPayments] = useState(
-    project.upcoming_payments ?? []
-  )
-  const upcoming = upcomingPayments.map((payment) => ({
-    amount: payment.amount,
-    contractor: payment.supplier_name ?? "Supplier not assigned",
-    date: payment.due_date,
-    id: payment.id,
-    item: payment.description ?? "Planned payment",
-    name: payment.title,
-  }))
-  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false)
   const [mutationError, setMutationError] = useState<PublicError | string>("")
-  const [savingPayment, setSavingPayment] = useState(false)
-  const [newUpcoming, setNewUpcoming] = useState({
-    title: "",
-    description: "",
-    amount: "",
-    date: new Date().toISOString().slice(0, 10),
-  })
 
   useEffect(() => {
     setExpenses(project.expenses)
-    setUpcomingPayments(project.upcoming_payments ?? [])
   }, [project])
 
   const spent = project.spent
@@ -109,8 +72,6 @@ export function ProjectDetailPage({
     <DashboardShell
       title={<Link href="/admin/projects" aria-label="Back to projects" className="inline-flex items-center gap-1.5 text-primary text-sm hover:underline">← <span>Back</span></Link>}
       subtitle="Project financial position and delivery tracking."
-      notifications={upcoming}
-      onAddNotification={() => setPaymentDialogOpen(true)}
     >
       <div className="mb-3">
         <div className="flex items-start justify-between gap-4">
@@ -287,98 +248,6 @@ export function ProjectDetailPage({
 
       <TaskExpenseSection tasks={project.tasks} expenses={expenses} />
 
-      <section>
-        <div className="mb-4 flex items-end justify-between gap-4">
-          <div>
-            <h2 className="font-heading font-semibold text-base tracking-tight">
-              Upcoming payments
-            </h2>
-            <p className="mt-1 text-muted-foreground text-xs">
-              Planned commitments for this project.
-            </p>
-          </div>
-          <Button
-            size="sm"
-            variant="secondary"
-            onClick={() => setPaymentDialogOpen(true)}
-          >
-            + Schedule obligation
-          </Button>
-        </div>
-        <div className="divide-y rounded-xl border">
-          {upcomingPayments.map((payment) => (
-            <div
-              key={payment.id}
-              className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center"
-            >
-              <div className="min-w-0 flex-1">
-                <p className="font-medium text-sm">{payment.title}</p>
-                <p className="mt-1 text-muted-foreground text-xs">
-                  {payment.supplier_name ?? "Supplier not assigned"} · Due{" "}
-                  {formatShortDate(payment.due_date)}
-                </p>
-              </div>
-
-              <div className="flex items-center justify-between gap-4 sm:w-auto sm:justify-end">
-                <div className="flex items-center gap-3 sm:flex-col sm:items-end sm:gap-1.5">
-                  <p className="font-heading font-semibold text-sm tabular-nums">
-                    {formatCurrency(payment.amount)}
-                  </p>
-                  <span className="inline-flex shrink-0 items-center rounded-full bg-muted px-2 py-0.5 font-medium text-[10px] text-muted-foreground capitalize">
-                    {payment.status.replaceAll("_", " ")}
-                  </span>
-                </div>
-
-                <div className="flex shrink-0 items-center gap-2">
-                  {payment.status === "planned" && (
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      onClick={async () => {
-                        const result = await updateUpcomingPaymentAction(
-                          project.id,
-                          payment.id,
-                          { status: "due" }
-                        )
-                        if (!result.success) setMutationError(result.error)
-                        else router.refresh()
-                      }}
-                    >
-                      Mark due
-                    </Button>
-                  )}
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="text-destructive"
-                    onClick={async () => {
-                      const result = await deleteUpcomingPaymentAction(
-                        project.id,
-                        payment.id
-                      )
-                      if (!result.success) setMutationError(result.error)
-                      else {
-                        setUpcomingPayments((current) =>
-                          current.filter((item) => item.id !== payment.id)
-                        )
-                        router.refresh()
-                      }
-                    }}
-                  >
-                    Delete
-                  </Button>
-                </div>
-              </div>
-            </div>
-          ))}
-          {upcomingPayments.length === 0 && (
-            <p className="p-6 text-center text-muted-foreground text-sm">
-              No upcoming payments.
-            </p>
-          )}
-        </div>
-      </section>
-
       <div>
         {mutationError && (
           <ErrorNotice className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-destructive/25 bg-destructive/5 px-4 py-3" error={mutationError} />
@@ -397,112 +266,6 @@ export function ProjectDetailPage({
         </section>
       </div>
 
-      <Dialog open={paymentDialogOpen} onOpenChange={setPaymentDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Schedule an upcoming obligation</DialogTitle>
-            <DialogDescription>
-              Add a planned obligation for {project.name}. This does not record
-              a cash payment.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="mt-5 grid gap-4">
-            <label className="grid gap-2">
-              <Label>Title</Label>
-              <Input
-                value={newUpcoming.title}
-                onChange={(event) =>
-                  setNewUpcoming({ ...newUpcoming, title: event.target.value })
-                }
-                placeholder="e.g. Cement delivery"
-              />
-            </label>
-            <label className="grid gap-2">
-              <Label>Description</Label>
-              <Input
-                value={newUpcoming.description}
-                onChange={(event) =>
-                  setNewUpcoming({
-                    ...newUpcoming,
-                    description: event.target.value,
-                  })
-                }
-                placeholder="e.g. 50 bags of cement"
-              />
-            </label>
-            <label className="grid gap-2">
-              <Label>Amount (UGX)</Label>
-              <Input
-                type="number"
-                value={newUpcoming.amount}
-                onChange={(event) =>
-                  setNewUpcoming({ ...newUpcoming, amount: event.target.value })
-                }
-                placeholder="0"
-              />
-            </label>
-            <label className="grid gap-2">
-              <Label>Payment date</Label>
-              <DatePicker
-                value={newUpcoming.date}
-                onChange={(date) => setNewUpcoming({ ...newUpcoming, date })}
-              />
-            </label>
-          </div>
-          <DialogFooter>
-            <Button
-              variant="secondary"
-              onClick={() => {
-                setPaymentDialogOpen(false)
-                setNewUpcoming({
-                  title: "",
-                  description: "",
-                  amount: "",
-                  date: new Date().toISOString().slice(0, 10),
-                })
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              disabled={savingPayment}
-              onClick={async () => {
-                if (
-                  !newUpcoming.title ||
-                  !newUpcoming.description ||
-                  !newUpcoming.amount ||
-                  !newUpcoming.date
-                )
-                  return
-                setSavingPayment(true)
-                const result = await createUpcomingPaymentAction(project.id, {
-                  amount: Number(newUpcoming.amount),
-                  currency: project.currency ?? "UGX",
-                  description: newUpcoming.description,
-                  due_date: newUpcoming.date,
-                  title: newUpcoming.title,
-                })
-                if (!result.success) {
-                  setMutationError(result.error)
-                  setSavingPayment(false)
-                  return
-                }
-                setPaymentDialogOpen(false)
-                setNewUpcoming({
-                  title: "",
-                  description: "",
-                  amount: "",
-                  date: new Date().toISOString().slice(0, 10),
-                })
-                setSavingPayment(false)
-                router.refresh()
-              }}
-            >
-              {savingPayment ? "Adding..." : "Schedule obligation"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </DashboardShell>
   )
 }
