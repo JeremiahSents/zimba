@@ -142,6 +142,7 @@ export type UpcomingPaymentResponse = UpcomingPaymentCreate & {
 export type FileUploadPurpose = "project_attachment" | "expense_receipt"
 export type ProjectAttachment = {
   id: string
+  key?: string
   filename: string
   content_type: string
   size_bytes: number

@@ -1,9 +1,17 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
-import { expectedActionFailure, type ActionResult } from "@/core/shared/action-result"
+import {
+  expectedActionFailure,
+  type ActionResult,
+} from "@/core/shared/action-result"
 import { handleActionError } from "@/core/shared/handle-action-error"
-import { createUpcomingPayment, updateUpcomingPayment, deleteUpcomingPayment, createLedgerPayment } from "@/core/payments/service"
+import {
+  createUpcomingPayment,
+  updateUpcomingPayment,
+  deleteUpcomingPayment,
+  createLedgerPayment,
+} from "@/core/payments/service"
 import { markExpenseFullyPaid } from "@/core/payments/service"
 import type { UpcomingPaymentCreate, UpcomingPaymentUpdate } from "@/lib/types"
 import { ensureActionSession } from "@/core/auth/action-session"
@@ -15,7 +23,10 @@ export async function createUpcomingPaymentAction(
   const authFailure = await ensureActionSession("payments.create-upcoming")
   if (authFailure) return authFailure
   if (!payment.title.trim() || payment.amount <= 0 || !payment.due_date) {
-    return expectedActionFailure("VALIDATION_FAILED", "Add a title, amount, and due date.")
+    return expectedActionFailure(
+      "VALIDATION_FAILED",
+      "Add a title, amount, and due date."
+    )
   }
 
   try {
@@ -101,7 +112,11 @@ export async function recordReceiptPaymentAction(input: {
   }
 }
 
-export async function markReceiptFullyPaidAction(expenseId: string, projectId: string, idempotencyKey: string): Promise<ActionResult> {
+export async function markReceiptFullyPaidAction(
+  expenseId: string,
+  projectId: string,
+  idempotencyKey: string
+): Promise<ActionResult> {
   const authFailure = await ensureActionSession("payments.mark-receipt-paid")
   if (authFailure) return authFailure
   try {
@@ -116,6 +131,7 @@ export async function markReceiptFullyPaidAction(expenseId: string, projectId: s
 
 function revalidateConnectedRoutes(projectId?: string) {
   revalidatePath("/admin/home")
+  revalidatePath("/admin/expenses")
   revalidatePath("/admin/projects")
   revalidatePath("/admin/suppliers")
   revalidatePath("/admin/analytics")

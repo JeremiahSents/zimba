@@ -1,12 +1,14 @@
-import { describe, it, expect, vi, beforeEach } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vitest"
+
 vi.mock("server-only", () => ({}))
-import { getProjectsList, getProjectDetail } from "./service"
-import * as projectRepo from "./repository"
+
 import * as allocationRepo from "../allocations/repository"
+import * as authService from "../auth/service"
 import * as expenseRepo from "../expenses/repository"
 import * as fileRepo from "../files/repository"
 import * as paymentRepo from "../payments/repository"
-import * as authService from "../auth/service"
+import * as projectRepo from "./repository"
+import { getProjectDetail, getProjectsList } from "./service"
 
 vi.mock("./repository")
 vi.mock("../allocations/repository")
@@ -18,13 +20,33 @@ vi.mock("../auth/service")
 describe("Projects Service", () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    vi.mocked(expenseRepo.listExpenses).mockResolvedValue([])
+    vi.mocked(expenseRepo.listFinancialExpenseRows).mockResolvedValue([])
     vi.mocked(fileRepo.listProjectAttachments).mockResolvedValue([])
     vi.mocked(paymentRepo.listProjectPayables).mockResolvedValue([])
     vi.mocked(authService.requireSession).mockResolvedValue({
-      user: { id: "user-1", name: "Test User", email: "test@example.com", emailVerified: true, createdAt: new Date(), updatedAt: new Date() },
-      session: { id: "session-1", userId: "user-1", expiresAt: new Date(), ipAddress: null, userAgent: null, token: "token-1", createdAt: new Date(), updatedAt: new Date() },
-      organization: { organizationId: "org-1", organizationName: "Test Org", role: "Owner / Admin" },
+      user: {
+        id: "user-1",
+        name: "Test User",
+        email: "test@example.com",
+        emailVerified: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      session: {
+        id: "session-1",
+        userId: "user-1",
+        expiresAt: new Date(),
+        ipAddress: null,
+        userAgent: null,
+        token: "token-1",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      organization: {
+        organizationId: "org-1",
+        organizationName: "Test Org",
+        role: "Owner / Admin",
+      },
     })
   })
 
@@ -46,13 +68,13 @@ describe("Projects Service", () => {
         createdAt: new Date(),
         updatedAt: new Date(),
         budgetCents: 10000000, // 100k
-        spentCents: 5000000,   // 50k
+        spentCents: 5000000, // 50k
         remainingCents: 5000000,
       } as any,
     ])
 
     const projects = await getProjectsList()
-    
+
     expect(projects).toHaveLength(1)
     expect(projects[0]).toMatchObject({
       name: "Test Project",

@@ -98,6 +98,7 @@ export async function updateExpenseStatusAction(
 
 function revalidateConnectedRoutes(projectId?: string) {
   revalidatePath("/admin/home")
+  revalidatePath("/admin/expenses")
   revalidatePath("/admin/projects")
   revalidatePath("/admin/suppliers")
   revalidatePath("/admin/analytics")

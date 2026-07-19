@@ -1,5 +1,6 @@
 import "server-only"
 
+import { db, schema } from "@workspace/db"
 import { and, eq } from "drizzle-orm"
 import type {
   ExpenseReceiptCreate,
@@ -9,13 +10,14 @@ import type {
   PayableExpenseResponse,
 } from "@/lib/types"
 import { requireSession } from "../auth/service"
-import { db, schema } from "@workspace/db"
 import { badRequest, notFound } from "../shared/errors"
 import * as expenseRepo from "./repository"
 
 export async function listExpenseRows(): Promise<ExpenseTableRow[]> {
   const { organization } = await requireSession()
-  const rows = await expenseRepo.listFinancialExpenseRows(organization.organizationId)
+  const rows = await expenseRepo.listFinancialExpenseRows(
+    organization.organizationId
+  )
   return rows.map((row) => ({
     id: row.id,
     receipt_id: row.receiptId,
@@ -31,14 +33,22 @@ export async function listExpenseRows(): Promise<ExpenseTableRow[]> {
     paid_amount: row.paidCents / 100,
     outstanding_amount: Math.max(0, row.amountCents - row.paidCents) / 100,
     project_name: row.projectName ?? "Unknown project",
-    status: toUiStatus(
-      row.paidCents >= row.amountCents && row.amountCents > 0
-        ? "paid"
-        : row.paidCents > 0
-          ? "partial"
-          : "unpaid"
-    ),
+    status: toUiStatus(getPaymentStatus(row)),
   }))
+}
+
+function getPaymentStatus(row: {
+  amountCents: number
+  paidCents: number
+  paymentStatus?: string
+}): string {
+  if (row.paidCents > 0) {
+    return row.paidCents >= row.amountCents && row.amountCents > 0
+      ? "paid"
+      : "partial"
+  }
+
+  return row.paymentStatus ?? "unpaid"
 }
 
 export async function createPayableExpense(
@@ -370,11 +380,18 @@ export async function getPayableExpense(
     expenseId
   )
   if (!result) {
-    const payable = await expenseRepo.getPayable(organization.organizationId, expenseId)
+    const payable = await expenseRepo.getPayable(
+      organization.organizationId,
+      expenseId
+    )
     if (!payable) notFound("Receipt not found.")
     const gross = payable.payable.amountCents / 100
-    const paid = payable.payments.reduce((sum, payment) => sum + payment.amountCents, 0) / 100
-    const receiptNumber = payable.payable.title.startsWith("ZIMB/") ? payable.payable.title : undefined
+    const paid =
+      payable.payments.reduce((sum, payment) => sum + payment.amountCents, 0) /
+      100
+    const receiptNumber = payable.payable.title.startsWith("ZIMB/")
+      ? payable.payable.title
+      : undefined
     const itemDescription = payable.payable.description || "Expense"
     return {
       id: payable.payable.id,
@@ -382,18 +399,44 @@ export async function getPayableExpense(
       supplier_id: payable.payable.supplierId ?? "",
       currency: payable.payable.currency,
       receipt_number: receiptNumber,
-      expense_date: payable.payable.dueDate?.toISOString() ?? payable.payable.createdAt.toISOString(),
+      expense_date:
+        payable.payable.dueDate?.toISOString() ??
+        payable.payable.createdAt.toISOString(),
       approval_status: "approved",
       lifecycle_status: "incurred",
       gross_amount: gross,
       net_amount: gross,
       paid_amount: paid,
       outstanding_amount: Math.max(0, gross - paid),
-      settlement_status: paid >= gross && gross > 0 ? "paid" : paid > 0 ? "partially_paid" : "unpaid",
+      settlement_status:
+        paid >= gross && gross > 0
+          ? "paid"
+          : paid > 0
+            ? "partially_paid"
+            : "unpaid",
       project_name: payable.projectName,
       supplier_name: payable.supplierName,
-      lines: [{ id: payable.payable.id, allocation_id: "", allocation_name: "General", description: itemDescription, quantity: 1, unit_amount: gross, tax_amount: 0, line_amount: gross }],
-      payments: payable.payments.map((payment) => ({ id: payment.id, amount: payment.amountCents / 100, payment_date: payment.paymentDate?.toISOString() ?? payment.createdAt.toISOString(), method: payment.method ?? "Other", reference: payment.reference, status: "posted" })),
+      lines: [
+        {
+          id: payable.payable.id,
+          allocation_id: "",
+          allocation_name: "General",
+          description: itemDescription,
+          quantity: 1,
+          unit_amount: gross,
+          tax_amount: 0,
+          line_amount: gross,
+        },
+      ],
+      payments: payable.payments.map((payment) => ({
+        id: payment.id,
+        amount: payment.amountCents / 100,
+        payment_date:
+          payment.paymentDate?.toISOString() ?? payment.createdAt.toISOString(),
+        method: payment.method ?? "Other",
+        reference: payment.reference,
+        status: "posted",
+      })),
     }
   }
   const gross =

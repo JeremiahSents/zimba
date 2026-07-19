@@ -207,6 +207,11 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
         : "border-slate-200 bg-slate-100 text-slate-600"
   const projectHref = `/admin/projects/${project.id}`
 
+  useEffect(() => {
+    if (!paidInFull) return
+    setAmountPaid(total > 0 ? String(total) : "")
+  }, [paidInFull, total])
+
   function togglePaidInFull(checked: boolean) {
     setPaidInFull(checked)
     setAmountPaid(checked ? String(total) : "")

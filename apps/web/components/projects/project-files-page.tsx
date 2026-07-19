@@ -7,7 +7,6 @@ import {
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Button } from "@workspace/ui/components/button"
-import Image from "next/image"
 import Link from "next/link"
 import { useRef, useState } from "react"
 import { updateProjectAction } from "@/app/admin/projects/actions"
@@ -94,7 +93,12 @@ export function ProjectFilesPage({
           </Button>
         </div>
       </div>
-      {error && <ErrorNotice className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-destructive/25 bg-destructive/5 px-4 py-3" error={error} />}
+      {error && (
+        <ErrorNotice
+          className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-destructive/25 bg-destructive/5 px-4 py-3"
+          error={error}
+        />
+      )}
       {files.length === 0 ? (
         <div className="rounded-xl border border-dashed p-10 text-center">
           <HugeiconsIcon
@@ -126,14 +130,11 @@ function FileImageGrid({ files }: { files: ProjectAttachment[] }) {
       <Heading icon={Image02Icon} title="Images" count={files.length} />
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         {files.map((file, index) => (
-          <a
+          <div
             key={file.id}
-            href={file.url}
-            target="_blank"
-            rel="noreferrer"
-            className="group overflow-hidden rounded-xl border bg-muted/20"
+            className="overflow-hidden rounded-xl border bg-muted/20"
           >
-            <div className="relative aspect-square bg-muted">
+            <div className="flex aspect-square items-center justify-center bg-muted/35">
               <ProjectImage file={file} />
             </div>
             <p className="truncate px-3 py-2 font-medium text-xs">
@@ -142,7 +143,7 @@ function FileImageGrid({ files }: { files: ProjectAttachment[] }) {
             <div className="px-3 pb-2">
               <FilePurpose purpose={file.purpose} />
             </div>
-          </a>
+          </div>
         ))}
       </div>
     </section>
@@ -159,14 +160,11 @@ function ProjectImage({ file }: { file: ProjectAttachment }) {
     )
   }
   return (
-    <Image
-      src={file.url}
+    <img
+      src={getFileDisplayUrl(file)}
       alt={file.filename}
-      fill
-      unoptimized
-      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
       onError={() => setFailed(true)}
-      className="size-full object-cover transition-transform group-hover:scale-[1.03]"
+      className="max-h-full max-w-full object-contain"
     />
   )
 }
@@ -178,7 +176,7 @@ function DocumentList({ files }: { files: ProjectAttachment[] }) {
         {files.map((file, index) => (
           <a
             key={file.id}
-            href={file.url}
+            href={getFileDisplayUrl(file)}
             target="_blank"
             rel="noreferrer"
             className="flex items-center gap-3 p-4 hover:bg-muted/30"
@@ -236,4 +234,9 @@ function formatBytes(bytes: number) {
   if (bytes < 1024) return `${bytes} B`
   if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
+
+function getFileDisplayUrl(file: ProjectAttachment) {
+  if (!file.url.includes("/api/v1/files/")) return file.url
+  return file.key ? `https://utfs.io/f/${file.key}` : file.url
 }
