@@ -25,8 +25,9 @@ function getDatabaseUrl() {
 function createPool() {
   const pool = new Pool({
     connectionString: getDatabaseUrl(),
-    connectionTimeoutMillis: 5_000,
+    connectionTimeoutMillis: 15_000,
     idleTimeoutMillis: 30_000,
+    keepAlive: true,
     max: 10,
     query_timeout: 15_000,
     statement_timeout: 15_000,

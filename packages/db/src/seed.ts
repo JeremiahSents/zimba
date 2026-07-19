@@ -1,4 +1,5 @@
 import { config } from "dotenv"
+import { sql } from "drizzle-orm"
 
 config({ path: "../../apps/web/.env.local", quiet: true })
 
@@ -42,6 +43,24 @@ async function main() {
     })
     .onConflictDoNothing()
 
+  await db.execute(sql`
+    insert into "allocation" (
+      "id",
+      "organization_id",
+      "project_id",
+      "name",
+      "budget_cents"
+    )
+    values (
+      ${budgetItemId},
+      ${orgId},
+      ${projectId},
+      'Foundation Materials',
+      5000000
+    )
+    on conflict do nothing
+  `)
+
   const supplierId = "supp_1"
   await db
     .insert(schema.supplier)
@@ -64,19 +83,31 @@ async function main() {
     })
     .onConflictDoNothing()
 
-  await db
-    .insert(schema.expenseLine)
-    .values({
-      id: "exp_line_1",
-      organizationId: orgId,
-      expenseId,
-      allocationId: budgetItemId,
-      itemDescription: "Cement bags",
-      quantity: 100,
-      unitRateCents: 35_000,
-      amountCents: 3_500_000,
-    })
-    .onConflictDoNothing()
+  await db.execute(sql`
+    insert into "expense_line" (
+      "id",
+      "organization_id",
+      "expense_id",
+      "allocation_id",
+      "budget_item_id",
+      "item_description",
+      "quantity",
+      "unit_rate_cents",
+      "amount_cents"
+    )
+    values (
+      'exp_line_1',
+      ${orgId},
+      ${expenseId},
+      ${budgetItemId},
+      ${budgetItemId},
+      'Cement bags',
+      100,
+      35000,
+      3500000
+    )
+    on conflict do nothing
+  `)
 
   console.log("Done seeding!")
 }
