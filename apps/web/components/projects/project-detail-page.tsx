@@ -38,6 +38,8 @@ import { archiveProjectAction } from "@/app/admin/projects/actions"
 import { ProjectExpensesTable } from "@/components/projects/project-expenses-table"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { DatePicker } from "@/components/shared/date-picker"
+import { ErrorNotice } from "@/components/shared/error-notice"
+import type { PublicError } from "@/core/shared/errors"
 import { formatCurrency, formatPercent, formatShortDate } from "@/lib/format"
 import type { ProjectDetailResponse } from "@/lib/types"
 
@@ -85,7 +87,7 @@ export function ProjectDetailPage({
     name: payment.title,
   }))
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false)
-  const [mutationError, setMutationError] = useState("")
+  const [mutationError, setMutationError] = useState<PublicError | string>("")
   const [savingPayment, setSavingPayment] = useState(false)
   const [newUpcoming, setNewUpcoming] = useState({
     title: "",
@@ -345,7 +347,7 @@ export function ProjectDetailPage({
                           payment.id,
                           { status: "due" }
                         )
-                        if (!result.success) setMutationError(result.error.message)
+                        if (!result.success) setMutationError(result.error)
                         else router.refresh()
                       }}
                     >
@@ -361,7 +363,7 @@ export function ProjectDetailPage({
                         project.id,
                         payment.id
                       )
-                      if (!result.success) setMutationError(result.error.message)
+                      if (!result.success) setMutationError(result.error)
                       else {
                         setUpcomingPayments((current) =>
                           current.filter((item) => item.id !== payment.id)
@@ -386,9 +388,7 @@ export function ProjectDetailPage({
 
       <div>
         {mutationError && (
-          <p className="mb-4 font-medium text-destructive text-xs" role="alert">
-            {mutationError}
-          </p>
+          <ErrorNotice className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-destructive/25 bg-destructive/5 px-4 py-3" error={mutationError} />
         )}
         <section className="flex min-h-0 flex-col pt-1">
           <div className="mb-4">
@@ -490,7 +490,7 @@ export function ProjectDetailPage({
                   title: newUpcoming.title,
                 })
                 if (!result.success) {
-                  setMutationError(result.error.message)
+                  setMutationError(result.error)
                   setSavingPayment(false)
                   return
                 }

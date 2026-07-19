@@ -11,10 +11,14 @@ export const ourFileRouter = {
   })
     .middleware(async ({ req }) => {
       const { user, organization } = await requireSession()
-      
+
       const purpose = req.headers.get("x-upload-purpose") || "attachment"
 
-      return { userId: user.id, organizationId: organization.organizationId, purpose }
+      return {
+        userId: user.id,
+        organizationId: organization.organizationId,
+        purpose,
+      }
     })
     .onUploadComplete(async ({ metadata, file }) => {
       // Record the file in the database
@@ -22,7 +26,7 @@ export const ourFileRouter = {
         organizationId: metadata.organizationId,
         uploaderId: metadata.userId,
         key: file.key,
-        url: file.url,
+        url: file.ufsUrl,
         filename: file.name,
         contentType: file.type || "application/octet-stream",
         sizeBytes: file.size,
@@ -30,7 +34,7 @@ export const ourFileRouter = {
       })
 
       if (!dbFile) throw new Error("Uploaded file metadata could not be saved.")
-      return { fileId: dbFile.id, url: file.url }
+      return { fileId: dbFile.id, url: file.ufsUrl }
     }),
 } satisfies FileRouter
 

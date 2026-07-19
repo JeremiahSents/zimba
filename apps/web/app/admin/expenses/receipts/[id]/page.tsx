@@ -15,7 +15,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   try {
     payable = await getPayableExpense(id)
   } catch (error) {
-    if (error instanceof ApplicationError && error.code === "not_found") notFound()
+    if (error instanceof ApplicationError && error.code === "NOT_FOUND") notFound()
     throw error
   }
   const dashboard = await getDashboardOverviewData()

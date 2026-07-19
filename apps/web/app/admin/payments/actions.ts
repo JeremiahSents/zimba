@@ -1,20 +1,21 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
-import { ApplicationError } from "@/core/shared/errors"
+import { expectedActionFailure, type ActionResult } from "@/core/shared/action-result"
+import { handleActionError } from "@/core/shared/handle-action-error"
 import { createUpcomingPayment, updateUpcomingPayment, deleteUpcomingPayment, createLedgerPayment } from "@/core/payments/service"
 import { markExpenseFullyPaid } from "@/core/payments/service"
-import type { ActionResult } from "@/core/shared/action-result"
 import type { UpcomingPaymentCreate, UpcomingPaymentUpdate } from "@/lib/types"
-import { requireSession } from "@/core/auth/service"
+import { ensureActionSession } from "@/core/auth/action-session"
 
 export async function createUpcomingPaymentAction(
   projectId: string,
   payment: UpcomingPaymentCreate
 ): Promise<ActionResult> {
-  await requireSession()
+  const authFailure = await ensureActionSession("payments.create-upcoming")
+  if (authFailure) return authFailure
   if (!payment.title.trim() || payment.amount <= 0 || !payment.due_date) {
-    return { success: false, error: { code: "bad_request", message: "Add a title, amount, and due date." } }
+    return expectedActionFailure("VALIDATION_FAILED", "Add a title, amount, and due date.")
   }
 
   try {
@@ -22,7 +23,7 @@ export async function createUpcomingPaymentAction(
     revalidateConnectedRoutes(projectId)
     return { success: true, data: undefined }
   } catch (error) {
-    return actionError(error)
+    return handleActionError(error, "payments.create-upcoming")
   }
 }
 
@@ -31,13 +32,14 @@ export async function updateUpcomingPaymentAction(
   paymentId: string,
   payment: UpcomingPaymentUpdate
 ): Promise<ActionResult> {
-  await requireSession()
+  const authFailure = await ensureActionSession("payments.update-upcoming")
+  if (authFailure) return authFailure
   try {
     await updateUpcomingPayment(paymentId, payment)
     revalidateConnectedRoutes(projectId)
     return { success: true, data: undefined }
   } catch (error) {
-    return actionError(error)
+    return handleActionError(error, "payments.update-upcoming")
   }
 }
 
@@ -45,13 +47,14 @@ export async function deleteUpcomingPaymentAction(
   projectId: string,
   paymentId: string
 ): Promise<ActionResult> {
-  await requireSession()
+  const authFailure = await ensureActionSession("payments.delete-upcoming")
+  if (authFailure) return authFailure
   try {
     await deleteUpcomingPayment(paymentId)
     revalidateConnectedRoutes(projectId)
     return { success: true, data: undefined }
   } catch (error) {
-    return actionError(error)
+    return handleActionError(error, "payments.delete-upcoming")
   }
 }
 
@@ -66,17 +69,18 @@ export async function recordReceiptPaymentAction(input: {
   method: string
   reference?: string
 }): Promise<ActionResult> {
-  await requireSession()
+  const authFailure = await ensureActionSession("payments.record-receipt")
+  if (authFailure) return authFailure
   if (
     input.amount <= 0 ||
     input.amount > input.outstandingAmount ||
     !input.paymentDate ||
     !input.method.trim()
   ) {
-    return {
-      success: false,
-      error: { code: "bad_request", message: "Enter a valid payment within the outstanding balance." },
-    }
+    return expectedActionFailure(
+      "VALIDATION_FAILED",
+      "Enter a valid payment within the outstanding balance."
+    )
   }
 
   try {
@@ -93,30 +97,20 @@ export async function recordReceiptPaymentAction(input: {
     revalidatePath(`/admin/expenses/receipts/${input.expenseId}`)
     return { success: true, data: undefined }
   } catch (error) {
-    return actionError(error)
+    return handleActionError(error, "payments.record-receipt")
   }
 }
 
 export async function markReceiptFullyPaidAction(expenseId: string, projectId: string, idempotencyKey: string): Promise<ActionResult> {
-  await requireSession()
+  const authFailure = await ensureActionSession("payments.mark-receipt-paid")
+  if (authFailure) return authFailure
   try {
     await markExpenseFullyPaid(expenseId, idempotencyKey)
     revalidateConnectedRoutes(projectId)
     revalidatePath(`/admin/expenses/receipts/${expenseId}`)
     return { success: true, data: undefined }
   } catch (error) {
-    return actionError(error)
-  }
-}
-
-function actionError(error: unknown): { success: false; error: { code: string; message: string } } {
-  if (error instanceof ApplicationError) {
-    return { success: false, error: { code: error.code, message: error.message } }
-  }
-  console.error("Zimba Action failed", error)
-  return {
-    success: false,
-    error: { code: "internal_error", message: "The request could not be completed. Please try again." },
+    return handleActionError(error, "payments.mark-receipt-paid")
   }
 }
 

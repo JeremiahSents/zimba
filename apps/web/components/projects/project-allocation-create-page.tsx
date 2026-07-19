@@ -26,6 +26,8 @@ import { useEffect, useState } from "react"
 
 import { createProjectAction } from "@/app/admin/projects/actions"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
+import { ErrorNotice } from "@/components/shared/error-notice"
+import type { PublicError } from "@/core/shared/errors"
 import { formatCurrency } from "@/lib/format"
 import {
   clearProjectCreateDraft,
@@ -121,7 +123,7 @@ export function ProjectAllocationCreatePage() {
     defaultInitialAllocations
   )
   const [ready, setReady] = useState(false)
-  const [error, setError] = useState("")
+  const [error, setError] = useState<PublicError | string>("")
   const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
@@ -198,7 +200,7 @@ export function ProjectAllocationCreatePage() {
       name: draft.details.name.trim(),
     })
     if (!result.success) {
-      setError(result.error.message)
+      setError(result.error)
       setSubmitting(false)
       return
     }
@@ -253,11 +255,7 @@ export function ProjectAllocationCreatePage() {
           </div>
         </div>
 
-        {error && (
-          <p className="font-medium text-destructive text-xs" role="alert">
-            {error}
-          </p>
-        )}
+        {error && <ErrorNotice error={error} />}
 
         <Card className="gap-0 overflow-hidden py-0">
           <div className="flex items-center justify-between gap-4 border-b px-5 py-4">

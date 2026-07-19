@@ -2,29 +2,39 @@
 
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
-import { createPayableExpense, createExpenseReceipt, updateExpenseStatus } from "@/core/expenses/service"
-import { ApplicationError } from "@/core/shared/errors"
-import type { ActionResult } from "@/core/shared/action-result"
-import type { PayableExpenseCreate, ExpenseReceiptCreate, ExpenseStatus, PayableExpenseResponse } from "@/lib/types"
-import { requireSession } from "@/core/auth/service"
+import { ensureActionSession } from "@/core/auth/action-session"
+import {
+  createExpenseReceipt,
+  createPayableExpense,
+  updateExpenseStatus,
+} from "@/core/expenses/service"
+import {
+  type ActionResult,
+  expectedActionFailure,
+} from "@/core/shared/action-result"
+import { handleActionError } from "@/core/shared/handle-action-error"
+import { hasValidPayableLines } from "@/lib/receipt-validation"
+import type {
+  ExpenseReceiptCreate,
+  ExpenseStatus,
+  PayableExpenseCreate,
+  PayableExpenseResponse,
+} from "@/lib/types"
 
 export async function createPayableExpenseAction(
   expense: PayableExpenseCreate
 ): Promise<ActionResult<PayableExpenseResponse>> {
-  await requireSession()
+  const authFailure = await ensureActionSession("expenses.create-payable")
+  if (authFailure) return authFailure
   if (
     !expense.project_id ||
     !expense.supplier_id ||
-    expense.lines.length === 0 ||
-    expense.lines.some(
-      (line) =>
-        !line.allocation_id ||
-        !line.description.trim() ||
-        line.quantity <= 0 ||
-        line.unit_amount < 0
-    )
+    !hasValidPayableLines(expense.lines)
   ) {
-    return { success: false, error: { code: "bad_request", message: "Complete the supplier and every expense line." } }
+    return expectedActionFailure(
+      "VALIDATION_FAILED",
+      "Complete the supplier and every expense line."
+    )
   }
 
   try {
@@ -32,7 +42,7 @@ export async function createPayableExpenseAction(
     revalidateConnectedRoutes()
     return { success: true, data: created }
   } catch (error) {
-    return actionError(error)
+    return handleActionError(error, "expenses.create-payable")
   }
 }
 
@@ -40,7 +50,8 @@ export async function createExpenseReceiptAction(
   projectId: string,
   receipt: ExpenseReceiptCreate
 ): Promise<ActionResult> {
-  await requireSession()
+  const authFailure = await ensureActionSession("expenses.create-receipt")
+  if (authFailure) return authFailure
   if (
     !receipt.expense_date ||
     receipt.items.length === 0 ||
@@ -53,13 +64,16 @@ export async function createExpenseReceiptAction(
         item.unit_rate < 0
     )
   ) {
-    return { success: false, error: { code: "bad_request", message: "Complete every required receipt field." } }
+    return expectedActionFailure(
+      "VALIDATION_FAILED",
+      "Complete every required receipt field."
+    )
   }
 
   try {
     await createExpenseReceipt(projectId, receipt)
   } catch (error) {
-    return actionError(error)
+    return handleActionError(error, "expenses.create-receipt")
   }
 
   revalidateConnectedRoutes(projectId)
@@ -71,24 +85,14 @@ export async function updateExpenseStatusAction(
   expenseId: string,
   status: ExpenseStatus
 ): Promise<ActionResult> {
-  await requireSession()
+  const authFailure = await ensureActionSession("expenses.update-status")
+  if (authFailure) return authFailure
   try {
     await updateExpenseStatus(expenseId, status)
     revalidateConnectedRoutes(projectId)
     return { success: true, data: undefined }
   } catch (error) {
-    return actionError(error)
-  }
-}
-
-function actionError(error: unknown): { success: false; error: { code: string; message: string } } {
-  if (error instanceof ApplicationError) {
-    return { success: false, error: { code: error.code, message: error.message } }
-  }
-  console.error("Zimba Action failed", error)
-  return {
-    success: false,
-    error: { code: "internal_error", message: "The request could not be completed. Please try again." },
+    return handleActionError(error, "expenses.update-status")
   }
 }
 

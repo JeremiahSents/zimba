@@ -19,11 +19,13 @@ import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { createSupplierAction } from "@/app/admin/suppliers/actions"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
+import { ErrorNotice } from "@/components/shared/error-notice"
+import type { PublicError } from "@/core/shared/errors"
 import { SupplierForm } from "@/components/suppliers/supplier-form"
 
 export function NewSupplierPage({ returnTo, categories }: { returnTo?: string; categories: { name: string; slug: string }[] }) {
   const router = useRouter()
-  const [error, setError] = useState("")
+  const [error, setError] = useState<PublicError | string>("")
   const [submitting, setSubmitting] = useState(false)
   return (
     <DashboardShell title="New supplier" subtitle="" focusedTask>
@@ -62,9 +64,7 @@ export function NewSupplierPage({ returnTo, categories }: { returnTo?: string; c
           </CardHeader>
           <CardContent>
             {error ? (
-              <p className="mb-4 text-destructive text-sm" role="alert">
-                {error}
-              </p>
+              <ErrorNotice className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-destructive/25 bg-destructive/5 px-4 py-3" error={error} />
             ) : null}
             <SupplierForm
               initialCategories={categories}
@@ -74,7 +74,7 @@ export function NewSupplierPage({ returnTo, categories }: { returnTo?: string; c
                 setError("")
                 const result = await createSupplierAction(values)
                 if (!result.success) {
-                  setError(result.error.message)
+                  setError(result.error)
                   setSubmitting(false)
                   return
                 }

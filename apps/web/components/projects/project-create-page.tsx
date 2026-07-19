@@ -17,6 +17,8 @@ import {
 } from "@/components/projects/project-details-card"
 import { ProjectPreviewCard } from "@/components/projects/project-preview-card"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
+import { ErrorNotice } from "@/components/shared/error-notice"
+import { ApplicationError, type PublicError } from "@/core/shared/errors"
 import {
   clearProjectCreateDraft,
   defaultInitialAllocations,
@@ -38,7 +40,7 @@ export function ProjectCreatePage() {
   const [details, setDetails] = useState<ProjectDetails>(emptyDetails)
   const [files, setFiles] = useState<File[]>([])
   const [draftBudget, setDraftBudget] = useState(0)
-  const [error, setError] = useState("")
+  const [error, setError] = useState<PublicError | string>("")
   const [uploading, setUploading] = useState(false)
 
   useEffect(() => {
@@ -80,8 +82,8 @@ export function ProjectCreatePage() {
       }
     } catch (uploadError) {
       setError(
-        uploadError instanceof Error
-          ? uploadError.message
+        uploadError instanceof ApplicationError
+          ? uploadError.toPublicError()
           : "The project files could not be uploaded."
       )
       setUploading(false)
@@ -108,9 +110,7 @@ export function ProjectCreatePage() {
             router.push("/admin/projects")
           }}
         />
-        {error && (
-          <p className="font-medium text-destructive text-xs">{error}</p>
-        )}
+        {error && <ErrorNotice error={error} />}
         <div className="grid gap-6">
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-stretch">
             <ProjectDetailsCard

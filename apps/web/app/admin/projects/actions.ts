@@ -3,15 +3,16 @@
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { archiveProject, createProject, updateProject, updateAllocation } from "@/core/projects/mutations"
-import { ApplicationError } from "@/core/shared/errors"
-import type { ActionResult } from "@/core/shared/action-result"
+import { expectedActionFailure, type ActionResult } from "@/core/shared/action-result"
+import { handleActionError } from "@/core/shared/handle-action-error"
 import type { ProjectCreate, ProjectUpdate, AllocationUpdate } from "@/lib/types"
-import { requireSession } from "@/core/auth/service"
+import { ensureActionSession } from "@/core/auth/action-session"
 
 export async function createProjectAction(
   project: ProjectCreate
 ): Promise<ActionResult> {
-  await requireSession()
+  const authFailure = await ensureActionSession("projects.create")
+  if (authFailure) return authFailure
   if (
     !project.name.trim() ||
     !project.location.trim() ||
@@ -22,7 +23,7 @@ export async function createProjectAction(
       (allocation) => !allocation.name.trim() || allocation.budget <= 0
     )
   ) {
-    return { success: false, error: { code: "bad_request", message: "Complete every required project field." } }
+    return expectedActionFailure("VALIDATION_FAILED", "Complete every required project field.")
   }
 
   let projectId: string
@@ -31,7 +32,7 @@ export async function createProjectAction(
     if (!created) throw new Error("Project could not be created.")
     projectId = created.id
   } catch (error) {
-    return actionError(error)
+    return handleActionError(error, "projects.create")
   }
 
   revalidateConnectedRoutes(projectId)
@@ -42,13 +43,14 @@ export async function updateProjectAction(
   projectId: string,
   project: ProjectUpdate
 ): Promise<ActionResult> {
-  await requireSession()
+  const authFailure = await ensureActionSession("projects.update")
+  if (authFailure) return authFailure
   try {
     await updateProject(projectId, project)
     revalidateConnectedRoutes(projectId)
     return { success: true, data: undefined }
   } catch (error) {
-    return actionError(error)
+    return handleActionError(error, "projects.update")
   }
 }
 
@@ -57,23 +59,25 @@ export async function updateAllocationAction(
   allocationId: string,
   allocation: AllocationUpdate
 ): Promise<ActionResult> {
-  await requireSession()
+  const authFailure = await ensureActionSession("allocations.update")
+  if (authFailure) return authFailure
   try {
     await updateAllocation(projectId, allocationId, allocation)
     revalidateConnectedRoutes(projectId)
     return { success: true, data: undefined }
   } catch (error) {
-    return actionError(error)
+    return handleActionError(error, "allocations.update")
   }
 }
 
 export async function archiveProjectAction(projectId: string): Promise<ActionResult> {
-  await requireSession()
+  const authFailure = await ensureActionSession("projects.archive")
+  if (authFailure) return authFailure
   try {
     await archiveProject(projectId)
     revalidateConnectedRoutes(projectId)
   } catch (error) {
-    return actionError(error)
+    return handleActionError(error, "projects.archive")
   }
   redirect("/admin/projects")
 }
@@ -82,9 +86,10 @@ export async function createProjectTaskAction(
   projectId: string,
   input: { budget: number; name: string }
 ): Promise<ActionResult> {
-  await requireSession()
+  const authFailure = await ensureActionSession("allocations.create")
+  if (authFailure) return authFailure
   if (!input.name.trim() || !Number.isFinite(input.budget) || input.budget <= 0) {
-    return { success: false, error: { code: "bad_request", message: "Add a task name and an initial budget." } }
+    return expectedActionFailure("VALIDATION_FAILED", "Add a task name and an initial budget.")
   }
   
   try {
@@ -93,18 +98,7 @@ export async function createProjectTaskAction(
     revalidateConnectedRoutes(projectId)
     return { success: true, data: undefined }
   } catch (error) {
-    return actionError(error)
-  }
-}
-
-function actionError(error: unknown): { success: false; error: { code: string; message: string } } {
-  if (error instanceof ApplicationError) {
-    return { success: false, error: { code: error.code, message: error.message } }
-  }
-  console.error("Zimba Action failed", error)
-  return {
-    success: false,
-    error: { code: "internal_error", message: "The request could not be completed. Please try again." },
+    return handleActionError(error, "allocations.create")
   }
 }
 

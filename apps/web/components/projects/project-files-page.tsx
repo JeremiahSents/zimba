@@ -12,6 +12,8 @@ import Link from "next/link"
 import { useRef, useState } from "react"
 import { updateProjectAction } from "@/app/admin/projects/actions"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
+import { ErrorNotice } from "@/components/shared/error-notice"
+import { ApplicationError, type PublicError } from "@/core/shared/errors"
 import type { ProjectAttachment, ProjectDetailResponse } from "@/lib/types"
 import { uploadZimbaFile } from "@/lib/upload-file"
 
@@ -22,7 +24,7 @@ export function ProjectFilesPage({
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
-  const [error, setError] = useState("")
+  const [error, setError] = useState<PublicError | string>("")
   const files = project.attachments ?? []
   const images = files.filter((file) => file.content_type.startsWith("image/"))
   const documents = files.filter(
@@ -69,12 +71,12 @@ export function ProjectFilesPage({
                 const result = await updateProjectAction(project.id, {
                   attachment_ids: ids,
                 })
-                if (!result.success) setError(result.error.message)
+                if (!result.success) setError(result.error)
                 else window.location.reload()
               } catch (uploadError) {
                 setError(
-                  uploadError instanceof Error
-                    ? uploadError.message
+                  uploadError instanceof ApplicationError
+                    ? uploadError.toPublicError()
                     : "The files could not be uploaded."
                 )
               }
@@ -92,11 +94,7 @@ export function ProjectFilesPage({
           </Button>
         </div>
       </div>
-      {error && (
-        <p className="mb-4 text-destructive text-xs" role="alert">
-          {error}
-        </p>
-      )}
+      {error && <ErrorNotice className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-destructive/25 bg-destructive/5 px-4 py-3" error={error} />}
       {files.length === 0 ? (
         <div className="rounded-xl border border-dashed p-10 text-center">
           <HugeiconsIcon

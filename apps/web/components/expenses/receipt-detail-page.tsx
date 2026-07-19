@@ -21,6 +21,8 @@ import { Label } from "@workspace/ui/components/label"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
+import { ErrorNotice } from "@/components/shared/error-notice"
+import type { PublicError } from "@/core/shared/errors"
 import { markReceiptFullyPaidAction, recordReceiptPaymentAction } from "@/app/admin/payments/actions"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { DatePicker } from "@/components/shared/date-picker"
@@ -53,7 +55,7 @@ export function ReceiptDetailPage({
   const [method, setMethod] = useState("cash")
   const [reference, setReference] = useState("")
   const [saving, setSaving] = useState(false)
-  const [error, setError] = useState("")
+  const [error, setError] = useState<PublicError | string>("")
   const [markingPaid, setMarkingPaid] = useState(false)
 
   return (
@@ -75,7 +77,7 @@ export function ReceiptDetailPage({
                 setMarkingPaid(true)
                 const result = await markReceiptFullyPaidAction(payable.id, payable.project_id, crypto.randomUUID())
                 setMarkingPaid(false)
-                if (!result.success) return setError(result.error.message)
+                if (!result.success) return setError(result.error)
                 router.refresh()
               }}>
                 {markingPaid ? "Saving…" : "Mark fully paid"}
@@ -376,7 +378,7 @@ export function ReceiptDetailPage({
                   placeholder="Optional"
                 />
               </div>
-              {error && <p className="text-destructive text-sm">{error}</p>}
+              {error && <ErrorNotice error={error} />}
             </div>
             <DialogFooter>
               <Button variant="secondary" onClick={() => setPaymentOpen(false)}>
@@ -399,7 +401,7 @@ export function ReceiptDetailPage({
                     reference,
                   })
                   if (!result.success) {
-                    setError(result.error.message)
+                    setError(result.error)
                     setSaving(false)
                     return
                   }

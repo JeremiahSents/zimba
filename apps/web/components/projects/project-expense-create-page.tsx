@@ -23,11 +23,18 @@ import { createPayableExpenseAction } from "@/app/admin/expenses/actions"
 import { UploadZone } from "@/components/projects/upload-zone"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { DatePicker } from "@/components/shared/date-picker"
+import { ErrorNotice } from "@/components/shared/error-notice"
 import { useWorkspace } from "@/components/shared/workspace-context"
+import { ApplicationError, type PublicError } from "@/core/shared/errors"
 import { formatCurrency, formatShortDate } from "@/lib/format"
+import {
+  deleteReceiptDraft,
+  readReceiptDraft,
+  writeReceiptDraft,
+} from "@/lib/receipt-draft"
+import { hasValidPayableLines } from "@/lib/receipt-validation"
 import type { ProjectDetailResponse, SupplierResponse } from "@/lib/types"
 import { uploadZimbaFile } from "@/lib/upload-file"
-import { deleteReceiptDraft, readReceiptDraft, writeReceiptDraft } from "@/lib/receipt-draft"
 
 type ExpenseLine = {
   id: number
@@ -61,6 +68,7 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
   const [supplierId, setSupplierId] = useState("")
   const [purchaseDate, setPurchaseDate] = useState(today)
   const [files, setFiles] = useState<File[]>([])
+  const [uploadedReceiptFileId, setUploadedReceiptFileId] = useState<string>()
   const [lines, setLines] = useState([makeLine(1, project.tasks[0]?.id)])
   const [amountPaid, setAmountPaid] = useState("")
   const [paymentDate, setPaymentDate] = useState(today)
@@ -68,24 +76,69 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
   const [paymentReference, setPaymentReference] = useState("")
   const [mobileStep, setMobileStep] = useState<"entry" | "preview">("entry")
   const [saving, setSaving] = useState(false)
-  const [error, setError] = useState("")
+  const [error, setError] = useState<PublicError | string>("")
   const draftReady = useRef(false)
   const draftKey = `project:${project.id}:new-receipt`
 
   useEffect(() => {
-    readReceiptDraft<{ supplierId: string; purchaseDate: string; lines: ExpenseLine[]; amountPaid: string; paymentDate: string; paymentMethod: string; paymentReference: string }>(draftKey).then((draft) => {
-      if (draft) {
-        setSupplierId(draft.value.supplierId); setPurchaseDate(draft.value.purchaseDate); setLines(draft.value.lines); setAmountPaid(draft.value.amountPaid); setPaymentDate(draft.value.paymentDate); setPaymentMethod(draft.value.paymentMethod); setPaymentReference(draft.value.paymentReference); setFiles(draft.files)
-      }
-      draftReady.current = true
-    }).catch(() => { draftReady.current = true })
+    readReceiptDraft<{
+      supplierId: string
+      purchaseDate: string
+      lines: ExpenseLine[]
+      amountPaid: string
+      paymentDate: string
+      paymentMethod: string
+      paymentReference: string
+    }>(draftKey)
+      .then((draft) => {
+        if (draft) {
+          setSupplierId(draft.value.supplierId)
+          setPurchaseDate(draft.value.purchaseDate)
+          setLines(draft.value.lines)
+          setAmountPaid(draft.value.amountPaid)
+          setPaymentDate(draft.value.paymentDate)
+          setPaymentMethod(draft.value.paymentMethod)
+          setPaymentReference(draft.value.paymentReference)
+          setFiles(draft.files)
+        }
+        draftReady.current = true
+      })
+      .catch(() => {
+        draftReady.current = true
+      })
   }, [draftKey])
 
   useEffect(() => {
     if (!draftReady.current) return
-    const timer = window.setTimeout(() => void writeReceiptDraft(draftKey, { supplierId, purchaseDate, lines, amountPaid, paymentDate, paymentMethod, paymentReference }, files), 350)
+    const timer = window.setTimeout(
+      () =>
+        void writeReceiptDraft(
+          draftKey,
+          {
+            supplierId,
+            purchaseDate,
+            lines,
+            amountPaid,
+            paymentDate,
+            paymentMethod,
+            paymentReference,
+          },
+          files
+        ),
+      350
+    )
     return () => window.clearTimeout(timer)
-  }, [draftKey, supplierId, purchaseDate, lines, amountPaid, paymentDate, paymentMethod, paymentReference, files])
+  }, [
+    draftKey,
+    supplierId,
+    purchaseDate,
+    lines,
+    amountPaid,
+    paymentDate,
+    paymentMethod,
+    paymentReference,
+    files,
+  ])
 
   const suppliers = useMemo(
     () =>
@@ -128,17 +181,13 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
   }
 
   function validateReceiptDetails() {
-    if (
-      !supplierId ||
-      !purchaseDate ||
-      lines.some(
-        (line) =>
-          !line.allocationId ||
-          !line.description.trim() ||
-          Number(line.quantity) <= 0 ||
-          Number(line.unitAmount) < 0
-      )
-    ) {
+    const payableLines = lines.map((line) => ({
+      allocation_id: Number(line.allocationId),
+      description: line.description,
+      quantity: Number(line.quantity),
+      unit_amount: Number(line.unitAmount),
+    }))
+    if (!supplierId || !purchaseDate || !hasValidPayableLines(payableLines)) {
       setError("Choose a supplier and complete every item.")
       return false
     }
@@ -165,49 +214,52 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
 
     setSaving(true)
     setError("")
-    let receiptFileId: string | undefined
     try {
-      if (files[0])
+      let receiptFileId = uploadedReceiptFileId
+      if (files[0] && !receiptFileId) {
         receiptFileId = await uploadZimbaFile(files[0], "expense_receipt")
-    } catch (uploadError) {
-      setError(
-        uploadError instanceof Error
-          ? uploadError.message
-          : "The receipt could not be uploaded."
-      )
-      setSaving(false)
-      return
-    }
+        setUploadedReceiptFileId(receiptFileId)
+      }
 
-    const result = await createPayableExpenseAction({
-      project_id: project.id,
-      supplier_id: supplierId,
-      currency: project.currency ?? "UGX",
-      receipt_file_id: receiptFileId,
-      expense_date: purchaseDate,
-      due_date: purchaseDate,
-      lifecycle_status: "incurred",
-      submit_for_approval: true,
-      record_as_receipt: true,
-      amount_paid: paid,
-      payment_date: paid > 0 ? paymentDate : undefined,
-      payment_method: paid > 0 ? paymentMethod : undefined,
-      payment_reference: paymentReference.trim() || undefined,
-      lines: lines.map((line) => ({
-        allocation_id: Number(line.allocationId),
-        description: line.description.trim(),
-        quantity: Number(line.quantity),
-        unit_amount: Number(line.unitAmount),
-      })),
-    })
-    if (!result.success) {
-      setError(result.error.message)
+      const result = await createPayableExpenseAction({
+        project_id: project.id,
+        supplier_id: supplierId,
+        currency: project.currency ?? "UGX",
+        receipt_file_id: receiptFileId,
+        expense_date: purchaseDate,
+        due_date: purchaseDate,
+        lifecycle_status: "incurred",
+        submit_for_approval: true,
+        record_as_receipt: true,
+        amount_paid: paid,
+        payment_date: paid > 0 ? paymentDate : undefined,
+        payment_method: paid > 0 ? paymentMethod : undefined,
+        payment_reference: paymentReference.trim() || undefined,
+        lines: lines.map((line) => ({
+          allocation_id: Number(line.allocationId),
+          description: line.description.trim(),
+          quantity: Number(line.quantity),
+          unit_amount: Number(line.unitAmount),
+        })),
+      })
+      if (!result.success) {
+        setError(result.error)
+        return
+      }
+      await deleteReceiptDraft(draftKey)
+      router.push(projectHref)
+      router.refresh()
+    } catch (submissionError) {
+      setError(
+        submissionError instanceof ApplicationError
+          ? submissionError.toPublicError()
+          : new ApplicationError("NETWORK_UNAVAILABLE", undefined, {
+              cause: submissionError,
+            }).toPublicError()
+      )
+    } finally {
       setSaving(false)
-      return
     }
-    await deleteReceiptDraft(draftKey)
-    router.push(projectHref)
-    router.refresh()
   }
 
   return (
@@ -229,10 +281,19 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
           </h2>
         </div>
         <div className="hidden gap-2 sm:flex">
-          <Button variant="ghost" onClick={async () => {
-            await deleteReceiptDraft(draftKey)
-            setSupplierId(""); setPurchaseDate(today); setFiles([]); setLines([makeLine(1, project.tasks[0]?.id)]); setAmountPaid(""); setPaymentReference("")
-          }}>
+          <Button
+            variant="ghost"
+            onClick={async () => {
+              await deleteReceiptDraft(draftKey)
+              setSupplierId("")
+              setPurchaseDate(today)
+              setFiles([])
+              setUploadedReceiptFileId(undefined)
+              setLines([makeLine(1, project.tasks[0]?.id)])
+              setAmountPaid("")
+              setPaymentReference("")
+            }}
+          >
             Discard draft
           </Button>
           <Button
@@ -248,14 +309,7 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
         </div>
       </div>
 
-      {error && (
-        <div
-          className="rounded-xl border border-destructive/25 bg-destructive/5 px-4 py-3 font-medium text-destructive text-sm"
-          role="alert"
-        >
-          {error}
-        </div>
-      )}
+      {error && <ErrorNotice error={error} />}
 
       <div className="grid items-start gap-5 pb-20 md:pb-0 lg:grid-cols-[minmax(0,3fr)_minmax(22rem,2fr)]">
         <div
@@ -305,8 +359,14 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
               <div className="sm:col-span-2">
                 <UploadZone
                   files={files}
-                  onFiles={(incoming) => setFiles(incoming.slice(0, 1))}
-                  onRemove={() => setFiles([])}
+                  onFiles={(incoming) => {
+                    setFiles(incoming.slice(0, 1))
+                    setUploadedReceiptFileId(undefined)
+                  }}
+                  onRemove={() => {
+                    setFiles([])
+                    setUploadedReceiptFileId(undefined)
+                  }}
                 />
               </div>
             </CardContent>

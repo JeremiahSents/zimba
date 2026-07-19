@@ -2,17 +2,18 @@
 
 import { revalidatePath } from "next/cache"
 import { createInvitation } from "@/core/team/service"
-import { ApplicationError } from "@/core/shared/errors"
+import { handleActionError } from "@/core/shared/handle-action-error"
 import type { WorkspaceRole } from "@/core/auth/permissions"
-import { requireSession } from "@/core/auth/service"
+import { ensureActionSession } from "@/core/auth/action-session"
 
 export async function inviteMemberAction(input: { name: string; email: string; role: WorkspaceRole; responsibility?: string }) {
-  await requireSession()
+  const authFailure = await ensureActionSession("team.invite")
+  if (authFailure) return authFailure
   try {
     const token = await createInvitation(input)
     revalidatePath("/admin/team")
     return { success: true as const, data: { path: `/invite/${token}` } }
   } catch (error) {
-    return { success: false as const, error: { message: error instanceof ApplicationError ? error.message : "Could not create invitation." } }
+    return handleActionError(error, "team.invite")
   }
 }
