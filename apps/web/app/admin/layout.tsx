@@ -8,8 +8,10 @@ const SIDEBAR_COOKIE_NAME = "sidebar_state"
 
 export default async function AdminLayout({
   children,
+  modal,
 }: Readonly<{
   children: React.ReactNode
+  modal?: React.ReactNode
 }>) {
   const user = await getAuthenticatedWorkspaceUser()
 
@@ -25,6 +27,7 @@ export default async function AdminLayout({
         className="min-h-svh w-full bg-transparent"
       >
         {children}
+        {modal}
       </SidebarProvider>
     </WorkspaceProvider>
   )

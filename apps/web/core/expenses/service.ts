@@ -16,6 +16,7 @@ import * as expenseRepo from "./repository"
 export async function listExpenseRows(): Promise<ExpenseTableRow[]> {
   const { organization } = await requireSession()
   const rows = await expenseRepo.listExpenses(organization.organizationId)
+  const payables = await expenseRepo.listPayables(organization.organizationId)
   const expenseRows = await Promise.all(
     rows.map(async ({ expense, projectName, supplierName }) => {
       const lines = await expenseRepo.getExpenseLines(
@@ -53,7 +54,50 @@ export async function listExpenseRows(): Promise<ExpenseTableRow[]> {
       }
     })
   )
-  return expenseRows.sort((a, b) => b.date.localeCompare(a.date))
+  const payableRows = await Promise.all(
+    payables
+      .filter(({ payable }) => !rows.some(({ expense }) => expense.id === payable.id))
+      .map(async ({ payable, projectName, supplierName }) => {
+        const detail = await expenseRepo.getPayable(
+          organization.organizationId,
+          payable.id
+        )
+        const amount = payable.amountCents / 100
+        const paidAmount =
+          (detail?.payments ?? []).reduce(
+            (sum, payment) => sum + payment.amountCents,
+            0
+          ) / 100
+        const date = payable.dueDate ?? payable.createdAt
+
+        return {
+          id: payable.id,
+          receipt_id: payable.id,
+          project_id: payable.projectId,
+          supplier_id: payable.supplierId ?? undefined,
+          allocation_id: undefined,
+          date: date.toISOString(),
+          created_at: payable.createdAt.toISOString(),
+          task_name: "General",
+          supplier_name: supplierName ?? "Unknown supplier",
+          item_description: payable.description || payable.title,
+          amount,
+          paid_amount: paidAmount,
+          outstanding_amount: Math.max(0, amount - paidAmount),
+          project_name: projectName ?? "Unknown project",
+          status: toUiStatus(
+            payable.status === "paid"
+              ? "paid"
+              : paidAmount > 0
+                ? "partial"
+                : "unpaid"
+          ),
+        }
+      })
+  )
+  return [...expenseRows, ...payableRows].sort((a, b) =>
+    b.date.localeCompare(a.date)
+  )
 }
 
 export async function createPayableExpense(
