@@ -40,38 +40,27 @@ export function SuppliersPage({ data }: { data: DashboardOverviewData }) {
     {
       label: "Suppliers we have",
       value: String(suppliers.length),
-      detail: "Active partners",
       icon: UserGroupIcon,
-      pillClassName: "bg-green-50 text-green-700",
     },
     {
       label: "Receipt value",
       value: formatCurrency(totalReceiptValue),
-      detail: "Across all receipts",
       icon: MoneyBag02Icon,
-      pillClassName: "bg-blue-50 text-blue-700",
     },
     {
       label: "Paid to suppliers",
       value: formatCurrency(totalPaid),
-      detail: `${totalReceiptValue ? Math.round((totalPaid / totalReceiptValue) * 100) : 0}% settled`,
       icon: TaskDone01Icon,
-      pillClassName: "bg-amber-50 text-amber-700",
     },
     {
       label: "Pending balance",
       value: formatCurrency(pendingBalance),
-      detail: "Unpaid arrears",
       icon: MoneyBag02Icon,
-      pillClassName: "bg-rose-50 text-rose-700",
     },
   ]
 
   return (
-    <DashboardShell
-      title="Suppliers"
-      subtitle="Track receipts, payments, and the balance owed to every supplier."
-    >
+    <DashboardShell title="Suppliers" subtitle="">
       <Card className="gap-0 overflow-hidden py-0">
         <div className="grid grid-cols-2 md:grid-cols-4">
           {stats.map((stat) => (
@@ -92,36 +81,21 @@ export function SuppliersPage({ data }: { data: DashboardOverviewData }) {
               <p className="mt-4 font-heading font-semibold text-base text-foreground">
                 {stat.value}
               </p>
-              <p
-                className={`mt-2 inline-flex rounded-lg px-1.5 py-0.5 font-medium text-[10px] ${stat.pillClassName}`}
-              >
-                {stat.detail}
-              </p>
             </div>
           ))}
         </div>
       </Card>
 
       <section className="space-y-5">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="font-heading font-medium text-lg">Supplier ledger</p>
-            <p className="mt-1 text-muted-foreground text-sm">
-              Receipt value and outstanding balances across active projects.
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="text-muted-foreground text-xs">
-              Click any receipt to open its payment details
-            </span>
-            <Button
-              size="sm"
-              nativeButton={false}
-              render={<Link href="/admin/suppliers/new" />}
-            >
-              + Create supplier
-            </Button>
-          </div>
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <p className="font-heading font-medium text-lg">Supplier ledger</p>
+          <Button
+            size="sm"
+            nativeButton={false}
+            render={<Link href="/admin/suppliers/new" />}
+          >
+            + Create supplier
+          </Button>
         </div>
         <SupplierTable receipts={receipts} />
       </section>

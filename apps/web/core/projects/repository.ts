@@ -1,6 +1,6 @@
 import "server-only"
 import { and, desc, eq, inArray, isNull } from "drizzle-orm"
-import { db, schema } from "../shared/db"
+import { db, schema } from "@workspace/db"
 
 export async function listProjects(organizationId: string) {
   const projects = await db

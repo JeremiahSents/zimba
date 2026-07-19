@@ -1,7 +1,7 @@
 import "server-only"
 
 import { eq } from "drizzle-orm"
-import { db, schema } from "../shared/db"
+import { db, schema } from "@workspace/db"
 
 export type OrganizationMembership = { organizationId: string; organizationName: string; role: string }
 

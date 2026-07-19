@@ -9,7 +9,7 @@ import type {
   PayableExpenseResponse,
 } from "@/lib/types"
 import { requireSession } from "../auth/service"
-import { db, schema } from "../shared/db"
+import { db, schema } from "@workspace/db"
 import { badRequest, notFound } from "../shared/errors"
 import * as expenseRepo from "./repository"
 

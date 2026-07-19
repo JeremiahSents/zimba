@@ -1,6 +1,6 @@
 import "server-only"
 import { eq, and } from "drizzle-orm"
-import { db, schema } from "../shared/db"
+import { db, schema } from "@workspace/db"
 
 export async function listAllocations(organizationId: string, projectId: string) {
   return await db

@@ -3,9 +3,9 @@ import "server-only"
 import { drizzleAdapter } from "@better-auth/drizzle-adapter"
 import { betterAuth } from "better-auth"
 import { nextCookies } from "better-auth/next-js"
-import { db } from "../shared/db"
+import { db } from "@workspace/db"
 import { env } from "../shared/env"
-import * as schema from "./schema"
+import * as schema from "@workspace/db/schema"
 
 const googleClientId = process.env.GOOGLE_CLIENT_ID
 const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET ?? process.env.GOOGLE_SECRET

@@ -1,8 +1,11 @@
-﻿"use client"
+"use client"
 
 import {
   ArrowLeft01Icon,
+  Call02Icon,
   Download01Icon,
+  Mail01Icon,
+  MapsLocation01Icon,
   PrinterIcon,
   Share08Icon,
 } from "@hugeicons/core-free-icons"
@@ -77,70 +80,62 @@ export function ReceiptDetailPage({
       <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center print:hidden">
         <Link
           href="/admin/projects"
-          className="inline-flex items-center gap-2 font-semibold text-primary text-sm transition-colors hover:underline"
+          className="inline-flex w-fit items-center gap-2 rounded-lg font-medium text-muted-foreground text-sm transition-colors hover:text-foreground"
         >
           <HugeiconsIcon icon={ArrowLeft01Icon} size={16} /> Back to projects
         </Link>
-        <div className="flex flex-wrap items-center gap-3">
-          <button
-            type="button"
-            onClick={() => window.print()}
-            className="inline-flex items-center gap-2 rounded-lg border bg-background px-4 py-2 font-medium text-sm shadow-sm transition-all hover:bg-accent hover:text-accent-foreground"
-          >
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+          <Button variant="outline" onClick={() => window.print()} className="gap-2">
             <HugeiconsIcon icon={PrinterIcon} size={16} />
-            Print
-          </button>
-          <button type="button" onClick={async () => {
+            <span>Print</span>
+          </Button>
+          <Button variant="outline" onClick={async () => {
             const data = { title: `Receipt ${payable?.receipt_number ?? first.id}`, text: `${first.supplier_name} · ${formatCurrency(total)}`, url: window.location.href }
             if (navigator.share) await navigator.share(data)
             else await navigator.clipboard.writeText(window.location.href)
-          }} className="inline-flex items-center gap-2 rounded-lg border bg-background px-4 py-2 font-medium text-sm shadow-sm transition-all hover:bg-accent">
-            <HugeiconsIcon icon={Share08Icon} size={16} /> Share
-          </button>
+          }} className="gap-2">
+            <HugeiconsIcon icon={Share08Icon} size={16} />
+            <span>Share</span>
+          </Button>
           {first.receipt_url && (
-            <a
-              href={first.receipt_url}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-lg border bg-background px-4 py-2 font-medium text-sm shadow-sm transition-all hover:bg-accent"
-            >
-              <HugeiconsIcon icon={Download01Icon} size={16} />
-              View Original File
-            </a>
+            <Button variant="secondary" asChild className="gap-2">
+              <a href={first.receipt_url} target="_blank" rel="noreferrer">
+                <HugeiconsIcon icon={Download01Icon} size={16} />
+                <span>View Original</span>
+              </a>
+            </Button>
           )}
         </div>
       </div>
 
-      <div className="mx-auto grid max-w-6xl items-start gap-6 lg:grid-cols-[1fr_360px]">
+      <div className="mx-auto grid max-w-6xl items-start gap-6 lg:grid-cols-[1fr_380px]">
         {/* Receipt Paper Card */}
-        <div className="receipt-print-area overflow-hidden rounded-xl border border-gray-100 bg-white text-gray-900 shadow-lg">
-          <div className="p-8 sm:p-12">
+        <div className="receipt-print-area overflow-hidden rounded-2xl border bg-card text-card-foreground shadow-sm">
+          <div className="p-6 sm:p-8 lg:p-12">
             {/* Header */}
-            <div className="mb-8 flex flex-col items-start justify-between gap-6 border-gray-100 border-b pb-8 sm:flex-row sm:items-center">
-              <div className="flex items-center gap-3">
-                <Avatar size="lg" className="size-12">
-                  <AvatarFallback className="bg-primary font-bold text-lg text-primary-foreground">
+            <div className="mb-8 flex flex-col items-start justify-between gap-6 border-b pb-8 md:flex-row md:items-center">
+              <div className="flex items-center gap-4">
+                <Avatar size="lg" className="size-14 ring-1 ring-border">
+                  <AvatarFallback className="bg-primary/10 font-bold font-heading text-primary text-xl">
                     {first.supplier_name.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <h1 className="font-bold font-heading text-2xl tracking-tight">
+                  <h1 className="font-heading font-bold text-2xl text-foreground tracking-tight">
                     {first.supplier_name}
                   </h1>
-                  <p className="mt-0.5 text-gray-500 text-sm">
+                  <p className="mt-1 font-medium text-muted-foreground text-sm">
                     {first.project_name} · Project Expense
                   </p>
                 </div>
               </div>
-              <div className="text-left sm:text-right">
-                <h2 className="font-bold font-heading text-3xl text-gray-900 uppercase tracking-wider">
+              <div className="text-left md:text-right">
+                <h2 className="font-heading font-bold text-xl text-foreground uppercase tracking-widest">
                   Receipt
                 </h2>
-                <div className="mt-3 space-y-1 font-medium text-gray-600 text-sm">
+                <div className="mt-2 space-y-1 font-medium text-muted-foreground text-sm">
                   <p>
-                    Receipt No:{" "}
-                    {payable?.receipt_number ??
-                      `RCPT-${first.id.toString().padStart(4, "0")}`}
+                    No: {payable?.receipt_number ?? `RCPT-${first.id.toString().padStart(4, "0")}`}
                   </p>
                   <p>Date: {formatShortDate(first.date)}</p>
                 </div>
@@ -148,116 +143,102 @@ export function ReceiptDetailPage({
             </div>
 
             {/* Addresses */}
-            <div className="mb-12 grid gap-8 rounded-lg bg-gray-50/50 p-6 sm:grid-cols-2">
-              <div>
-                <p className="mb-3 font-bold text-gray-500 text-xs uppercase tracking-wider">
-                  FROM
+            <div className="mb-10 grid gap-8 md:grid-cols-2 border-b pb-8">
+              <div className="space-y-4">
+                <p className="font-semibold text-muted-foreground text-xs uppercase tracking-wider">
+                  From
                 </p>
-                <h3 className="font-semibold text-gray-900 text-lg">
-                  {first.supplier_name}
-                </h3>
-                <div className="mt-2 space-y-1 text-gray-600 text-sm">
-                  {supplier?.phone && <p>{supplier.phone}</p>}
-                  {supplier?.email && <p>{supplier.email}</p>}
-                  {supplier?.companyContact && <p>{supplier.companyContact}</p>}
-                  {!supplier?.phone &&
-                    !supplier?.email &&
-                    !supplier?.companyContact && (
-                      <p className="text-muted-foreground">Supplier details</p>
+                <div>
+                  <h3 className="font-heading font-semibold text-foreground text-lg">
+                    {first.supplier_name}
+                  </h3>
+                  <div className="mt-3 space-y-2 text-muted-foreground text-sm">
+                    {supplier?.phone && <p className="flex items-center gap-2"><HugeiconsIcon icon={Call02Icon} className="size-4 shrink-0"/> {supplier.phone}</p>}
+                    {supplier?.email && <p className="flex items-center gap-2"><HugeiconsIcon icon={Mail01Icon} className="size-4 shrink-0"/> {supplier.email}</p>}
+                    {supplier?.companyContact && <p className="flex items-center gap-2"><HugeiconsIcon icon={MapsLocation01Icon} className="size-4 shrink-0"/> {supplier.companyContact}</p>}
+                    {!supplier?.phone && !supplier?.email && !supplier?.companyContact && (
+                      <p>Supplier details unavailable</p>
                     )}
+                  </div>
                 </div>
               </div>
-              <div>
-                <p className="mb-3 font-bold text-gray-500 text-xs uppercase tracking-wider">
-                  BILLED TO
+              <div className="space-y-4">
+                <p className="font-semibold text-muted-foreground text-xs uppercase tracking-wider">
+                  Billed To
                 </p>
                 <div className="space-y-2 text-sm">
-                  <h3 className="font-semibold text-gray-900 text-lg">
-                    Zimba consultants
+                  <h3 className="font-heading font-semibold text-foreground text-lg">
+                    Zimba Consultants
                   </h3>
-                  <p className="text-gray-600">{first.project_name}</p>
+                  <p className="flex items-center gap-2 text-muted-foreground"><HugeiconsIcon icon={MapsLocation01Icon} className="size-4 shrink-0"/> {first.project_name}</p>
                 </div>
               </div>
             </div>
 
-            {/* Items Table */}
-            <div className="mb-8 overflow-x-auto">
-              <table className="w-full whitespace-nowrap text-left text-sm">
-                <thead>
-                  <tr className="border-gray-200 border-y-2">
-                    <th className="w-12 px-2 py-4 text-center font-bold text-gray-900 text-xs uppercase tracking-wider">
-                      No
-                    </th>
-                    <th className="px-2 py-4 font-bold text-gray-900 text-xs uppercase tracking-wider">
-                      Item Description
-                    </th>
-                    <th className="px-2 py-4 text-right font-bold text-gray-900 text-xs uppercase tracking-wider">
-                      Price
-                    </th>
-                    <th className="w-24 px-2 py-4 text-center font-bold text-gray-900 text-xs uppercase tracking-wider">
-                      Quantity
-                    </th>
-                    <th className="px-2 py-4 text-right font-bold text-gray-900 text-xs uppercase tracking-wider">
-                      Total
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {items.map((item, index) => (
-                    <tr
-                      key={item.id}
-                      className="group transition-colors hover:bg-gray-50/50"
-                    >
-                      <td className="px-2 py-4 text-center text-gray-500">
-                        {index + 1}.
-                      </td>
-                      <td className="px-2 py-4">
-                        <p className="font-medium text-gray-900">
-                          {item.item_description}
+            {/* Items List */}
+            <div className="mb-8">
+              <div className="hidden grid-cols-[3rem_1fr_8rem_5rem_8rem] gap-4 border-b pb-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider md:grid">
+                <div className="text-center">No</div>
+                <div>Item Description</div>
+                <div className="text-right">Price</div>
+                <div className="text-center">Qty</div>
+                <div className="text-right">Total</div>
+              </div>
+              <div className="divide-y divide-border">
+                {items.map((item, index) => (
+                  <div key={item.id} className="grid grid-cols-1 gap-4 py-5 md:grid-cols-[3rem_1fr_8rem_5rem_8rem] md:items-center">
+                    {/* Mobile View */}
+                    <div className="flex items-start justify-between md:hidden">
+                      <div>
+                        <p className="font-semibold text-foreground">{item.item_description}</p>
+                        <p className="mt-1 text-muted-foreground text-xs">{item.task_name}</p>
+                        <p className="mt-3 font-medium text-muted-foreground text-xs">
+                          {item.quantity ?? 1} × {formatCurrency(item.unit_rate ?? item.amount)}
                         </p>
-                        <p className="mt-1 text-gray-500 text-xs">
-                          {item.task_name}
-                        </p>
-                      </td>
-                      <td className="px-2 py-4 text-right text-gray-600 tabular-nums">
-                        {formatCurrency(item.unit_rate ?? item.amount)}
-                      </td>
-                      <td className="px-2 py-4 text-center text-gray-600">
-                        {item.quantity ?? 1}
-                      </td>
-                      <td className="px-2 py-4 text-right font-semibold text-gray-900 tabular-nums">
-                        {formatCurrency(item.amount)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      </div>
+                      <p className="font-semibold text-foreground tabular-nums">{formatCurrency(item.amount)}</p>
+                    </div>
+
+                    {/* Desktop View */}
+                    <div className="hidden text-center text-muted-foreground text-sm md:block">{index + 1}.</div>
+                    <div className="hidden md:block">
+                      <p className="font-medium text-foreground">{item.item_description}</p>
+                      <p className="mt-1 text-muted-foreground text-xs">{item.task_name}</p>
+                    </div>
+                    <div className="hidden text-right text-muted-foreground text-sm tabular-nums md:block">
+                      {formatCurrency(item.unit_rate ?? item.amount)}
+                    </div>
+                    <div className="hidden text-center text-muted-foreground text-sm md:block">
+                      {item.quantity ?? 1}
+                    </div>
+                    <div className="hidden text-right font-semibold text-foreground tabular-nums md:block">
+                      {formatCurrency(item.amount)}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Totals Section */}
-            <div className="flex justify-end border-gray-100 border-t pt-6">
-              <div className="w-full space-y-3 sm:w-80">
-                <div className="flex justify-between text-sm">
-                  <span className="font-bold text-gray-500 uppercase">
-                    Subtotal:
-                  </span>
-                  <span className="font-medium text-gray-900 tabular-nums">
+            <div className="flex justify-end border-t pt-6">
+              <div className="w-full space-y-4 md:w-80">
+                <div className="flex justify-between font-medium text-muted-foreground text-sm">
+                  <span>Subtotal</span>
+                  <span className="text-foreground tabular-nums">
                     {formatCurrency(total)}
                   </span>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="font-bold text-gray-500 uppercase">
-                    Tax:
-                  </span>
-                  <span className="font-medium text-gray-900 tabular-nums">
+                <div className="flex justify-between font-medium text-muted-foreground text-sm">
+                  <span>Tax</span>
+                  <span className="text-foreground tabular-nums">
                     {formatCurrency(0)}
                   </span>
                 </div>
-                <div className="flex items-center justify-between border-gray-900 border-t-2 pt-4">
-                  <span className="font-bold text-gray-900 uppercase tracking-wider">
-                    Grand Total:
+                <div className="flex items-center justify-between border-foreground border-t-2 pt-4">
+                  <span className="font-heading font-semibold text-foreground text-lg uppercase tracking-wider">
+                    Total
                   </span>
-                  <span className="font-bold text-gray-900 text-xl tabular-nums">
+                  <span className="font-heading font-bold text-foreground text-2xl tabular-nums tracking-tight">
                     {formatCurrency(total)}
                   </span>
                 </div>
@@ -268,31 +249,36 @@ export function ReceiptDetailPage({
 
         {/* Payment Sidebar */}
         <div className="space-y-6 print:hidden">
-          <div className="rounded-xl border bg-card p-6 shadow-sm">
+          <div className="rounded-2xl border bg-card p-6 shadow-sm sm:p-8">
             <div className="flex items-center justify-between">
-              <p className="font-bold text-muted-foreground text-xs uppercase tracking-wider">
+              <p className="font-semibold text-muted-foreground text-xs uppercase tracking-wider">
                 Outstanding
               </p>
               <span
-                className={`inline-flex items-center rounded-full px-2 py-0.5 font-medium text-xs ring-1 ring-inset ${statusClasses}`}
+                className={`inline-flex items-center rounded-full px-2.5 py-1 font-semibold text-[10px] uppercase tracking-wider ring-1 ring-inset ${statusClasses}`}
               >
                 {statusLabel}
               </span>
             </div>
-            <p className="mt-2 font-bold text-3xl text-foreground tabular-nums tracking-tight">
+            <p className="mt-4 font-heading font-bold text-4xl text-foreground tabular-nums tracking-tighter">
               {formatCurrency(outstanding)}
             </p>
-            <div className="mt-4">
-              <Progress value={paidPercent} />
-              <p className="mt-2 text-muted-foreground text-xs">
-                {formatCurrency(paid)} of {formatCurrency(total)} paid ({paidPercent}%)
+            <div className="mt-6">
+              <div className="mb-2 flex justify-between font-medium text-xs">
+                <span className="text-muted-foreground">Amount Paid</span>
+                <span className="text-foreground">{paidPercent}%</span>
+              </div>
+              <Progress value={paidPercent} className="h-2" />
+              <p className="mt-3 font-medium text-muted-foreground text-xs">
+                <span className="text-foreground">{formatCurrency(paid)}</span> of {formatCurrency(total)} settled
               </p>
             </div>
             {payable && outstanding > 0 && (
-              <div className="mt-6 space-y-3">
+              <div className="mt-8 grid gap-3">
                 <Button
-                  className="w-full"
+                  className="w-full font-semibold"
                   disabled={markingPaid}
+                  size="lg"
                   onClick={async () => {
                     setMarkingPaid(true)
                     const result = await markReceiptFullyPaidAction(
@@ -305,11 +291,12 @@ export function ReceiptDetailPage({
                     router.refresh()
                   }}
                 >
-                  {markingPaid ? "Saving…" : "Mark fully paid"}
+                  {markingPaid ? "Processing..." : "Mark fully paid"}
                 </Button>
                 <Button
-                  variant="secondary"
+                  variant="outline"
                   className="w-full"
+                  size="lg"
                   onClick={() => setPaymentOpen(true)}
                 >
                   Record partial payment
@@ -323,25 +310,30 @@ export function ReceiptDetailPage({
             )}
           </div>
 
-          <div className="rounded-xl border bg-card p-6 shadow-sm">
-            <p className="font-bold text-muted-foreground text-xs uppercase tracking-wider">
+          <div className="rounded-2xl border bg-card p-6 shadow-sm sm:p-8">
+            <p className="font-semibold text-muted-foreground text-xs uppercase tracking-wider">
               Payment history
             </p>
             {payable?.payments.length ? (
-              <ol className="mt-4 space-y-4">
-                {payable.payments.map((payment) => (
-                  <li key={payment.id} className="flex gap-3">
-                    <span className="mt-1.5 size-2 shrink-0 rounded-full bg-primary" />
-                    <div className="flex flex-1 items-start justify-between gap-2 text-sm">
+              <ol className="mt-6 space-y-5">
+                {payable.payments.map((payment, idx) => (
+                  <li key={payment.id} className="relative flex gap-4">
+                    {idx !== payable.payments.length - 1 && (
+                      <span className="absolute top-6 bottom-[-20px] left-[7px] w-px bg-border" />
+                    )}
+                    <span className="relative mt-1 flex size-4 shrink-0 items-center justify-center rounded-full bg-primary/20 ring-4 ring-card">
+                      <span className="size-1.5 rounded-full bg-primary" />
+                    </span>
+                    <div className="flex flex-1 items-start justify-between gap-3 text-sm">
                       <div>
                         <p className="font-medium text-foreground">
                           {formatShortDate(payment.payment_date)}
                         </p>
-                        <p className="text-muted-foreground text-xs capitalize">
+                        <p className="mt-0.5 font-medium text-muted-foreground text-xs capitalize">
                           {payment.method.replace(/_/g, " ")}
                         </p>
                       </div>
-                      <span className="font-semibold tabular-nums">
+                      <span className="font-semibold text-foreground tabular-nums">
                         {formatCurrency(payment.amount)}
                       </span>
                     </div>
@@ -349,9 +341,10 @@ export function ReceiptDetailPage({
                 ))}
               </ol>
             ) : (
-              <p className="mt-4 text-muted-foreground text-sm">
-                No payments recorded yet.
-              </p>
+              <div className="mt-6 rounded-xl border border-dashed p-6 text-center">
+                <p className="font-medium text-sm text-foreground">No payments</p>
+                <p className="mt-1 text-muted-foreground text-xs">Payments will appear here.</p>
+              </div>
             )}
           </div>
         </div>

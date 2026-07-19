@@ -1,7 +1,7 @@
 import "server-only"
 
 import { and, desc, eq } from "drizzle-orm"
-import { db, schema } from "../shared/db"
+import { db, schema } from "@workspace/db"
 
 export async function listExpenses(organizationId: string) {
   return db

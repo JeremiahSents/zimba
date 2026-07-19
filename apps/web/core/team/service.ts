@@ -5,7 +5,7 @@ import { and, desc, eq } from "drizzle-orm"
 import { requireSession } from "../auth/service"
 import { canGrantRole, normalizeRole, requireRole, type WorkspaceRole } from "../auth/permissions"
 import { badRequest, forbidden, notFound } from "../shared/errors"
-import { db, schema } from "../shared/db"
+import { db, schema } from "@workspace/db"
 
 export async function listTeam() {
   const { organization } = await requireSession()
