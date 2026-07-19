@@ -53,39 +53,7 @@ export async function listExpenseRows(): Promise<ExpenseTableRow[]> {
       }
     })
   )
-  const payables = await expenseRepo.listPayables(organization.organizationId)
-  const payableRows = await Promise.all(
-    payables.map(async ({ payable, projectName, supplierName }) => {
-      const payments = await db
-        .select()
-        .from(schema.ledgerPayment)
-        .where(
-          and(
-            eq(schema.ledgerPayment.payableId, payable.id),
-            eq(schema.ledgerPayment.organizationId, organization.organizationId)
-          )
-        )
-      const amount = payable.amountCents / 100
-      const paidAmount = payments.reduce((sum, payment) => sum + payment.amountCents, 0) / 100
-      return {
-        id: payable.id,
-        receipt_id: payable.id,
-        project_id: payable.projectId,
-        supplier_id: payable.supplierId ?? undefined,
-        date: (payable.dueDate ?? payable.createdAt).toISOString(),
-        created_at: payable.createdAt.toISOString(),
-        task_name: "General",
-        supplier_name: supplierName ?? "Unknown supplier",
-        item_description: payable.description || "Expense",
-        amount,
-        paid_amount: paidAmount,
-        outstanding_amount: Math.max(0, amount - paidAmount),
-        project_name: projectName ?? "Unknown project",
-        status: toUiStatus(paidAmount >= amount && amount > 0 ? "paid" : paidAmount > 0 ? "partial" : "unpaid"),
-      } satisfies ExpenseTableRow
-    })
-  )
-  return [...expenseRows, ...payableRows].sort((a, b) => b.date.localeCompare(a.date))
+  return expenseRows.sort((a, b) => b.date.localeCompare(a.date))
 }
 
 export async function createPayableExpense(

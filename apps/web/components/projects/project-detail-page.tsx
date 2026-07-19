@@ -57,7 +57,7 @@ export function ProjectDetailPage({
     setExpenses(project.expenses)
   }, [project])
 
-  const spent = expenses.reduce((total, expense) => total + expense.amount, 0)
+  const spent = project.spent
   const taskData = expenses.reduce<Array<{ name: string; value: number }>>(
     (items, expense) => {
       const name = expense.task_name || "General"

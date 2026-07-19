@@ -4,7 +4,6 @@ import * as projectRepo from "./repository"
 import * as allocationRepo from "../allocations/repository"
 import * as expenseRepo from "../expenses/repository"
 import * as fileRepo from "../files/repository"
-import * as paymentRepo from "../payments/repository"
 import type { ProjectDashboardResponse, ProjectDetailResponse } from "@/lib/types"
 
 export async function getProjectsList() {
@@ -39,14 +38,16 @@ export async function getProjectDetail(projectId: string): Promise<ProjectDetail
   }
 
   const allocations = await allocationRepo.listAllocations(organization.organizationId, projectId)
-  const [expenseRows, attachments, payables] = await Promise.all([
+  const [expenseRows, attachments] = await Promise.all([
     expenseRepo.listExpenses(organization.organizationId),
     fileRepo.listProjectAttachments(organization.organizationId, projectId),
-    paymentRepo.listProjectPayables(organization.organizationId, projectId),
   ])
   const projectExpenseRows = expenseRows.filter(({ expense }) => expense.projectId === projectId)
   const expenses = await Promise.all(projectExpenseRows.map(async ({ expense, supplierName }) => {
-    const lines = await expenseRepo.getExpenseLines(organization.organizationId, expense.id)
+    const detail = await expenseRepo.getExpense(organization.organizationId, expense.id)
+    const lines = detail?.lines ?? []
+    const amountCents = lines.reduce((sum, { line }) => sum + line.amountCents, 0)
+    const paidCents = detail?.payments.reduce((sum, payment) => sum + payment.amountCents, 0) ?? 0
     return lines.map(({ line, allocationName }) => ({
       id: line.id,
       receipt_id: expense.id,
@@ -59,30 +60,12 @@ export async function getProjectDetail(projectId: string): Promise<ProjectDetail
       amount: line.amountCents / 100,
       quantity: line.quantity,
       unit_rate: line.unitRateCents / 100,
-      status: expense.paymentStatus === "paid" ? "Full" as const : expense.paymentStatus === "partial" ? "Partial" as const : "Not paid" as const,
+      paid_amount: paidCents / 100,
+      outstanding_amount: Math.max(0, amountCents - paidCents) / 100,
+      status: paidCents >= amountCents && amountCents > 0 ? "Full" as const : paidCents > 0 ? "Partial" as const : "Not paid" as const,
     }))
   }))
   const flatExpenses = expenses.flat()
-  const payableExpenses = await Promise.all(payables.map(async (payment) => {
-    const detail = await expenseRepo.getPayable(organization.organizationId, payment.id)
-    const paidCents = detail?.payments.reduce((sum, item) => sum + item.amountCents, 0) ?? 0
-    const amount = payment.amountCents / 100
-    return {
-      id: payment.id,
-      receipt_id: payment.id,
-      project_id: projectId,
-      allocation_id: "",
-      date: (payment.dueDate ?? payment.createdAt).toISOString(),
-      task_name: "General",
-      supplier_name: detail?.supplierName ?? "Unknown supplier",
-      item_description: payment.description || "Expense",
-      amount,
-      quantity: 1,
-      unit_rate: amount,
-      status: paidCents >= payment.amountCents && payment.amountCents > 0 ? "Full" as const : paidCents > 0 ? "Partial" as const : "Not paid" as const,
-    }
-  }))
-  flatExpenses.push(...payableExpenses)
   const supplierTotals = new Map<string, number>()
   for (const expense of flatExpenses) supplierTotals.set(expense.supplier_name, (supplierTotals.get(expense.supplier_name) ?? 0) + expense.amount)
   const allocationSpend = new Map<string, number>()
@@ -126,6 +109,6 @@ export async function getProjectDetail(projectId: string): Promise<ProjectDetail
     })),
     expenses: flatExpenses,
     suppliers: [...supplierTotals].map(([name, amount]) => ({ name, amount })),
-    upcoming_payments: payables.map((payment) => ({ id: payment.id, project_id: payment.projectId, title: payment.title, description: payment.description, amount: payment.amountCents / 100, currency: payment.currency, due_date: payment.dueDate?.toISOString() ?? "", supplier_name: null, status: payment.status, created_at: payment.createdAt.toISOString(), updated_at: payment.updatedAt.toISOString() })),
+    upcoming_payments: [],
   }
 }
