@@ -17,6 +17,10 @@ const trustedOrigins = env.BETTER_AUTH_TRUSTED_ORIGINS
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, { provider: "pg", schema }),
+  // Keep session reads on the adapter's explicit query path. The experimental
+  // relation join path intermittently logs fallback-join errors in dev when
+  // Next refreshes a request while the session cookie is being revalidated.
+  experimental: { joins: false },
   socialProviders: { google: { clientId: googleClientId, clientSecret: googleClientSecret, prompt: "select_account" } },
   plugins: [nextCookies()],
   trustedOrigins,

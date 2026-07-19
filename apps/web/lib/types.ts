@@ -14,7 +14,9 @@ export type ProjectCreate = {
   attachment_ids?: string[] | null
   allocations: ProjectAllocationCreate[]
 }
-export type ProjectUpdate = Partial<Omit<ProjectCreate, "allocations">> & { status?: string }
+export type ProjectUpdate = Partial<Omit<ProjectCreate, "allocations">> & {
+  status?: string
+}
 export type AllocationUpdate = { name?: string | null; budget?: number | null }
 export type SupplierCreate = {
   name: string
@@ -90,12 +92,33 @@ export type PayableExpenseResponse = {
   net_amount: number
   paid_amount: number
   outstanding_amount: number
-  settlement_status: "unpaid" | "partially_paid" | "paid" | "overpaid" | "refunded"
+  settlement_status:
+    | "unpaid"
+    | "partially_paid"
+    | "paid"
+    | "overpaid"
+    | "refunded"
   project_name?: string | null
   supplier_name?: string | null
   receipt_file_url?: string | null
-  lines: Array<{ id: string; allocation_id: string; allocation_name: string; description: string; quantity: number; unit_amount: number; tax_amount: number; line_amount: number }>
-  payments: Array<{ id: string; amount: number; payment_date: string; method: string; reference?: string | null; status: string }>
+  lines: Array<{
+    id: string
+    allocation_id: string
+    allocation_name: string
+    description: string
+    quantity: number
+    unit_amount: number
+    tax_amount: number
+    line_amount: number
+  }>
+  payments: Array<{
+    id: string
+    amount: number
+    payment_date: string
+    method: string
+    reference?: string | null
+    status: string
+  }>
 }
 
 export type UpcomingPaymentCreate = {
@@ -106,7 +129,9 @@ export type UpcomingPaymentCreate = {
   currency: string
   due_date: string
 }
-export type UpcomingPaymentUpdate = Partial<UpcomingPaymentCreate> & { status?: string | null }
+export type UpcomingPaymentUpdate = Partial<UpcomingPaymentCreate> & {
+  status?: string | null
+}
 export type UpcomingPaymentResponse = UpcomingPaymentCreate & {
   id: string
   project_id: string
@@ -115,7 +140,15 @@ export type UpcomingPaymentResponse = UpcomingPaymentCreate & {
   updated_at: string
 }
 export type FileUploadPurpose = "project_attachment" | "expense_receipt"
-export type ProjectAttachment = { id: string; filename: string; content_type: string; size_bytes: number; url: string; purpose?: string; created_at?: string }
+export type ProjectAttachment = {
+  id: string
+  filename: string
+  content_type: string
+  size_bytes: number
+  url: string
+  purpose?: string
+  created_at?: string
+}
 
 export type ProjectDashboardResponse = {
   id: string
@@ -134,9 +167,26 @@ export type ProjectDashboardResponse = {
   remaining: number
   pct: number
 }
-export type TaskResponse = { id: string; name: string; budget: number; spent: number; pct: number }
-export type ProjectAllocationResponse = { id: string; name: string; budget: number; spent: number; remaining: number; utilization_pct: number }
-export type SupplierBreakdown = { supplier_id?: string; name: string; amount: number }
+export type TaskResponse = {
+  id: string
+  name: string
+  budget: number
+  spent: number
+  pct: number
+}
+export type ProjectAllocationResponse = {
+  id: string
+  name: string
+  budget: number
+  spent: number
+  remaining: number
+  utilization_pct: number
+}
+export type SupplierBreakdown = {
+  supplier_id?: string
+  name: string
+  amount: number
+}
 export type ExpenseResponse = {
   id: string
   receipt_id?: string | null
@@ -177,10 +227,32 @@ export type ProjectDetailResponse = ProjectDashboardResponse & {
   suppliers: SupplierBreakdown[]
   upcoming_payments?: UpcomingPaymentResponse[]
 }
-export type TeamMember = { name: string; email?: string; role: string; responsibility: string }
-export type CompanySettings = { company: string; currency: "UGX"; defaultRegion: string; fiscalPeriod: "Monthly" | "Quarterly" | "Annual" }
-export type ExpenseTableRow = ExpenseResponse & { project_name: string; status: ExpenseStatus; paid_amount?: number; outstanding_amount?: number }
+export type TeamMember = {
+  name: string
+  email?: string
+  role: string
+  responsibility: string
+}
+export type CompanySettings = {
+  company: string
+  currency: "UGX"
+  defaultRegion: string
+  fiscalPeriod: "Monthly" | "Quarterly" | "Annual"
+}
+export type ExpenseTableRow = ExpenseResponse & {
+  project_name: string
+  status: ExpenseStatus
+  paid_amount?: number
+  outstanding_amount?: number
+  created_at?: string
+}
 export type DashboardStat = { label: string; value: string; detail: string }
 export type SpendChartPoint = { month: string; spent: number; budget: number }
 export type UtilizationChartPoint = { month: string; utilization: number }
-export type DashboardOverviewData = { projects: ProjectDashboardResponse[]; expenses: ExpenseTableRow[]; suppliers: SupplierResponse[]; spendChart: SpendChartPoint[]; utilizationChart: UtilizationChartPoint[] }
+export type DashboardOverviewData = {
+  projects: ProjectDashboardResponse[]
+  expenses: ExpenseTableRow[]
+  suppliers: SupplierResponse[]
+  spendChart: SpendChartPoint[]
+  utilizationChart: UtilizationChartPoint[]
+}

@@ -6,7 +6,15 @@ import {
   Sorting05Icon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Button } from "@workspace/ui/components/button"
+import {
+  type ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getSortedRowModel,
+  type SortingState,
+  useReactTable,
+} from "@tanstack/react-table"
 import { Input } from "@workspace/ui/components/input"
 import {
   Table,
@@ -16,42 +24,117 @@ import {
   TableHeader,
   TableRow,
 } from "@workspace/ui/components/table"
-import Link from "next/link"
 import { useMemo, useState } from "react"
-import {
-  MobileDataCard,
-  MobileDataMeta,
-} from "@/components/shared/mobile-data-card"
-import { ResponsiveDataView } from "@/components/shared/responsive-data-view"
-import { formatCurrency } from "@/lib/format"
-import { getSupplierSlug, type SupplierListItem } from "@/lib/supplier-data"
+import { formatCurrency, formatShortDate } from "@/lib/format"
+import type {
+  SupplierReceiptRow,
+  SupplierReceiptStatus,
+} from "@/lib/supplier-data"
+
+const statusStyles: Record<SupplierReceiptStatus, string> = {
+  New: "border-sky-200 bg-sky-50 text-sky-700",
+  Pending: "border-rose-200 bg-rose-50 text-rose-700",
+  Partial: "border-amber-200 bg-amber-50 text-amber-700",
+  "Paid in full": "border-emerald-200 bg-emerald-50 text-emerald-700",
+}
 
 export function SupplierTable({
-  suppliers,
-  filterLabel,
+  receipts,
 }: {
-  suppliers: SupplierListItem[]
-  filterLabel: string
+  receipts: SupplierReceiptRow[]
 }) {
-  const [filter, setFilter] = useState("")
-  const [sorting, setSorting] = useState<"name" | "amount" | "remaining">(
-    "name"
-  )
-  const rows = useMemo(
+  const [globalFilter, setGlobalFilter] = useState("")
+  const [statusFilter, setStatusFilter] = useState<
+    SupplierReceiptStatus | "all"
+  >("all")
+  const [sorting, setSorting] = useState<SortingState>([
+    { id: "date", desc: true },
+  ])
+  const data = useMemo(
     () =>
-      suppliers
-        .filter((supplier) =>
-          supplier.name.toLowerCase().includes(filter.toLowerCase())
-        )
-        .sort((a, b) =>
-          sorting === "name"
-            ? a.name.localeCompare(b.name)
-            : sorting === "amount"
-              ? b.amount - a.amount
-              : b.remaining - a.remaining
-        ),
-    [filter, sorting, suppliers]
+      statusFilter === "all"
+        ? receipts
+        : receipts.filter((receipt) => receipt.status === statusFilter),
+    [receipts, statusFilter]
   )
+  const columns = useMemo<ColumnDef<SupplierReceiptRow>[]>(
+    () => [
+      {
+        accessorKey: "supplierName",
+        header: "Supplier",
+        cell: ({ row }) => (
+          <div>
+            <p className="font-medium">{row.original.supplierName}</p>
+            <p className="mt-1 text-muted-foreground text-xs">
+              {row.original.item} · {row.original.project}
+            </p>
+          </div>
+        ),
+      },
+      {
+        accessorKey: "value",
+        header: "Receipt value",
+        cell: ({ getValue }) => (
+          <span className="font-semibold tabular-nums">
+            {formatCurrency(getValue<number>())}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "status",
+        header: "Status",
+        cell: ({ getValue }) => {
+          const status = getValue<SupplierReceiptStatus>()
+          return (
+            <span
+              className={`inline-flex rounded-full border px-2.5 py-1 font-medium text-xs ${statusStyles[status]}`}
+            >
+              {status}
+            </span>
+          )
+        },
+      },
+      {
+        accessorKey: "date",
+        header: "Date & time",
+        cell: ({ row }) => (
+          <div>
+            <p className="font-medium">{formatShortDate(row.original.date)}</p>
+            <p className="mt-1 text-muted-foreground text-xs">
+              {new Date(row.original.createdAt).toLocaleTimeString("en-UG", {
+                hour: "numeric",
+                minute: "2-digit",
+              })}
+            </p>
+          </div>
+        ),
+      },
+      {
+        id: "open",
+        header: "",
+        enableSorting: false,
+        cell: () => (
+          <HugeiconsIcon
+            icon={ArrowUpRight01Icon}
+            strokeWidth={1.8}
+            className="size-4 text-muted-foreground"
+          />
+        ),
+      },
+    ],
+    []
+  )
+  const table = useReactTable({
+    data,
+    columns,
+    state: { globalFilter, sorting },
+    onGlobalFilterChange: setGlobalFilter,
+    onSortingChange: setSorting,
+    getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+  })
+  const rows = table.getRowModel().rows
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -62,231 +145,104 @@ export function SupplierTable({
             className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
           />
           <Input
-            value={filter}
-            onChange={(event) => setFilter(event.target.value)}
-            placeholder="Search suppliers..."
+            value={globalFilter}
+            onChange={(event) => setGlobalFilter(event.target.value)}
+            placeholder="Search suppliers or receipts..."
             className="pl-9"
           />
         </div>
-        <span className="text-muted-foreground text-xs">
-          {rows.length} suppliers · {filterLabel}
-        </span>
-      </div>
-      <fieldset className="flex gap-2 overflow-x-auto pb-1 md:hidden">
-        <legend className="sr-only">Sort suppliers</legend>
-        {(["name", "amount", "remaining"] as const).map((option) => (
-          <Button
-            key={option}
-            type="button"
-            variant="secondary"
-            size="sm"
-            data-active={sorting === option}
-            onClick={() => setSorting(option)}
-            className="shrink-0 capitalize data-[active=true]:bg-primary/15 data-[active=true]:text-primary"
+        <div className="flex items-center gap-3">
+          <select
+            value={statusFilter}
+            onChange={(event) =>
+              setStatusFilter(
+                event.target.value as SupplierReceiptStatus | "all"
+              )
+            }
+            className="h-9 rounded-lg border bg-background px-3 text-sm"
           >
-            {option === "name"
-              ? "Name"
-              : option === "amount"
-                ? "Receipt value"
-                : "Remaining"}
-          </Button>
-        ))}
-      </fieldset>
-      <ResponsiveDataView
-        mobile={
-          rows.length ? (
-            <div className="space-y-3">
-              {rows.map((supplier) => {
-                const paidPercent = supplier.amount
-                  ? Math.round((supplier.paid / supplier.amount) * 100)
-                  : 0
-                const href = `/admin/suppliers/${getSupplierSlug(supplier.name)}`
-                return (
-                  <Link
-                    key={supplier.name}
-                    href={href}
-                    className="block rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-ring/45"
-                  >
-                    <MobileDataCard
-                      eyebrow={`${supplier.payments} recorded payments`}
-                      title={supplier.name}
-                      value={formatCurrency(supplier.remaining)}
-                      status={
-                        <span className="inline-flex rounded-full border border-primary/35 bg-primary/6 px-2 py-1 font-medium text-[10px] text-primary capitalize">
-                          {supplier.category}
-                        </span>
-                      }
+            <option value="all">All statuses</option>
+            <option>New</option>
+            <option>Pending</option>
+            <option>Partial</option>
+            <option>Paid in full</option>
+          </select>
+          <span className="text-muted-foreground text-xs">
+            {rows.length} receipts
+          </span>
+        </div>
+      </div>
+      <div className="overflow-x-auto rounded-2xl border">
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((group) => (
+              <TableRow key={group.id}>
+                {group.headers.map((header) => (
+                  <TableHead key={header.id}>
+                    <button
+                      type="button"
+                      className="inline-flex items-center text-muted-foreground"
+                      onClick={header.column.getToggleSortingHandler()}
+                      disabled={!header.column.getCanSort()}
                     >
-                      <div className="mb-4 h-1.5 overflow-hidden rounded-full bg-muted">
-                        <div
-                          className="h-full rounded-full bg-primary"
-                          style={{ width: `${paidPercent}%` }}
-                        />
-                      </div>
-                      <dl className="grid grid-cols-2 gap-4">
-                        <MobileDataMeta label="Receipt value">
-                          {formatCurrency(supplier.amount)}
-                        </MobileDataMeta>
-                        <MobileDataMeta label="Amount paid">
-                          {formatCurrency(supplier.paid)}
-                        </MobileDataMeta>
-                      </dl>
-                    </MobileDataCard>
-                  </Link>
-                )
-              })}
-            </div>
-          ) : (
-            <div className="rounded-2xl border border-dashed p-8 text-center text-muted-foreground text-sm">
-              No suppliers match your search.
-            </div>
-          )
-        }
-        desktop={
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>
-                    <SortButton
-                      label="Supplier"
-                      active={sorting === "name"}
-                      onClick={() => setSorting("name")}
-                    />
-                  </TableHead>
-                  <TableHead>Categories</TableHead>
-                  <TableHead>
-                    <SortButton
-                      label="Receipt value"
-                      active={sorting === "amount"}
-                      onClick={() => setSorting("amount")}
-                    />
-                  </TableHead>
-                  <TableHead>Amount paid</TableHead>
-                  <TableHead>
-                    <SortButton
-                      label="Remaining"
-                      active={sorting === "remaining"}
-                      onClick={() => setSorting("remaining")}
-                    />
-                  </TableHead>
-                  <TableHead className="w-10" />
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {rows.map((supplier) => {
-                  const paidPercent = supplier.amount
-                    ? Math.round((supplier.paid / supplier.amount) * 100)
-                    : 0
-                  const href = `/admin/suppliers/${getSupplierSlug(supplier.name)}`
-                  return (
-                    <TableRow
-                      key={supplier.name}
-                      tabIndex={0}
-                      role="link"
-                      aria-label={`Open ${supplier.name} details`}
-                      className="group cursor-pointer hover:bg-muted/40"
-                      onClick={() => {
-                        window.location.href = href
-                      }}
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter" || event.key === " ")
-                          window.location.href = href
-                      }}
-                    >
-                      <TableCell>
-                        <div className="font-medium text-foreground">
-                          {supplier.name}
-                        </div>
-                        <div className="mt-1 text-muted-foreground text-xs">
-                          {supplier.payments} recorded payments
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <span className="inline-flex rounded-full border border-primary/40 bg-primary/5 px-2 py-1 font-medium text-primary text-xs capitalize">
-                          {supplier.category}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <div className="font-medium">
-                          {formatCurrency(supplier.amount)}
-                        </div>
-                        <div className="mt-1 text-muted-foreground text-xs">
-                          {supplier.statusSummary.Full} full ·{" "}
-                          {supplier.statusSummary.Partial} partial ·{" "}
-                          {supplier.statusSummary["Not paid"]} unpaid
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="font-medium">
-                          {formatCurrency(supplier.paid)}
-                        </div>
-                        <div className="mt-2 h-1.5 w-24 overflow-hidden rounded-full bg-muted">
-                          <div
-                            className="h-full rounded-full bg-primary"
-                            style={{ width: `${paidPercent}%` }}
-                          />
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="font-semibold text-rose-700">
-                          {formatCurrency(supplier.remaining)}
-                        </div>
-                        <div className="mt-1 text-muted-foreground text-xs">
-                          {paidPercent}% settled
-                        </div>
-                      </TableCell>
-                      <TableCell>
+                      {flexRender(
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
+                      {header.column.getCanSort() && (
                         <HugeiconsIcon
-                          icon={ArrowUpRight01Icon}
-                          strokeWidth={1.8}
-                          className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                          icon={Sorting05Icon}
+                          strokeWidth={1.5}
+                          className="ml-1 size-3.5"
                         />
-                      </TableCell>
-                    </TableRow>
-                  )
-                })}
-                {rows.length === 0 && (
-                  <TableRow>
-                    <TableCell
-                      colSpan={6}
-                      className="h-28 text-center text-muted-foreground"
-                    >
-                      No suppliers match your search.
+                      )}
+                    </button>
+                  </TableHead>
+                ))}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {rows.length ? (
+              rows.map((row) => (
+                <TableRow
+                  key={row.id}
+                  className="group cursor-pointer hover:bg-muted/40"
+                  onClick={() => {
+                    window.location.href = `/admin/expenses/receipts/${row.original.id}`
+                  }}
+                  tabIndex={0}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ")
+                      window.location.href = `/admin/expenses/receipts/${row.original.id}`
+                  }}
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
                     </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        }
-      />
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-28 text-center text-muted-foreground"
+                >
+                  No receipts match your search.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+      <p className="text-muted-foreground text-xs">
+        Select a receipt to view details and clear its balance.
+      </p>
     </div>
-  )
-}
-
-function SortButton({
-  label,
-  active,
-  onClick,
-}: {
-  label: string
-  active: boolean
-  onClick: () => void
-}) {
-  return (
-    <Button
-      variant="ghost"
-      size="xs"
-      className="h-auto px-0 font-medium text-muted-foreground hover:bg-transparent hover:text-foreground"
-      onClick={onClick}
-    >
-      {label}
-      <HugeiconsIcon
-        icon={Sorting05Icon}
-        strokeWidth={1.5}
-        className={`size-3.5 ${active ? "text-primary" : ""}`}
-      />
-    </Button>
   )
 }

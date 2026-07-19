@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import {
   ArrowLeft01Icon,
@@ -7,7 +7,9 @@ import {
   Share08Icon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
+import { Avatar, AvatarFallback } from "@workspace/ui/components/avatar"
 import { Button } from "@workspace/ui/components/button"
+import { Progress } from "@workspace/ui/components/progress"
 import {
   Dialog,
   DialogContent,
@@ -57,13 +59,22 @@ export function ReceiptDetailPage({
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<PublicError | string>("")
   const [markingPaid, setMarkingPaid] = useState(false)
+  const paidPercent = total > 0 ? Math.min(Math.round((paid / total) * 100), 100) : 0
+  const statusLabel =
+    outstanding === 0 ? "Paid in full" : paid > 0 ? "Partially paid" : "Not paid"
+  const statusClasses =
+    outstanding === 0
+      ? "bg-green-50 text-green-700 ring-green-600/20"
+      : paid > 0
+        ? "bg-amber-50 text-amber-700 ring-amber-600/20"
+        : "bg-slate-50 text-slate-700 ring-slate-600/20"
 
   return (
     <DashboardShell
       title="Receipt Details"
       subtitle="Review the items recorded on this receipt."
     >
-      <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+      <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center print:hidden">
         <Link
           href="/admin/projects"
           className="inline-flex items-center gap-2 font-semibold text-primary text-sm transition-colors hover:underline"
@@ -71,22 +82,6 @@ export function ReceiptDetailPage({
           <HugeiconsIcon icon={ArrowLeft01Icon} size={16} /> Back to projects
         </Link>
         <div className="flex flex-wrap items-center gap-3">
-          {payable && outstanding > 0 && (
-            <>
-              <Button className="shrink-0" disabled={markingPaid} onClick={async () => {
-                setMarkingPaid(true)
-                const result = await markReceiptFullyPaidAction(payable.id, payable.project_id, crypto.randomUUID())
-                setMarkingPaid(false)
-                if (!result.success) return setError(result.error)
-                router.refresh()
-              }}>
-                {markingPaid ? "Saving…" : "Mark fully paid"}
-              </Button>
-              <Button variant="secondary" className="shrink-0" onClick={() => setPaymentOpen(true)}>
-                Record partial payment
-              </Button>
-            </>
-          )}
           <button
             type="button"
             onClick={() => window.print()}
@@ -107,7 +102,7 @@ export function ReceiptDetailPage({
               href={first.receipt_url}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-lg bg-primary px-4 py-2 font-medium text-primary-foreground text-sm shadow-sm transition-all hover:bg-primary/90"
+              className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-lg border bg-background px-4 py-2 font-medium text-sm shadow-sm transition-all hover:bg-accent"
             >
               <HugeiconsIcon icon={Download01Icon} size={16} />
               View Original File
@@ -116,27 +111,29 @@ export function ReceiptDetailPage({
         </div>
       </div>
 
-      <div className="mx-auto max-w-4xl">
+      <div className="mx-auto grid max-w-6xl items-start gap-6 lg:grid-cols-[1fr_360px]">
         {/* Receipt Paper Card */}
         <div className="receipt-print-area overflow-hidden rounded-xl border border-gray-100 bg-white text-gray-900 shadow-lg">
           <div className="p-8 sm:p-12">
             {/* Header */}
             <div className="mb-8 flex flex-col items-start justify-between gap-6 border-gray-100 border-b pb-8 sm:flex-row sm:items-center">
               <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary p-3 font-bold text-primary-foreground text-xl">
-                  {first.project_name.charAt(0).toUpperCase()}
-                </div>
+                <Avatar size="lg" className="size-12">
+                  <AvatarFallback className="bg-primary font-bold text-lg text-primary-foreground">
+                    {first.supplier_name.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
                 <div>
-                  <h1 className="font-bold font-heading text-2xl uppercase tracking-tight">
-                    {first.project_name}
+                  <h1 className="font-bold font-heading text-2xl tracking-tight">
+                    {first.supplier_name}
                   </h1>
                   <p className="mt-0.5 text-gray-500 text-sm">
-                    Project Expense
+                    {first.project_name} · Project Expense
                   </p>
                 </div>
               </div>
               <div className="text-left sm:text-right">
-                <h2 className="font-bold font-heading text-4xl text-gray-900 uppercase tracking-wider">
+                <h2 className="font-bold font-heading text-3xl text-gray-900 uppercase tracking-wider">
                   Receipt
                 </h2>
                 <div className="mt-3 space-y-1 font-medium text-gray-600 text-sm">
@@ -146,24 +143,6 @@ export function ReceiptDetailPage({
                       `RCPT-${first.id.toString().padStart(4, "0")}`}
                   </p>
                   <p>Date: {formatShortDate(first.date)}</p>
-                  <div className="mt-1 flex items-center gap-2 sm:justify-end">
-                    <span>Status:</span>
-                    <span
-                      className={`inline-flex items-center rounded-full px-2 py-0.5 font-medium text-xs ring-1 ring-inset ${
-                        outstanding === 0
-                          ? "bg-green-50 text-green-700 ring-green-600/20"
-                          : paid > 0
-                            ? "bg-amber-50 text-amber-700 ring-amber-600/20"
-                            : "bg-slate-50 text-slate-700 ring-slate-600/20"
-                      }`}
-                    >
-                      {outstanding === 0
-                        ? "Paid in full"
-                        : paid > 0
-                          ? "Partially paid"
-                          : "Not paid"}
-                    </span>
-                  </div>
                 </div>
               </div>
             </div>
@@ -256,32 +235,7 @@ export function ReceiptDetailPage({
             </div>
 
             {/* Totals Section */}
-            <div className="flex flex-col items-end justify-between gap-8 border-gray-100 border-t pt-6 sm:flex-row sm:items-start">
-              <div className="w-full sm:w-1/2">
-                {payable?.payments.length ? (
-                  <div>
-                    <p className="font-bold text-gray-500 text-xs uppercase tracking-wider">
-                      Payments
-                    </p>
-                    <div className="mt-3 space-y-2">
-                      {payable.payments.map((payment) => (
-                        <div
-                          key={payment.id}
-                          className="flex items-center justify-between text-sm"
-                        >
-                          <span className="text-gray-600">
-                            {formatShortDate(payment.payment_date)} ·{" "}
-                            {payment.method}
-                          </span>
-                          <span className="font-semibold tabular-nums">
-                            {formatCurrency(payment.amount)}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ) : null}
-              </div>
+            <div className="flex justify-end border-gray-100 border-t pt-6">
               <div className="w-full space-y-3 sm:w-80">
                 <div className="flex justify-between text-sm">
                   <span className="font-bold text-gray-500 uppercase">
@@ -307,26 +261,98 @@ export function ReceiptDetailPage({
                     {formatCurrency(total)}
                   </span>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="font-bold text-gray-500 uppercase">
-                    Paid:
-                  </span>
-                  <span className="font-semibold text-emerald-700 tabular-nums">
-                    {formatCurrency(paid)}
-                  </span>
-                </div>
-
-                {/* Visual design element for total */}
-                <div className="mt-6 flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50 p-4 shadow-sm">
-                  <span className="font-bold text-gray-500 text-xs uppercase tracking-wider">
-                    Total Due
-                  </span>
-                  <span className="font-bold text-3xl text-primary tabular-nums tracking-tight">
-                    {formatCurrency(outstanding)}
-                  </span>
-                </div>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Payment Sidebar */}
+        <div className="space-y-6 print:hidden">
+          <div className="rounded-xl border bg-card p-6 shadow-sm">
+            <div className="flex items-center justify-between">
+              <p className="font-bold text-muted-foreground text-xs uppercase tracking-wider">
+                Outstanding
+              </p>
+              <span
+                className={`inline-flex items-center rounded-full px-2 py-0.5 font-medium text-xs ring-1 ring-inset ${statusClasses}`}
+              >
+                {statusLabel}
+              </span>
+            </div>
+            <p className="mt-2 font-bold text-3xl text-foreground tabular-nums tracking-tight">
+              {formatCurrency(outstanding)}
+            </p>
+            <div className="mt-4">
+              <Progress value={paidPercent} />
+              <p className="mt-2 text-muted-foreground text-xs">
+                {formatCurrency(paid)} of {formatCurrency(total)} paid ({paidPercent}%)
+              </p>
+            </div>
+            {payable && outstanding > 0 && (
+              <div className="mt-6 space-y-3">
+                <Button
+                  className="w-full"
+                  disabled={markingPaid}
+                  onClick={async () => {
+                    setMarkingPaid(true)
+                    const result = await markReceiptFullyPaidAction(
+                      payable.id,
+                      payable.project_id,
+                      crypto.randomUUID()
+                    )
+                    setMarkingPaid(false)
+                    if (!result.success) return setError(result.error)
+                    router.refresh()
+                  }}
+                >
+                  {markingPaid ? "Saving…" : "Mark fully paid"}
+                </Button>
+                <Button
+                  variant="secondary"
+                  className="w-full"
+                  onClick={() => setPaymentOpen(true)}
+                >
+                  Record partial payment
+                </Button>
+              </div>
+            )}
+            {error && !paymentOpen && (
+              <div className="mt-4">
+                <ErrorNotice error={error} />
+              </div>
+            )}
+          </div>
+
+          <div className="rounded-xl border bg-card p-6 shadow-sm">
+            <p className="font-bold text-muted-foreground text-xs uppercase tracking-wider">
+              Payment history
+            </p>
+            {payable?.payments.length ? (
+              <ol className="mt-4 space-y-4">
+                {payable.payments.map((payment) => (
+                  <li key={payment.id} className="flex gap-3">
+                    <span className="mt-1.5 size-2 shrink-0 rounded-full bg-primary" />
+                    <div className="flex flex-1 items-start justify-between gap-2 text-sm">
+                      <div>
+                        <p className="font-medium text-foreground">
+                          {formatShortDate(payment.payment_date)}
+                        </p>
+                        <p className="text-muted-foreground text-xs capitalize">
+                          {payment.method.replace(/_/g, " ")}
+                        </p>
+                      </div>
+                      <span className="font-semibold tabular-nums">
+                        {formatCurrency(payment.amount)}
+                      </span>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            ) : (
+              <p className="mt-4 text-muted-foreground text-sm">
+                No payments recorded yet.
+              </p>
+            )}
           </div>
         </div>
       </div>
