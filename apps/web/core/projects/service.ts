@@ -63,6 +63,26 @@ export async function getProjectDetail(projectId: string): Promise<ProjectDetail
     }))
   }))
   const flatExpenses = expenses.flat()
+  const payableExpenses = await Promise.all(payables.map(async (payment) => {
+    const detail = await expenseRepo.getPayable(organization.organizationId, payment.id)
+    const paidCents = detail?.payments.reduce((sum, item) => sum + item.amountCents, 0) ?? 0
+    const amount = payment.amountCents / 100
+    return {
+      id: payment.id,
+      receipt_id: payment.id,
+      project_id: projectId,
+      allocation_id: undefined,
+      date: (payment.dueDate ?? payment.createdAt).toISOString(),
+      task_name: "General",
+      supplier_name: detail?.supplierName ?? "Unknown supplier",
+      item_description: payment.title || payment.description || "Expense",
+      amount,
+      quantity: 1,
+      unit_rate: amount,
+      status: paidCents >= payment.amountCents && payment.amountCents > 0 ? "Full" as const : paidCents > 0 ? "Partial" as const : "Not paid" as const,
+    }
+  }))
+  flatExpenses.push(...payableExpenses)
   const supplierTotals = new Map<string, number>()
   for (const expense of flatExpenses) supplierTotals.set(expense.supplier_name, (supplierTotals.get(expense.supplier_name) ?? 0) + expense.amount)
   const allocationSpend = new Map<string, number>()

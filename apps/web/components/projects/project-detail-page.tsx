@@ -258,8 +258,7 @@ export function ProjectDetailPage({
               Expenses
             </h2>
             <p className="mt-1 text-muted-foreground text-xs">
-              Legacy expense records. Payment status is read-only and will be
-              derived from the payment ledger after migration.
+              Track every project expense and its payment status in one place.
             </p>
           </div>
           <ProjectExpensesTable expenses={expenses} />
