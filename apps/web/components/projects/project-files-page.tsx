@@ -23,6 +23,7 @@ export function ProjectFilesPage({
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
+  const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([])
   const [error, setError] = useState<PublicError | string>("")
   const files = project.attachments ?? []
   const images = files.filter((file) => file.content_type.startsWith("image/"))
@@ -61,11 +62,35 @@ export function ProjectFilesPage({
               if (!selected.length) return
               setUploading(true)
               setError("")
+              setPendingFiles(
+                selected.map((file) => ({
+                  name: file.name,
+                  size: file.size,
+                  type: file.type,
+                  progress: 10,
+                }))
+              )
               try {
-                const ids = await Promise.all(
-                  selected.map((file) =>
-                    uploadZimbaFile(file, "project_attachment")
+                const ids: string[] = []
+                for (const [index, file] of selected.entries()) {
+                  setPendingFiles((current) =>
+                    current.map((pending, pendingIndex) =>
+                      pendingIndex === index
+                        ? { ...pending, progress: 45 }
+                        : pending
+                    )
                   )
+                  ids.push(await uploadZimbaFile(file, "project_attachment"))
+                  setPendingFiles((current) =>
+                    current.map((pending, pendingIndex) =>
+                      pendingIndex === index
+                        ? { ...pending, progress: 90 }
+                        : pending
+                    )
+                  )
+                }
+                setPendingFiles((current) =>
+                  current.map((file) => ({ ...file, progress: 100 }))
                 )
                 const result = await updateProjectAction(project.id, {
                   attachment_ids: ids,
@@ -80,6 +105,7 @@ export function ProjectFilesPage({
                 )
               }
               setUploading(false)
+              setPendingFiles([])
               event.target.value = ""
             }}
           />
@@ -99,6 +125,7 @@ export function ProjectFilesPage({
           error={error}
         />
       )}
+      {pendingFiles.length > 0 && <UploadProgress files={pendingFiles} />}
       {files.length === 0 ? (
         <div className="rounded-xl border border-dashed p-10 text-center">
           <HugeiconsIcon
@@ -121,6 +148,49 @@ export function ProjectFilesPage({
         </div>
       )}
     </DashboardShell>
+  )
+}
+
+type PendingFile = {
+  name: string
+  size: number
+  type: string
+  progress: number
+}
+
+function UploadProgress({ files }: { files: PendingFile[] }) {
+  return (
+    <section className="mb-8">
+      <Heading icon={File02Icon} title="Uploading" count={files.length} />
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        {files.map((file) => (
+          <div
+            key={`${file.name}-${file.size}`}
+            className="overflow-hidden rounded-xl border bg-muted/20"
+          >
+            <div className="flex aspect-square items-center justify-center bg-muted/35">
+              <HugeiconsIcon
+                icon={file.type.startsWith("image/") ? Image02Icon : File02Icon}
+                size={28}
+                className="text-muted-foreground"
+              />
+            </div>
+            <div className="space-y-2 px-3 py-3">
+              <p className="truncate font-medium text-xs">{file.name}</p>
+              <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+                <div
+                  className="h-full rounded-full bg-primary transition-[width] duration-300"
+                  style={{ width: `${file.progress}%` }}
+                />
+              </div>
+              <p className="text-[10px] text-muted-foreground">
+                {file.progress === 100 ? "Saving file…" : `${file.progress}% uploaded`}
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
   )
 }
 

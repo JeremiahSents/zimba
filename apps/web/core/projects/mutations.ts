@@ -98,6 +98,20 @@ export async function updateProject(projectId: string, data: ProjectUpdate) {
     }
   )
 
+  for (const fileId of data.attachment_ids ?? []) {
+    const file = await fileRepo.getCompletedFile(
+      organization.organizationId,
+      fileId
+    )
+    if (!file)
+      badRequest("An attachment is invalid or belongs to another workspace.")
+    await fileRepo.createProjectAttachment({
+      organizationId: organization.organizationId,
+      projectId,
+      fileId,
+    })
+  }
+
   await recordAudit({
     organizationId: organization.organizationId,
     actorId: user.id,
