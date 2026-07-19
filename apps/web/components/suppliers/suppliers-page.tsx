@@ -97,7 +97,7 @@ export function SuppliersPage({ data }: { data: DashboardOverviewData }) {
             + Create supplier
           </Button>
         </div>
-        <SupplierTable receipts={receipts} />
+        <SupplierTable receipts={receipts} suppliers={suppliers} />
       </section>
     </DashboardShell>
   )

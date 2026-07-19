@@ -39,37 +39,30 @@ export async function getProjectDetail(projectId: string): Promise<ProjectDetail
 
   const allocations = await allocationRepo.listAllocations(organization.organizationId, projectId)
   const [expenseRows, attachments] = await Promise.all([
-    expenseRepo.listExpenses(organization.organizationId),
+    expenseRepo.listFinancialExpenseRows(organization.organizationId),
     fileRepo.listProjectAttachments(organization.organizationId, projectId),
   ])
-  const projectExpenseRows = expenseRows.filter(({ expense }) => expense.projectId === projectId)
-  const expenses = await Promise.all(projectExpenseRows.map(async ({ expense, supplierName }) => {
-    const detail = await expenseRepo.getExpense(organization.organizationId, expense.id)
-    const lines = detail?.lines ?? []
-    const amountCents = lines.reduce((sum, { line }) => sum + line.amountCents, 0)
-    const paidCents = detail?.payments.reduce((sum, payment) => sum + payment.amountCents, 0) ?? 0
-    return lines.map(({ line, allocationName }) => ({
-      id: line.id,
-      receipt_id: expense.id,
+  const projectExpenseRows = expenseRows.filter((expense) => expense.projectId === projectId)
+  const flatExpenses = projectExpenseRows.map((expense) => ({
+      id: expense.id,
+      receipt_id: expense.receiptId,
       project_id: projectId,
-      allocation_id: line.allocationId,
-      date: (expense.expenseDate ?? expense.createdAt).toISOString(),
-      task_name: allocationName ?? "General",
-      supplier_name: supplierName ?? "Unknown supplier",
-      item_description: line.itemDescription,
-      amount: line.amountCents / 100,
-      quantity: line.quantity,
-      unit_rate: line.unitRateCents / 100,
-      paid_amount: paidCents / 100,
-      outstanding_amount: Math.max(0, amountCents - paidCents) / 100,
-      status: paidCents >= amountCents && amountCents > 0 ? "Full" as const : paidCents > 0 ? "Partial" as const : "Not paid" as const,
+      allocation_id: expense.allocationId,
+      date: expense.date.toISOString(),
+      task_name: expense.taskName,
+      supplier_name: expense.supplierName ?? "Unknown supplier",
+      item_description: expense.itemDescription,
+      amount: expense.amountCents / 100,
+      quantity: 1,
+      unit_rate: expense.amountCents / 100,
+      paid_amount: expense.paidCents / 100,
+      outstanding_amount: Math.max(0, expense.amountCents - expense.paidCents) / 100,
+      status: expense.paidCents >= expense.amountCents && expense.amountCents > 0 ? "Full" as const : expense.paidCents > 0 ? "Partial" as const : "Not paid" as const,
     }))
-  }))
-  const flatExpenses = expenses.flat()
   const supplierTotals = new Map<string, number>()
-  for (const expense of flatExpenses) supplierTotals.set(expense.supplier_name, (supplierTotals.get(expense.supplier_name) ?? 0) + expense.amount)
+  for (const expense of flatExpenses) supplierTotals.set(expense.supplier_name, (supplierTotals.get(expense.supplier_name) ?? 0) + (expense.paid_amount ?? 0))
   const allocationSpend = new Map<string, number>()
-  for (const expense of flatExpenses) if (expense.allocation_id) allocationSpend.set(expense.allocation_id, (allocationSpend.get(expense.allocation_id) ?? 0) + expense.amount)
+  for (const expense of flatExpenses) if (expense.allocation_id) allocationSpend.set(expense.allocation_id, (allocationSpend.get(expense.allocation_id) ?? 0) + (expense.paid_amount ?? 0))
 
   const dashboardResponse: ProjectDashboardResponse = {
     id: project.id,

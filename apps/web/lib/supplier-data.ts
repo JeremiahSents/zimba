@@ -23,6 +23,7 @@ export type SupplierLedgerEntry = {
 }
 export type SupplierReceiptRow = {
   id: string
+  supplierId?: string
   supplierName: string
   item: string
   project: string
@@ -158,6 +159,7 @@ export function getSupplierReceiptRows(
             : "Pending"
     return {
       id: expense.receipt_id ?? expense.id,
+      supplierId: expense.supplier_id,
       supplierName:
         supplierNames.get(expense.supplier_id) ?? expense.supplier_name,
       item: expense.item_description,

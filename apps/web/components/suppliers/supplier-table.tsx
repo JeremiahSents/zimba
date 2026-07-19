@@ -17,6 +17,13 @@ import {
 } from "@tanstack/react-table"
 import { Input } from "@workspace/ui/components/input"
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@workspace/ui/components/dialog"
+import {
   Table,
   TableBody,
   TableCell,
@@ -27,6 +34,7 @@ import {
 import { useMemo, useState } from "react"
 import { formatCurrency, formatShortDate } from "@/lib/format"
 import type {
+  SupplierListItem,
   SupplierReceiptRow,
   SupplierReceiptStatus,
 } from "@/lib/supplier-data"
@@ -40,8 +48,10 @@ const statusStyles: Record<SupplierReceiptStatus, string> = {
 
 export function SupplierTable({
   receipts,
+  suppliers,
 }: {
   receipts: SupplierReceiptRow[]
+  suppliers: SupplierListItem[]
 }) {
   const [globalFilter, setGlobalFilter] = useState("")
   const [statusFilter, setStatusFilter] = useState<
@@ -50,6 +60,7 @@ export function SupplierTable({
   const [sorting, setSorting] = useState<SortingState>([
     { id: "date", desc: true },
   ])
+  const [selectedSupplier, setSelectedSupplier] = useState<SupplierListItem>()
   const data = useMemo(
     () =>
       statusFilter === "all"
@@ -64,7 +75,22 @@ export function SupplierTable({
         header: "Supplier",
         cell: ({ row }) => (
           <div>
-            <p className="font-medium">{row.original.supplierName}</p>
+            <button
+              type="button"
+              className="font-medium text-left hover:text-primary hover:underline"
+              onClick={(event) => {
+                event.stopPropagation()
+                setSelectedSupplier(
+                  suppliers.find((supplier) =>
+                    supplier.id
+                      ? supplier.id === row.original.supplierId
+                      : supplier.name === row.original.supplierName
+                  )
+                )
+              }}
+            >
+              {row.original.supplierName}
+            </button>
             <p className="mt-1 text-muted-foreground text-xs">
               {row.original.item} · {row.original.project}
             </p>
@@ -122,7 +148,7 @@ export function SupplierTable({
         ),
       },
     ],
-    []
+    [suppliers]
   )
   const table = useReactTable({
     data,
@@ -301,6 +327,41 @@ export function SupplierTable({
           </TableBody>
         </Table>
       </div>
+      <Dialog
+        open={Boolean(selectedSupplier)}
+        onOpenChange={(open) => !open && setSelectedSupplier(undefined)}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{selectedSupplier?.name}</DialogTitle>
+            <DialogDescription>
+              Supplier account summary
+            </DialogDescription>
+          </DialogHeader>
+          {selectedSupplier && (
+            <div className="grid grid-cols-3 gap-3 rounded-xl border bg-muted/25 p-4">
+              <Metric label="Receipt total" value={formatCurrency(selectedSupplier.amount)} />
+              <Metric label="Paid" value={formatCurrency(selectedSupplier.paid)} />
+              <Metric label="Balance" value={formatCurrency(selectedSupplier.remaining)} />
+            </div>
+          )}
+          {selectedSupplier && (
+            <dl className="grid gap-3 text-sm">
+              <Contact label="Phone" value={selectedSupplier.phone} />
+              <Contact label="Email" value={selectedSupplier.email} />
+              <Contact label="Contact" value={selectedSupplier.contactName ?? selectedSupplier.companyContact} />
+            </dl>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
+}
+
+function Metric({ label, value }: { label: string; value: string }) {
+  return <div><dt className="text-muted-foreground text-[10px] uppercase tracking-wider">{label}</dt><dd className="mt-1 font-semibold text-sm tabular-nums">{value}</dd></div>
+}
+
+function Contact({ label, value }: { label: string; value?: string | null }) {
+  return <div className="flex items-center justify-between gap-4"><dt className="text-muted-foreground">{label}</dt><dd className="truncate font-medium">{value || "Not provided"}</dd></div>
 }

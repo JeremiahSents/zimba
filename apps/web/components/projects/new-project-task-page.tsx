@@ -59,13 +59,11 @@ export function NewProjectTaskPage({
                   return
                 }
                 router.push(
-                  `${returnTo}${returnTo.includes("?") ? "&" : "?"}task=${encodeURIComponent(name.trim())}`
+                  `${returnTo}${returnTo.includes("?") ? "&" : "?"}task=${encodeURIComponent(result.data.name)}`
                 )
               }}
             >
-              {error ? (
-                <ErrorNotice error={error} />
-              ) : null}
+              {error ? <ErrorNotice error={error} /> : null}
               <label className="grid gap-2">
                 <Label>Task name</Label>
                 <Input

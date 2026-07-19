@@ -12,7 +12,6 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Avatar, AvatarFallback } from "@workspace/ui/components/avatar"
 import { Button } from "@workspace/ui/components/button"
-import { Progress } from "@workspace/ui/components/progress"
 import {
   Dialog,
   DialogContent,
@@ -23,15 +22,21 @@ import {
 } from "@workspace/ui/components/dialog"
 import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
+import { Progress } from "@workspace/ui/components/progress"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
-import { ErrorNotice } from "@/components/shared/error-notice"
-import type { PublicError } from "@/core/shared/errors"
-import { markReceiptFullyPaidAction, recordReceiptPaymentAction } from "@/app/admin/payments/actions"
+import {
+  markReceiptFullyPaidAction,
+  recordReceiptPaymentAction,
+} from "@/app/admin/payments/actions"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { DatePicker } from "@/components/shared/date-picker"
+import { ErrorNotice } from "@/components/shared/error-notice"
+import { useWorkspace } from "@/components/shared/workspace-context"
+import type { PublicError } from "@/core/shared/errors"
 import { formatCurrency, formatShortDate } from "@/lib/format"
+import { formatReceiptNumber } from "@/lib/receipt-number"
 import type {
   ExpenseTableRow,
   PayableExpenseResponse,
@@ -48,6 +53,7 @@ export function ReceiptDetailPage({
   payable?: PayableExpenseResponse
 }) {
   const router = useRouter()
+  const workspace = useWorkspace()
   const first = items[0]!
   const total = items.reduce((sum, item) => sum + item.amount, 0)
   const paid = payable?.paid_amount ?? (first.status === "Full" ? total : 0)
@@ -62,15 +68,25 @@ export function ReceiptDetailPage({
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<PublicError | string>("")
   const [markingPaid, setMarkingPaid] = useState(false)
-  const paidPercent = total > 0 ? Math.min(Math.round((paid / total) * 100), 100) : 0
+  const paidPercent =
+    total > 0 ? Math.min(Math.round((paid / total) * 100), 100) : 0
   const statusLabel =
-    outstanding === 0 ? "Paid in full" : paid > 0 ? "Partially paid" : "Not paid"
+    outstanding === 0
+      ? "Paid in full"
+      : paid > 0
+        ? "Partially paid"
+        : "Not paid"
   const statusClasses =
     outstanding === 0
       ? "bg-green-50 text-green-700 ring-green-600/20"
       : paid > 0
         ? "bg-amber-50 text-amber-700 ring-amber-600/20"
         : "bg-slate-50 text-slate-700 ring-slate-600/20"
+  const receiptNumber = formatReceiptNumber({
+    fallbackId: payable?.id ?? first.id,
+    organizationName: workspace.organizationName,
+    receiptNumber: payable?.receipt_number,
+  })
 
   return (
     <DashboardShell
@@ -85,15 +101,27 @@ export function ReceiptDetailPage({
           <HugeiconsIcon icon={ArrowLeft01Icon} size={16} /> Back to projects
         </Link>
         <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-          <Button variant="outline" onClick={() => window.print()} className="gap-2">
+          <Button
+            variant="outline"
+            onClick={() => window.print()}
+            className="gap-2"
+          >
             <HugeiconsIcon icon={PrinterIcon} size={16} />
             <span>Print</span>
           </Button>
-          <Button variant="outline" onClick={async () => {
-            const data = { title: `Receipt ${payable?.receipt_number ?? first.id}`, text: `${first.supplier_name} · ${formatCurrency(total)}`, url: window.location.href }
-            if (navigator.share) await navigator.share(data)
-            else await navigator.clipboard.writeText(window.location.href)
-          }} className="gap-2">
+          <Button
+            variant="outline"
+            onClick={async () => {
+              const data = {
+                title: `Receipt ${receiptNumber}`,
+                text: `${first.supplier_name} - ${formatCurrency(total)}`,
+                url: window.location.href,
+              }
+              if (navigator.share) await navigator.share(data)
+              else await navigator.clipboard.writeText(window.location.href)
+            }}
+            className="gap-2"
+          >
             <HugeiconsIcon icon={Share08Icon} size={16} />
             <span>Share</span>
           </Button>
@@ -108,76 +136,106 @@ export function ReceiptDetailPage({
         </div>
       </div>
 
-      <div className="mx-auto grid max-w-6xl items-start gap-6 lg:grid-cols-[1fr_380px]">
+      <div className="mx-auto grid max-w-6xl items-start gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
         {/* Receipt Paper Card */}
         <div className="receipt-print-area overflow-hidden rounded-2xl border bg-card text-card-foreground shadow-sm">
-          <div className="p-6 sm:p-8 lg:p-12">
+          <div className="p-6 sm:p-8 lg:p-10">
             {/* Header */}
-            <div className="mb-8 flex flex-col items-start justify-between gap-6 border-b pb-8 md:flex-row md:items-center">
-              <div className="flex items-center gap-4">
-                <Avatar size="lg" className="size-14 ring-1 ring-border">
-                  <AvatarFallback className="bg-primary/10 font-bold font-heading text-primary text-xl">
+            <div className="mb-7 flex flex-col items-start justify-between gap-5 border-b pb-7 md:flex-row md:items-center">
+              <div className="flex items-center gap-3.5">
+                <Avatar size="lg" className="size-12 ring-1 ring-border">
+                  <AvatarFallback className="bg-primary/10 font-bold font-heading text-lg text-primary">
                     {first.supplier_name.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <h1 className="font-heading font-bold text-2xl text-foreground tracking-tight">
+                  <h1 className="font-heading font-semibold text-foreground text-xl tracking-tight sm:text-2xl">
                     {first.supplier_name}
                   </h1>
-                  <p className="mt-1 font-medium text-muted-foreground text-sm">
-                    {first.project_name} · Project Expense
+                  <p className="mt-1 font-medium text-muted-foreground text-xs sm:text-sm">
+                    {first.project_name} - Project Expense
                   </p>
                 </div>
               </div>
               <div className="text-left md:text-right">
-                <h2 className="font-heading font-bold text-xl text-foreground uppercase tracking-widest">
+                <h2 className="font-heading font-semibold text-foreground text-lg uppercase tracking-[0.18em]">
                   Receipt
                 </h2>
-                <div className="mt-2 space-y-1 font-medium text-muted-foreground text-sm">
-                  <p>
-                    No: {payable?.receipt_number ?? `RCPT-${first.id.toString().padStart(4, "0")}`}
-                  </p>
+                <div className="mt-2 space-y-1 font-medium text-muted-foreground text-xs sm:text-sm">
+                  <p>No: {receiptNumber}</p>
                   <p>Date: {formatShortDate(first.date)}</p>
                 </div>
               </div>
             </div>
 
             {/* Addresses */}
-            <div className="mb-10 grid gap-8 md:grid-cols-2 border-b pb-8">
-              <div className="space-y-4">
-                <p className="font-semibold text-muted-foreground text-xs uppercase tracking-wider">
+            <div className="mb-8 grid gap-7 border-b pb-7 md:grid-cols-2">
+              <div className="space-y-3">
+                <p className="font-semibold text-[11px] text-muted-foreground uppercase tracking-wider">
                   From
                 </p>
                 <div>
-                  <h3 className="font-heading font-semibold text-foreground text-lg">
+                  <h3 className="font-heading font-semibold text-base text-foreground sm:text-lg">
                     {first.supplier_name}
                   </h3>
                   <div className="mt-3 space-y-2 text-muted-foreground text-sm">
-                    {supplier?.phone && <p className="flex items-center gap-2"><HugeiconsIcon icon={Call02Icon} className="size-4 shrink-0"/> {supplier.phone}</p>}
-                    {supplier?.email && <p className="flex items-center gap-2"><HugeiconsIcon icon={Mail01Icon} className="size-4 shrink-0"/> {supplier.email}</p>}
-                    {supplier?.companyContact && <p className="flex items-center gap-2"><HugeiconsIcon icon={MapsLocation01Icon} className="size-4 shrink-0"/> {supplier.companyContact}</p>}
-                    {!supplier?.phone && !supplier?.email && !supplier?.companyContact && (
-                      <p>Supplier details unavailable</p>
+                    {supplier?.phone && (
+                      <p className="flex items-center gap-2">
+                        <HugeiconsIcon
+                          icon={Call02Icon}
+                          className="size-4 shrink-0"
+                        />{" "}
+                        {supplier.phone}
+                      </p>
                     )}
+                    {supplier?.email && (
+                      <p className="flex items-center gap-2">
+                        <HugeiconsIcon
+                          icon={Mail01Icon}
+                          className="size-4 shrink-0"
+                        />{" "}
+                        {supplier.email}
+                      </p>
+                    )}
+                    {supplier?.companyContact && (
+                      <p className="flex items-center gap-2">
+                        <HugeiconsIcon
+                          icon={MapsLocation01Icon}
+                          className="size-4 shrink-0"
+                        />{" "}
+                        {supplier.companyContact}
+                      </p>
+                    )}
+                    {!supplier?.phone &&
+                      !supplier?.email &&
+                      !supplier?.companyContact && (
+                        <p>Supplier details unavailable</p>
+                      )}
                   </div>
                 </div>
               </div>
-              <div className="space-y-4">
-                <p className="font-semibold text-muted-foreground text-xs uppercase tracking-wider">
+              <div className="space-y-3">
+                <p className="font-semibold text-[11px] text-muted-foreground uppercase tracking-wider">
                   Billed To
                 </p>
                 <div className="space-y-2 text-sm">
-                  <h3 className="font-heading font-semibold text-foreground text-lg">
-                    Zimba Consultants
+                  <h3 className="font-heading font-semibold text-base text-foreground sm:text-lg">
+                    {workspace.organizationName}
                   </h3>
-                  <p className="flex items-center gap-2 text-muted-foreground"><HugeiconsIcon icon={MapsLocation01Icon} className="size-4 shrink-0"/> {first.project_name}</p>
+                  <p className="flex items-center gap-2 text-muted-foreground">
+                    <HugeiconsIcon
+                      icon={MapsLocation01Icon}
+                      className="size-4 shrink-0"
+                    />{" "}
+                    {first.project_name}
+                  </p>
                 </div>
               </div>
             </div>
 
             {/* Items List */}
-            <div className="mb-8">
-              <div className="hidden grid-cols-[3rem_1fr_8rem_5rem_8rem] gap-4 border-b pb-3 font-semibold text-muted-foreground text-xs uppercase tracking-wider md:grid">
+            <div className="mb-7">
+              <div className="hidden grid-cols-[2.5rem_1fr_7rem_4rem_7rem] gap-4 border-b pb-3 font-semibold text-[11px] text-muted-foreground uppercase tracking-wider md:grid">
                 <div className="text-center">No</div>
                 <div>Item Description</div>
                 <div className="text-right">Price</div>
@@ -186,24 +244,40 @@ export function ReceiptDetailPage({
               </div>
               <div className="divide-y divide-border">
                 {items.map((item, index) => (
-                  <div key={item.id} className="grid grid-cols-1 gap-4 py-5 md:grid-cols-[3rem_1fr_8rem_5rem_8rem] md:items-center">
+                  <div
+                    key={item.id}
+                    className="grid grid-cols-1 gap-4 py-4 md:grid-cols-[2.5rem_1fr_7rem_4rem_7rem] md:items-center"
+                  >
                     {/* Mobile View */}
                     <div className="flex items-start justify-between md:hidden">
                       <div>
-                        <p className="font-semibold text-foreground">{item.item_description}</p>
-                        <p className="mt-1 text-muted-foreground text-xs">{item.task_name}</p>
+                        <p className="font-medium text-foreground text-sm">
+                          {item.item_description}
+                        </p>
+                        <p className="mt-1 text-muted-foreground text-xs">
+                          {item.task_name}
+                        </p>
                         <p className="mt-3 font-medium text-muted-foreground text-xs">
-                          {item.quantity ?? 1} × {formatCurrency(item.unit_rate ?? item.amount)}
+                          {item.quantity ?? 1} x{" "}
+                          {formatCurrency(item.unit_rate ?? item.amount)}
                         </p>
                       </div>
-                      <p className="font-semibold text-foreground tabular-nums">{formatCurrency(item.amount)}</p>
+                      <p className="font-semibold text-foreground text-sm tabular-nums">
+                        {formatCurrency(item.amount)}
+                      </p>
                     </div>
 
                     {/* Desktop View */}
-                    <div className="hidden text-center text-muted-foreground text-sm md:block">{index + 1}.</div>
+                    <div className="hidden text-center text-muted-foreground text-sm md:block">
+                      {index + 1}.
+                    </div>
                     <div className="hidden md:block">
-                      <p className="font-medium text-foreground">{item.item_description}</p>
-                      <p className="mt-1 text-muted-foreground text-xs">{item.task_name}</p>
+                      <p className="font-medium text-foreground text-sm">
+                        {item.item_description}
+                      </p>
+                      <p className="mt-1 text-muted-foreground text-xs">
+                        {item.task_name}
+                      </p>
                     </div>
                     <div className="hidden text-right text-muted-foreground text-sm tabular-nums md:block">
                       {formatCurrency(item.unit_rate ?? item.amount)}
@@ -221,7 +295,7 @@ export function ReceiptDetailPage({
 
             {/* Totals Section */}
             <div className="flex justify-end border-t pt-6">
-              <div className="w-full space-y-4 md:w-80">
+              <div className="w-full space-y-3 md:w-72">
                 <div className="flex justify-between font-medium text-muted-foreground text-sm">
                   <span>Subtotal</span>
                   <span className="text-foreground tabular-nums">
@@ -235,10 +309,10 @@ export function ReceiptDetailPage({
                   </span>
                 </div>
                 <div className="flex items-center justify-between border-foreground border-t-2 pt-4">
-                  <span className="font-heading font-semibold text-foreground text-lg uppercase tracking-wider">
+                  <span className="font-heading font-semibold text-base text-foreground uppercase tracking-wider">
                     Total
                   </span>
-                  <span className="font-heading font-bold text-foreground text-2xl tabular-nums tracking-tight">
+                  <span className="font-bold font-heading text-foreground text-xl tabular-nums tracking-tight">
                     {formatCurrency(total)}
                   </span>
                 </div>
@@ -260,7 +334,7 @@ export function ReceiptDetailPage({
                 {statusLabel}
               </span>
             </div>
-            <p className="mt-4 font-heading font-bold text-4xl text-foreground tabular-nums tracking-tighter">
+            <p className="mt-4 font-bold font-heading text-4xl text-foreground tabular-nums tracking-tighter">
               {formatCurrency(outstanding)}
             </p>
             <div className="mt-6">
@@ -270,7 +344,8 @@ export function ReceiptDetailPage({
               </div>
               <Progress value={paidPercent} className="h-2" />
               <p className="mt-3 font-medium text-muted-foreground text-xs">
-                <span className="text-foreground">{formatCurrency(paid)}</span> of {formatCurrency(total)} settled
+                <span className="text-foreground">{formatCurrency(paid)}</span>{" "}
+                of {formatCurrency(total)} settled
               </p>
             </div>
             {payable && outstanding > 0 && (
@@ -342,8 +417,12 @@ export function ReceiptDetailPage({
               </ol>
             ) : (
               <div className="mt-6 rounded-xl border border-dashed p-6 text-center">
-                <p className="font-medium text-sm text-foreground">No payments</p>
-                <p className="mt-1 text-muted-foreground text-xs">Payments will appear here.</p>
+                <p className="font-medium text-foreground text-sm">
+                  No payments
+                </p>
+                <p className="mt-1 text-muted-foreground text-xs">
+                  Payments will appear here.
+                </p>
               </div>
             )}
           </div>

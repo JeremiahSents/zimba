@@ -7,6 +7,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components/card"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@workspace/ui/components/dialog"
 import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
 import {
@@ -20,6 +28,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { createPayableExpenseAction } from "@/app/admin/expenses/actions"
+import { createProjectTaskAction } from "@/app/admin/projects/actions"
 import { UploadZone } from "@/components/projects/upload-zone"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { DatePicker } from "@/components/shared/date-picker"
@@ -32,7 +41,11 @@ import {
   readReceiptDraft,
   writeReceiptDraft,
 } from "@/lib/receipt-draft"
-import type { ProjectDetailResponse, SupplierResponse } from "@/lib/types"
+import type {
+  ProjectDetailResponse,
+  SupplierResponse,
+  TaskResponse,
+} from "@/lib/types"
 import { uploadZimbaFile } from "@/lib/upload-file"
 
 type ExpenseLine = {
@@ -55,6 +68,8 @@ const makeLine = (id: number, allocationId?: string): ExpenseLine => ({
   unitAmount: "",
 })
 
+const CREATE_CATEGORY_VALUE = "__create_new_category__"
+
 function formatNumericInput(value: string) {
   if (!value) return ""
   return Number(value).toLocaleString("en-US")
@@ -69,6 +84,7 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
   const [files, setFiles] = useState<File[]>([])
   const [uploadedReceiptFileId, setUploadedReceiptFileId] = useState<string>()
   const uploadPromiseRef = useRef<Promise<string> | null>(null)
+  const [categories, setCategories] = useState<TaskResponse[]>(project.tasks)
   const [lines, setLines] = useState([makeLine(1, project.tasks[0]?.id)])
   const [amountPaid, setAmountPaid] = useState("")
   const [paidInFull, setPaidInFull] = useState(false)
@@ -79,6 +95,12 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
   const [mobileStep, setMobileStep] = useState<"entry" | "preview">("entry")
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<PublicError | string>("")
+  const [categoryOpen, setCategoryOpen] = useState(false)
+  const [categoryLineId, setCategoryLineId] = useState<number | null>(null)
+  const [categoryName, setCategoryName] = useState("")
+  const [categoryBudget, setCategoryBudget] = useState("")
+  const [categoryError, setCategoryError] = useState<PublicError | string>("")
+  const [categoryPending, setCategoryPending] = useState(false)
   const draftReady = useRef(false)
   const draftKey = `project:${project.id}:new-receipt`
 
@@ -149,7 +171,9 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
     uploadPromiseRef.current = promise
     void promise
       .then((fileId) => setUploadedReceiptFileId(fileId))
-      .catch(() => setError("The file could not be uploaded. You can try again."))
+      .catch(() =>
+        setError("The file could not be uploaded. You can try again.")
+      )
       .finally(() => {
         uploadPromiseRef.current = null
       })
@@ -201,6 +225,49 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
     )
   }
 
+  function handleCategoryChange(lineId: number, value?: string | null) {
+    if (value === CREATE_CATEGORY_VALUE) {
+      setCategoryLineId(lineId)
+      setCategoryName("")
+      setCategoryBudget("")
+      setCategoryError("")
+      setCategoryOpen(true)
+      return
+    }
+    updateLine(lineId, "allocationId", value ?? "")
+  }
+
+  async function createCategory() {
+    const budget = Number(categoryBudget.replace(/,/g, ""))
+    if (!categoryName.trim() || !Number.isFinite(budget) || budget <= 0) {
+      setCategoryError("Add a category name and a budget greater than zero.")
+      return
+    }
+
+    setCategoryPending(true)
+    setCategoryError("")
+    const result = await createProjectTaskAction(project.id, {
+      name: categoryName.trim(),
+      budget,
+    })
+    setCategoryPending(false)
+    if (!result.success) {
+      setCategoryError(result.error)
+      return
+    }
+
+    setCategories((current) =>
+      [...current, result.data].sort((a, b) => a.name.localeCompare(b.name))
+    )
+    if (categoryLineId !== null) {
+      updateLine(categoryLineId, "allocationId", result.data.id)
+    }
+    setCategoryName("")
+    setCategoryBudget("")
+    setCategoryLineId(null)
+    setCategoryOpen(false)
+  }
+
   function validateReceiptDetails() {
     if (!supplierId) {
       setError("Choose a supplier before continuing.")
@@ -225,11 +292,17 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
         setError(`Choose a category for item ${itemNumber}.`)
         return true
       }
-      if (!Number.isFinite(Number(line.quantity)) || Number(line.quantity) <= 0) {
+      if (
+        !Number.isFinite(Number(line.quantity)) ||
+        Number(line.quantity) <= 0
+      ) {
         setError(`Enter a quantity greater than zero for item ${itemNumber}.`)
         return true
       }
-      if (!Number.isFinite(Number(line.unitAmount)) || Number(line.unitAmount) < 0) {
+      if (
+        !Number.isFinite(Number(line.unitAmount)) ||
+        Number(line.unitAmount) < 0
+      ) {
         setError(`Enter a valid rate for item ${itemNumber}.`)
         return true
       }
@@ -264,7 +337,8 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
     try {
       let receiptFileId = uploadedReceiptFileId
       if (files[0] && !receiptFileId) {
-        receiptFileId = await (uploadPromiseRef.current ?? uploadZimbaFile(files[0], "expense_receipt"))
+        receiptFileId = await (uploadPromiseRef.current ??
+          uploadZimbaFile(files[0], "expense_receipt"))
         setUploadedReceiptFileId(receiptFileId)
       }
 
@@ -476,13 +550,13 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
                           <Select
                             value={line.allocationId}
                             onValueChange={(value) =>
-                              updateLine(line.id, "allocationId", value ?? "")
+                              handleCategoryChange(line.id, value)
                             }
                           >
                             <SelectTrigger className="h-11 w-full px-3 text-sm">
                               <SelectValue placeholder="Choose category">
                                 {
-                                  project.tasks.find(
+                                  categories.find(
                                     (task) =>
                                       String(task.id) === line.allocationId
                                   )?.name
@@ -490,7 +564,7 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
                               </SelectValue>
                             </SelectTrigger>
                             <SelectContent>
-                              {project.tasks.map((task) => (
+                              {categories.map((task) => (
                                 <SelectItem
                                   key={task.id}
                                   value={String(task.id)}
@@ -499,6 +573,12 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
                                   {task.name}
                                 </SelectItem>
                               ))}
+                              <SelectItem
+                                value={CREATE_CATEGORY_VALUE}
+                                className="min-h-11 px-3 py-2 font-medium text-primary text-sm"
+                              >
+                                + Create new category
+                              </SelectItem>
                             </SelectContent>
                           </Select>
                         </label>
@@ -568,20 +648,20 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
                       <Select
                         value={line.allocationId}
                         onValueChange={(value) =>
-                          updateLine(line.id, "allocationId", value ?? "")
+                          handleCategoryChange(line.id, value)
                         }
                       >
                         <SelectTrigger className="h-11 w-full px-3 text-sm md:h-11 md:rounded-none md:border-y-0 md:border-r-0 md:bg-transparent md:text-sm">
                           <SelectValue placeholder="Category">
                             {
-                              project.tasks.find(
+                              categories.find(
                                 (task) => String(task.id) === line.allocationId
                               )?.name
                             }
                           </SelectValue>
                         </SelectTrigger>
                         <SelectContent>
-                          {project.tasks.map((task) => (
+                          {categories.map((task) => (
                             <SelectItem
                               key={task.id}
                               value={String(task.id)}
@@ -590,6 +670,12 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
                               {task.name}
                             </SelectItem>
                           ))}
+                          <SelectItem
+                            value={CREATE_CATEGORY_VALUE}
+                            className="min-h-10 px-3 py-2 font-medium text-primary text-sm"
+                          >
+                            + Create new category
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                       <Input
@@ -650,7 +736,7 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
                       ...current,
                       makeLine(
                         Math.max(...current.map((line) => line.id)) + 1,
-                        project.tasks[0]?.id
+                        categories[0]?.id
                       ),
                     ])
                   }
@@ -686,7 +772,9 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
                   aria-expanded={customPaymentOpen}
                 >
                   <span className="font-medium">Custom amount paid</span>
-                  <span className="text-muted-foreground">{customPaymentOpen ? "Hide" : "Add"}</span>
+                  <span className="text-muted-foreground">
+                    {customPaymentOpen ? "Hide" : "Add"}
+                  </span>
                 </button>
                 {customPaymentOpen && (
                   <label className="mt-3 grid gap-2">
@@ -886,6 +974,64 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
           </div>
         </aside>
       </div>
+
+      <Dialog open={categoryOpen} onOpenChange={setCategoryOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Create category</DialogTitle>
+            <DialogDescription>
+              Add a project category with its own budget. This increases the
+              overall project budget.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-2">
+            <label className="grid gap-2">
+              <Label htmlFor="new-receipt-category">Category name</Label>
+              <Input
+                id="new-receipt-category"
+                value={categoryName}
+                onChange={(event) => setCategoryName(event.target.value)}
+                placeholder="e.g. Transport"
+                autoFocus
+              />
+            </label>
+            <label className="grid gap-2">
+              <Label htmlFor="new-receipt-category-budget">Budget</Label>
+              <Input
+                id="new-receipt-category-budget"
+                inputMode="numeric"
+                value={formatNumericInput(categoryBudget)}
+                onChange={(event) =>
+                  setCategoryBudget(event.target.value.replace(/\D/g, ""))
+                }
+                placeholder="0"
+              />
+            </label>
+            {categoryError && <ErrorNotice error={categoryError} />}
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setCategoryOpen(false)}
+              disabled={categoryPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              disabled={
+                categoryPending ||
+                !categoryName.trim() ||
+                !categoryBudget.trim()
+              }
+              onClick={createCategory}
+            >
+              {categoryPending ? "Creating..." : "Create category"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <div className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-2 gap-2 border-t bg-background/95 px-3 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur md:hidden">
         {mobileStep === "entry" ? (

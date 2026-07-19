@@ -3,12 +3,19 @@ import { ApplicationError } from "./errors"
 const CONNECTION_CODES = new Set(["08000", "08001", "08003", "08004", "08006", "08007", "08P01", "57P01", "57P02", "57P03", "ECONNREFUSED", "ECONNRESET", "ENOTFOUND"])
 const TIMEOUT_CODES = new Set(["57014", "ETIMEDOUT", "ESOCKETTIMEDOUT"])
 
-type DriverError = Error & { code?: string; constraint?: string }
+type DriverError = Error & { code?: string; constraint?: string; cause?: unknown }
+
+function getDriverError(error: unknown): DriverError | undefined {
+  if (!(error instanceof Error)) return undefined
+  const candidate = error as DriverError
+  if (candidate.code) return candidate
+  return candidate.cause instanceof Error ? getDriverError(candidate.cause) : candidate
+}
 
 export function classifyError(error: unknown, operation?: string): ApplicationError {
   if (error instanceof ApplicationError) return error
 
-  const driverError = error instanceof Error ? (error as DriverError) : undefined
+  const driverError = getDriverError(error)
   const code = driverError?.code
 
   if (code === "23505") {

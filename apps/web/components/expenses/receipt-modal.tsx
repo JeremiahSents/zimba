@@ -15,7 +15,11 @@ import {
   DialogTitle,
 } from "@workspace/ui/components/dialog"
 import { useRouter } from "next/navigation"
+import { useState } from "react"
+import { markReceiptFullyPaidAction } from "@/app/admin/payments/actions"
+import { useWorkspace } from "@/components/shared/workspace-context"
 import { formatCurrency, formatShortDate } from "@/lib/format"
+import { formatReceiptNumber } from "@/lib/receipt-number"
 import type {
   ExpenseTableRow,
   PayableExpenseResponse,
@@ -24,7 +28,6 @@ import type {
 
 export function ReceiptModal({
   items,
-  supplier,
   payable,
 }: {
   items: ExpenseTableRow[]
@@ -32,15 +35,22 @@ export function ReceiptModal({
   payable?: PayableExpenseResponse
 }) {
   const router = useRouter()
+  const workspace = useWorkspace()
   const first = items[0]!
   const total = items.reduce((sum, item) => sum + item.amount, 0)
   const paid = payable?.paid_amount ?? (first.status === "Full" ? total : 0)
   const outstanding = payable?.outstanding_amount ?? Math.max(total - paid, 0)
   const isPaid = outstanding === 0
+  const [markingPaid, setMarkingPaid] = useState(false)
 
   const statusLabel =
     outstanding === 0 ? "Paid in full" : paid > 0 ? "Partially paid" : "Pending"
-  
+  const receiptNumber = formatReceiptNumber({
+    fallbackId: payable?.id ?? first.id,
+    organizationName: workspace.organizationName,
+    receiptNumber: payable?.receipt_number,
+  })
+
   const handleOpenChange = (open: boolean) => {
     if (!open) {
       router.back()
@@ -62,7 +72,9 @@ export function ReceiptModal({
           {/* Top Info Area */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="font-medium text-muted-foreground text-xs">Supplier</p>
+              <p className="font-medium text-muted-foreground text-xs">
+                Supplier
+              </p>
               <div className="mt-2 flex items-center gap-2.5">
                 <Avatar size="sm" className="size-6">
                   <AvatarFallback className="bg-primary/10 font-bold text-[10px] text-primary">
@@ -75,7 +87,9 @@ export function ReceiptModal({
               </div>
             </div>
             <div>
-              <p className="font-medium text-muted-foreground text-xs">Project</p>
+              <p className="font-medium text-muted-foreground text-xs">
+                Project
+              </p>
               <p className="mt-2 font-medium text-foreground text-sm">
                 {first.project_name}
               </p>
@@ -87,8 +101,8 @@ export function ReceiptModal({
             <span
               className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-medium text-[10px] ${
                 isPaid
-                  ? "bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20"
-                  : "bg-orange-50 text-orange-700 ring-1 ring-inset ring-orange-600/20"
+                  ? "bg-green-50 text-green-700 ring-1 ring-green-600/20 ring-inset"
+                  : "bg-orange-50 text-orange-700 ring-1 ring-orange-600/20 ring-inset"
               }`}
             >
               <span
@@ -98,7 +112,7 @@ export function ReceiptModal({
               />
               {statusLabel}
             </span>
-            <span className="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-1 font-medium text-[10px] text-blue-700 ring-1 ring-inset ring-blue-600/20">
+            <span className="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-1 font-medium text-[10px] text-blue-700 ring-1 ring-blue-600/20 ring-inset">
               Project Expense
             </span>
           </div>
@@ -148,7 +162,7 @@ export function ReceiptModal({
                 Balance Due
               </span>
               <span
-                className={`mt-1 font-heading font-bold text-3xl tabular-nums tracking-tight ${
+                className={`mt-1 font-bold font-heading text-3xl tabular-nums tracking-tight ${
                   outstanding > 0 ? "text-orange-600" : "text-emerald-600"
                 }`}
               >
@@ -160,12 +174,29 @@ export function ReceiptModal({
 
         {/* Action Buttons */}
         <div className="flex items-center justify-end gap-2 border-t p-4 sm:p-6 sm:pt-4">
+          {payable && outstanding > 0 && (
+            <Button
+              disabled={markingPaid}
+              onClick={async () => {
+                setMarkingPaid(true)
+                const result = await markReceiptFullyPaidAction(
+                  payable.id,
+                  payable.project_id,
+                  crypto.randomUUID()
+                )
+                setMarkingPaid(false)
+                if (result.success) router.refresh()
+              }}
+            >
+              {markingPaid ? "Saving..." : "Mark fully paid"}
+            </Button>
+          )}
           <Button
             variant="outline"
             onClick={async () => {
               const data = {
-                title: `Receipt ${payable?.receipt_number ?? first.id}`,
-                text: `${first.supplier_name} · ${formatCurrency(total)}`,
+                title: `Receipt ${receiptNumber}`,
+                text: `${first.supplier_name} - ${formatCurrency(total)}`,
                 url: window.location.href,
               }
               if (navigator.share) await navigator.share(data)

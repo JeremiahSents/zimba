@@ -15,89 +15,30 @@ import * as expenseRepo from "./repository"
 
 export async function listExpenseRows(): Promise<ExpenseTableRow[]> {
   const { organization } = await requireSession()
-  const rows = await expenseRepo.listExpenses(organization.organizationId)
-  const payables = await expenseRepo.listPayables(organization.organizationId)
-  const expenseRows = await Promise.all(
-    rows.map(async ({ expense, projectName, supplierName }) => {
-      const lines = await expenseRepo.getExpenseLines(
-        organization.organizationId,
-        expense.id
-      )
-      const amount =
-        lines.reduce((sum, { line }) => sum + line.amountCents, 0) / 100
-      const detail = await expenseRepo.getExpense(
-        organization.organizationId,
-        expense.id
-      )
-      const paidAmount =
-        (detail?.payments ?? []).reduce(
-          (sum, payment) => sum + payment.amountCents,
-          0
-        ) / 100
-      const first = lines[0]
-      return {
-        id: expense.id,
-        receipt_id: expense.id,
-        project_id: expense.projectId ?? undefined,
-        supplier_id: expense.supplierId ?? undefined,
-        allocation_id: first?.line.allocationId,
-        date: (expense.expenseDate ?? expense.createdAt).toISOString(),
-        created_at: expense.createdAt.toISOString(),
-        task_name: first?.allocationName ?? "General",
-        supplier_name: supplierName ?? "Unknown supplier",
-        item_description: first?.line.itemDescription ?? "Expense",
-        amount,
-        paid_amount: paidAmount,
-        outstanding_amount: Math.max(0, amount - paidAmount),
-        project_name: projectName ?? "Unknown project",
-        status: toUiStatus(expense.paymentStatus),
-      }
-    })
-  )
-  const payableRows = await Promise.all(
-    payables
-      .filter(({ payable }) => !rows.some(({ expense }) => expense.id === payable.id))
-      .map(async ({ payable, projectName, supplierName }) => {
-        const detail = await expenseRepo.getPayable(
-          organization.organizationId,
-          payable.id
-        )
-        const amount = payable.amountCents / 100
-        const paidAmount =
-          (detail?.payments ?? []).reduce(
-            (sum, payment) => sum + payment.amountCents,
-            0
-          ) / 100
-        const date = payable.dueDate ?? payable.createdAt
-
-        return {
-          id: payable.id,
-          receipt_id: payable.id,
-          project_id: payable.projectId,
-          supplier_id: payable.supplierId ?? undefined,
-          allocation_id: undefined,
-          date: date.toISOString(),
-          created_at: payable.createdAt.toISOString(),
-          task_name: "General",
-          supplier_name: supplierName ?? "Unknown supplier",
-          item_description: payable.description || payable.title,
-          amount,
-          paid_amount: paidAmount,
-          outstanding_amount: Math.max(0, amount - paidAmount),
-          project_name: projectName ?? "Unknown project",
-          status: toUiStatus(
-            payable.status === "paid"
-              ? "paid"
-              : paidAmount > 0
-                ? "partial"
-                : "unpaid"
-          ),
-        }
-      })
-  )
-  return [...expenseRows, ...payableRows].sort((a, b) =>
-    b.date.localeCompare(a.date)
-  )
+  const rows = await expenseRepo.listFinancialExpenseRows(organization.organizationId)
+  return rows.map((row) => ({
+    id: row.id,
+    receipt_id: row.receiptId,
+    project_id: row.projectId,
+    supplier_id: row.supplierId,
+    allocation_id: row.allocationId,
+    date: row.date.toISOString(),
+    created_at: row.createdAt.toISOString(),
+    task_name: row.taskName,
+    supplier_name: row.supplierName ?? "Unknown supplier",
+    item_description: row.itemDescription,
+    amount: row.amountCents / 100,
+    paid_amount: row.paidCents / 100,
+    outstanding_amount: Math.max(0, row.amountCents - row.paidCents) / 100,
+    project_name: row.projectName ?? "Unknown project",
+    status: toUiStatus(
+      row.paidCents >= row.amountCents && row.amountCents > 0
+        ? "paid"
+        : row.paidCents > 0
+          ? "partial"
+          : "unpaid"
+    ),
+  }))
 }
 
 export async function createPayableExpense(
@@ -168,6 +109,7 @@ export async function createPayableExpense(
         organizationId,
         expenseId,
         allocationId,
+        legacyAllocationId: allocationId,
         itemDescription: line.description,
         quantity: line.quantity,
         unitRateCents: Math.round(line.unit_amount * 100),
@@ -320,6 +262,7 @@ export async function createExpenseReceipt(
         organizationId,
         expenseId,
         allocationId,
+        legacyAllocationId: allocationId,
         itemDescription: item.item_description,
         quantity: item.quantity,
         unitRateCents: Math.round(item.unit_rate * 100),

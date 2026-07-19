@@ -50,6 +50,13 @@
       "when": 1784484000000,
       "tag": "0006_drop_cent_fix_backup_tables",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1784488000000,
+      "tag": "0007_relax_legacy_expense_line_allocation",
+      "breakpoints": true
     }
   ]
 }

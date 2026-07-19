@@ -31,13 +31,12 @@ export async function createSupplierCategory(data: typeof schema.supplierCategor
 }
 
 export async function getSupplierFinancials(organizationId: string, supplierId: string) {
-  const rows = (await expenseRepo.listExpenses(organizationId)).filter(({ expense }) => expense.supplierId === supplierId)
-  let incurredCents = 0
-  let paidCents = 0
-  for (const { expense } of rows) {
-    const detail = await expenseRepo.getExpense(organizationId, expense.id)
-    incurredCents += (detail?.lines ?? []).reduce((sum, { line }) => sum + line.amountCents, 0)
-    paidCents += (detail?.payments ?? []).reduce((sum, payment) => sum + payment.amountCents, 0)
+  const rows = (await expenseRepo.listFinancialExpenseRows(organizationId)).filter((expense) => expense.supplierId === supplierId)
+  const incurredCents = rows.reduce((sum, expense) => sum + expense.amountCents, 0)
+  const paidCents = rows.reduce((sum, expense) => sum + expense.paidCents, 0)
+  return {
+    receiptCount: new Set(rows.map((expense) => expense.receiptId)).size,
+    incurredCents,
+    paidCents,
   }
-  return { receiptCount: rows.length, incurredCents, paidCents }
 }

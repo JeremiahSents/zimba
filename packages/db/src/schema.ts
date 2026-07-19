@@ -274,6 +274,9 @@ export const expenseLine = pgTable("expense_line", {
   allocationId: varchar("budget_item_id")
     .notNull()
     .references(() => budgetItem.id, { onDelete: "cascade" }),
+  // Kept during the staged migration so old production databases with the
+  // legacy foreign key can accept new receipt lines as well.
+  legacyAllocationId: varchar("allocation_id"),
   itemDescription: text("item_description").notNull(),
   quantity: integer("quantity").notNull().default(1),
   unitRateCents: bigint("unit_rate_cents", { mode: "number" }).notNull().default(0),
