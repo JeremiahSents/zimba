@@ -71,7 +71,7 @@ export async function getProjectDetail(projectId: string): Promise<ProjectDetail
       id: payment.id,
       receipt_id: payment.id,
       project_id: projectId,
-      allocation_id: undefined,
+      allocation_id: "",
       date: (payment.dueDate ?? payment.createdAt).toISOString(),
       task_name: "General",
       supplier_name: detail?.supplierName ?? "Unknown supplier",
