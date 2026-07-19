@@ -76,7 +76,7 @@ export async function listExpenseRows(): Promise<ExpenseTableRow[]> {
         created_at: payable.createdAt.toISOString(),
         task_name: "General",
         supplier_name: supplierName ?? "Unknown supplier",
-        item_description: payable.title || payable.description || "Expense",
+        item_description: payable.description || "Expense",
         amount,
         paid_amount: paidAmount,
         outstanding_amount: Math.max(0, amount - paidAmount),
@@ -192,6 +192,8 @@ export async function createPayableExpense(
         .set({ paymentStatus: paidAmount >= gross ? "paid" : "partial" })
         .where(eq(schema.expense.id, expense.id))
     }
+    const receiptNumber = payable.payable.title.startsWith("ZIMB/") ? payable.payable.title : undefined
+    const itemDescription = payable.payable.description || "Expense"
     return {
       id: expense.id,
       project_id: projectId,
@@ -424,6 +426,7 @@ export async function getPayableExpense(
       project_id: payable.payable.projectId,
       supplier_id: payable.payable.supplierId ?? "",
       currency: payable.payable.currency,
+      receipt_number: receiptNumber,
       expense_date: payable.payable.dueDate?.toISOString() ?? payable.payable.createdAt.toISOString(),
       approval_status: "approved",
       lifecycle_status: "incurred",
@@ -434,7 +437,7 @@ export async function getPayableExpense(
       settlement_status: paid >= gross && gross > 0 ? "paid" : paid > 0 ? "partially_paid" : "unpaid",
       project_name: payable.projectName,
       supplier_name: payable.supplierName,
-      lines: [{ id: payable.payable.id, allocation_id: "", allocation_name: "General", description: payable.payable.title || payable.payable.description || "Expense", quantity: 1, unit_amount: gross, tax_amount: 0, line_amount: gross }],
+      lines: [{ id: payable.payable.id, allocation_id: "", allocation_name: "General", description: itemDescription, quantity: 1, unit_amount: gross, tax_amount: 0, line_amount: gross }],
       payments: payable.payments.map((payment) => ({ id: payment.id, amount: payment.amountCents / 100, payment_date: payment.paymentDate?.toISOString() ?? payment.createdAt.toISOString(), method: payment.method ?? "Other", reference: payment.reference, status: "posted" })),
     }
   }
