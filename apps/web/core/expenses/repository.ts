@@ -17,6 +17,33 @@ export async function listExpenses(organizationId: string) {
     .orderBy(desc(schema.expense.createdAt))
 }
 
+export async function listPayables(organizationId: string) {
+  return db
+    .select({
+      payable: schema.payable,
+      projectName: schema.project.name,
+      supplierName: schema.supplier.name,
+    })
+    .from(schema.payable)
+    .leftJoin(schema.project, eq(schema.project.id, schema.payable.projectId))
+    .leftJoin(schema.supplier, eq(schema.supplier.id, schema.payable.supplierId))
+    .where(eq(schema.payable.organizationId, organizationId))
+    .orderBy(desc(schema.payable.createdAt))
+}
+
+export async function getPayable(organizationId: string, payableId: string) {
+  const [row] = await db
+    .select({ payable: schema.payable, projectName: schema.project.name, supplierName: schema.supplier.name })
+    .from(schema.payable)
+    .leftJoin(schema.project, eq(schema.project.id, schema.payable.projectId))
+    .leftJoin(schema.supplier, eq(schema.supplier.id, schema.payable.supplierId))
+    .where(and(eq(schema.payable.id, payableId), eq(schema.payable.organizationId, organizationId)))
+    .limit(1)
+  if (!row) return null
+  const payments = await db.select().from(schema.ledgerPayment).where(and(eq(schema.ledgerPayment.payableId, payableId), eq(schema.ledgerPayment.organizationId, organizationId)))
+  return { ...row, payments }
+}
+
 export async function getExpense(organizationId: string, expenseId: string) {
   const [row] = await db
     .select({ expense: schema.expense, projectName: schema.project.name, supplierName: schema.supplier.name })

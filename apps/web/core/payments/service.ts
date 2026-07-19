@@ -1,7 +1,7 @@
 import "server-only"
 import { requireSession } from "../auth/service"
 import * as paymentRepo from "./repository"
-import { getExpense } from "../expenses/repository"
+import { getExpense, getPayable } from "../expenses/repository"
 import { updateExpense } from "../expenses/repository"
 import { badRequest, notFound } from "../shared/errors"
 import { recordAudit } from "../audit/service"
@@ -56,7 +56,6 @@ export async function createLedgerPayment(data: {
   allocations: { expense_id: string; amount: number }[]
 }) {
   const { organization } = await requireSession()
-  
   const paymentId = crypto.randomUUID()
   const payment = await paymentRepo.createLedgerPayment({
     id: paymentId,
@@ -78,7 +77,18 @@ export async function createLedgerPayment(data: {
 export async function markExpenseFullyPaid(expenseId: string, idempotencyKey: string) {
   const { user, organization } = await requireSession()
   const current = await getExpense(organization.organizationId, expenseId)
-  if (!current) notFound("Receipt not found.")
+  if (!current) {
+    const payable = await getPayable(organization.organizationId, expenseId)
+    if (!payable) notFound("Receipt not found.")
+    const totalCents = payable.payable.amountCents
+    const paidCents = payable.payments.reduce((sum, payment) => sum + payment.amountCents, 0)
+    const outstandingCents = totalCents - paidCents
+    if (outstandingCents <= 0) badRequest("This receipt is already fully paid.")
+    const payment = await paymentRepo.createLedgerPayment({ organizationId: organization.organizationId, payableId: expenseId, supplierId: payable.payable.supplierId, amountCents: outstandingCents, currency: payable.payable.currency, paymentDate: new Date(), method: "full_payment", idempotencyKey })
+    await paymentRepo.updatePayable(organization.organizationId, expenseId, { status: "paid" })
+    await recordAudit({ organizationId: organization.organizationId, actorId: user.id, action: "receipt.mark_fully_paid", entityType: "payable", entityId: expenseId, changes: { amountCents: outstandingCents } })
+    return payment
+  }
   const totalCents = current.lines.reduce((sum, item) => sum + item.line.amountCents, 0)
   const paidCents = current.payments.reduce((sum, payment) => sum + payment.amountCents, 0)
   const outstandingCents = totalCents - paidCents
