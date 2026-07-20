@@ -95,7 +95,7 @@ export async function getProject(organizationId: string, projectId: string) {
       and(
         eq(schema.project.id, projectId),
         eq(schema.project.organizationId, organizationId),
-        isNotNull(schema.project.archivedAt)
+        isNull(schema.project.archivedAt)
       )
     )
 
