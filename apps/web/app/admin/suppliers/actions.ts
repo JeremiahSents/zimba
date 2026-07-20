@@ -1,7 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
-import { createSupplier, createSupplierCategory } from "@/core/suppliers/service"
+import { createSupplier, createSupplierCategory, updateSupplier } from "@/core/suppliers/service"
 import { expectedActionFailure, type ActionResult } from "@/core/shared/action-result"
 import { handleActionError } from "@/core/shared/handle-action-error"
 import { ensureActionSession } from "@/core/auth/action-session"
@@ -50,4 +50,17 @@ export async function createSupplierCategoryAction(name: string): Promise<Action
   } catch (error) {
     return handleActionError(error, "suppliers.create-category")
   }
+}
+
+export async function updateSupplierAction(supplierId: string, input: {
+  name: string; category: string; companyContact?: string; contactName?: string; phone?: string; email?: string; notes?: string; status?: string
+}): Promise<ActionResult> {
+  const authFailure = await ensureActionSession("suppliers.update")
+  if (authFailure) return authFailure
+  try {
+    await updateSupplier(supplierId, { ...input, email: input.email?.trim() || null })
+    revalidatePath("/admin/suppliers")
+    revalidatePath(`/admin/suppliers/${supplierId}`)
+    return { success: true, data: undefined }
+  } catch (error) { return handleActionError(error, "suppliers.update") }
 }

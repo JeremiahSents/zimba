@@ -101,6 +101,8 @@ export type PayableExpenseResponse = {
   project_name?: string | null
   supplier_name?: string | null
   receipt_file_url?: string | null
+  attachments?: ProjectAttachment[]
+  category_state?: "assigned" | "uncategorized"
   lines: Array<{
     id: string
     allocation_id: string
@@ -194,6 +196,7 @@ export type ExpenseResponse = {
   project_id?: string
   supplier_id?: string
   allocation_id?: string
+  category_state?: "assigned" | "uncategorized"
   date: string
   task_name: string
   supplier_name: string

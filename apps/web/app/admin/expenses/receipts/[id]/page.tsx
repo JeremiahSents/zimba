@@ -3,6 +3,7 @@ import { notFound } from "next/navigation"
 import { ReceiptDetailPage } from "@/components/expenses/receipt-detail-page"
 import { getDashboardOverviewData } from "@/core/dashboard/service"
 import { getPayableExpense } from "@/core/expenses/service"
+import { getProjectDetail } from "@/core/projects/service"
 import { ApplicationError } from "@/core/shared/errors"
 import type { PayableExpenseResponse } from "@/lib/types"
 
@@ -18,7 +19,10 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
     if (error instanceof ApplicationError && error.code === "NOT_FOUND") notFound()
     throw error
   }
-  const dashboard = await getDashboardOverviewData()
+  const [dashboard, project] = await Promise.all([
+    getDashboardOverviewData(),
+    payable.project_id ? getProjectDetail(payable.project_id) : Promise.resolve(null),
+  ])
   const items = payable.lines.map((line) => ({
     id: line.id,
     receipt_id: payable.id,
@@ -35,5 +39,5 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
     status: payable.settlement_status === "paid" ? "Full" as const : payable.settlement_status === "partially_paid" ? "Partial" as const : "Not paid" as const,
   }))
   const supplier = dashboard.suppliers.find((item) => item.supplier_id === payable.supplier_id)
-  return <ReceiptDetailPage items={items} supplier={supplier} payable={payable} />
+  return <ReceiptDetailPage items={items} supplier={supplier} payable={payable} allocations={project?.tasks ?? []} />
 }

@@ -1,7 +1,7 @@
 import "server-only"
 
 import { db, schema } from "@workspace/db"
-import { and, desc, eq } from "drizzle-orm"
+import { and, desc, eq, sql } from "drizzle-orm"
 
 export type FinancialExpenseRow = {
   id: string
@@ -20,6 +20,7 @@ export type FinancialExpenseRow = {
   amountCents: number
   paidCents: number
   paymentStatus?: string
+  categoryState: "assigned" | "uncategorized"
 }
 
 export async function listExpenses(organizationId: string) {
@@ -90,6 +91,7 @@ export async function listFinancialExpenseRows(
           amountCents: line.amountCents,
           paidCents,
           paymentStatus: expense.paymentStatus,
+          categoryState: allocationName ? ("assigned" as const) : ("uncategorized" as const),
         }
       })
     })
@@ -115,13 +117,14 @@ export async function listFinancialExpenseRows(
           allocationId: undefined,
           date: payable.dueDate ?? payable.createdAt,
           createdAt: payable.createdAt,
-          taskName: "General",
+          taskName: "Uncategorized",
           projectName,
           supplierName,
           itemDescription: payable.description || payable.title,
           amountCents: payable.amountCents,
           paidCents,
           paymentStatus: payable.status,
+          categoryState: "uncategorized" as const,
         }
       })
   )
@@ -187,6 +190,7 @@ export async function getExpense(organizationId: string, expenseId: string) {
       expense: schema.expense,
       projectName: schema.project.name,
       supplierName: schema.supplier.name,
+      receiptFile: schema.uploadedFile,
     })
     .from(schema.expense)
     .leftJoin(schema.project, eq(schema.project.id, schema.expense.projectId))
@@ -194,6 +198,7 @@ export async function getExpense(organizationId: string, expenseId: string) {
       schema.supplier,
       eq(schema.supplier.id, schema.expense.supplierId)
     )
+    .leftJoin(schema.uploadedFile, eq(schema.uploadedFile.id, schema.expense.receiptFileId))
     .where(
       and(
         eq(schema.expense.id, expenseId),
@@ -223,11 +228,41 @@ export async function getExpense(organizationId: string, expenseId: string) {
     .from(schema.ledgerPayment)
     .where(
       and(
-        eq(schema.ledgerPayment.expenseId, expenseId),
-        eq(schema.ledgerPayment.organizationId, organizationId)
+        eq(schema.ledgerPayment.organizationId, organizationId),
+        // Legacy receipt repairs retain the payable as the source record.
+        // Include either reference so payment totals stay stable after a category is corrected.
+        sql`(${schema.ledgerPayment.expenseId} = ${expenseId} OR ${schema.ledgerPayment.payableId} = ${expenseId})`
       )
     )
   return { ...row, lines, payments }
+}
+
+export async function updateExpenseLinesAllocation(
+  organizationId: string,
+  expenseId: string,
+  allocationId: string
+) {
+  await db
+    .update(schema.expenseLine)
+    .set({ allocationId, legacyAllocationId: allocationId, updatedAt: new Date() })
+    .where(and(eq(schema.expenseLine.organizationId, organizationId), eq(schema.expenseLine.expenseId, expenseId)))
+}
+
+export async function deleteExpense(organizationId: string, expenseId: string) {
+  const [deleted] = await db
+    .delete(schema.expense)
+    .where(and(eq(schema.expense.organizationId, organizationId), eq(schema.expense.id, expenseId)))
+    .returning()
+  return deleted ?? null
+}
+
+export async function deletePayable(organizationId: string, payableId: string) {
+  await db.delete(schema.ledgerPayment).where(and(eq(schema.ledgerPayment.organizationId, organizationId), eq(schema.ledgerPayment.payableId, payableId)))
+  const [deleted] = await db
+    .delete(schema.payable)
+    .where(and(eq(schema.payable.organizationId, organizationId), eq(schema.payable.id, payableId)))
+    .returning()
+  return deleted ?? null
 }
 
 export async function getExpenseLines(

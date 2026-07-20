@@ -23,6 +23,13 @@ import {
 import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
 import { Progress } from "@workspace/ui/components/progress"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@workspace/ui/components/select"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
@@ -30,6 +37,7 @@ import {
   markReceiptFullyPaidAction,
   recordReceiptPaymentAction,
 } from "@/app/admin/payments/actions"
+import { correctReceiptCategoryAction, deleteReceiptAction } from "@/app/admin/expenses/actions"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { DatePicker } from "@/components/shared/date-picker"
 import { ErrorNotice } from "@/components/shared/error-notice"
@@ -47,10 +55,12 @@ export function ReceiptDetailPage({
   items,
   supplier,
   payable,
+  allocations = [],
 }: {
   items: ExpenseTableRow[]
   supplier?: SupplierResponse
   payable?: PayableExpenseResponse
+  allocations?: Array<{ id: string; name: string; budget: number }>
 }) {
   const router = useRouter()
   const workspace = useWorkspace()
@@ -68,6 +78,10 @@ export function ReceiptDetailPage({
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<PublicError | string>("")
   const [markingPaid, setMarkingPaid] = useState(false)
+  const [categoryOpen, setCategoryOpen] = useState(false)
+  const [selectedAllocation, setSelectedAllocation] = useState("")
+  const [correcting, setCorrecting] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const paidPercent =
     total > 0 ? Math.min(Math.round((paid / total) * 100), 100) : 0
   const statusLabel =
@@ -101,6 +115,9 @@ export function ReceiptDetailPage({
           <HugeiconsIcon icon={ArrowLeft01Icon} size={16} /> Back to projects
         </Link>
         <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+          <Button variant="outline" onClick={() => setCategoryOpen(true)} disabled={!payable?.project_id || allocations.length === 0}>
+            {payable?.category_state === "uncategorized" ? "Categorize receipt" : "Change category"}
+          </Button>
           <Button
             variant="outline"
             onClick={() => window.print()}
@@ -133,8 +150,34 @@ export function ReceiptDetailPage({
               </a>
             </Button>
           )}
+          <Button variant="outline" className="border-destructive/30 text-destructive hover:bg-destructive/10" disabled={deleting} onClick={async () => {
+            if (!payable || !window.confirm("Delete this receipt? This cannot be undone.")) return
+            setDeleting(true)
+            const result = await deleteReceiptAction(payable.id, payable.project_id)
+            setDeleting(false)
+            if (!result.success) return setError(result.error)
+            router.push("/admin/expenses")
+          }}>
+            {deleting ? "Deleting..." : "Delete"}
+          </Button>
         </div>
       </div>
+
+      <section className="mt-6 rounded-2xl border bg-card p-5 print:hidden">
+        <h2 className="font-heading font-semibold">Receipt files</h2>
+        {payable?.attachments?.length ? (
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            {payable.attachments.map((file) => file.content_type.startsWith("image/") ? (
+              <a key={file.id} href={file.url} target="_blank" rel="noreferrer" className="overflow-hidden rounded-xl border bg-muted/20">
+                <img src={file.url} alt={file.filename} className="h-48 w-full object-cover" />
+                <p className="truncate px-3 py-2 font-medium text-sm">{file.filename}</p>
+              </a>
+            ) : (
+              <a key={file.id} href={file.url} target="_blank" rel="noreferrer" className="rounded-xl border p-4 font-medium text-primary hover:underline">Open {file.filename}</a>
+            ))}
+          </div>
+        ) : <p className="mt-2 text-muted-foreground text-sm">No receipt images or documents are attached.</p>}
+      </section>
 
       <div className="mx-auto grid max-w-6xl items-start gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
         {/* Receipt Paper Card */}
@@ -518,6 +561,31 @@ export function ReceiptDetailPage({
           </DialogContent>
         </Dialog>
       )}
+      <Dialog open={categoryOpen} onOpenChange={setCategoryOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Set receipt category</DialogTitle><DialogDescription>Choose the project category this receipt should use.</DialogDescription></DialogHeader>
+          <Select value={selectedAllocation || undefined} onValueChange={(value) => setSelectedAllocation(value ?? "")}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select a category" />
+            </SelectTrigger>
+            <SelectContent>
+              {allocations.map((allocation) => (
+                <SelectItem key={allocation.id} value={allocation.id}>
+                  {allocation.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <DialogFooter><Button variant="secondary" onClick={() => setCategoryOpen(false)}>Cancel</Button><Button disabled={!selectedAllocation || correcting || !payable} onClick={async () => {
+            if (!payable) return
+            setCorrecting(true); setError("")
+            const result = await correctReceiptCategoryAction(payable.id, payable.project_id, selectedAllocation)
+            setCorrecting(false)
+            if (!result.success) return setError(result.error)
+            setCategoryOpen(false); router.refresh()
+          }}>{correcting ? "Saving..." : "Save category"}</Button></DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardShell>
   )
 }

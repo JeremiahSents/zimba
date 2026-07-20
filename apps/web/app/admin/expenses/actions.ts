@@ -6,6 +6,8 @@ import { ensureActionSession } from "@/core/auth/action-session"
 import {
   createExpenseReceipt,
   createPayableExpense,
+  correctReceiptCategory,
+  deleteReceipt,
   updateExpenseStatus,
 } from "@/core/expenses/service"
 import {
@@ -93,6 +95,39 @@ export async function updateExpenseStatusAction(
     return { success: true, data: undefined }
   } catch (error) {
     return handleActionError(error, "expenses.update-status")
+  }
+}
+
+export async function correctReceiptCategoryAction(
+  receiptId: string,
+  projectId: string,
+  allocationId: string
+): Promise<ActionResult> {
+  const authFailure = await ensureActionSession("expenses.correct-category")
+  if (authFailure) return authFailure
+  if (!allocationId) return expectedActionFailure("VALIDATION_FAILED", "Select a category.")
+  try {
+    await correctReceiptCategory(receiptId, allocationId)
+    revalidateConnectedRoutes(projectId)
+    revalidatePath(`/admin/expenses/receipts/${receiptId}`)
+    return { success: true, data: undefined }
+  } catch (error) {
+    return handleActionError(error, "expenses.correct-category")
+  }
+}
+
+export async function deleteReceiptAction(
+  receiptId: string,
+  projectId: string
+): Promise<ActionResult> {
+  const authFailure = await ensureActionSession("expenses.delete")
+  if (authFailure) return authFailure
+  try {
+    await deleteReceipt(receiptId)
+    revalidateConnectedRoutes(projectId)
+    return { success: true, data: undefined }
+  } catch (error) {
+    return handleActionError(error, "expenses.delete")
   }
 }
 

@@ -40,3 +40,12 @@ export async function getSupplierFinancials(organizationId: string, supplierId: 
     paidCents,
   }
 }
+
+export async function updateSupplier(
+  organizationId: string,
+  supplierId: string,
+  data: Partial<typeof schema.supplier.$inferInsert>
+) {
+  const [supplier] = await db.update(schema.supplier).set({ ...data, updatedAt: new Date() }).where(and(eq(schema.supplier.organizationId, organizationId), eq(schema.supplier.id, supplierId))).returning()
+  return supplier ?? null
+}

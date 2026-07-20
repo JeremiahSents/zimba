@@ -10,6 +10,8 @@ import type {
   PayableExpenseResponse,
 } from "@/lib/types"
 import { requireSession } from "../auth/service"
+import { requireRole } from "../auth/permissions"
+import { recordAudit } from "../audit/service"
 import { badRequest, notFound } from "../shared/errors"
 import * as expenseRepo from "./repository"
 
@@ -24,6 +26,7 @@ export async function listExpenseRows(): Promise<ExpenseTableRow[]> {
     project_id: row.projectId,
     supplier_id: row.supplierId,
     allocation_id: row.allocationId,
+    category_state: row.categoryState,
     date: row.date.toISOString(),
     created_at: row.createdAt.toISOString(),
     task_name: row.taskName,
@@ -416,11 +419,12 @@ export async function getPayableExpense(
             : "unpaid",
       project_name: payable.projectName,
       supplier_name: payable.supplierName,
+      category_state: "uncategorized",
       lines: [
         {
           id: payable.payable.id,
           allocation_id: "",
-          allocation_name: "General",
+          allocation_name: "Uncategorized",
           description: itemDescription,
           quantity: 1,
           unit_amount: gross,
@@ -463,6 +467,22 @@ export async function getPayableExpense(
           : "unpaid",
     project_name: result.projectName,
     supplier_name: result.supplierName,
+    receipt_file_url: result.receiptFile?.url ?? null,
+    attachments: result.receiptFile
+      ? [{
+          id: result.receiptFile.id,
+          key: result.receiptFile.key,
+          filename: result.receiptFile.filename,
+          content_type: result.receiptFile.contentType,
+          size_bytes: result.receiptFile.sizeBytes,
+          url: result.receiptFile.url,
+          purpose: result.receiptFile.purpose,
+          created_at: result.receiptFile.createdAt.toISOString(),
+        }]
+      : [],
+    category_state: result.lines.every(({ allocationName }) => !allocationName)
+      ? "uncategorized"
+      : "assigned",
     lines: result.lines.map(({ line, allocationName }) => ({
       id: line.id,
       allocation_id: line.allocationId,
@@ -482,6 +502,63 @@ export async function getPayableExpense(
       reference: payment.reference,
       status: "posted",
     })),
+  }
+}
+
+export async function correctReceiptCategory(receiptId: string, allocationId: string) {
+  const { user, organization } = await requireSession()
+  requireRole(organization.role, ["owner", "site_manager", "accountant"])
+  const existing = await expenseRepo.getExpense(organization.organizationId, receiptId)
+  const payable = existing ? null : await expenseRepo.getPayable(organization.organizationId, receiptId)
+  const projectId = existing?.expense.projectId ?? payable?.payable.projectId
+  if (!projectId) badRequest("This receipt is not linked to a project.")
+  const [allocation] = await db.select().from(schema.allocation).where(and(eq(schema.allocation.id, allocationId), eq(schema.allocation.organizationId, organization.organizationId), eq(schema.allocation.projectId, projectId))).limit(1)
+  if (!allocation) badRequest("Select a category belonging to this project.")
+
+  if (existing) {
+    await expenseRepo.updateExpenseLinesAllocation(organization.organizationId, receiptId, allocationId)
+  } else if (payable) {
+    await db.transaction(async (tx) => {
+      await tx.insert(schema.expense).values({
+        id: payable.payable.id,
+        organizationId: organization.organizationId,
+        projectId: payable.payable.projectId,
+        supplierId: payable.payable.supplierId,
+        paymentStatus: payable.payable.status,
+        expenseDate: payable.payable.dueDate ?? payable.payable.createdAt,
+      })
+      await tx.insert(schema.expenseLine).values({
+        organizationId: organization.organizationId,
+        expenseId: payable.payable.id,
+        allocationId,
+        legacyAllocationId: allocationId,
+        itemDescription: payable.payable.description || payable.payable.title,
+        quantity: 1,
+        unitRateCents: payable.payable.amountCents,
+        amountCents: payable.payable.amountCents,
+      })
+    })
+  } else notFound("Receipt not found.")
+  await recordAudit({ organizationId: organization.organizationId, actorId: user.id, action: "receipt.category.correct", entityType: "receipt", entityId: receiptId, changes: { allocationId } })
+}
+
+export async function deleteReceipt(receiptId: string) {
+  const { user, organization } = await requireSession()
+  requireRole(organization.role, ["owner", "site_manager", "accountant"])
+  const deletedExpense = await expenseRepo.deleteExpense(organization.organizationId, receiptId)
+  const deletedPayable = await expenseRepo.deletePayable(organization.organizationId, receiptId)
+  if (!deletedExpense && !deletedPayable) notFound("Receipt not found.")
+  await recordAudit({ organizationId: organization.organizationId, actorId: user.id, action: "receipt.delete", entityType: "receipt", entityId: receiptId })
+}
+
+/** Read-only operational report used before any historical data repair. */
+export async function getReceiptCategoryAudit() {
+  const { organization } = await requireSession()
+  const rows = await expenseRepo.listFinancialExpenseRows(organization.organizationId)
+  return {
+    assigned: rows.filter((row) => row.categoryState === "assigned").length,
+    uncategorizedLegacyPayables: rows.filter((row) => row.source === "payable" && row.categoryState === "uncategorized").map((row) => ({ receiptId: row.receiptId, projectId: row.projectId, item: row.itemDescription })),
+    missingAllocationReferences: rows.filter((row) => row.source === "expense" && row.categoryState === "uncategorized").map((row) => ({ receiptId: row.receiptId, projectId: row.projectId, item: row.itemDescription })),
   }
 }
 

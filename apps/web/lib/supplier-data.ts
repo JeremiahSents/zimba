@@ -49,7 +49,7 @@ export function getSupplierSlug(name: string) {
 }
 
 export function getSupplierBySlug(slug: string, suppliers: SupplierResponse[]) {
-  return suppliers.find((supplier) => getSupplierSlug(supplier.name) === slug)
+  return suppliers.find((supplier) => supplier.id === slug || supplier.supplier_id === slug || getSupplierSlug(supplier.name) === slug)
 }
 
 export function getSupplierListItems(
