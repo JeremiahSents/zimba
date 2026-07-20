@@ -6,6 +6,8 @@ import { ensureActionSession } from "@/core/auth/action-session"
 import {
   archiveProject,
   createProject,
+  deleteProject,
+  restoreProject,
   updateAllocation,
   updateProject,
 } from "@/core/projects/mutations"
@@ -105,6 +107,34 @@ export async function archiveProjectAction(
     return handleActionError(error, "projects.archive")
   }
   redirect("/admin/projects")
+}
+
+export async function restoreProjectAction(
+  projectId: string
+): Promise<ActionResult> {
+  const authFailure = await ensureActionSession("projects.restore")
+  if (authFailure) return authFailure
+  try {
+    await restoreProject(projectId)
+    revalidateConnectedRoutes(projectId)
+    return { success: true, data: undefined }
+  } catch (error) {
+    return handleActionError(error, "projects.restore")
+  }
+}
+
+export async function deleteProjectAction(
+  projectId: string
+): Promise<ActionResult> {
+  const authFailure = await ensureActionSession("projects.delete")
+  if (authFailure) return authFailure
+  try {
+    await deleteProject(projectId)
+    revalidateConnectedRoutes(projectId)
+    return { success: true, data: undefined }
+  } catch (error) {
+    return handleActionError(error, "projects.delete")
+  }
 }
 
 export async function createProjectTaskAction(

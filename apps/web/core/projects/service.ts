@@ -13,28 +13,16 @@ export async function getProjectsList() {
   const { organization } = await requireSession()
   const projects = await projectRepo.listProjects(organization.organizationId)
 
-  return projects.map(
-    (p): ProjectDashboardResponse => ({
-      id: p.id,
-      name: p.name,
-      location: p.location,
-      plot_size: p.plotSize,
-      land_size: p.landSize,
-      building_type: p.buildingType,
-      client_name: p.clientName,
-      status: p.status,
-      start_date: p.startDate ? p.startDate.toISOString() : null,
-      target_end_date: p.targetEndDate ? p.targetEndDate.toISOString() : null,
-      currency: p.currency,
-      budget: p.budgetCents / 100, // Convert cents to decimal
-      spent: p.spentCents / 100,
-      remaining: p.remainingCents / 100,
-      pct:
-        p.budgetCents > 0
-          ? Math.round((p.spentCents / p.budgetCents) * 100)
-          : 0,
-    })
+  return projects.map(toProjectDashboardResponse)
+}
+
+export async function getArchivedProjectsList() {
+  const { organization } = await requireSession()
+  const projects = await projectRepo.listArchivedProjects(
+    organization.organizationId
   )
+
+  return projects.map(toProjectDashboardResponse)
 }
 
 export async function getProjectDetail(
@@ -173,4 +161,27 @@ function toProjectExpenseStatus(row: {
   if (row.paymentStatus === "paid") return "Full"
   if (row.paymentStatus === "partial") return "Partial"
   return "Not paid"
+}
+
+function toProjectDashboardResponse(
+  p: Awaited<ReturnType<typeof projectRepo.listProjects>>[number]
+): ProjectDashboardResponse {
+  return {
+    id: p.id,
+    name: p.name,
+    location: p.location,
+    plot_size: p.plotSize,
+    land_size: p.landSize,
+    building_type: p.buildingType,
+    client_name: p.clientName,
+    status: p.status,
+    start_date: p.startDate ? p.startDate.toISOString() : null,
+    target_end_date: p.targetEndDate ? p.targetEndDate.toISOString() : null,
+    currency: p.currency,
+    budget: p.budgetCents / 100,
+    spent: p.spentCents / 100,
+    remaining: p.remainingCents / 100,
+    pct:
+      p.budgetCents > 0 ? Math.round((p.spentCents / p.budgetCents) * 100) : 0,
+  }
 }

@@ -51,7 +51,7 @@ export function ProjectDetailPage({
 }) {
   const router = useRouter()
   const [expenses, setExpenses] = useState(project.expenses)
-  const [mutationError, setMutationError] = useState<PublicError | string>("")
+  const [mutationError] = useState<PublicError | string>("")
 
   useEffect(() => {
     setExpenses(project.expenses)
@@ -73,54 +73,125 @@ export function ProjectDetailPage({
 
   return (
     <DashboardShell
-      title={<Link href="/admin/projects" aria-label="Back to projects" className="inline-flex items-center gap-1.5 text-primary text-sm hover:underline">← <span>Back</span></Link>}
+      title={
+        <Link
+          href="/admin/projects"
+          aria-label="Back to projects"
+          className="inline-flex items-center gap-1.5 text-primary text-sm hover:underline"
+        >
+          ← <span>Back</span>
+        </Link>
+      }
       subtitle="Project financial position and delivery tracking."
     >
       <div className="mb-3">
         <div className="flex items-start justify-between gap-4">
-          <h2 className="min-w-0 break-words font-heading font-semibold text-2xl tracking-tight" title={project.name}>
+          <h2
+            className="min-w-0 break-words font-heading font-semibold text-2xl tracking-tight"
+            title={project.name}
+          >
             {project.name}
           </h2>
           <div className="hidden items-center gap-2 md:flex">
-            <Link href={`/admin/projects/${project.id}/edit`} className="inline-flex h-9 items-center rounded-md border bg-background px-3 font-medium text-xs shadow-xs transition-colors hover:bg-accent">
+            <Link
+              href={`/admin/projects/${project.id}/edit`}
+              className="inline-flex h-9 items-center rounded-md border bg-background px-3 font-medium text-xs shadow-xs transition-colors hover:bg-accent"
+            >
               Edit project
             </Link>
-            <Link href={`/admin/projects/${project.id}/expenses/new`} className="inline-flex h-9 items-center rounded-md bg-primary px-3 font-medium text-primary-foreground text-xs shadow-xs transition-colors hover:bg-primary/90">
+            <Link
+              href={`/admin/projects/${project.id}/expenses/new`}
+              className="inline-flex h-9 items-center rounded-md bg-primary px-3 font-medium text-primary-foreground text-xs shadow-xs transition-colors hover:bg-primary/90"
+            >
               New expense
             </Link>
-            <Link href={`/admin/projects/${project.id}/files`} className="inline-flex h-9 items-center rounded-md border bg-background px-3 font-medium text-xs shadow-xs transition-colors hover:bg-accent">
+            <Link
+              href={`/admin/projects/${project.id}/files`}
+              className="inline-flex h-9 items-center rounded-md border bg-background px-3 font-medium text-xs shadow-xs transition-colors hover:bg-accent"
+            >
               View files
             </Link>
-            <button type="button" onClick={async () => { if (window.confirm("Archive this project? It will be removed from active dashboards but its records will be preserved.")) { await archiveProjectAction(project.id); router.push("/admin/projects") } }} className="inline-flex h-9 items-center rounded-md border border-destructive/30 px-3 font-medium text-destructive text-xs transition-colors hover:bg-destructive/10">
+            <button
+              type="button"
+              onClick={async () => {
+                if (
+                  window.confirm(
+                    "Archive this project? It will be removed from active dashboards but its records will be preserved."
+                  )
+                ) {
+                  await archiveProjectAction(project.id)
+                  router.push("/admin/projects")
+                }
+              }}
+              className="inline-flex h-9 items-center rounded-md border border-destructive/30 px-3 font-medium text-destructive text-xs transition-colors hover:bg-destructive/10"
+            >
               Archive
             </button>
           </div>
-          <Link href={`/admin/projects/${project.id}/expenses/new`} className="inline-flex h-9 items-center rounded-md bg-primary px-3 font-medium text-primary-foreground text-xs shadow-xs transition-colors hover:bg-primary/90 md:hidden">
-            New expense
-          </Link>
-          <Menu.Root>
-            <Menu.Trigger
-              aria-label={`Open actions for ${project.name}`}
-              className="inline-flex size-9 shrink-0 items-center justify-center rounded-md border bg-background text-foreground shadow-xs outline-none transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring md:hidden"
+          <div className="ml-auto flex shrink-0 items-center gap-1.5 md:hidden">
+            <Link
+              href={`/admin/projects/${project.id}/expenses/new`}
+              className="inline-flex h-9 items-center rounded-md bg-primary px-3 font-medium text-primary-foreground text-xs shadow-xs transition-colors hover:bg-primary/90"
             >
-              <HugeiconsIcon icon={MoreHorizontalCircle01Icon} strokeWidth={2} className="size-5" />
-            </Menu.Trigger>
-            <Menu.Portal>
-              <Menu.Positioner align="end" side="bottom" sideOffset={6} className="isolate z-50 outline-none">
-                <Menu.Popup className="min-w-44 origin-(--transform-origin) rounded-lg border bg-popover p-1 text-popover-foreground shadow-md outline-none">
-                  <Menu.LinkItem closeOnClick render={<Link href={`/admin/projects/${project.id}/edit`} />} className="flex cursor-default items-center rounded-md px-2.5 py-2 font-medium text-xs outline-none data-highlighted:bg-accent">
-                    Edit project
-                  </Menu.LinkItem>
-                  <Menu.LinkItem closeOnClick render={<Link href={`/admin/projects/${project.id}/files`} />} className="flex cursor-default items-center rounded-md px-2.5 py-2 font-medium text-xs outline-none data-highlighted:bg-accent">
-                    View files and images
-                  </Menu.LinkItem>
-                  <Menu.Item onClick={async () => { if (window.confirm("Archive this project? It will be removed from active dashboards but its records will be preserved.")) { await archiveProjectAction(project.id); router.push("/admin/projects") } }} className="flex cursor-default items-center rounded-md px-2.5 py-2 font-medium text-destructive text-xs outline-none data-highlighted:bg-destructive/10">
-                    Archive project
-                  </Menu.Item>
-                </Menu.Popup>
-              </Menu.Positioner>
-            </Menu.Portal>
-          </Menu.Root>
+              New expense
+            </Link>
+            <Menu.Root>
+              <Menu.Trigger
+                aria-label={`Open actions for ${project.name}`}
+                className="inline-flex size-9 shrink-0 items-center justify-center rounded-md border bg-background text-foreground shadow-xs outline-none transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <HugeiconsIcon
+                  icon={MoreHorizontalCircle01Icon}
+                  strokeWidth={2}
+                  className="size-5"
+                />
+              </Menu.Trigger>
+              <Menu.Portal>
+                <Menu.Positioner
+                  align="end"
+                  side="bottom"
+                  sideOffset={6}
+                  className="isolate z-50 outline-none"
+                >
+                  <Menu.Popup className="min-w-44 origin-(--transform-origin) rounded-lg border bg-popover p-1 text-popover-foreground shadow-md outline-none">
+                    <Menu.LinkItem
+                      closeOnClick
+                      render={
+                        <Link href={`/admin/projects/${project.id}/edit`} />
+                      }
+                      className="flex cursor-default items-center rounded-md px-2.5 py-2 font-medium text-xs outline-none data-highlighted:bg-accent"
+                    >
+                      Edit project
+                    </Menu.LinkItem>
+                    <Menu.LinkItem
+                      closeOnClick
+                      render={
+                        <Link href={`/admin/projects/${project.id}/files`} />
+                      }
+                      className="flex cursor-default items-center rounded-md px-2.5 py-2 font-medium text-xs outline-none data-highlighted:bg-accent"
+                    >
+                      View files and images
+                    </Menu.LinkItem>
+                    <Menu.Item
+                      onClick={async () => {
+                        if (
+                          window.confirm(
+                            "Archive this project? It will be removed from active dashboards but its records will be preserved."
+                          )
+                        ) {
+                          await archiveProjectAction(project.id)
+                          router.push("/admin/projects")
+                        }
+                      }}
+                      className="flex cursor-default items-center rounded-md px-2.5 py-2 font-medium text-destructive text-xs outline-none data-highlighted:bg-destructive/10"
+                    >
+                      Archive project
+                    </Menu.Item>
+                  </Menu.Popup>
+                </Menu.Positioner>
+              </Menu.Portal>
+            </Menu.Root>
+          </div>
         </div>
         <p className="mt-1 text-muted-foreground text-xs">
           {project.location}
@@ -267,7 +338,10 @@ export function ProjectDetailPage({
 
       <div>
         {mutationError && (
-          <ErrorNotice className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-destructive/25 bg-destructive/5 px-4 py-3" error={mutationError} />
+          <ErrorNotice
+            className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-destructive/25 bg-destructive/5 px-4 py-3"
+            error={mutationError}
+          />
         )}
         <section className="flex min-h-0 flex-col pt-1">
           <div className="mb-4">
@@ -281,7 +355,6 @@ export function ProjectDetailPage({
           <ProjectExpensesTable expenses={expenses} />
         </section>
       </div>
-
     </DashboardShell>
   )
 }
@@ -301,13 +374,40 @@ function Metric({
 }) {
   const isPositive = tone === "positive"
   return (
-    <Card className={`relative isolate flex min-h-[104px] overflow-hidden flex-col justify-between gap-2 p-4 sm:p-5 ${isPositive ? "bg-emerald-50/40" : "bg-rose-50/40"}`}>
-      <svg aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-16 w-full opacity-70" preserveAspectRatio="none" viewBox="0 0 320 64">
-        <path d={isPositive ? "M0 56 C35 52 44 42 74 47 S120 58 151 39 S202 34 232 25 S277 31 320 8 V64 H0 Z" : "M0 22 C35 16 50 35 80 28 S124 18 155 40 S202 31 234 45 S278 35 320 54 V64 H0 Z"} fill={isPositive ? "#bbf7d0" : "#fecdd3"} fillOpacity=".45" />
-        <path d={isPositive ? "M0 56 C35 52 44 42 74 47 S120 58 151 39 S202 34 232 25 S277 31 320 8" : "M0 22 C35 16 50 35 80 28 S124 18 155 40 S202 31 234 45 S278 35 320 54"} fill="none" stroke={isPositive ? "#34d399" : "#fb7185"} strokeLinecap="round" strokeWidth="2" />
+    <Card
+      className={`relative isolate flex min-h-[104px] flex-col justify-between gap-2 overflow-hidden p-4 sm:p-5 ${isPositive ? "bg-emerald-50/40" : "bg-rose-50/40"}`}
+    >
+      <svg
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-16 w-full opacity-70"
+        preserveAspectRatio="none"
+        viewBox="0 0 320 64"
+      >
+        <path
+          d={
+            isPositive
+              ? "M0 56 C35 52 44 42 74 47 S120 58 151 39 S202 34 232 25 S277 31 320 8 V64 H0 Z"
+              : "M0 22 C35 16 50 35 80 28 S124 18 155 40 S202 31 234 45 S278 35 320 54 V64 H0 Z"
+          }
+          fill={isPositive ? "#bbf7d0" : "#fecdd3"}
+          fillOpacity=".45"
+        />
+        <path
+          d={
+            isPositive
+              ? "M0 56 C35 52 44 42 74 47 S120 58 151 39 S202 34 232 25 S277 31 320 8"
+              : "M0 22 C35 16 50 35 80 28 S124 18 155 40 S202 31 234 45 S278 35 320 54"
+          }
+          fill="none"
+          stroke={isPositive ? "#34d399" : "#fb7185"}
+          strokeLinecap="round"
+          strokeWidth="2"
+        />
       </svg>
       <div className="relative z-10 flex items-start justify-between gap-2">
-        <p className="min-w-0 whitespace-nowrap font-medium text-muted-foreground text-xs">{label}</p>
+        <p className="min-w-0 whitespace-nowrap font-medium text-muted-foreground text-xs">
+          {label}
+        </p>
         {detail && (
           <p
             className={`shrink-0 whitespace-nowrap rounded-lg px-1.5 py-0.5 text-right font-medium text-[10px] ${pillClassName}`}

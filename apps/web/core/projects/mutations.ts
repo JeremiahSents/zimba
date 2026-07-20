@@ -163,3 +163,41 @@ export async function archiveProject(projectId: string) {
   })
   return project
 }
+
+export async function restoreProject(projectId: string) {
+  const { user, organization } = await requireSession()
+  requireRole(organization.role, ["owner"])
+  const project = await projectRepo.updateProject(
+    organization.organizationId,
+    projectId,
+    { archivedAt: null, archivedBy: null }
+  )
+  if (!project) badRequest("Project could not be restored.")
+  await recordAudit({
+    organizationId: organization.organizationId,
+    actorId: user.id,
+    action: "project.restore",
+    entityType: "project",
+    entityId: projectId,
+  })
+  return project
+}
+
+export async function deleteProject(projectId: string) {
+  const { user, organization } = await requireSession()
+  requireRole(organization.role, ["owner"])
+  const project = await projectRepo.deleteProject(
+    organization.organizationId,
+    projectId
+  )
+  if (!project) badRequest("Project could not be deleted.")
+  await recordAudit({
+    organizationId: organization.organizationId,
+    actorId: user.id,
+    action: "project.delete",
+    entityType: "project",
+    entityId: projectId,
+    changes: { name: project.name },
+  })
+  return project
+}
