@@ -14,6 +14,8 @@ import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { createProjectTaskAction } from "@/app/admin/projects/actions"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
+import { ErrorNotice } from "@/components/shared/error-notice"
+import type { PublicError } from "@/core/shared/errors"
 import type { ProjectDetailResponse } from "@/lib/types"
 
 export function NewProjectTaskPage({
@@ -26,7 +28,7 @@ export function NewProjectTaskPage({
   const router = useRouter()
   const [name, setName] = useState("")
   const [budget, setBudget] = useState("")
-  const [error, setError] = useState("")
+  const [error, setError] = useState<PublicError | string>("")
   const [saving, setSaving] = useState(false)
 
   return (
@@ -52,20 +54,16 @@ export function NewProjectTaskPage({
                   name,
                 })
                 if (!result.success) {
-                  setError(result.error.message)
+                  setError(result.error)
                   setSaving(false)
                   return
                 }
                 router.push(
-                  `${returnTo}${returnTo.includes("?") ? "&" : "?"}task=${encodeURIComponent(name.trim())}`
+                  `${returnTo}${returnTo.includes("?") ? "&" : "?"}task=${encodeURIComponent(result.data.name)}`
                 )
               }}
             >
-              {error ? (
-                <p className="text-destructive text-sm" role="alert">
-                  {error}
-                </p>
-              ) : null}
+              {error ? <ErrorNotice error={error} /> : null}
               <label className="grid gap-2">
                 <Label>Task name</Label>
                 <Input

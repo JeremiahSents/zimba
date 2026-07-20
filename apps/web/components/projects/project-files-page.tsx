@@ -7,11 +7,12 @@ import {
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Button } from "@workspace/ui/components/button"
-import Image from "next/image"
 import Link from "next/link"
 import { useRef, useState } from "react"
 import { updateProjectAction } from "@/app/admin/projects/actions"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
+import { ErrorNotice } from "@/components/shared/error-notice"
+import { ApplicationError, type PublicError } from "@/core/shared/errors"
 import type { ProjectAttachment, ProjectDetailResponse } from "@/lib/types"
 import { uploadZimbaFile } from "@/lib/upload-file"
 
@@ -22,7 +23,8 @@ export function ProjectFilesPage({
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
-  const [error, setError] = useState("")
+  const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([])
+  const [error, setError] = useState<PublicError | string>("")
   const files = project.attachments ?? []
   const images = files.filter((file) => file.content_type.startsWith("image/"))
   const documents = files.filter(
@@ -60,25 +62,50 @@ export function ProjectFilesPage({
               if (!selected.length) return
               setUploading(true)
               setError("")
+              setPendingFiles(
+                selected.map((file) => ({
+                  name: file.name,
+                  size: file.size,
+                  type: file.type,
+                  progress: 10,
+                }))
+              )
               try {
-                const ids = await Promise.all(
-                  selected.map((file) =>
-                    uploadZimbaFile(file, "project_attachment")
+                const ids: string[] = []
+                for (const [index, file] of selected.entries()) {
+                  setPendingFiles((current) =>
+                    current.map((pending, pendingIndex) =>
+                      pendingIndex === index
+                        ? { ...pending, progress: 45 }
+                        : pending
+                    )
                   )
+                  ids.push(await uploadZimbaFile(file, "project_attachment"))
+                  setPendingFiles((current) =>
+                    current.map((pending, pendingIndex) =>
+                      pendingIndex === index
+                        ? { ...pending, progress: 90 }
+                        : pending
+                    )
+                  )
+                }
+                setPendingFiles((current) =>
+                  current.map((file) => ({ ...file, progress: 100 }))
                 )
                 const result = await updateProjectAction(project.id, {
                   attachment_ids: ids,
                 })
-                if (!result.success) setError(result.error.message)
+                if (!result.success) setError(result.error)
                 else window.location.reload()
               } catch (uploadError) {
                 setError(
-                  uploadError instanceof Error
-                    ? uploadError.message
+                  uploadError instanceof ApplicationError
+                    ? uploadError.toPublicError()
                     : "The files could not be uploaded."
                 )
               }
               setUploading(false)
+              setPendingFiles([])
               event.target.value = ""
             }}
           />
@@ -93,10 +120,12 @@ export function ProjectFilesPage({
         </div>
       </div>
       {error && (
-        <p className="mb-4 text-destructive text-xs" role="alert">
-          {error}
-        </p>
+        <ErrorNotice
+          className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-destructive/25 bg-destructive/5 px-4 py-3"
+          error={error}
+        />
       )}
+      {pendingFiles.length > 0 && <UploadProgress files={pendingFiles} />}
       {files.length === 0 ? (
         <div className="rounded-xl border border-dashed p-10 text-center">
           <HugeiconsIcon
@@ -122,20 +151,60 @@ export function ProjectFilesPage({
   )
 }
 
+type PendingFile = {
+  name: string
+  size: number
+  type: string
+  progress: number
+}
+
+function UploadProgress({ files }: { files: PendingFile[] }) {
+  return (
+    <section className="mb-8">
+      <Heading icon={File02Icon} title="Uploading" count={files.length} />
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        {files.map((file) => (
+          <div
+            key={`${file.name}-${file.size}`}
+            className="overflow-hidden rounded-xl border bg-muted/20"
+          >
+            <div className="flex aspect-square items-center justify-center bg-muted/35">
+              <HugeiconsIcon
+                icon={file.type.startsWith("image/") ? Image02Icon : File02Icon}
+                size={28}
+                className="text-muted-foreground"
+              />
+            </div>
+            <div className="space-y-2 px-3 py-3">
+              <p className="truncate font-medium text-xs">{file.name}</p>
+              <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+                <div
+                  className="h-full rounded-full bg-primary transition-[width] duration-300"
+                  style={{ width: `${file.progress}%` }}
+                />
+              </div>
+              <p className="text-[10px] text-muted-foreground">
+                {file.progress === 100 ? "Saving file…" : `${file.progress}% uploaded`}
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  )
+}
+
 function FileImageGrid({ files }: { files: ProjectAttachment[] }) {
   return (
     <section>
       <Heading icon={Image02Icon} title="Images" count={files.length} />
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         {files.map((file, index) => (
-          <a
+          <div
             key={file.id}
-            href={file.url}
-            target="_blank"
-            rel="noreferrer"
-            className="group overflow-hidden rounded-xl border bg-muted/20"
+            className="overflow-hidden rounded-xl border bg-muted/20"
           >
-            <div className="relative aspect-square bg-muted">
+            <div className="flex aspect-square items-center justify-center bg-muted/35">
               <ProjectImage file={file} />
             </div>
             <p className="truncate px-3 py-2 font-medium text-xs">
@@ -144,7 +213,7 @@ function FileImageGrid({ files }: { files: ProjectAttachment[] }) {
             <div className="px-3 pb-2">
               <FilePurpose purpose={file.purpose} />
             </div>
-          </a>
+          </div>
         ))}
       </div>
     </section>
@@ -161,14 +230,11 @@ function ProjectImage({ file }: { file: ProjectAttachment }) {
     )
   }
   return (
-    <Image
-      src={file.url}
+    <img
+      src={getFileDisplayUrl(file)}
       alt={file.filename}
-      fill
-      unoptimized
-      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
       onError={() => setFailed(true)}
-      className="size-full object-cover transition-transform group-hover:scale-[1.03]"
+      className="max-h-full max-w-full object-contain"
     />
   )
 }
@@ -180,7 +246,7 @@ function DocumentList({ files }: { files: ProjectAttachment[] }) {
         {files.map((file, index) => (
           <a
             key={file.id}
-            href={file.url}
+            href={getFileDisplayUrl(file)}
             target="_blank"
             rel="noreferrer"
             className="flex items-center gap-3 p-4 hover:bg-muted/30"
@@ -238,4 +304,9 @@ function formatBytes(bytes: number) {
   if (bytes < 1024) return `${bytes} B`
   if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
+
+function getFileDisplayUrl(file: ProjectAttachment) {
+  if (!file.url.includes("/api/v1/files/")) return file.url
+  return file.key ? `https://utfs.io/f/${file.key}` : file.url
 }

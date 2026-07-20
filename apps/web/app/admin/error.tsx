@@ -41,12 +41,11 @@ export default function AdminError({
         </div>
 
         <h1 className="mt-6 font-heading font-semibold text-2xl tracking-tight">
-          Connection lost
+          Something went wrong
         </h1>
         <p className="mx-auto mt-3 max-w-sm text-balance text-muted-foreground text-sm leading-relaxed">
-          We couldn&apos;t reach the Zimba backend. It may be restarting or
-          temporarily unavailable. Check the configured API session and
-          organization, then try again.
+          The admin page could not finish loading. Try again, or return home
+          and reopen this section.
         </p>
 
         <div className="mt-8 flex items-center justify-center gap-3">

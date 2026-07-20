@@ -1,12 +1,12 @@
 {
   "$schema": "https://ui.shadcn.com/schema.json",
-  "style": "base-mira",
+  "style": "base-luma",
   "rsc": true,
   "tsx": true,
   "tailwind": {
     "config": "",
     "css": "../../packages/ui/src/styles/globals.css",
-    "baseColor": "zinc",
+    "baseColor": "mist",
     "cssVariables": true
   },
   "iconLibrary": "hugeicons",

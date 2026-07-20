@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data Layer Redesign Plan</title>
+<style>
+  :root {
+    --ink: #1a1f2b;
+    --muted: #5b6472;
+    --accent: #0f6b5c;
+    --border: #d9dee6;
+    --bg-soft: #f6f8fa;
+    --danger: #a33a2f;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: Georgia, "Times New Roman", serif;
+    color: var(--ink);
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 48px 24px 96px;
+    line-height: 1.6;
+  }
+  h1, h2, h3 { font-family: "Segoe UI", system-ui, sans-serif; line-height: 1.25; }
+  h1 { font-size: 2rem; margin-bottom: 4px; }
+  h2 { font-size: 1.35rem; margin-top: 2.5em; border-bottom: 2px solid var(--border); padding-bottom: 6px; }
+  h3 { font-size: 1.05rem; margin-top: 1.8em; color: var(--accent); }
+  .status {
+    display: inline-block;
+    font-family: "Segoe UI", system-ui, sans-serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: #fdf1d6;
+    color: #7a5a10;
+    border: 1px solid #ecd9a4;
+    border-radius: 4px;
+    padding: 2px 10px;
+    margin-bottom: 24px;
+  }
+  code {
+    font-family: Consolas, "Fira Code", monospace;
+    font-size: 0.88em;
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 5px;
+  }
+  pre {
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    overflow-x: auto;
+    font-family: Consolas, "Fira Code", monospace;
+    font-size: 0.85rem;
+    line-height: 1.5;
+  }
+  pre code { background: none; border: none; padding: 0; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 16px 0;
+    font-size: 0.92rem;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    font-family: "Segoe UI", system-ui, sans-serif;
+    background: var(--bg-soft);
+    font-size: 0.85rem;
+  }
+  ol li, ul li { margin-bottom: 6px; }
+  .drop { color: var(--danger); font-weight: 600; }
+  .note { color: var(--muted); font-style: italic; }
+</style>
+</head>
+<body>
+
+<h1>Data Layer Redesign Plan</h1>
+<span class="status">Draft — for review before any code changes</span>
+
+<h2>1. Problem</h2>
+<p>The financial tables model the same real-world concept (&ldquo;money we owe a supplier&rdquo;) twice, and several names don&rsquo;t describe what the table holds.</p>
+
+<h3>Current tables (financial core)</h3>
+<table>
+  <thead><tr><th>Table</th><th>File</th><th>Reality</th></tr></thead>
+  <tbody>
+    <tr><td><code>expense</code></td><td><code>core/expenses/schema.ts</code></td><td>Bill/receipt header. No amounts, only <code>payment_status</code>.</td></tr>
+    <tr><td><code>expense_line</code></td><td><code>core/expenses/schema.ts</code></td><td>Item on a bill: description, qty, <code>unit_rate_cents</code>, <code>amount_cents</code>, charged to an <code>allocation</code>.</td></tr>
+    <tr><td><code>payable</code></td><td><code>core/payments/schema.ts</code></td><td>A second, competing &ldquo;bill&rdquo; with its own <code>title</code>, <code>amount_cents</code>, <code>status</code>.</td></tr>
+    <tr><td><code>ledger_payment</code></td><td><code>core/payments/schema.ts</code></td><td>A payment. Points at <strong>both</strong> <code>expense_id</code> (no FK) and <code>payable_id</code>.</td></tr>
+    <tr><td><code>allocation</code></td><td><code>core/allocations/schema.ts</code></td><td>Actually a project <strong>budget category</strong> (<code>name</code> + <code>budget_cents</code>).</td></tr>
+  </tbody>
+</table>
+
+<h3>Specific issues</h3>
+<ol>
+  <li><strong><code>expense</code> vs <code>payable</code> duplication.</strong> <code>createPayableExpense</code> in <code>core/expenses/service.ts</code> writes <code>expense</code> rows but returns payable-shaped responses. <code>ledger_payment</code> hedges with two nullable parent columns. Every consumer must know which model a given bill lives in.</li>
+  <li><strong><code>allocation</code> is misleading.</strong> It&rsquo;s a budget line of a project, not a payment allocation.</li>
+  <li><strong>Missing FKs:</strong> <code>ledger_payment.expense_id</code>, <code>expense.receipt_file_id</code>, <code>project_attachment.project_id</code>, <code>member_project.project_id</code>, <code>project.archived_by</code>.</li>
+  <li><strong>Free-text status columns</strong> (<code>expense.payment_status</code>, <code>payable.status</code>, <code>project.status</code>, etc.) documented only in comments &mdash; no pg enums or check constraints.</li>
+  <li><strong>Derived data on headers:</strong> <code>expense.payment_status</code> is derivable from payments vs line totals; <code>expense</code> has no stored total, forcing consumers to sum lines.</li>
+</ol>
+
+<h2>2. Target model</h2>
+<p>One bill concept. Mental model:</p>
+<pre><code>organization
+  └── project
+        └── budget_category   (renamed from allocation)
+              ▲
+expense ──── expense_item     (renamed from expense_line)
+   ▲
+payment                        (renamed from ledger_payment)</code></pre>
+
+<h3>Table changes</h3>
+<table>
+  <thead><tr><th>Current</th><th>New</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td><code>allocation</code></td><td><code>budget_category</code></td><td>Same columns.</td></tr>
+    <tr><td><code>expense</code></td><td><code>expense</code> (keep)</td><td>Add <code>due_date</code>, <code>currency</code>, <code>total_cents</code>, <code>description</code>; keep <code>payment_status</code> as pg enum <code>unpaid | partial | paid</code>. FK on <code>receipt_file_id</code> &rarr; <code>uploaded_file</code>.</td></tr>
+    <tr><td><code>expense_line</code></td><td><code>expense_item</code></td><td>Rename <code>allocation_id</code> &rarr; <code>budget_category_id</code>, <code>unit_rate_cents</code> &rarr; <code>unit_cents</code>.</td></tr>
+    <tr><td><code>payable</code></td><td><span class="drop">dropped</span></td><td>Existing payables migrate to <code>expense</code> rows (title &rarr; description, amount &rarr; single <code>expense_item</code>, <code>due_date</code> carried over).</td></tr>
+    <tr><td><code>ledger_payment</code></td><td><code>payment</code></td><td>Drop <code>payable_id</code>; make <code>expense_id</code> NOT NULL with FK. Keep idempotency unique index.</td></tr>
+  </tbody>
+</table>
+
+<h3>Enums (pg enums via drizzle <code>pgEnum</code>)</h3>
+<ul>
+  <li><code>expense_payment_status</code>: <code>unpaid</code>, <code>partial</code>, <code>paid</code></li>
+  <li><code>project_status</code>: <code>active</code>, <code>completed</code>, <code>on_hold</code></li>
+  <li><code>file_purpose</code>: <code>attachment</code>, <code>receipt</code></li>
+</ul>
+
+<h2>3. Migration steps (single drizzle migration)</h2>
+<ol>
+  <li>Rename <code>allocation</code> &rarr; <code>budget_category</code>; <code>expense_line</code> &rarr; <code>expense_item</code> (+ column renames).</li>
+  <li>Alter <code>expense</code>: add <code>due_date</code>, <code>currency</code> (default <code>UGX</code>), <code>total_cents</code>, <code>description</code>.</li>
+  <li>Data move: for each <code>payable</code>, insert an <code>expense</code> (+ one <code>expense_item</code> against a designated/first budget category of the project) and repoint its <code>ledger_payment.payable_id</code> rows to the new <code>expense_id</code>.</li>
+  <li>Rename <code>ledger_payment</code> &rarr; <code>payment</code>; drop <code>payable_id</code>; add FK + NOT NULL on <code>expense_id</code>.</li>
+  <li>Drop <code>payable</code>.</li>
+  <li>Backfill <code>expense.total_cents</code> from item sums; recompute <code>payment_status</code>.</li>
+  <li>Add missing FKs (<code>receipt_file_id</code>, <code>project_attachment.project_id</code>, <code>member_project.project_id</code>).</li>
+  <li>Convert status varchars to pg enums.</li>
+</ol>
+<p class="note">If there is no production data yet, steps 3 and 6 collapse and we can instead regenerate a fresh initial migration.</p>
+
+<h2>4. Code impact</h2>
+<ul>
+  <li><strong>Schemas:</strong> <code>core/expenses/schema.ts</code>, <code>core/payments/schema.ts</code>, <code>core/allocations/schema.ts</code> (folder rename &rarr; <code>core/budget-categories/</code>), <code>core/shared/schema.ts</code>.</li>
+  <li><strong>Services/repos:</strong> <code>core/expenses/{service,repository}.ts</code> (remove payable branches, delete <code>createPayableExpense</code> duality), <code>core/payments/{service,repository}.ts</code>, <code>core/projects/service.ts</code>.</li>
+  <li><strong>Tests:</strong> <code>core/payments/service.test.ts</code>, <code>core/projects/service.test.ts</code>.</li>
+  <li><strong>App layer:</strong> <code>app/admin/expenses/**</code>, <code>app/admin/payments/actions.ts</code>, <code>app/admin/projects/**</code> (incl. <code>new/allocation/page.tsx</code> &rarr; rename route to <code>new/budget/</code>).</li>
+</ul>
+
+<h2>5. Open questions</h2>
+<ol>
+  <li>Is there production data, or can we regenerate migrations from scratch?</li>
+  <li>Should <code>expense.total_cents</code> be stored (denormalized, updated in the write transaction) or always computed? <em>Recommendation: stored, since all writes already go through one service transaction.</em></li>
+  <li>Keep the <code>core/allocations</code> folder name or rename to <code>core/budget-categories</code>? <em>Recommendation: rename for consistency.</em></li>
+  <li>UI wording: &ldquo;Budget category&rdquo; vs &ldquo;Budget line&rdquo; vs &ldquo;Cost category&rdquo;?</li>
+</ol>
+
+</body>
+</html>

@@ -3,6 +3,8 @@ import { requireSession } from "../auth/service"
 import * as supplierRepo from "./repository"
 import type { SupplierCreate, SupplierResponse } from "@/lib/types"
 import { badRequest, conflict } from "../shared/errors"
+import { requireRole } from "../auth/permissions"
+import { recordAudit } from "../audit/service"
 
 export async function getSuppliersList(): Promise<SupplierResponse[]> {
   const { organization } = await requireSession()
@@ -44,6 +46,22 @@ export async function createSupplier(data: SupplierCreate) {
     contactName: data.contactName,
   })
 
+  return supplier
+}
+
+export async function updateSupplier(supplierId: string, data: SupplierCreate & { status?: string | null }) {
+  const { user, organization } = await requireSession()
+  requireRole(organization.role, ["owner", "site_manager", "accountant"])
+  const email = data.email?.trim() || null
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) badRequest("Enter a valid email address.")
+  if (!data.name.trim()) badRequest("Add a supplier name.")
+  const supplier = await supplierRepo.updateSupplier(organization.organizationId, supplierId, {
+    name: data.name.trim(), category: data.category, phone: data.phone?.trim() || null,
+    email, notes: data.notes?.trim() || null, companyContact: data.companyContact?.trim() || null,
+    contactName: data.contactName?.trim() || null, status: data.status ?? undefined,
+  })
+  if (!supplier) badRequest("Supplier not found.")
+  await recordAudit({ organizationId: organization.organizationId, actorId: user.id, action: "supplier.update", entityType: "supplier", entityId: supplierId, changes: data })
   return supplier
 }
 

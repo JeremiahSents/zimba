@@ -9,10 +9,9 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import { Button } from "@workspace/ui/components/button"
 import { Card } from "@workspace/ui/components/card"
 import Link from "next/link"
-import { useMemo, useState } from "react"
+import { useMemo } from "react"
 
 import { DashboardShell } from "@/components/shared/dashboard-shell"
-import { SupplierTable } from "@/components/suppliers/supplier-table"
 import { formatCurrency } from "@/lib/format"
 import {
   getSupplierListItems,
@@ -21,9 +20,6 @@ import {
 import type { DashboardOverviewData } from "@/lib/types"
 
 export function SuppliersPage({ data }: { data: DashboardOverviewData }) {
-  const [paymentFilter, setPaymentFilter] = useState<
-    "all" | "Full" | "Partial" | "Not paid"
-  >("all")
   const suppliers = useMemo<SupplierListItem[]>(
     () => getSupplierListItems(data.suppliers, data.expenses),
     [data.suppliers, data.expenses]
@@ -34,56 +30,31 @@ export function SuppliersPage({ data }: { data: DashboardOverviewData }) {
   )
   const totalPaid = suppliers.reduce((sum, supplier) => sum + supplier.paid, 0)
   const pendingBalance = totalReceiptValue - totalPaid
-  const filteredSuppliers =
-    paymentFilter === "all"
-      ? suppliers
-      : suppliers.filter(
-          (supplier) => supplier.statusSummary[paymentFilter] > 0
-        )
   const stats = [
     {
       label: "Suppliers we have",
       value: String(suppliers.length),
-      detail: "Active partners",
       icon: UserGroupIcon,
-      pillClassName: "bg-green-50 text-green-700",
     },
     {
       label: "Receipt value",
       value: formatCurrency(totalReceiptValue),
-      detail: "Across all receipts",
       icon: MoneyBag02Icon,
-      pillClassName: "bg-blue-50 text-blue-700",
     },
     {
       label: "Paid to suppliers",
       value: formatCurrency(totalPaid),
-      detail: `${totalReceiptValue ? Math.round((totalPaid / totalReceiptValue) * 100) : 0}% settled`,
       icon: TaskDone01Icon,
-      pillClassName: "bg-amber-50 text-amber-700",
     },
     {
       label: "Pending balance",
       value: formatCurrency(pendingBalance),
-      detail: "Unpaid arrears",
       icon: MoneyBag02Icon,
-      pillClassName: "bg-rose-50 text-rose-700",
     },
   ]
-  const filterLabel =
-    paymentFilter === "all"
-      ? "All receipts"
-      : paymentFilter === "Not paid"
-        ? "Unpaid"
-        : paymentFilter === "Full"
-          ? "Fully paid"
-          : "Partial"
 
   return (
-    <DashboardShell
-      title="Suppliers"
-      subtitle="Track receipts, payments, and the balance owed to every supplier."
-    >
+    <DashboardShell title="Suppliers" subtitle="">
       <Card className="gap-0 overflow-hidden py-0">
         <div className="grid grid-cols-2 md:grid-cols-4">
           {stats.map((stat) => (
@@ -104,54 +75,36 @@ export function SuppliersPage({ data }: { data: DashboardOverviewData }) {
               <p className="mt-4 font-heading font-semibold text-base text-foreground">
                 {stat.value}
               </p>
-              <p
-                className={`mt-2 inline-flex rounded-lg px-1.5 py-0.5 font-medium text-[10px] ${stat.pillClassName}`}
-              >
-                {stat.detail}
-              </p>
             </div>
           ))}
         </div>
       </Card>
 
       <section className="space-y-5">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="font-heading font-medium text-lg">Supplier ledger</p>
-            <p className="mt-1 text-muted-foreground text-sm">
-              Receipt value and outstanding balances across active projects.
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <label className="flex items-center gap-2 text-muted-foreground text-xs">
-              Show
-              <select
-                value={paymentFilter}
-                onChange={(event) =>
-                  setPaymentFilter(event.target.value as typeof paymentFilter)
-                }
-                className="h-9 rounded-lg border bg-background px-3 font-medium text-foreground outline-none focus:ring-2 focus:ring-ring"
-              >
-                <option value="all">All receipts</option>
-                <option value="Full">Fully paid</option>
-                <option value="Partial">Partial</option>
-                <option value="Not paid">Unpaid</option>
-              </select>
-            </label>
-            <Button
-              size="sm"
-              nativeButton={false}
-              render={<Link href="/admin/suppliers/new" />}
-            >
-              + Create supplier
-            </Button>
-          </div>
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <p className="font-heading font-medium text-lg">All suppliers</p>
+          <Button
+            size="sm"
+            nativeButton={false}
+            render={<Link href="/admin/suppliers/new" />}
+          >
+            + Create supplier
+          </Button>
         </div>
-        <SupplierTable
-          suppliers={filteredSuppliers}
-          filterLabel={filterLabel}
-        />
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {suppliers.map((supplier) => {
+            const id = supplier.id ?? supplier.supplier_id
+            const latest = data.expenses.filter((expense) => expense.supplier_id === id).sort((a, b) => b.date.localeCompare(a.date))[0]
+            return <Link key={id ?? supplier.name} href={`/admin/suppliers/${id ?? supplier.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`} className="rounded-2xl border bg-card p-5 shadow-sm transition hover:border-primary/35 hover:shadow-md">
+              <div className="flex items-start justify-between gap-3"><div className="min-w-0"><h2 className="truncate font-heading font-semibold text-base">{supplier.name}</h2><p className="mt-1 truncate text-muted-foreground text-xs">{supplier.contactName ?? supplier.phone ?? "No contact details"}</p></div><span className="rounded-full bg-primary/10 px-2 py-1 text-[10px] font-semibold text-primary">{supplier.payments} receipts</span></div>
+              <dl className="mt-5 grid grid-cols-3 gap-2 border-y py-4"><Metric label="Incurred" value={formatCurrency(supplier.amount)} /><Metric label="Paid" value={formatCurrency(supplier.paid)} /><Metric label="Balance" value={formatCurrency(supplier.remaining)} /></dl>
+              <p className="mt-4 text-muted-foreground text-xs">{latest ? `Latest receipt ${new Intl.DateTimeFormat("en-UG", { dateStyle: "medium" }).format(new Date(latest.date))}` : "No receipts yet"}</p>
+            </Link>
+          })}
+        </div>
       </section>
     </DashboardShell>
   )
 }
+
+function Metric({ label, value }: { label: string; value: string }) { return <div className="min-w-0"><dt className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</dt><dd className="mt-1 truncate font-semibold text-xs tabular-nums">{value}</dd></div> }

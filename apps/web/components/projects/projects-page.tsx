@@ -1,8 +1,10 @@
 "use client"
 
 import {
+  ArchiveRestoreIcon,
   ArrowLeft01Icon,
   ArrowRight01Icon,
+  Delete02Icon,
   FolderKanbanIcon,
   MoneyBag02Icon,
   PlusSignIcon,
@@ -14,16 +16,30 @@ import { Button } from "@workspace/ui/components/button"
 import { Card } from "@workspace/ui/components/card"
 import { Input } from "@workspace/ui/components/input"
 import Link from "next/link"
-import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { useState, useTransition } from "react"
 
+import {
+  deleteProjectAction,
+  restoreProjectAction,
+} from "@/app/admin/projects/actions"
 import { ProjectsList } from "@/components/dashboard/projects-section"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { formatCurrency } from "@/lib/format"
-import type { DashboardOverviewData } from "@/lib/types"
+import type {
+  DashboardOverviewData,
+  ProjectDashboardResponse,
+} from "@/lib/types"
 
 const PAGE_SIZE = 5
 
-export function ProjectsPage({ data }: { data: DashboardOverviewData }) {
+export function ProjectsPage({
+  data,
+  archivedProjects,
+}: {
+  data: DashboardOverviewData
+  archivedProjects: ProjectDashboardResponse[]
+}) {
   const projects = data.projects
   const [search, setSearch] = useState("")
   const [pageIndex, setPageIndex] = useState(0)
@@ -182,6 +198,122 @@ export function ProjectsPage({ data }: { data: DashboardOverviewData }) {
           </div>
         </div>
       </section>
+
+      <ArchivedProjectsSection projects={archivedProjects} />
     </DashboardShell>
+  )
+}
+
+function ArchivedProjectsSection({
+  projects,
+}: {
+  projects: ProjectDashboardResponse[]
+}) {
+  const router = useRouter()
+  const [pendingId, setPendingId] = useState<string | null>(null)
+  const [error, setError] = useState("")
+  const [isPending, startTransition] = useTransition()
+
+  if (projects.length === 0) return null
+
+  function restoreProject(project: ProjectDashboardResponse) {
+    setError("")
+    setPendingId(project.id)
+    startTransition(async () => {
+      const result = await restoreProjectAction(project.id)
+      setPendingId(null)
+      if (!result.success) {
+        setError(result.error.message)
+        return
+      }
+      router.refresh()
+    })
+  }
+
+  function deleteProject(project: ProjectDashboardResponse) {
+    if (
+      !window.confirm(
+        `Delete ${project.name}? This permanently removes the archived project and connected records.`
+      )
+    ) {
+      return
+    }
+    setError("")
+    setPendingId(project.id)
+    startTransition(async () => {
+      const result = await deleteProjectAction(project.id)
+      setPendingId(null)
+      if (!result.success) {
+        setError(result.error.message)
+        return
+      }
+      router.refresh()
+    })
+  }
+
+  return (
+    <section>
+      <div className="mb-4">
+        <h2 className="font-heading font-semibold text-base text-foreground tracking-tight">
+          Archived projects
+        </h2>
+        <p className="mt-1 text-muted-foreground text-xs">
+          Restore a project to active work or remove it permanently.
+        </p>
+      </div>
+      {error && (
+        <p className="mb-3 rounded-lg border border-destructive/25 bg-destructive/5 px-3 py-2 text-destructive text-xs">
+          {error}
+        </p>
+      )}
+      <div className="divide-y rounded-xl border bg-card">
+        {projects.map((project) => {
+          const disabled = isPending && pendingId === project.id
+          return (
+            <div
+              key={project.id}
+              className="grid gap-3 p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
+            >
+              <div className="min-w-0">
+                <Link
+                  href={`/admin/projects/${project.id}`}
+                  className="block truncate font-semibold text-sm hover:text-primary"
+                >
+                  {project.name}
+                </Link>
+                <p className="mt-1 truncate text-muted-foreground text-xs">
+                  {project.location} - {formatCurrency(project.budget)}
+                </p>
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="icon-sm"
+                  onClick={() => restoreProject(project)}
+                  disabled={disabled}
+                  aria-label={`Restore ${project.name}`}
+                  title="Restore"
+                >
+                  <HugeiconsIcon icon={ArchiveRestoreIcon} strokeWidth={1.8} />
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  onClick={() => deleteProject(project)}
+                  disabled={disabled}
+                  aria-label={`Delete ${project.name}`}
+                  title="Delete"
+                  className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                >
+                  <HugeiconsIcon icon={Delete02Icon} strokeWidth={1.8} />
+                </Button>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </section>
   )
 }

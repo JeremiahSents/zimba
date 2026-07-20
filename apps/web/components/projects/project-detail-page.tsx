@@ -1,43 +1,27 @@
 "use client"
 
 import { Accordion } from "@base-ui/react/accordion"
+import { Menu } from "@base-ui/react/menu"
 import {
   ArrowDown01Icon,
-  FolderKanbanIcon,
-  MoneyBag02Icon,
-  Wallet02Icon,
+  MoreHorizontalCircle01Icon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Button } from "@workspace/ui/components/button"
 import { Card, CardContent } from "@workspace/ui/components/card"
 import {
   type ChartConfig,
   ChartContainer,
 } from "@workspace/ui/components/chart"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@workspace/ui/components/dialog"
-import { Input } from "@workspace/ui/components/input"
-import { Label } from "@workspace/ui/components/label"
 import { Progress } from "@workspace/ui/components/progress"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { Cell, Pie, PieChart } from "recharts"
-import {
-  createUpcomingPaymentAction,
-  deleteUpcomingPaymentAction,
-  updateUpcomingPaymentAction,
-} from "@/app/admin/payments/actions"
 import { archiveProjectAction } from "@/app/admin/projects/actions"
 import { ProjectExpensesTable } from "@/components/projects/project-expenses-table"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
-import { DatePicker } from "@/components/shared/date-picker"
+import { ErrorNotice } from "@/components/shared/error-notice"
+import type { PublicError } from "@/core/shared/errors"
 import { formatCurrency, formatPercent, formatShortDate } from "@/lib/format"
 import type { ProjectDetailResponse } from "@/lib/types"
 
@@ -52,12 +36,6 @@ const taskLegendClasses = [
 const chartConfig: ChartConfig = {
   value: { label: "Spent", color: "var(--primary)" },
 }
-const metricIcons = {
-  budget: Wallet02Icon,
-  spent: MoneyBag02Icon,
-  remaining: FolderKanbanIcon,
-}
-
 export function ProjectDetailPageWrapper({
   initialProject,
 }: {
@@ -73,36 +51,19 @@ export function ProjectDetailPage({
 }) {
   const router = useRouter()
   const [expenses, setExpenses] = useState(project.expenses)
-  const [upcomingPayments, setUpcomingPayments] = useState(
-    project.upcoming_payments ?? []
-  )
-  const upcoming = upcomingPayments.map((payment) => ({
-    amount: payment.amount,
-    contractor: payment.supplier_name ?? "Supplier not assigned",
-    date: payment.due_date,
-    id: payment.id,
-    item: payment.description ?? "Planned payment",
-    name: payment.title,
-  }))
-  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false)
-  const [mutationError, setMutationError] = useState("")
-  const [savingPayment, setSavingPayment] = useState(false)
-  const [newUpcoming, setNewUpcoming] = useState({
-    title: "",
-    description: "",
-    amount: "",
-    date: new Date().toISOString().slice(0, 10),
-  })
+  const [mutationError] = useState<PublicError | string>("")
 
   useEffect(() => {
     setExpenses(project.expenses)
-    setUpcomingPayments(project.upcoming_payments ?? [])
   }, [project])
 
   const spent = project.spent
-  const taskData = project.tasks.reduce<Array<{ name: string; value: number }>>(
-    (items, task) => {
-      if (task.spent > 0) items.push({ name: task.name, value: task.spent })
+  const taskData = expenses.reduce<Array<{ name: string; value: number }>>(
+    (items, expense) => {
+      const name = expense.task_name || "General"
+      const existing = items.find((item) => item.name === name)
+      if (existing) existing.value += expense.amount
+      else items.push({ name, value: expense.amount })
       return items
     },
     []
@@ -112,46 +73,129 @@ export function ProjectDetailPage({
 
   return (
     <DashboardShell
-      title={project.name}
+      title={
+        <Link
+          href="/admin/projects"
+          aria-label="Back to projects"
+          className="inline-flex items-center gap-1.5 text-primary text-sm hover:underline"
+        >
+          ← <span>Back</span>
+        </Link>
+      }
       subtitle="Project financial position and delivery tracking."
-      notifications={upcoming}
-      onAddNotification={() => setPaymentDialogOpen(true)}
     >
       <div className="mb-3">
-        <div className="mb-2 flex items-center gap-2 text-muted-foreground text-xs">
-          <Link
-            href="/admin/projects"
-            className="font-semibold text-primary hover:underline"
+        <div className="flex items-start justify-between gap-4">
+          <h2
+            className="min-w-0 break-words font-heading font-semibold text-2xl tracking-tight"
+            title={project.name}
           >
-            Projects
-          </Link>
-          <span>/</span>
-          <span>{project.name}</span>
-        </div>
-        <div className="flex items-center justify-between gap-4">
-          <h2 className="min-w-0 truncate font-heading font-semibold text-2xl tracking-tight">
             {project.name}
           </h2>
-          <div className="flex shrink-0 gap-2"><Button variant="secondary" nativeButton={false} render={<Link href={`/admin/projects/${project.id}/edit`} />}>Edit</Button><Button variant="outline" onClick={async () => { if (window.confirm("Archive this project? It will be removed from active dashboards but its records will be preserved.")) await archiveProjectAction(project.id) }}>Archive</Button><Button
-            size="sm"
-            className="shrink-0"
-            nativeButton={false}
-            render={
-              <Link href={`/admin/projects/${project.id}/expenses/new`} />
-            }
-          >
-            + New expense
-          </Button></div>
+          <div className="hidden items-center gap-2 md:flex">
+            <Link
+              href={`/admin/projects/${project.id}/edit`}
+              className="inline-flex h-9 items-center rounded-md border bg-background px-3 font-medium text-xs shadow-xs transition-colors hover:bg-accent"
+            >
+              Edit project
+            </Link>
+            <Link
+              href={`/admin/projects/${project.id}/expenses/new`}
+              className="inline-flex h-9 items-center rounded-md bg-primary px-3 font-medium text-primary-foreground text-xs shadow-xs transition-colors hover:bg-primary/90"
+            >
+              New expense
+            </Link>
+            <Link
+              href={`/admin/projects/${project.id}/files`}
+              className="inline-flex h-9 items-center rounded-md border bg-background px-3 font-medium text-xs shadow-xs transition-colors hover:bg-accent"
+            >
+              View files
+            </Link>
+            <button
+              type="button"
+              onClick={async () => {
+                if (
+                  window.confirm(
+                    "Archive this project? It will be removed from active dashboards but its records will be preserved."
+                  )
+                ) {
+                  await archiveProjectAction(project.id)
+                  router.push("/admin/projects")
+                }
+              }}
+              className="inline-flex h-9 items-center rounded-md border border-destructive/30 px-3 font-medium text-destructive text-xs transition-colors hover:bg-destructive/10"
+            >
+              Archive
+            </button>
+          </div>
+          <div className="ml-auto flex shrink-0 items-center gap-1.5 md:hidden">
+            <Link
+              href={`/admin/projects/${project.id}/expenses/new`}
+              className="inline-flex h-9 items-center rounded-md bg-primary px-3 font-medium text-primary-foreground text-xs shadow-xs transition-colors hover:bg-primary/90"
+            >
+              New expense
+            </Link>
+            <Menu.Root>
+              <Menu.Trigger
+                aria-label={`Open actions for ${project.name}`}
+                className="inline-flex size-9 shrink-0 items-center justify-center rounded-md border bg-background text-foreground shadow-xs outline-none transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <HugeiconsIcon
+                  icon={MoreHorizontalCircle01Icon}
+                  strokeWidth={2}
+                  className="size-5"
+                />
+              </Menu.Trigger>
+              <Menu.Portal>
+                <Menu.Positioner
+                  align="end"
+                  side="bottom"
+                  sideOffset={6}
+                  className="isolate z-50 outline-none"
+                >
+                  <Menu.Popup className="min-w-44 origin-(--transform-origin) rounded-lg border bg-popover p-1 text-popover-foreground shadow-md outline-none">
+                    <Menu.LinkItem
+                      closeOnClick
+                      render={
+                        <Link href={`/admin/projects/${project.id}/edit`} />
+                      }
+                      className="flex cursor-default items-center rounded-md px-2.5 py-2 font-medium text-xs outline-none data-highlighted:bg-accent"
+                    >
+                      Edit project
+                    </Menu.LinkItem>
+                    <Menu.LinkItem
+                      closeOnClick
+                      render={
+                        <Link href={`/admin/projects/${project.id}/files`} />
+                      }
+                      className="flex cursor-default items-center rounded-md px-2.5 py-2 font-medium text-xs outline-none data-highlighted:bg-accent"
+                    >
+                      View files and images
+                    </Menu.LinkItem>
+                    <Menu.Item
+                      onClick={async () => {
+                        if (
+                          window.confirm(
+                            "Archive this project? It will be removed from active dashboards but its records will be preserved."
+                          )
+                        ) {
+                          await archiveProjectAction(project.id)
+                          router.push("/admin/projects")
+                        }
+                      }}
+                      className="flex cursor-default items-center rounded-md px-2.5 py-2 font-medium text-destructive text-xs outline-none data-highlighted:bg-destructive/10"
+                    >
+                      Archive project
+                    </Menu.Item>
+                  </Menu.Popup>
+                </Menu.Positioner>
+              </Menu.Portal>
+            </Menu.Root>
+          </div>
         </div>
         <p className="mt-1 text-muted-foreground text-xs">
           {project.location}
           {project.plot_size ? ` · ${project.plot_size}` : ""}
-          <Link
-            href={`/admin/projects/${project.id}/files`}
-            className="ml-2 inline-flex font-medium text-primary hover:underline"
-          >
-            View files and images
-          </Link>
         </p>
       </div>
 
@@ -160,21 +204,21 @@ export function ProjectDetailPage({
           <Metric
             label="Total budget"
             value={formatCurrency(project.budget)}
-            icon="budget"
+            tone="positive"
           />
         </div>
         <Metric
           label="Total spent"
           value={formatCurrency(spent)}
           detail={`${formatPercent(utilisation)} used`}
-          icon="spent"
+          tone="negative"
           pillClassName={budgetHealth.pill}
         />
         <Metric
           label="Remaining budget"
           value={formatCurrency(project.remaining)}
           detail={`${formatPercent(Math.max(100 - utilisation, 0))} left`}
-          icon="remaining"
+          tone="positive"
           pillClassName="bg-green-50 text-green-700"
         />
       </div>
@@ -292,103 +336,12 @@ export function ProjectDetailPage({
 
       <TaskExpenseSection tasks={project.tasks} expenses={expenses} />
 
-      <section>
-        <div className="mb-4 flex items-end justify-between gap-4">
-          <div>
-            <h2 className="font-heading font-semibold text-base tracking-tight">
-              Upcoming payments
-            </h2>
-            <p className="mt-1 text-muted-foreground text-xs">
-              Planned commitments for this project.
-            </p>
-          </div>
-          <Button
-            size="sm"
-            variant="secondary"
-            onClick={() => setPaymentDialogOpen(true)}
-          >
-            + Schedule obligation
-          </Button>
-        </div>
-        <div className="divide-y rounded-xl border">
-          {upcomingPayments.map((payment) => (
-            <div
-              key={payment.id}
-              className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center"
-            >
-              <div className="min-w-0 flex-1">
-                <p className="font-medium text-sm">{payment.title}</p>
-                <p className="mt-1 text-muted-foreground text-xs">
-                  {payment.supplier_name ?? "Supplier not assigned"} · Due{" "}
-                  {formatShortDate(payment.due_date)}
-                </p>
-              </div>
-
-              <div className="flex items-center justify-between gap-4 sm:w-auto sm:justify-end">
-                <div className="flex items-center gap-3 sm:flex-col sm:items-end sm:gap-1.5">
-                  <p className="font-heading font-semibold text-sm tabular-nums">
-                    {formatCurrency(payment.amount)}
-                  </p>
-                  <span className="inline-flex shrink-0 items-center rounded-full bg-muted px-2 py-0.5 font-medium text-[10px] text-muted-foreground capitalize">
-                    {payment.status.replaceAll("_", " ")}
-                  </span>
-                </div>
-
-                <div className="flex shrink-0 items-center gap-2">
-                  {payment.status === "planned" && (
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      onClick={async () => {
-                        const result = await updateUpcomingPaymentAction(
-                          project.id,
-                          payment.id,
-                          { status: "due" }
-                        )
-                        if (!result.success) setMutationError(result.error.message)
-                        else router.refresh()
-                      }}
-                    >
-                      Mark due
-                    </Button>
-                  )}
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="text-destructive"
-                    onClick={async () => {
-                      const result = await deleteUpcomingPaymentAction(
-                        project.id,
-                        payment.id
-                      )
-                      if (!result.success) setMutationError(result.error.message)
-                      else {
-                        setUpcomingPayments((current) =>
-                          current.filter((item) => item.id !== payment.id)
-                        )
-                        router.refresh()
-                      }
-                    }}
-                  >
-                    Delete
-                  </Button>
-                </div>
-              </div>
-            </div>
-          ))}
-          {upcomingPayments.length === 0 && (
-            <p className="p-6 text-center text-muted-foreground text-sm">
-              No upcoming payments.
-            </p>
-          )}
-        </div>
-      </section>
-
       <div>
         {mutationError && (
-          <p className="mb-4 font-medium text-destructive text-xs" role="alert">
-            {mutationError}
-          </p>
+          <ErrorNotice
+            className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-destructive/25 bg-destructive/5 px-4 py-3"
+            error={mutationError}
+          />
         )}
         <section className="flex min-h-0 flex-col pt-1">
           <div className="mb-4">
@@ -396,120 +349,12 @@ export function ProjectDetailPage({
               Expenses
             </h2>
             <p className="mt-1 text-muted-foreground text-xs">
-              Legacy expense records. Payment status is read-only and will be
-              derived from the payment ledger after migration.
+              Track every project expense and its payment status in one place.
             </p>
           </div>
           <ProjectExpensesTable expenses={expenses} />
         </section>
       </div>
-
-      <Dialog open={paymentDialogOpen} onOpenChange={setPaymentDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Schedule an upcoming obligation</DialogTitle>
-            <DialogDescription>
-              Add a planned obligation for {project.name}. This does not record
-              a cash payment.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="mt-5 grid gap-4">
-            <label className="grid gap-2">
-              <Label>Title</Label>
-              <Input
-                value={newUpcoming.title}
-                onChange={(event) =>
-                  setNewUpcoming({ ...newUpcoming, title: event.target.value })
-                }
-                placeholder="e.g. Cement delivery"
-              />
-            </label>
-            <label className="grid gap-2">
-              <Label>Description</Label>
-              <Input
-                value={newUpcoming.description}
-                onChange={(event) =>
-                  setNewUpcoming({
-                    ...newUpcoming,
-                    description: event.target.value,
-                  })
-                }
-                placeholder="e.g. 50 bags of cement"
-              />
-            </label>
-            <label className="grid gap-2">
-              <Label>Amount (UGX)</Label>
-              <Input
-                type="number"
-                value={newUpcoming.amount}
-                onChange={(event) =>
-                  setNewUpcoming({ ...newUpcoming, amount: event.target.value })
-                }
-                placeholder="0"
-              />
-            </label>
-            <label className="grid gap-2">
-              <Label>Payment date</Label>
-              <DatePicker
-                value={newUpcoming.date}
-                onChange={(date) => setNewUpcoming({ ...newUpcoming, date })}
-              />
-            </label>
-          </div>
-          <DialogFooter>
-            <Button
-              variant="secondary"
-              onClick={() => {
-                setPaymentDialogOpen(false)
-                setNewUpcoming({
-                  title: "",
-                  description: "",
-                  amount: "",
-                  date: new Date().toISOString().slice(0, 10),
-                })
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              disabled={savingPayment}
-              onClick={async () => {
-                if (
-                  !newUpcoming.title ||
-                  !newUpcoming.description ||
-                  !newUpcoming.amount ||
-                  !newUpcoming.date
-                )
-                  return
-                setSavingPayment(true)
-                const result = await createUpcomingPaymentAction(project.id, {
-                  amount: Number(newUpcoming.amount),
-                  currency: project.currency ?? "UGX",
-                  description: newUpcoming.description,
-                  due_date: newUpcoming.date,
-                  title: newUpcoming.title,
-                })
-                if (!result.success) {
-                  setMutationError(result.error.message)
-                  setSavingPayment(false)
-                  return
-                }
-                setPaymentDialogOpen(false)
-                setNewUpcoming({
-                  title: "",
-                  description: "",
-                  amount: "",
-                  date: new Date().toISOString().slice(0, 10),
-                })
-                setSavingPayment(false)
-                router.refresh()
-              }}
-            >
-              {savingPayment ? "Adding..." : "Schedule obligation"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </DashboardShell>
   )
 }
@@ -518,26 +363,51 @@ function Metric({
   label,
   value,
   detail,
-  icon,
+  tone,
   pillClassName,
 }: {
   label: string
   value: string
   detail?: string
-  icon: "budget" | "spent" | "remaining"
+  tone: "positive" | "negative"
   pillClassName?: string
 }) {
+  const isPositive = tone === "positive"
   return (
-    <Card className="flex flex-col justify-between gap-2 p-4 sm:p-5">
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <p className="font-medium text-muted-foreground text-xs">{label}</p>
-          <HugeiconsIcon
-            icon={metricIcons[icon]}
-            strokeWidth={1.8}
-            className="size-4 shrink-0 text-primary"
-          />
-        </div>
+    <Card
+      className={`relative isolate flex min-h-[104px] flex-col justify-between gap-2 overflow-hidden p-4 sm:p-5 ${isPositive ? "bg-emerald-50/40" : "bg-rose-50/40"}`}
+    >
+      <svg
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-16 w-full opacity-70"
+        preserveAspectRatio="none"
+        viewBox="0 0 320 64"
+      >
+        <path
+          d={
+            isPositive
+              ? "M0 56 C35 52 44 42 74 47 S120 58 151 39 S202 34 232 25 S277 31 320 8 V64 H0 Z"
+              : "M0 22 C35 16 50 35 80 28 S124 18 155 40 S202 31 234 45 S278 35 320 54 V64 H0 Z"
+          }
+          fill={isPositive ? "#bbf7d0" : "#fecdd3"}
+          fillOpacity=".45"
+        />
+        <path
+          d={
+            isPositive
+              ? "M0 56 C35 52 44 42 74 47 S120 58 151 39 S202 34 232 25 S277 31 320 8"
+              : "M0 22 C35 16 50 35 80 28 S124 18 155 40 S202 31 234 45 S278 35 320 54"
+          }
+          fill="none"
+          stroke={isPositive ? "#34d399" : "#fb7185"}
+          strokeLinecap="round"
+          strokeWidth="2"
+        />
+      </svg>
+      <div className="relative z-10 flex items-start justify-between gap-2">
+        <p className="min-w-0 whitespace-nowrap font-medium text-muted-foreground text-xs">
+          {label}
+        </p>
         {detail && (
           <p
             className={`shrink-0 whitespace-nowrap rounded-lg px-1.5 py-0.5 text-right font-medium text-[10px] ${pillClassName}`}
@@ -546,7 +416,7 @@ function Metric({
           </p>
         )}
       </div>
-      <p className="mt-1 font-heading font-semibold text-lg tabular-nums tracking-tight sm:text-xl">
+      <p className="relative mt-1 font-heading font-semibold text-lg tabular-nums tracking-tight sm:text-xl">
         {value}
       </p>
     </Card>

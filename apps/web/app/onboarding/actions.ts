@@ -4,10 +4,10 @@ import { eq } from "drizzle-orm"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { auth } from "@/core/auth/auth"
-import { user } from "@/core/auth/schema"
-import { db } from "@/core/shared/db"
+import { user } from "@workspace/db/schema"
+import { db } from "@workspace/db"
 import { getOrganizationMembership } from "@/core/organizations/service"
-import { member, organization } from "@/core/organizations/schema"
+import { member, organization } from "@workspace/db/schema"
 
 export type OnboardingState = {
   error?: string

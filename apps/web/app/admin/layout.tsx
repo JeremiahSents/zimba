@@ -1,16 +1,17 @@
 import { SidebarProvider } from "@workspace/ui/components/sidebar"
-import { cookies, headers } from "next/headers"
+import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import { WorkspaceProvider } from "@/components/shared/workspace-provider"
-import { auth } from "@/core/auth/auth"
-import { getOrganizationMembership } from "@/core/organizations/service"
+import { getSessionWithOrganization } from "@/core/auth/service"
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 
 export default async function AdminLayout({
   children,
+  modal,
 }: Readonly<{
   children: React.ReactNode
+  modal?: React.ReactNode
 }>) {
   const user = await getAuthenticatedWorkspaceUser()
 
@@ -26,21 +27,22 @@ export default async function AdminLayout({
         className="min-h-svh w-full bg-transparent"
       >
         {children}
+        {modal}
       </SidebarProvider>
     </WorkspaceProvider>
   )
 }
 
 async function getAuthenticatedWorkspaceUser() {
-  const session = await auth.api.getSession({ headers: await headers() })
+  const session = await getSessionWithOrganization()
   if (!session) redirect("/login")
-  const membership = await getOrganizationMembership(session.user.id)
-  if (!membership) redirect("/onboarding")
+  if (!session.organization) redirect("/onboarding")
+  const { user, organization } = session
 
   return {
-    image: session.user.image ?? null,
-    name: session.user.name,
-    organizationName: membership.organizationName,
-    role: membership.role,
+    image: user.image ?? null,
+    name: user.name,
+    organizationName: organization.organizationName,
+    role: organization.role,
   }
 }

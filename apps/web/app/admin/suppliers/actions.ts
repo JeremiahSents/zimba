@@ -1,10 +1,10 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
-import { createSupplier, createSupplierCategory } from "@/core/suppliers/service"
-import { ApplicationError } from "@/core/shared/errors"
-import type { ActionResult } from "@/core/shared/action-result"
-import { requireSession } from "@/core/auth/service"
+import { createSupplier, createSupplierCategory, updateSupplier } from "@/core/suppliers/service"
+import { expectedActionFailure, type ActionResult } from "@/core/shared/action-result"
+import { handleActionError } from "@/core/shared/handle-action-error"
+import { ensureActionSession } from "@/core/auth/action-session"
 
 export async function createSupplierAction(input: {
   name: string
@@ -15,9 +15,10 @@ export async function createSupplierAction(input: {
   email?: string
   notes?: string
 }): Promise<ActionResult> {
-  await requireSession()
+  const authFailure = await ensureActionSession("suppliers.create")
+  if (authFailure) return authFailure
   if (!input.name.trim()) {
-    return { success: false, error: { code: "bad_request", message: "Add a supplier name." } }
+    return expectedActionFailure("VALIDATION_FAILED", "Add a supplier name.")
   }
 
   try {
@@ -35,26 +36,31 @@ export async function createSupplierAction(input: {
     revalidatePath("/admin/home")
     return { success: true, data: undefined }
   } catch (error) {
-    if (error instanceof ApplicationError) {
-      return { success: false, error: { code: error.code, message: error.message } }
-    }
-    console.error("Zimba Action failed", error)
-    return {
-      success: false,
-      error: { code: "internal_error", message: "The request could not be completed. Please try again." },
-    }
+    return handleActionError(error, "suppliers.create")
   }
 }
 
 export async function createSupplierCategoryAction(name: string): Promise<ActionResult<{ name: string; slug: string }>> {
-  await requireSession()
+  const authFailure = await ensureActionSession("suppliers.create-category")
+  if (authFailure) return authFailure
   try {
     const category = await createSupplierCategory(name)
     revalidatePath("/admin/suppliers/new")
     return { success: true, data: { name: category.name, slug: category.slug } }
   } catch (error) {
-    if (error instanceof ApplicationError) return { success: false, error: { code: error.code, message: error.message } }
-    console.error("Zimba Action failed", error)
-    return { success: false, error: { code: "internal_error", message: "The category could not be created." } }
+    return handleActionError(error, "suppliers.create-category")
   }
+}
+
+export async function updateSupplierAction(supplierId: string, input: {
+  name: string; category: string; companyContact?: string; contactName?: string; phone?: string; email?: string; notes?: string; status?: string
+}): Promise<ActionResult> {
+  const authFailure = await ensureActionSession("suppliers.update")
+  if (authFailure) return authFailure
+  try {
+    await updateSupplier(supplierId, { ...input, email: input.email?.trim() || null })
+    revalidatePath("/admin/suppliers")
+    revalidatePath(`/admin/suppliers/${supplierId}`)
+    return { success: true, data: undefined }
+  } catch (error) { return handleActionError(error, "suppliers.update") }
 }

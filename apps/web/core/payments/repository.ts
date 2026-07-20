@@ -1,6 +1,6 @@
 import "server-only"
 import { and, desc, eq, sql } from "drizzle-orm"
-import { db, schema } from "../shared/db"
+import { db, schema } from "@workspace/db"
 
 export async function createPayable(data: typeof schema.payable.$inferInsert) {
   const [payable] = await db.insert(schema.payable).values(data).returning()

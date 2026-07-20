@@ -11,7 +11,9 @@ import {
   CardTitle,
 } from "@workspace/ui/components/card"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
+import { ErrorNotice } from "@/components/shared/error-notice"
 import { TeamTable } from "@/components/team/team-table"
+import type { PublicError } from "@/core/shared/errors"
 import type { TeamMember } from "@/lib/types"
 import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
@@ -37,6 +39,7 @@ type InviteRole = (typeof inviteRoles)[number]["value"]
 export function TeamPage({ members, invitations, canInvite }: { members: TeamMember[]; invitations: { id: string; name: string; email: string; role: string }[]; canInvite: boolean }) {
   const [showInvite, setShowInvite] = useState(false)
   const [message, setMessage] = useState("")
+  const [error, setError] = useState<PublicError | null>(null)
   const [inviteRole, setInviteRole] = useState<InviteRole>("site_manager")
   const stats = [
     ["Team members", String(members.length), "With dashboard access"],
@@ -80,7 +83,8 @@ export function TeamPage({ members, invitations, canInvite }: { members: TeamMem
         <CardContent>
           {showInvite && <form className="mb-6 grid gap-4 rounded-xl border bg-muted/30 p-4 sm:grid-cols-2" action={async (formData) => {
             const result = await inviteMemberAction({ name: String(formData.get("name")), email: String(formData.get("email")), role: inviteRole, responsibility: String(formData.get("responsibility")) })
-            if (!result.success) return setMessage(result.error.message)
+            setError(null)
+            if (!result.success) return setError(result.error)
             const url = `${window.location.origin}${result.data.path}`
             await navigator.clipboard.writeText(url)
             setMessage("Invitation link copied. Share it with the team member; it expires in 7 days.")
@@ -103,7 +107,7 @@ export function TeamPage({ members, invitations, canInvite }: { members: TeamMem
               </Select>
             </div>
             <div><Label htmlFor="responsibility">Responsibility</Label><Input id="responsibility" name="responsibility" placeholder="e.g. Kampala site" /></div>
-            <div className="sm:col-span-2"><Button type="submit">Create and copy invitation</Button>{message && <p className="mt-2 text-muted-foreground text-sm">{message}</p>}</div>
+            <div className="sm:col-span-2"><Button type="submit">Create and copy invitation</Button>{error && <div className="mt-2"><ErrorNotice error={error} /></div>}{message && <p className="mt-2 text-muted-foreground text-sm" role="status">{message}</p>}</div>
           </form>}
           <TeamTable members={members} />
         </CardContent>
