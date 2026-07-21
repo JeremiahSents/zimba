@@ -6,6 +6,7 @@
     "build": "turbo build",
     "dev": "turbo dev",
     "web": "pnpm --filter web dev",
+    "admin": "pnpm --filter admin dev",
     "lint": "turbo lint",
     "format": "turbo format",
     "typecheck": "turbo typecheck"
