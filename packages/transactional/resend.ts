@@ -28,7 +28,7 @@ export async function sendEmail(params: {
   html: string
 }): Promise<SendEmailResult> {
   const client = getResend()
-  let response
+  let response: Awaited<ReturnType<typeof client.emails.send>>
   try {
     response = await client.emails.send({
       from: getFromAddress(),
