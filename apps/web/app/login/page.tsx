@@ -15,20 +15,20 @@ export const dynamic = "force-dynamic"
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>
+  searchParams: Promise<{ error?: string; callbackUrl?: string }>
 }) {
   const session = await auth.api.getSession({ headers: await headers() })
+  const { error, callbackUrl } = await searchParams
+  const destination = callbackUrl?.startsWith("/") ? callbackUrl : "/admin/home"
   if (session) {
     const membership = await getOrganizationMembership(session.user.id)
-    redirect(membership ? "/admin/home" : "/onboarding")
+    redirect(membership ? destination : "/onboarding")
   }
-
-  const { error } = await searchParams
 
   return (
     <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-background p-6 md:p-10">
       <div className="w-full max-w-sm">
-        <LoginForm oauthError={error === "oauth"} />
+        <LoginForm oauthError={error === "oauth"} callbackUrl={destination} />
       </div>
     </div>
   )

@@ -18,8 +18,9 @@ import { authClient } from "@/lib/auth-client"
 export function LoginForm({
   className,
   oauthError = false,
+  callbackUrl = "/admin/home",
   ...props
-}: React.ComponentProps<"div"> & { oauthError?: boolean }) {
+}: React.ComponentProps<"div"> & { oauthError?: boolean; callbackUrl?: string }) {
   const [error, setError] = useState<string | null>(
     oauthError
       ? "Google sign-in could not be completed. Please try again."
@@ -35,9 +36,9 @@ export function LoginForm({
 
     const result = await authClient.signIn.social({
       provider: "google",
-      callbackURL: "/admin/home",
+      callbackURL: callbackUrl,
       newUserCallbackURL: "/onboarding",
-      errorCallbackURL: "/login?error=oauth",
+      errorCallbackURL: `/login?error=oauth&callbackUrl=${encodeURIComponent(callbackUrl)}`,
     })
 
     if (result?.error) {
@@ -59,7 +60,7 @@ export function LoginForm({
     setIsPending(true)
     const result = await authClient.signIn.magicLink({
       email,
-      callbackURL: "/admin/home",
+      callbackURL: callbackUrl,
       newUserCallbackURL: "/onboarding",
     })
 

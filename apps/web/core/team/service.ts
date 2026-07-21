@@ -11,7 +11,7 @@ import {
   type WorkspaceRole,
 } from "../auth/permissions"
 import { requireSession } from "../auth/service"
-import { badRequest, conflict, forbidden, notFound } from "../shared/errors"
+import { badRequest, forbidden, notFound } from "../shared/errors"
 import { buildInviteUrl } from "./invite-url"
 
 export async function listTeam() {
@@ -72,12 +72,19 @@ export async function createInvitation(input: {
       )
     )
     .limit(1)
-  if (existing)
-    conflict("A pending invitation already exists for this email address.")
+  // A previous delivery may have failed after its row was created. Replace
+  // pending invitations so the inviter can safely retry delivery.
+  if (existing) {
+    await db
+      .delete(schema.invitation)
+      .where(eq(schema.invitation.id, existing.id))
+  }
 
   const token = randomBytes(32).toString("base64url")
   const tokenHash = createHash("sha256").update(token).digest("hex")
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+
+  const inviteUrl = buildInviteUrl(token)
 
   await db.insert(schema.invitation).values({
     organizationId: organization.organizationId,
@@ -90,16 +97,21 @@ export async function createInvitation(input: {
     expiresAt,
   })
 
-  const inviteUrl = buildInviteUrl(token)
-
-  await sendMemberInviteEmail({
-    to: normalizedEmail,
-    invitedByName: user.name,
-    organizationName: organization.organizationName,
-    role: input.role,
-    inviteUrl,
-    responsibility: input.responsibility?.trim() || undefined,
-  })
+  try {
+    await sendMemberInviteEmail({
+      to: normalizedEmail,
+      invitedByName: user.name,
+      organizationName: organization.organizationName,
+      role: input.role,
+      inviteUrl,
+      responsibility: input.responsibility?.trim() || undefined,
+    })
+  } catch (error) {
+    await db
+      .delete(schema.invitation)
+      .where(eq(schema.invitation.tokenHash, tokenHash))
+    throw error
+  }
 
   await db.insert(schema.auditEvent).values({
     organizationId: organization.organizationId,

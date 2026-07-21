@@ -1,5 +1,6 @@
 import "@workspace/ui/globals.css"
-
+import { SidebarProvider, SidebarInset } from "@workspace/ui/components/sidebar"
+import { SuperAdminSidebar } from "../components/sidebar"
 import type { Metadata } from "next"
 import { Geist, Public_Sans } from "next/font/google"
 import { cn } from "@workspace/ui/lib/utils"
@@ -19,20 +20,11 @@ export const metadata: Metadata = {
   description: "Internal operations dashboard for Zimba.",
 }
 
-import { SidebarProvider, SidebarInset } from "@workspace/ui/components/sidebar"
-import { SuperAdminSidebar } from "../components/sidebar"
-import { requirePlatformSession } from "../core/auth/service"
-
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  // We call this here so the entire app is protected.
-  // Wait, layout runs for all routes, including login if we had one.
-  // We'll protect it here for now.
-  await requirePlatformSession()
-
   return (
     <html
       lang="en"
