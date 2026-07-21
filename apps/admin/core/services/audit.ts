@@ -1,17 +1,28 @@
 import "server-only"
 import { db } from "@workspace/db"
-import { auditLog } from "@workspace/db/schema"
-import { desc } from "drizzle-orm"
+import { auditLog, organization, user } from "@workspace/db/schema"
+import { desc, eq } from "drizzle-orm"
 
 export async function listPlatformAuditLogs() {
-  const logs = await db.query.auditLog.findMany({
-    orderBy: [desc(auditLog.createdAt)],
-    limit: 100, // Limit for performance on dashboard
-  })
+  const rows = await db
+    .select({
+      id: auditLog.id,
+      action: auditLog.action,
+      entityType: auditLog.entityType,
+      entityId: auditLog.entityId,
+      changes: auditLog.changes,
+      createdAt: auditLog.createdAt,
+      organizationName: organization.name,
+      actorName: user.name,
+    })
+    .from(auditLog)
+    .innerJoin(organization, eq(auditLog.organizationId, organization.id))
+    .innerJoin(user, eq(auditLog.actorId, user.id))
+    .orderBy(desc(auditLog.createdAt))
+    .limit(100)
 
-  return logs.map(l => ({
+  return rows.map((l) => ({
     ...l,
-    organizationName: "System",
-    actorName: l.actorId || "Unknown"
+    actorName: l.actorName ?? "Unknown",
   }))
 }

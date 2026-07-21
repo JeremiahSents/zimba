@@ -15,7 +15,6 @@ export async function listPlatformUsers() {
     }
   })
 
-  // We fetch platform roles separately if needed, or we could join
   const platformUsers = await db.query.platformUser.findMany()
   const roleMap = new Map(platformUsers.map(pu => [pu.userId, pu.role]))
 
@@ -51,4 +50,33 @@ export async function getPlatformUserDetail(id: string) {
     ...u,
     platformRole: pUser?.role || "none",
   }
+}
+
+export async function updatePlatformUserRole(userId: string, role: string) {
+  const [existing] = await db
+    .select()
+    .from(platformUser)
+    .where(eq(platformUser.userId, userId))
+    .limit(1)
+
+  if (existing) {
+    const [updated] = await db
+      .update(platformUser)
+      .set({ role })
+      .where(eq(platformUser.userId, userId))
+      .returning()
+    return updated
+  }
+
+  const [created] = await db
+    .insert(platformUser)
+    .values({ userId, role })
+    .returning()
+  return created
+}
+
+export async function removePlatformUser(userId: string) {
+  await db
+    .delete(platformUser)
+    .where(eq(platformUser.userId, userId))
 }

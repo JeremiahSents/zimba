@@ -1,12 +1,16 @@
 import { PageHeader } from "../../../components/page-header"
 import { StatusBadge } from "../../../components/status-badge"
-import { getOrganizationDetail } from "../../../core/services/organizations"
+import { OrganizationStatusButtons } from "../../../components/org-status-buttons"
+import { getOrganizationDetail, getOrganizationStats } from "../../../core/services/organizations"
 import { notFound } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/components/card"
 
 export default async function OrganizationDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const org = await getOrganizationDetail(id)
+  const [org, stats] = await Promise.all([
+    getOrganizationDetail(id),
+    getOrganizationStats(id),
+  ])
 
   if (!org) {
     notFound()
@@ -27,7 +31,13 @@ export default async function OrganizationDetailPage({ params }: { params: Promi
           <CardContent className="space-y-4">
             <div className="flex justify-between border-b pb-2">
               <span className="text-muted-foreground">Status</span>
-              <StatusBadge status={org.status} />
+              <div className="flex items-center gap-2">
+                <StatusBadge status={org.status} />
+                <OrganizationStatusButtons
+                  organizationId={org.id}
+                  currentStatus={org.status}
+                />
+              </div>
             </div>
             <div className="flex justify-between border-b pb-2">
               <span className="text-muted-foreground">Created</span>
@@ -47,15 +57,27 @@ export default async function OrganizationDetailPage({ params }: { params: Promi
           <CardContent className="space-y-4">
             <div className="flex justify-between border-b pb-2">
               <span className="text-muted-foreground">Users</span>
-              <span>{org.members.length}</span>
+              <span>{stats.memberCount}</span>
             </div>
             <div className="flex justify-between border-b pb-2">
               <span className="text-muted-foreground">Projects</span>
-              <span>{org.projects.length}</span>
+              <span>{stats.projectCount}</span>
             </div>
             <div className="flex justify-between border-b pb-2">
               <span className="text-muted-foreground">Suppliers</span>
-              <span>{org.suppliers.length}</span>
+              <span>{stats.supplierCount}</span>
+            </div>
+            <div className="flex justify-between border-b pb-2">
+              <span className="text-muted-foreground">Receipts</span>
+              <span>{stats.expenseCount}</span>
+            </div>
+            <div className="flex justify-between border-b pb-2">
+              <span className="text-muted-foreground">Total Spend</span>
+              <span>{new Intl.NumberFormat("en-US", { style: "currency", currency: org.baseCurrency }).format(stats.totalSpendCents / 100)}</span>
+            </div>
+            <div className="flex justify-between border-b pb-2">
+              <span className="text-muted-foreground">Total Paid</span>
+              <span>{new Intl.NumberFormat("en-US", { style: "currency", currency: org.baseCurrency }).format(stats.totalPaidCents / 100)}</span>
             </div>
           </CardContent>
         </Card>

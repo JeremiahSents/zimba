@@ -2,6 +2,8 @@ import { AdminDashboardShell } from "../../components/dashboard-shell"
 import { StatCard } from "../../components/stat-card"
 import { getPlatformSession } from "../../core/auth/service"
 import { getPlatformStats } from "../../core/services/platform"
+import { getRecentActivity } from "../../core/services/activity"
+import { getSystemHealth } from "../../core/services/system"
 import {
   BanknoteIcon,
   Building03Icon,
@@ -20,9 +22,11 @@ function getGreeting() {
 }
 
 export default async function OverviewPage() {
-  const [stats, session] = await Promise.all([
+  const [stats, session, recentActivity, healthChecks] = await Promise.all([
     getPlatformStats(),
     getPlatformSession(),
+    getRecentActivity(5),
+    getSystemHealth(),
   ])
 
   const userName = session?.user.name ?? "Admin"
@@ -41,18 +45,6 @@ export default async function OverviewPage() {
     { label: "Total Payments", value: stats.totalPayments, icon: BanknoteIcon },
   ]
 
-  const activities = [
-    "Organization BuildTech joined the platform.",
-    "User john@example.com upgraded to Pro.",
-    "Receipt processing failed for Apex Construction.",
-  ]
-
-  const healthItems = [
-    { label: "Database Connectivity", status: "Operational" },
-    { label: "Auth Service", status: "Operational" },
-    { label: "File Uploads", status: "Operational" },
-    { label: "Background Jobs", status: "Delayed" },
-  ]
 
   return (
     <AdminDashboardShell
@@ -95,14 +87,23 @@ export default async function OverviewPage() {
             Latest events across the platform.
           </p>
           <div className="space-y-4">
-            {activities.map((activity, index) => (
-              <div
-                key={index}
-                className="text-sm border-b border-border pb-2 last:border-0 last:pb-0"
-              >
-                {activity}
-              </div>
-            ))}
+            {recentActivity.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No recent activity.</p>
+            ) : (
+              recentActivity.map((activity) => (
+                <div
+                  key={activity.id}
+                  className="text-sm border-b border-border pb-2 last:border-0 last:pb-0"
+                >
+                  <span className="font-medium">{activity.actorName}</span>{" "}
+                  <span className="text-muted-foreground">performed</span>{" "}
+                  <span className="font-medium">{activity.action}</span>{" "}
+                  <span className="text-muted-foreground">on</span>{" "}
+                  <span className="capitalize">{activity.entityType}</span>{" "}
+                  <span className="text-muted-foreground">in {activity.organizationName}</span>
+                </div>
+              ))
+            )}
           </div>
         </Card>
 
@@ -111,7 +112,7 @@ export default async function OverviewPage() {
             System Health
           </h3>
           <div className="space-y-4">
-            {healthItems.map((item) => (
+            {healthChecks.map((item) => (
               <div
                 key={item.label}
                 className="flex items-center justify-between text-sm"
@@ -119,9 +120,11 @@ export default async function OverviewPage() {
                 <span>{item.label}</span>
                 <span
                   className={
-                    item.status === "Operational"
-                      ? "text-emerald-500 font-medium"
-                      : "text-amber-500 font-medium"
+                    item.status === "operational"
+                      ? "text-emerald-500 font-medium capitalize"
+                      : item.status === "degraded"
+                        ? "text-amber-500 font-medium capitalize"
+                        : "text-red-500 font-medium capitalize"
                   }
                 >
                   {item.status}

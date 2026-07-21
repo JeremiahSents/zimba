@@ -1,6 +1,7 @@
 import { PageHeader } from "../../components/page-header"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@workspace/ui/components/card"
 import { Button } from "@workspace/ui/components/button"
+import Link from "next/link"
 
 export default function SettingsPage() {
   return (
@@ -20,7 +21,9 @@ export default function SettingsPage() {
             <p className="text-sm text-muted-foreground mb-4">
               Access is controlled via the <code>platform_user</code> table in the database. Ensure users are assigned the <code>super_admin</code> or <code>support</code> role.
             </p>
-            <Button variant="outline">View Platform Users</Button>
+            <Button variant="outline" asChild>
+              <Link href="/users">View Platform Users</Link>
+            </Button>
           </CardContent>
         </Card>
 

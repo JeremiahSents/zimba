@@ -1,13 +1,13 @@
 import { PageHeader } from "../../components/page-header"
-import { StatusBadge } from "../../components/status-badge"
+import { OrganizationStatusSelect } from "../../components/org-status-select"
 import { listOrganizations } from "../../core/services/organizations"
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
 } from "@workspace/ui/components/table"
 import Link from "next/link"
 import { Button } from "@workspace/ui/components/button"
@@ -45,7 +45,12 @@ export default async function OrganizationsPage() {
               organizations.map((org) => (
                 <TableRow key={org.id}>
                   <TableCell className="font-medium">{org.name}</TableCell>
-                  <TableCell><StatusBadge status={org.status} /></TableCell>
+                  <TableCell>
+                    <OrganizationStatusSelect
+                      organizationId={org.id}
+                      currentStatus={org.status}
+                    />
+                  </TableCell>
                   <TableCell>{org.userCount}</TableCell>
                   <TableCell>{org.projectCount}</TableCell>
                   <TableCell>{new Date(org.createdAt).toLocaleDateString()}</TableCell>

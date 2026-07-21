@@ -1,10 +1,10 @@
 import "server-only"
 import { db } from "@workspace/db"
-import { organization, organizationMember, project, user } from "@workspace/db/schema"
-import { desc, eq, sql } from "drizzle-orm"
+import { organization, organizationMember, project, user, expense, expenseLine, supplier, payment } from "@workspace/db/schema"
+import { count, desc, eq, sql } from "drizzle-orm"
+import { notFound } from "../shared/errors"
 
 export async function listOrganizations() {
-  // Simple select for now, we can add stats later via joins if needed
   const orgs = await db.query.organization.findMany({
     orderBy: [desc(organization.createdAt)],
     with: {
@@ -17,11 +17,28 @@ export async function listOrganizations() {
     }
   })
 
-  return orgs.map(org => ({
-    ...org,
-    userCount: org.members.length,
-    projectCount: org.projects.length,
-  }))
+  const expenseStats = await db
+    .select({
+      organizationId: expense.organizationId,
+      expenseCount: count(),
+      totalSpendCents: sql<number>`coalesce(sum(${expenseLine.amountCents}), 0)`,
+    })
+    .from(expense)
+    .leftJoin(expenseLine, eq(expense.id, expenseLine.expenseId))
+    .groupBy(expense.organizationId)
+
+  const statsMap = new Map(expenseStats.map((s) => [s.organizationId, s]))
+
+  return orgs.map((org) => {
+    const stats = statsMap.get(org.id)
+    return {
+      ...org,
+      userCount: org.members.length,
+      projectCount: org.projects.length,
+      expenseCount: stats?.expenseCount ?? 0,
+      totalSpendCents: stats?.totalSpendCents ?? 0,
+    }
+  })
 }
 
 export async function getOrganizationDetail(id: string) {
@@ -37,6 +54,51 @@ export async function getOrganizationDetail(id: string) {
       suppliers: true
     }
   })
-  
+
+  if (!org) notFound("Organization not found.")
+
   return org
+}
+
+export async function getOrganizationStats(id: string) {
+  const [expenseStats, paymentStats, supplierCount, projectCount, memberCount] = await Promise.all([
+    db
+      .select({
+        expenseCount: count(),
+        totalSpendCents: sql<number>`coalesce(sum(${expenseLine.amountCents}), 0)`,
+      })
+      .from(expense)
+      .leftJoin(expenseLine, eq(expense.id, expenseLine.expenseId))
+      .where(eq(expense.organizationId, id)),
+    db
+      .select({
+        paymentCount: count(),
+        totalPaidCents: sql<number>`coalesce(sum(${payment.amountCents}), 0)`,
+      })
+      .from(payment)
+      .where(eq(payment.organizationId, id)),
+    db.select({ count: count() }).from(supplier).where(eq(supplier.organizationId, id)),
+    db.select({ count: count() }).from(project).where(eq(project.organizationId, id)),
+    db.select({ count: count() }).from(organizationMember).where(eq(organizationMember.organizationId, id)),
+  ])
+
+  return {
+    expenseCount: expenseStats[0]?.expenseCount ?? 0,
+    totalSpendCents: expenseStats[0]?.totalSpendCents ?? 0,
+    paymentCount: paymentStats[0]?.paymentCount ?? 0,
+    totalPaidCents: paymentStats[0]?.totalPaidCents ?? 0,
+    supplierCount: supplierCount[0]?.count ?? 0,
+    projectCount: projectCount[0]?.count ?? 0,
+    memberCount: memberCount[0]?.count ?? 0,
+  }
+}
+
+export async function updateOrganizationStatus(id: string, status: string) {
+  const [updated] = await db
+    .update(organization)
+    .set({ status, updatedAt: new Date() })
+    .where(eq(organization.id, id))
+    .returning()
+
+  return updated ?? null
 }

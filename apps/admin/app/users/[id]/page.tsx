@@ -1,4 +1,5 @@
 import { PageHeader } from "../../../components/page-header"
+import { PlatformRoleSelect, RemovePlatformAccessButton } from "../../../components/platform-role-select"
 import { getPlatformUserDetail } from "../../../core/services/users"
 import { notFound } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/components/card"
@@ -31,11 +32,14 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
             </div>
             <div className="flex justify-between border-b pb-2">
               <span className="text-muted-foreground">Platform Role</span>
-              <Badge variant="outline">{u.platformRole}</Badge>
+              <PlatformRoleSelect userId={u.id} currentRole={u.platformRole} />
             </div>
             <div className="flex justify-between border-b pb-2">
               <span className="text-muted-foreground">Created</span>
               <span>{new Date(u.createdAt).toLocaleDateString()}</span>
+            </div>
+            <div className="pt-2">
+              <RemovePlatformAccessButton userId={u.id} />
             </div>
           </CardContent>
         </Card>
