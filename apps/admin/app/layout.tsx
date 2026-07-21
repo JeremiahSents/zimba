@@ -37,15 +37,15 @@ export default async function RootLayout({
     <html
       lang="en"
       className={cn(
-        "light min-h-full bg-background font-sans antialiased",
+        "light min-h-full font-sans antialiased",
         geist.variable,
         publicSans.variable
       )}
     >
-      <body className="min-h-dvh flex">
+      <body className="min-h-dvh flex bg-sidebar">
         <SidebarProvider>
           <SuperAdminSidebar />
-          <SidebarInset className="flex w-full min-w-0 flex-col">
+          <SidebarInset className="flex w-full min-w-0 flex-col bg-background">
             {children}
           </SidebarInset>
         </SidebarProvider>
