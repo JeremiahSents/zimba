@@ -126,16 +126,17 @@ export function ExpenseTable({ expenses }: { expenses: ExpenseTableRow[] }) {
               {visibleRows.map((row) => {
                 const expense = row.original
                 return (
-                  <MobileDataCard
+                  <Link
                     key={row.id}
+                    href={`/admin/expenses/receipts/${expense.receipt_id ?? expense.id}`}
+                    className="block transition-transform active:scale-[0.99]"
+                  >
+                  <MobileDataCard
                     eyebrow={expense.project_name}
                     title={
-                      <Link
-                        href={`/admin/expenses/receipts/${expense.receipt_id ?? expense.id}`}
-                        className="font-medium text-primary hover:underline"
-                      >
+                      <span className="font-medium text-primary">
                         {expense.item_description}
-                      </Link>
+                      </span>
                     }
                     value={formatCurrency(expense.amount)}
                     status={
@@ -158,6 +159,7 @@ export function ExpenseTable({ expenses }: { expenses: ExpenseTableRow[] }) {
                       </div>
                     </dl>
                   </MobileDataCard>
+                  </Link>
                 )
               })}
             </div>
