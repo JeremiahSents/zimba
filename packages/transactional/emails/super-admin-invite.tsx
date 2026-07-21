@@ -41,9 +41,8 @@ export const SuperAdminInviteEmail = ({
           access.
         </Text>
         <Text style={text}>
-          This invitation was sent to{" "}
-          <strong>{recipientEmail}</strong>. You must sign in with this email
-          address to accept.
+          This invitation was sent to <strong>{recipientEmail}</strong>. You
+          must sign in with this email address to accept.
         </Text>
         <Section style={buttonContainer}>
           <Button href={inviteUrl} style={button}>

@@ -1,6 +1,6 @@
 import { render } from "@react-email/components"
 import { createElement } from "react"
-import { sendEmail, type SendEmailResult } from "./resend"
+import { type SendEmailResult, sendEmail } from "./resend"
 
 export interface SendSuperAdminInviteEmailProps {
   to: string
@@ -11,7 +11,7 @@ export interface SendSuperAdminInviteEmailProps {
 }
 
 export async function sendSuperAdminInviteEmail(
-  props: SendSuperAdminInviteEmailProps,
+  props: SendSuperAdminInviteEmailProps
 ): Promise<SendEmailResult> {
   const { default: SuperAdminInviteEmail } = await import(
     "./emails/super-admin-invite"
@@ -22,7 +22,7 @@ export async function sendSuperAdminInviteEmail(
       inviteUrl: props.inviteUrl,
       recipientEmail: props.recipientEmail,
       expiresIn: props.expiresIn,
-    }),
+    })
   )
   return sendEmail({
     to: props.to,
@@ -42,7 +42,7 @@ export interface SendMemberInviteEmailProps {
 }
 
 export async function sendMemberInviteEmail(
-  props: SendMemberInviteEmailProps,
+  props: SendMemberInviteEmailProps
 ): Promise<SendEmailResult> {
   const { default: MemberInviteEmail } = await import("./emails/member-invite")
   const html = await render(
@@ -53,7 +53,7 @@ export async function sendMemberInviteEmail(
       inviteUrl: props.inviteUrl,
       responsibility: props.responsibility,
       expiresIn: props.expiresIn,
-    }),
+    })
   )
   return sendEmail({
     to: props.to,
@@ -71,7 +71,7 @@ export interface SendMagicLinkEmailProps {
 }
 
 export async function sendMagicLinkEmail(
-  props: SendMagicLinkEmailProps,
+  props: SendMagicLinkEmailProps
 ): Promise<SendEmailResult> {
   const { default: MagicLinkEmail } = await import("./emails/magic-link")
   const html = await render(
@@ -80,7 +80,7 @@ export async function sendMagicLinkEmail(
       email: props.email,
       expiresIn: props.expiresIn,
       ipAddress: props.ipAddress,
-    }),
+    })
   )
   return sendEmail({
     to: props.to,

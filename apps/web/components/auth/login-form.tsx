@@ -66,7 +66,9 @@ export function LoginForm({
     setIsPending(false)
 
     if (result?.error) {
-      setError(result.error.message || "Could not send sign-in link. Please try again.")
+      setError(
+        result.error.message || "Could not send sign-in link. Please try again."
+      )
       return
     }
 
@@ -100,11 +102,10 @@ export function LoginForm({
 
         {magicLinkSent ? (
           <div className="rounded-lg border bg-muted/30 p-4 text-center">
-            <p className="font-medium text-sm">
-              Check your email
-            </p>
+            <p className="font-medium text-sm">Check your email</p>
             <p className="mt-1 text-muted-foreground text-sm">
-              We sent a sign-in link to <strong>{magicLinkEmail}</strong>. Click the link in the email to sign in.
+              We sent a sign-in link to <strong>{magicLinkEmail}</strong>. Click
+              the link in the email to sign in.
             </p>
             <Button
               variant="ghost"

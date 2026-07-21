@@ -1,4 +1,7 @@
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
+
+vi.mock("server-only", () => ({}))
+
 import {
   canGrantRole,
   normalizeRole,
@@ -7,29 +10,33 @@ import {
 } from "./permissions"
 
 describe("normalizeRole", () => {
-  it("normalizes owner variants", () => {
+  it("normalizes known role strings", () => {
     expect(normalizeRole("owner")).toBe("owner")
-    expect(normalizeRole("Owner")).toBe("owner")
-    expect(normalizeRole("OWNER")).toBe("owner")
-  })
-
-  it("normalizes site_manager variants", () => {
+    expect(normalizeRole("Owner / Admin")).toBe("owner")
+    expect(normalizeRole("admin")).toBe("owner")
     expect(normalizeRole("site_manager")).toBe("site_manager")
-    expect(normalizeRole("Site Manager")).toBe("site_manager")
-  })
-
-  it("normalizes accountant", () => {
+    expect(normalizeRole("Site manager")).toBe("site_manager")
+    expect(normalizeRole("Accountant")).toBe("accountant")
     expect(normalizeRole("accountant")).toBe("accountant")
+    expect(normalizeRole("viewer")).toBe("viewer")
   })
 
-  it("normalizes viewer", () => {
-    expect(normalizeRole("viewer")).toBe("viewer")
+  it("defaults unknown roles to viewer", () => {
+    expect(normalizeRole("Owner")).toBe("viewer")
+    expect(normalizeRole("OWNER")).toBe("viewer")
+    expect(normalizeRole("unknown")).toBe("viewer")
+    expect(normalizeRole("")).toBe("viewer")
   })
 })
 
 describe("canGrantRole", () => {
   it("owner can grant any role", () => {
-    const roles: WorkspaceRole[] = ["owner", "site_manager", "accountant", "viewer"]
+    const roles: WorkspaceRole[] = [
+      "owner",
+      "site_manager",
+      "accountant",
+      "viewer",
+    ]
     for (const target of roles) {
       expect(canGrantRole("owner", target)).toBe(true)
     }
@@ -51,7 +58,12 @@ describe("canGrantRole", () => {
   })
 
   it("viewer cannot grant any role", () => {
-    const roles: WorkspaceRole[] = ["owner", "site_manager", "accountant", "viewer"]
+    const roles: WorkspaceRole[] = [
+      "owner",
+      "site_manager",
+      "accountant",
+      "viewer",
+    ]
     for (const target of roles) {
       expect(canGrantRole("viewer", target)).toBe(false)
     }
@@ -61,7 +73,9 @@ describe("canGrantRole", () => {
 describe("requireRole", () => {
   it("does not throw when actor has a sufficient role", () => {
     expect(() => requireRole("owner", ["owner", "site_manager"])).not.toThrow()
-    expect(() => requireRole("site_manager", ["owner", "site_manager"])).not.toThrow()
+    expect(() =>
+      requireRole("site_manager", ["owner", "site_manager"])
+    ).not.toThrow()
   })
 
   it("throws forbidden when actor role is not in allowed list", () => {

@@ -10,11 +10,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components/card"
-import { DashboardShell } from "@/components/shared/dashboard-shell"
-import { ErrorNotice } from "@/components/shared/error-notice"
-import { TeamTable } from "@/components/team/team-table"
-import type { PublicError } from "@/core/shared/errors"
-import type { TeamMember } from "@/lib/types"
 import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
 import {
@@ -26,6 +21,11 @@ import {
 } from "@workspace/ui/components/select"
 import { useState } from "react"
 import { inviteMemberAction } from "@/app/admin/team/actions"
+import { DashboardShell } from "@/components/shared/dashboard-shell"
+import { ErrorNotice } from "@/components/shared/error-notice"
+import { TeamTable } from "@/components/team/team-table"
+import type { PublicError } from "@/core/shared/errors"
+import type { TeamMember } from "@/lib/types"
 
 const inviteRoles = [
   { label: "Site manager", value: "site_manager" },
@@ -36,15 +36,37 @@ const inviteRoles = [
 
 type InviteRole = (typeof inviteRoles)[number]["value"]
 
-export function TeamPage({ members, invitations, canInvite }: { members: TeamMember[]; invitations: { id: string; name: string; email: string; role: string }[]; canInvite: boolean }) {
+export function TeamPage({
+  members,
+  invitations,
+  canInvite,
+}: {
+  members: TeamMember[]
+  invitations: { id: string; name: string; email: string; role: string }[]
+  canInvite: boolean
+}) {
   const [showInvite, setShowInvite] = useState(false)
   const [message, setMessage] = useState("")
   const [error, setError] = useState<PublicError | null>(null)
   const [inviteRole, setInviteRole] = useState<InviteRole>("site_manager")
   const stats = [
     ["Team members", String(members.length), "With dashboard access"],
-    ["Managers", String(members.filter((member) => ["owner", "site_manager", "Owner / Admin", "Site manager"].includes(member.role)).length), "Owner and site manager roles"],
-    ["Pending invites", String(invitations.length), "Invitation links awaiting acceptance"],
+    [
+      "Managers",
+      String(
+        members.filter((member) =>
+          ["owner", "site_manager", "Owner / Admin", "Site manager"].includes(
+            member.role
+          )
+        ).length
+      ),
+      "Owner and site manager roles",
+    ],
+    [
+      "Pending invites",
+      String(invitations.length),
+      "Invitation links awaiting acceptance",
+    ],
   ]
   return (
     <DashboardShell
@@ -75,38 +97,83 @@ export function TeamPage({ members, invitations, canInvite }: { members: TeamMem
               Roles and responsibilities across the dashboard.
             </CardDescription>
           </div>
-          {canInvite && <Button size="sm" onClick={() => setShowInvite((value) => !value)}>
-            <HugeiconsIcon icon={UserAdd01Icon} strokeWidth={1.5} />
-            Invite member
-          </Button>}
+          {canInvite && (
+            <Button size="sm" onClick={() => setShowInvite((value) => !value)}>
+              <HugeiconsIcon icon={UserAdd01Icon} strokeWidth={1.5} />
+              Invite member
+            </Button>
+          )}
         </CardHeader>
         <CardContent>
-          {showInvite && <form className="mb-6 grid gap-4 rounded-xl border bg-muted/30 p-4 sm:grid-cols-2" action={async (formData) => {
-            const result = await inviteMemberAction({ name: String(formData.get("name")), email: String(formData.get("email")), role: inviteRole, responsibility: String(formData.get("responsibility")) })
-            setError(null)
-            if (!result.success) return setError(result.error)
-            setMessage(result.data.message)
-          }}>
-            <div><Label htmlFor="invite-name">Name</Label><Input id="invite-name" name="name" required /></div>
-            <div><Label htmlFor="invite-email">Email</Label><Input id="invite-email" name="email" type="email" required /></div>
-            <div>
-              <Label htmlFor="invite-role">Role</Label>
-              <Select value={inviteRole} onValueChange={(value) => setInviteRole((value ?? "site_manager") as InviteRole)}>
-                <SelectTrigger id="invite-role" className="mt-1 w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {inviteRoles.map((role) => (
-                    <SelectItem key={role.value} value={role.value}>
-                      {role.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div><Label htmlFor="responsibility">Responsibility</Label><Input id="responsibility" name="responsibility" placeholder="e.g. Kampala site" /></div>
-            <div className="sm:col-span-2"><Button type="submit">Send invitation</Button>{error && <div className="mt-2"><ErrorNotice error={error} /></div>}{message && <p className="mt-2 text-muted-foreground text-sm" role="status">{message}</p>}</div>
-          </form>}
+          {showInvite && (
+            <form
+              className="mb-6 grid gap-4 rounded-xl border bg-muted/30 p-4 sm:grid-cols-2"
+              action={async (formData) => {
+                const result = await inviteMemberAction({
+                  name: String(formData.get("name")),
+                  email: String(formData.get("email")),
+                  role: inviteRole,
+                  responsibility: String(formData.get("responsibility")),
+                })
+                setError(null)
+                if (!result.success) return setError(result.error)
+                setMessage(result.data.message)
+              }}
+            >
+              <div>
+                <Label htmlFor="invite-name">Name</Label>
+                <Input id="invite-name" name="name" required />
+              </div>
+              <div>
+                <Label htmlFor="invite-email">Email</Label>
+                <Input id="invite-email" name="email" type="email" required />
+              </div>
+              <div>
+                <Label htmlFor="invite-role">Role</Label>
+                <Select
+                  value={inviteRole}
+                  onValueChange={(value) =>
+                    setInviteRole((value ?? "site_manager") as InviteRole)
+                  }
+                >
+                  <SelectTrigger id="invite-role" className="mt-1 w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {inviteRoles.map((role) => (
+                      <SelectItem key={role.value} value={role.value}>
+                        {role.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="responsibility">Responsibility</Label>
+                <Input
+                  id="responsibility"
+                  name="responsibility"
+                  placeholder="e.g. Kampala site"
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <Button type="submit">Send invitation</Button>
+                {error && (
+                  <div className="mt-2">
+                    <ErrorNotice error={error} />
+                  </div>
+                )}
+                {message && (
+                  <p
+                    className="mt-2 text-muted-foreground text-sm"
+                    role="status"
+                  >
+                    {message}
+                  </p>
+                )}
+              </div>
+            </form>
+          )}
           <TeamTable members={members} />
         </CardContent>
       </Card>

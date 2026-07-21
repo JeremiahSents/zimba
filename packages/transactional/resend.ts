@@ -43,7 +43,7 @@ export async function sendEmail(params: {
 
   if (response.error) {
     throw new Error(
-      `Email send rejected: ${response.error.message ?? "Unknown error"}`,
+      `Email send rejected: ${response.error.message ?? "Unknown error"}`
     )
   }
 

@@ -1,6 +1,5 @@
 "use client"
 
-import { useState } from "react"
 import { Button } from "@workspace/ui/components/button"
 import {
   Card,
@@ -11,6 +10,7 @@ import {
 } from "@workspace/ui/components/card"
 import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
+import { useState } from "react"
 import { sendSuperAdminInviteAction } from "@/app/settings/actions"
 import type { PublicError } from "@/core/shared/errors"
 
@@ -23,8 +23,8 @@ export function SuperAdminInviteForm() {
       <CardHeader>
         <CardTitle>Invite Super Admin</CardTitle>
         <CardDescription>
-          Send an invitation to an internal operator. They will receive an
-          email with a link to accept Super Admin access.
+          Send an invitation to an internal operator. They will receive an email
+          with a link to accept Super Admin access.
         </CardDescription>
       </CardHeader>
       <CardContent>

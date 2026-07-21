@@ -2,8 +2,8 @@ import "server-only"
 
 import { db } from "@workspace/db"
 import { platformUser, user } from "@workspace/db/schema"
-import { eq } from "drizzle-orm"
 import { sendSuperAdminInviteEmail } from "@workspace/transactional"
+import { eq } from "drizzle-orm"
 import { getPlatformSession } from "../auth/service"
 import { badRequest, conflict, forbidden } from "../shared/errors"
 
@@ -20,7 +20,7 @@ export async function sendSuperAdminInvite(input: {
   name: string
 }): Promise<void> {
   const session = await getPlatformSession()
-  if (!session || session.platformRole !== "super_admin") {
+  if (session?.platformRole !== "super_admin") {
     forbidden("Only super admins can send Super Admin invitations.")
   }
 
@@ -49,7 +49,7 @@ export async function sendSuperAdminInvite(input: {
   }
 
   const inviteToken = `${existingUser?.id ?? "new"}:${Buffer.from(
-    normalizedEmail,
+    normalizedEmail
   ).toString("base64url")}:${crypto.randomUUID()}`
 
   const inviteUrl = buildAdminInviteUrl(inviteToken)
