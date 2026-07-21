@@ -34,9 +34,9 @@ const footerColumns = [
 ]
 
 const legalLinks = [
-  "Privacy Policy",
-  "Terms & Conditions",
-  "Cookie Preferences",
+  { label: "Privacy Policy", href: "/privacy" },
+  { label: "Terms & Conditions", href: "/terms" },
+  { label: "Cookie Preferences", href: "#" },
 ]
 
 export function Footer() {
@@ -89,11 +89,11 @@ export function Footer() {
             <span>&copy; {new Date().getFullYear()} Zimba</span>
             {legalLinks.map((link) => (
               <Link
-                key={link}
-                href="#"
+                key={link.label}
+                href={link.href}
                 className="transition hover:text-foreground"
               >
-                {link}
+                {link.label}
               </Link>
             ))}
           </div>
