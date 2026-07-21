@@ -19,11 +19,20 @@ export const metadata: Metadata = {
   description: "Internal operations dashboard for Zimba.",
 }
 
-export default function RootLayout({
+import { SidebarProvider, SidebarInset } from "@workspace/ui/components/sidebar"
+import { SuperAdminSidebar } from "../components/sidebar"
+import { requirePlatformSession } from "../core/auth/service"
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  // We call this here so the entire app is protected.
+  // Wait, layout runs for all routes, including login if we had one.
+  // We'll protect it here for now.
+  await requirePlatformSession()
+
   return (
     <html
       lang="en"
@@ -33,7 +42,15 @@ export default function RootLayout({
         publicSans.variable
       )}
     >
-      <body className="min-h-dvh">{children}</body>
+      <body className="min-h-dvh flex">
+        <SidebarProvider>
+          <SuperAdminSidebar />
+          <SidebarInset className="flex w-full min-w-0 flex-col">
+            {children}
+          </SidebarInset>
+        </SidebarProvider>
+      </body>
     </html>
   )
 }
+
