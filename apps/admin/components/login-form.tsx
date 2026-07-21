@@ -1,7 +1,7 @@
 "use client"
 
-import { createAuthClient } from "better-auth/react"
 import { Button } from "@workspace/ui/components/button"
+import { createAuthClient } from "better-auth/react"
 import { useState } from "react"
 
 const authClient = createAuthClient()

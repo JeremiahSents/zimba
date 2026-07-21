@@ -5,7 +5,8 @@ export function logApplicationError(error: ApplicationError, context: Record<str
   const cause = error.cause instanceof Error
     ? {
         name: error.cause.name,
-        ...(process.env.NODE_ENV === "development" ? { message: error.cause.message, stack: error.cause.stack } : {}),
+        message: error.cause.message,
+        ...(process.env.NODE_ENV === "development" ? { stack: error.cause.stack } : {}),
         ...("code" in rootCause && typeof rootCause.code === "string" ? { code: rootCause.code } : {}),
         ...("constraint" in rootCause && typeof rootCause.constraint === "string" ? { constraint: rootCause.constraint } : {}),
       }

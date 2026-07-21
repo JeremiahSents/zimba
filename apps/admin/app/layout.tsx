@@ -1,9 +1,7 @@
 import "@workspace/ui/globals.css"
-import { SidebarProvider, SidebarInset } from "@workspace/ui/components/sidebar"
-import { SuperAdminSidebar } from "../components/sidebar"
+import { cn } from "@workspace/ui/lib/utils"
 import type { Metadata } from "next"
 import { Geist, Public_Sans } from "next/font/google"
-import { cn } from "@workspace/ui/lib/utils"
 
 const publicSans = Public_Sans({
   subsets: ["latin"],
@@ -34,15 +32,7 @@ export default async function RootLayout({
         publicSans.variable
       )}
     >
-      <body className="min-h-dvh flex bg-sidebar">
-        <SidebarProvider>
-          <SuperAdminSidebar />
-          <SidebarInset className="flex w-full min-w-0 flex-col bg-background">
-            {children}
-          </SidebarInset>
-        </SidebarProvider>
-      </body>
+      <body className="min-h-dvh bg-background">{children}</body>
     </html>
   )
 }
-

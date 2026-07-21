@@ -6,7 +6,10 @@ export function getResend(): Resend {
   if (!resendInstance) {
     const apiKey = process.env.RESEND_API_KEY
     if (!apiKey) {
-      throw new Error("RESEND_API_KEY is not defined in environment variables.")
+      throw Object.assign(
+        new Error("RESEND_API_KEY is not defined in environment variables."),
+        { code: "EMAIL_SERVICE_ERROR" }
+      )
     }
     resendInstance = new Resend(apiKey)
   }
@@ -38,12 +41,16 @@ export async function sendEmail(params: {
     })
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error"
-    throw new Error(`Email send failed: ${message}`)
+    throw Object.assign(new Error(`Email send failed: ${message}`), {
+      code: "EMAIL_SERVICE_ERROR",
+      cause: error,
+    })
   }
 
   if (response.error) {
-    throw new Error(
-      `Email send rejected: ${response.error.message ?? "Unknown error"}`
+    throw Object.assign(
+      new Error(`Email send rejected: ${response.error.message ?? "Unknown error"}`),
+      { code: "EMAIL_SERVICE_ERROR" }
     )
   }
 

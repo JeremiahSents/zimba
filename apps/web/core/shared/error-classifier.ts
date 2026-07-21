@@ -33,6 +33,9 @@ export function classifyError(error: unknown, operation?: string): ApplicationEr
   if (code === "40001" || code === "40P01") {
     return new ApplicationError("DATABASE_UNAVAILABLE", "The request was interrupted. Please try again.", { cause: error, operation, retryable: true })
   }
+  if (code === "EMAIL_SERVICE_ERROR") {
+    return new ApplicationError("EXTERNAL_SERVICE_FAILED", undefined, { cause: error, operation, retryable: true })
+  }
 
   return new ApplicationError("INTERNAL_ERROR", undefined, { cause: error, operation })
 }
