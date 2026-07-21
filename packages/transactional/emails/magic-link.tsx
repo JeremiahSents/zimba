@@ -12,61 +12,48 @@ import {
 } from "@react-email/components"
 import type { ReactNode } from "react"
 
-export interface MemberInviteEmailProps {
-  invitedByName: string
-  organizationName: string
-  role: string
-  inviteUrl: string
-  responsibility?: string
+export interface MagicLinkEmailProps {
+  loginUrl: string
+  email: string
   expiresIn?: string
+  ipAddress?: string
 }
 
-export const MemberInviteEmail = ({
-  invitedByName,
-  organizationName,
-  role,
-  inviteUrl,
-  responsibility,
-  expiresIn = "This link expires in 7 days.",
-}: MemberInviteEmailProps): ReactNode => (
+export const MagicLinkEmail = ({
+  loginUrl,
+  email,
+  expiresIn = "This link expires shortly.",
+  ipAddress,
+}: MagicLinkEmailProps): ReactNode => (
   <Html>
     <Head />
-    <Preview>
-      You&apos;ve been invited to join {organizationName} on Zimba
-    </Preview>
+    <Preview>Your Zimba sign-in link</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Heading style={h1}>Join {organizationName} on Zimba</Heading>
+        <Heading style={h1}>Sign in to Zimba</Heading>
         <Text style={text}>
-          <strong>{invitedByName}</strong> has invited you to join{" "}
-          <strong>{organizationName}</strong> on Zimba as a{" "}
-          <strong>{role}</strong>
-          {responsibility ? ` responsible for ${responsibility}` : ""}.
-        </Text>
-        <Text style={text}>
-          Zimba is a construction project management workspace. You&apos;ll be
-          able to track projects, expenses, suppliers, and team activity.
+          Use the button below to sign in to your Zimba account. This link was
+          requested for <strong>{email}</strong>.
         </Text>
         <Section style={buttonContainer}>
-          <Button href={inviteUrl} style={button}>
-            Accept invitation
+          <Button href={loginUrl} style={button}>
+            Sign in to Zimba
           </Button>
         </Section>
-        <Text style={text}>
-          You must sign in with the email address this invitation was sent to.
-        </Text>
         <Hr style={hr} />
         <Text style={footerText}>{expiresIn}</Text>
+        {ipAddress ? (
+          <Text style={footerText}>Request from IP: {ipAddress}</Text>
+        ) : null}
         <Text style={footerText}>
-          If you didn&apos;t expect this invitation, you can safely ignore this
-          email.
+          If you did not request this link, you can safely ignore this email.
         </Text>
       </Container>
     </Body>
   </Html>
 )
 
-export default MemberInviteEmail
+export default MagicLinkEmail
 
 const main = {
   backgroundColor: "#f6f9fc",
