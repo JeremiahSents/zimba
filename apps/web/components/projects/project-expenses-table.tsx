@@ -165,35 +165,37 @@ export function ProjectExpensesTable({
                 const expense = row.original
                 const status = expense.status ?? "Full"
                 return (
-                  <MobileDataCard
+                  <Link
                     key={row.id}
-                    eyebrow={expense.task_name}
-                    title={
-                      <Link
-                        href={`/admin/expenses/receipts/${expense.receipt_id ?? expense.id}`}
-                        className="font-medium text-primary hover:underline"
-                      >
-                        {expense.item_description}
-                      </Link>
-                    }
-                    value={formatCurrency(expense.amount)}
-                    status={
-                      <span
-                        className={`inline-flex rounded-lg border px-3 py-2 font-medium text-xs ${statusPillClasses[status]}`}
-                      >
-                        {status === "Full" ? "Paid in full" : status}
-                      </span>
-                    }
+                    href={`/admin/expenses/receipts/${expense.receipt_id ?? expense.id}`}
+                    className="block transition-transform active:scale-[0.99]"
                   >
-                    <dl className="grid grid-cols-2 gap-4">
-                      <MobileDataMeta label="Supplier">
-                        {expense.supplier_name}
-                      </MobileDataMeta>
-                      <MobileDataMeta label="Date">
-                        {formatShortDate(expense.date)}
-                      </MobileDataMeta>
-                    </dl>
-                  </MobileDataCard>
+                    <MobileDataCard
+                      eyebrow={expense.task_name}
+                      title={
+                        <span className="font-medium text-primary">
+                          {expense.item_description}
+                        </span>
+                      }
+                      value={formatCurrency(expense.amount)}
+                      status={
+                        <span
+                          className={`inline-flex rounded-lg border px-3 py-2 font-medium text-xs ${statusPillClasses[status]}`}
+                        >
+                          {status === "Full" ? "Paid in full" : status}
+                        </span>
+                      }
+                    >
+                      <dl className="grid grid-cols-2 gap-4">
+                        <MobileDataMeta label="Supplier">
+                          {expense.supplier_name}
+                        </MobileDataMeta>
+                        <MobileDataMeta label="Date">
+                          {formatShortDate(expense.date)}
+                        </MobileDataMeta>
+                      </dl>
+                    </MobileDataCard>
+                  </Link>
                 )
               })}
             </div>

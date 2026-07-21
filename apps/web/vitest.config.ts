@@ -10,6 +10,9 @@ export default defineConfig({
       GOOGLE_CLIENT_ID: "test-client-id",
       GOOGLE_CLIENT_SECRET: "test-client-secret",
       UPLOADTHING_TOKEN: "test-uploadthing-token",
+      RESEND_API_KEY: "test-resend-key",
+      RESEND_FROM: "Zimba <noreply@zimba.digital>",
+      APP_URL: "http://localhost:3000",
     },
   },
 })

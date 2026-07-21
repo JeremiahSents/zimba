@@ -11,7 +11,10 @@
     "ZIMBA_API_BASE_URL",
     "ZIMBA_API_SESSION_TOKEN",
     "ZIMBA_ORGANIZATION_ID",
-    "ZIMBA_DATA_MODE"
+    "ZIMBA_DATA_MODE",
+    "RESEND_API_KEY",
+    "RESEND_FROM",
+    "APP_URL"
   ],
   "ui": "tui",
   "tasks": {

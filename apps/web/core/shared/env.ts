@@ -9,6 +9,9 @@ const envSchema = z.object({
   GOOGLE_CLIENT_ID: z.string().min(1),
   GOOGLE_CLIENT_SECRET: z.string().min(1),
   UPLOADTHING_TOKEN: z.string().min(1),
+  RESEND_API_KEY: z.string().optional(),
+  RESEND_FROM: z.string().optional(),
+  APP_URL: z.url().optional(),
 })
 
 export const env = envSchema.parse({
@@ -17,6 +20,10 @@ export const env = envSchema.parse({
   BETTER_AUTH_TRUSTED_ORIGINS: process.env.BETTER_AUTH_TRUSTED_ORIGINS,
   BETTER_AUTH_URL: process.env.BETTER_AUTH_URL,
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
-  GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET || process.env.GOOGLE_SECRET,
+  GOOGLE_CLIENT_SECRET:
+    process.env.GOOGLE_CLIENT_SECRET || process.env.GOOGLE_SECRET,
   UPLOADTHING_TOKEN: process.env.UPLOADTHING_TOKEN,
+  RESEND_API_KEY: process.env.RESEND_API_KEY,
+  RESEND_FROM: process.env.RESEND_FROM,
+  APP_URL: process.env.APP_URL,
 })
