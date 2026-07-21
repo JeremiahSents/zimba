@@ -1,41 +1,39 @@
-import { Inter, Public_Sans } from "next/font/google"
-import type { ReactNode } from "react"
-
 import "@workspace/ui/globals.css"
-import { TooltipProvider } from "@workspace/ui/components/tooltip"
+
+import type { Metadata } from "next"
+import { Geist, Public_Sans } from "next/font/google"
 import { cn } from "@workspace/ui/lib/utils"
 
-import { PointerCaptureGuard } from "@/components/shared/pointer-capture-guard"
-
-const publicSansHeading = Public_Sans({
+const publicSans = Public_Sans({
   subsets: ["latin"],
   variable: "--font-heading",
 })
 
-const inter = Inter({
+const geist = Geist({
   subsets: ["latin"],
   variable: "--font-sans",
 })
 
+export const metadata: Metadata = {
+  title: "Zimba Admin",
+  description: "Internal operations dashboard for Zimba.",
+}
+
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: ReactNode
+  children: React.ReactNode
 }>) {
   return (
     <html
       lang="en"
-      suppressHydrationWarning
-      className={cn("light font-sans antialiased", inter.variable, publicSansHeading.variable)}
-      style={{ colorScheme: "light" }}
+      className={cn(
+        "light min-h-full bg-background font-sans antialiased",
+        geist.variable,
+        publicSans.variable
+      )}
     >
-      <head>
-        <meta name="apple-mobile-web-app-title" content="Zimba Admin" />
-      </head>
-      <body>
-        <PointerCaptureGuard />
-        <TooltipProvider>{children}</TooltipProvider>
-      </body>
+      <body className="min-h-dvh">{children}</body>
     </html>
   )
 }

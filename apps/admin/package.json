@@ -13,7 +13,6 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@workspace/db": "workspace:*",
     "@workspace/ui": "workspace:*",
     "next": "16.2.6",
     "react": "19.2.4",
@@ -25,6 +24,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@workspace/typescript-config": "workspace:*",
+    "tailwindcss": "^4",
     "typescript": "^5"
   }
 }
