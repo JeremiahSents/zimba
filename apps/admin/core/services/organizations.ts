@@ -1,6 +1,6 @@
 import "server-only"
 import { db } from "@workspace/db"
-import { organization, organizationMember, project, user, expense, expenseLine, supplier, payment } from "@workspace/db/schema"
+import { organization, organizationMember, project, expense, expenseLine, supplier, payment } from "@workspace/db/schema"
 import { count, desc, eq, sql } from "drizzle-orm"
 import { notFound } from "../shared/errors"
 

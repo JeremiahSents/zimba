@@ -1,7 +1,6 @@
 "use client"
 
 import { useTransition } from "react"
-import { Button } from "@workspace/ui/components/button"
 import { updateOrganizationStatusAction } from "@/app/organizations/actions"
 
 const STATUS_OPTIONS = ["active", "trial", "suspended"] as const

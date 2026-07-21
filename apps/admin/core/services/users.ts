@@ -1,6 +1,6 @@
 import "server-only"
 import { db } from "@workspace/db"
-import { user, organizationMember, platformUser } from "@workspace/db/schema"
+import { user, platformUser } from "@workspace/db/schema"
 import { desc, eq } from "drizzle-orm"
 
 export async function listPlatformUsers() {
