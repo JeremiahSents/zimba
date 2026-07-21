@@ -1,8 +1,10 @@
 import { Button } from "@workspace/ui/components/button"
 import Image from "next/image"
 import Link from "next/link"
+import { getLoginHref } from "./urls"
 
 const navItems = ["Product", "Industries", "Customers", "Company"]
+const loginHref = getLoginHref()
 
 export function Header() {
   return (
@@ -37,7 +39,7 @@ export function Header() {
           <Button
             size="sm"
             nativeButton={false}
-            render={<Link href="/login" />}
+            render={<Link href={loginHref} />}
           >
             Sign in
           </Button>
