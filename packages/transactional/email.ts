@@ -44,22 +44,40 @@ export interface SendMemberInviteEmailProps {
 export async function sendMemberInviteEmail(
   props: SendMemberInviteEmailProps
 ): Promise<SendEmailResult> {
-  const { default: MemberInviteEmail } = await import("./emails/member-invite")
-  const html = await render(
-    createElement(MemberInviteEmail, {
-      invitedByName: props.invitedByName,
-      organizationName: props.organizationName,
-      role: props.role,
-      inviteUrl: props.inviteUrl,
-      responsibility: props.responsibility,
-      expiresIn: props.expiresIn,
+  try {
+    const { default: MemberInviteEmail } = await import(
+      "./emails/member-invite"
+    )
+    const html = await render(
+      createElement(MemberInviteEmail, {
+        invitedByName: props.invitedByName,
+        organizationName: props.organizationName,
+        role: props.role,
+        inviteUrl: props.inviteUrl,
+        responsibility: props.responsibility,
+        expiresIn: props.expiresIn,
+      })
+    )
+    return sendEmail({
+      to: props.to,
+      subject: `You've been invited to join ${props.organizationName} on Zimba`,
+      html,
     })
-  )
-  return sendEmail({
-    to: props.to,
-    subject: `You've been invited to join ${props.organizationName} on Zimba`,
-    html,
-  })
+  } catch (error) {
+    if (
+      error &&
+      typeof error === "object" &&
+      "code" in error &&
+      error.code === "EMAIL_SERVICE_ERROR"
+    ) {
+      throw error
+    }
+    const message = error instanceof Error ? error.message : "Unknown error"
+    throw Object.assign(new Error(`Member invite email failed: ${message}`), {
+      code: "EMAIL_SERVICE_ERROR",
+      cause: error,
+    })
+  }
 }
 
 export interface SendMagicLinkEmailProps {

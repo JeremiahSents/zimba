@@ -1,8 +1,11 @@
 "use client"
 
-import { useTransition } from "react"
 import { Button } from "@workspace/ui/components/button"
-import { updatePlatformUserRoleAction, removePlatformUserAction } from "@/app/users/actions"
+import { useTransition } from "react"
+import {
+  removePlatformUserAction,
+  updatePlatformUserRoleAction,
+} from "@/app/(dashboard)/users/actions"
 
 const ROLE_OPTIONS = ["none", "support", "super_admin"] as const
 
@@ -35,11 +38,7 @@ export function PlatformRoleSelect({
   )
 }
 
-export function RemovePlatformAccessButton({
-  userId,
-}: {
-  userId: string
-}) {
+export function RemovePlatformAccessButton({ userId }: { userId: string }) {
   const [isPending, startTransition] = useTransition()
 
   return (

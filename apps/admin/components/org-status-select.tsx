@@ -1,7 +1,7 @@
 "use client"
 
 import { useTransition } from "react"
-import { updateOrganizationStatusAction } from "@/app/organizations/actions"
+import { updateOrganizationStatusAction } from "@/app/(dashboard)/organizations/actions"
 
 const STATUS_OPTIONS = ["active", "trial", "suspended"] as const
 

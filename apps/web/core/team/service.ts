@@ -47,19 +47,16 @@ export async function listTeam() {
 }
 
 export async function createInvitation(input: {
-  name: string
   email: string
   role: WorkspaceRole
-  responsibility?: string
 }) {
   const { user, organization } = await requireSession()
   requireRole(organization.role, ["owner", "site_manager"])
   if (!canGrantRole(organization.role, input.role))
     forbidden("Only an owner can invite another owner.")
-  if (!input.name.trim() || !input.email.includes("@"))
-    badRequest("Enter a name and valid email address.")
 
   const normalizedEmail = input.email.trim().toLowerCase()
+  if (!normalizedEmail.includes("@")) badRequest("Enter a valid email address.")
 
   const [existing] = await db
     .select({ id: schema.invitation.id })
@@ -89,10 +86,9 @@ export async function createInvitation(input: {
   await db.insert(schema.invitation).values({
     organizationId: organization.organizationId,
     invitedBy: user.id,
-    name: input.name.trim(),
+    name: normalizedEmail,
     email: normalizedEmail,
     role: input.role,
-    responsibility: input.responsibility?.trim(),
     tokenHash,
     expiresAt,
   })
@@ -104,7 +100,6 @@ export async function createInvitation(input: {
       organizationName: organization.organizationName,
       role: input.role,
       inviteUrl,
-      responsibility: input.responsibility?.trim() || undefined,
     })
   } catch (error) {
     await db

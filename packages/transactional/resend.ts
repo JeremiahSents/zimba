@@ -49,7 +49,9 @@ export async function sendEmail(params: {
 
   if (response.error) {
     throw Object.assign(
-      new Error(`Email send rejected: ${response.error.message ?? "Unknown error"}`),
+      new Error(
+        `Email send rejected: ${response.error.message ?? "Unknown error"}`
+      ),
       { code: "EMAIL_SERVICE_ERROR" }
     )
   }

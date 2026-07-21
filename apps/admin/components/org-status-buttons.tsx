@@ -1,8 +1,11 @@
 "use client"
 
-import { useTransition } from "react"
 import { Button } from "@workspace/ui/components/button"
-import { suspendOrganizationAction, activateOrganizationAction } from "@/app/organizations/[id]/actions"
+import { useTransition } from "react"
+import {
+  activateOrganizationAction,
+  suspendOrganizationAction,
+} from "@/app/(dashboard)/organizations/[id]/actions"
 
 export function OrganizationStatusButtons({
   organizationId,

@@ -7,10 +7,8 @@ import { handleActionError } from "@/core/shared/handle-action-error"
 import { createInvitation } from "@/core/team/service"
 
 export async function inviteMemberAction(input: {
-  name: string
   email: string
   role: WorkspaceRole
-  responsibility?: string
 }) {
   const authFailure = await ensureActionSession("team.invite")
   if (authFailure) return authFailure

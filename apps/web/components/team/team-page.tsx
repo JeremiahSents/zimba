@@ -42,7 +42,7 @@ export function TeamPage({
   canInvite,
 }: {
   members: TeamMember[]
-  invitations: { id: string; name: string; email: string; role: string }[]
+  invitations: { id: string; email: string; role: string }[]
   canInvite: boolean
 }) {
   const [showInvite, setShowInvite] = useState(false)
@@ -94,7 +94,7 @@ export function TeamPage({
           <div>
             <CardTitle>Team access</CardTitle>
             <CardDescription>
-              Roles and responsibilities across the dashboard.
+              Invite people and manage access roles.
             </CardDescription>
           </div>
           {canInvite && (
@@ -110,20 +110,14 @@ export function TeamPage({
               className="mb-6 grid gap-4 rounded-xl border bg-muted/30 p-4 sm:grid-cols-2"
               action={async (formData) => {
                 const result = await inviteMemberAction({
-                  name: String(formData.get("name")),
                   email: String(formData.get("email")),
                   role: inviteRole,
-                  responsibility: String(formData.get("responsibility")),
                 })
                 setError(null)
                 if (!result.success) return setError(result.error)
                 setMessage(result.data.message)
               }}
             >
-              <div>
-                <Label htmlFor="invite-name">Name</Label>
-                <Input id="invite-name" name="name" required />
-              </div>
               <div>
                 <Label htmlFor="invite-email">Email</Label>
                 <Input id="invite-email" name="email" type="email" required />
@@ -147,14 +141,6 @@ export function TeamPage({
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
-              <div>
-                <Label htmlFor="responsibility">Responsibility</Label>
-                <Input
-                  id="responsibility"
-                  name="responsibility"
-                  placeholder="e.g. Kampala site"
-                />
               </div>
               <div className="sm:col-span-2">
                 <Button type="submit">Send invitation</Button>
