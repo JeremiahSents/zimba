@@ -17,13 +17,17 @@ interface StatCardProps {
 
 export function StatCard({ title, value, icon, description, trend, className }: StatCardProps) {
   return (
-    <Card className={cn("overflow-hidden", className)}>
-      <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-        <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
-        {icon && <div className="text-muted-foreground">{icon}</div>}
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
+    <Card className={cn("gap-0 py-0", className)}>
+      <div className="p-4">
+        <div className="flex items-center justify-between gap-3">
+          <p className="font-medium text-muted-foreground text-xs">
+            {title}
+          </p>
+          {icon && <div className="text-primary">{icon}</div>}
+        </div>
+        <p className="mt-2 break-words font-heading font-semibold text-lg tracking-tight sm:text-xl">
+          {value}
+        </p>
         {(description || trend) && (
           <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
             {trend && (
@@ -40,7 +44,7 @@ export function StatCard({ title, value, icon, description, trend, className }: 
             {!trend && description && <span>{description}</span>}
           </p>
         )}
-      </CardContent>
+      </div>
     </Card>
   )
 }

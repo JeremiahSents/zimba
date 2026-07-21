@@ -4,7 +4,6 @@ import { getPlatformStats } from "../../core/services/platform"
 import {
   BanknoteIcon,
   Building03Icon,
-  CreditCardIcon,
   FactoryIcon,
   Invoice01Icon,
   UserGroupIcon,
@@ -21,53 +20,32 @@ export default async function OverviewPage() {
         description="Monitor system-wide metrics and tenant activity."
       />
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
+      <div className="grid gap-3 grid-cols-2 lg:grid-cols-4 mb-8">
         <StatCard
           title="Total Organizations"
           value={stats.totalOrganizations}
-          icon={<HugeiconsIcon icon={Building03Icon} strokeWidth={1.8} className="size-5" />}
-          description={`${stats.activeOrganizations} active, ${stats.trialOrganizations} on trial`}
+          icon={<HugeiconsIcon icon={Building03Icon} strokeWidth={1.7} className="size-4 text-primary" />}
+          description={`${stats.activeOrganizations} active`}
         />
         <StatCard
           title="Total Users"
           value={stats.totalUsers}
-          icon={<HugeiconsIcon icon={UserGroupIcon} strokeWidth={1.8} className="size-5" />}
+          icon={<HugeiconsIcon icon={UserGroupIcon} strokeWidth={1.7} className="size-4 text-primary" />}
         />
-        <StatCard
-          title="Monthly Recurring Revenue"
-          value={new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(stats.mrr)}
-          icon={<HugeiconsIcon icon={CreditCardIcon} strokeWidth={1.8} className="size-5" />}
-          description="Mock MRR (placeholder)"
-        />
-        <StatCard
-          title="Failed Payments"
-          value={stats.failedPayments}
-          icon={<HugeiconsIcon icon={BanknoteIcon} strokeWidth={1.8} className="size-5 text-red-500" />}
-          description="Needs attention"
-        />
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
         <StatCard
           title="Total Receipts"
           value={stats.totalReceipts}
-          icon={<HugeiconsIcon icon={Invoice01Icon} strokeWidth={1.8} className="size-5" />}
+          icon={<HugeiconsIcon icon={Invoice01Icon} strokeWidth={1.7} className="size-4 text-primary" />}
         />
         <StatCard
           title="Total Projects"
           value={stats.totalProjects}
-          icon={<HugeiconsIcon icon={FactoryIcon} strokeWidth={1.8} className="size-5" />}
+          icon={<HugeiconsIcon icon={FactoryIcon} strokeWidth={1.7} className="size-4 text-primary" />}
         />
         <StatCard
           title="Total Payments"
           value={stats.totalPayments}
-          icon={<HugeiconsIcon icon={BanknoteIcon} strokeWidth={1.8} className="size-5" />}
-        />
-        <StatCard
-          title="Attention Needed"
-          value={stats.organizationsNeedingAttention}
-          icon={<HugeiconsIcon icon={Building03Icon} strokeWidth={1.8} className="size-5 text-amber-500" />}
-          description="Organizations requiring support"
+          icon={<HugeiconsIcon icon={BanknoteIcon} strokeWidth={1.7} className="size-4 text-primary" />}
         />
       </div>
 
