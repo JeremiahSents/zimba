@@ -38,6 +38,9 @@ importers:
       '@workspace/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@workspace/transactional':
+        specifier: workspace:*
+        version: link:../../packages/transactional
       '@workspace/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -111,6 +114,9 @@ importers:
       '@workspace/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@workspace/transactional':
+        specifier: workspace:*
+        version: link:../../packages/transactional
       '@workspace/ui':
         specifier: workspace:*
         version: link:../../packages/ui

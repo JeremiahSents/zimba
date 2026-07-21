@@ -6,6 +6,8 @@ import {
   FieldDescription,
   FieldGroup,
 } from "@workspace/ui/components/field"
+import { Input } from "@workspace/ui/components/input"
+import { Label } from "@workspace/ui/components/label"
 import { cn } from "@workspace/ui/lib/utils"
 import Image from "next/image"
 import Link from "next/link"
@@ -24,6 +26,8 @@ export function LoginForm({
       : null
   )
   const [isPending, setIsPending] = useState(false)
+  const [magicLinkSent, setMagicLinkSent] = useState(false)
+  const [magicLinkEmail, setMagicLinkEmail] = useState("")
 
   async function continueWithGoogle() {
     setError(null)
@@ -40,6 +44,33 @@ export function LoginForm({
       setError(result.error.message || "Google sign-in could not be started.")
       setIsPending(false)
     }
+  }
+
+  async function continueWithEmail(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setError(null)
+
+    const email = magicLinkEmail.trim()
+    if (!email.includes("@")) {
+      setError("Enter a valid email address.")
+      return
+    }
+
+    setIsPending(true)
+    const result = await authClient.signIn.magicLink({
+      email,
+      callbackURL: "/admin/home",
+      newUserCallbackURL: "/onboarding",
+    })
+
+    setIsPending(false)
+
+    if (result?.error) {
+      setError(result.error.message || "Could not send sign-in link. Please try again.")
+      return
+    }
+
+    setMagicLinkSent(true)
   }
 
   return (
@@ -63,23 +94,83 @@ export function LoginForm({
           </Link>
           <h1 className="font-bold text-xl">Welcome to Zimba</h1>
           <FieldDescription>
-            Continue with Google to sign in or create your account.
+            Sign in with your email or continue with Google.
           </FieldDescription>
         </div>
 
-        <Field>
-          <Button
-            variant="secondary"
-            type="button"
-            size="lg"
-            className="h-11 w-full"
-            disabled={isPending}
-            onClick={continueWithGoogle}
-          >
-            <Google className="size-5" aria-hidden="true" />
-            {isPending ? "Continuing with Google…" : "Continue with Google"}
-          </Button>
-        </Field>
+        {magicLinkSent ? (
+          <div className="rounded-lg border bg-muted/30 p-4 text-center">
+            <p className="font-medium text-sm">
+              Check your email
+            </p>
+            <p className="mt-1 text-muted-foreground text-sm">
+              We sent a sign-in link to <strong>{magicLinkEmail}</strong>. Click the link in the email to sign in.
+            </p>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="mt-3"
+              onClick={() => {
+                setMagicLinkSent(false)
+                setMagicLinkEmail("")
+              }}
+            >
+              Use a different email
+            </Button>
+          </div>
+        ) : (
+          <>
+            <form onSubmit={continueWithEmail} className="flex flex-col gap-3">
+              <Field>
+                <Label htmlFor="magic-link-email" className="sr-only">
+                  Email
+                </Label>
+                <Input
+                  id="magic-link-email"
+                  type="email"
+                  placeholder="you@example.com"
+                  value={magicLinkEmail}
+                  onChange={(e) => setMagicLinkEmail(e.target.value)}
+                  disabled={isPending}
+                  required
+                />
+              </Field>
+              <Button
+                type="submit"
+                size="lg"
+                className="h-11 w-full"
+                disabled={isPending}
+              >
+                {isPending ? "Sending link…" : "Continue with email"}
+              </Button>
+            </form>
+
+            <div className="relative my-1">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">
+                  or
+                </span>
+              </div>
+            </div>
+
+            <Field>
+              <Button
+                variant="secondary"
+                type="button"
+                size="lg"
+                className="h-11 w-full"
+                disabled={isPending}
+                onClick={continueWithGoogle}
+              >
+                <Google className="size-5" aria-hidden="true" />
+                {isPending ? "Continuing with Google…" : "Continue with Google"}
+              </Button>
+            </Field>
+          </>
+        )}
 
         {error ? (
           <p

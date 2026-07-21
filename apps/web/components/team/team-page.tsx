@@ -85,9 +85,7 @@ export function TeamPage({ members, invitations, canInvite }: { members: TeamMem
             const result = await inviteMemberAction({ name: String(formData.get("name")), email: String(formData.get("email")), role: inviteRole, responsibility: String(formData.get("responsibility")) })
             setError(null)
             if (!result.success) return setError(result.error)
-            const url = `${window.location.origin}${result.data.path}`
-            await navigator.clipboard.writeText(url)
-            setMessage("Invitation link copied. Share it with the team member; it expires in 7 days.")
+            setMessage(result.data.message)
           }}>
             <div><Label htmlFor="invite-name">Name</Label><Input id="invite-name" name="name" required /></div>
             <div><Label htmlFor="invite-email">Email</Label><Input id="invite-email" name="email" type="email" required /></div>
@@ -107,7 +105,7 @@ export function TeamPage({ members, invitations, canInvite }: { members: TeamMem
               </Select>
             </div>
             <div><Label htmlFor="responsibility">Responsibility</Label><Input id="responsibility" name="responsibility" placeholder="e.g. Kampala site" /></div>
-            <div className="sm:col-span-2"><Button type="submit">Create and copy invitation</Button>{error && <div className="mt-2"><ErrorNotice error={error} /></div>}{message && <p className="mt-2 text-muted-foreground text-sm" role="status">{message}</p>}</div>
+            <div className="sm:col-span-2"><Button type="submit">Send invitation</Button>{error && <div className="mt-2"><ErrorNotice error={error} /></div>}{message && <p className="mt-2 text-muted-foreground text-sm" role="status">{message}</p>}</div>
           </form>}
           <TeamTable members={members} />
         </CardContent>

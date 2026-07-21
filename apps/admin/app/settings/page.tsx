@@ -1,17 +1,30 @@
-import { PageHeader } from "../../components/page-header"
+import { AdminDashboardShell } from "../../components/dashboard-shell"
+import { SuperAdminInviteForm } from "../../components/super-admin-invite-form"
+import { getPlatformSession } from "../../core/auth/service"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@workspace/ui/components/card"
 import { Button } from "@workspace/ui/components/button"
 import Link from "next/link"
 
-export default function SettingsPage() {
+export default async function SettingsPage() {
+  const session = await getPlatformSession()
+  const isSuperAdmin = session?.platformRole === "super_admin"
+
   return (
-    <div className="flex-1 p-6 lg:p-8 max-w-4xl">
-      <PageHeader 
-        title="Admin Settings" 
-        description="Configure Super Admin preferences and internal feature flags."
-      />
+    <AdminDashboardShell
+      title="Settings"
+      headerGreeting="Settings"
+      userName={session?.user.name ?? "Admin"}
+      userImage={session?.user.image ?? null}
+    >
+      <section className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
+        <h2 className="font-heading font-semibold text-base text-foreground tracking-tight">
+          Admin Settings
+        </h2>
+      </section>
 
       <div className="space-y-6">
+        {isSuperAdmin && <SuperAdminInviteForm />}
+
         <Card>
           <CardHeader>
             <CardTitle>Super Admin Access</CardTitle>
@@ -66,6 +79,6 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </AdminDashboardShell>
   )
 }
