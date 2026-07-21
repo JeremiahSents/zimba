@@ -1,14 +1,15 @@
 import { PageHeader } from "../../components/page-header"
 import { StatCard } from "../../components/stat-card"
 import { getPlatformStats } from "../../core/services/platform"
-import { 
-  Building03Icon, 
-  UsersGroupIcon, 
-  CreditCardIcon, 
-  FileInvoiceIcon,
+import {
+  BanknoteIcon,
+  Building03Icon,
+  CreditCardIcon,
   FactoryIcon,
-  BankNote01Icon
-} from "@hugeicons/react"
+  Invoice01Icon,
+  UserGroupIcon,
+} from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
 
 export default async function OverviewPage() {
   const stats = await getPlatformStats()
@@ -24,24 +25,24 @@ export default async function OverviewPage() {
         <StatCard
           title="Total Organizations"
           value={stats.totalOrganizations}
-          icon={<Building03Icon size={20} />}
+          icon={<HugeiconsIcon icon={Building03Icon} strokeWidth={1.8} className="size-5" />}
           description={`${stats.activeOrganizations} active, ${stats.trialOrganizations} on trial`}
         />
         <StatCard
           title="Total Users"
           value={stats.totalUsers}
-          icon={<UsersGroupIcon size={20} />}
+          icon={<HugeiconsIcon icon={UserGroupIcon} strokeWidth={1.8} className="size-5" />}
         />
         <StatCard
           title="Monthly Recurring Revenue"
           value={new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(stats.mrr)}
-          icon={<CreditCardIcon size={20} />}
+          icon={<HugeiconsIcon icon={CreditCardIcon} strokeWidth={1.8} className="size-5" />}
           description="Mock MRR (placeholder)"
         />
         <StatCard
           title="Failed Payments"
           value={stats.failedPayments}
-          icon={<BankNote01Icon size={20} className="text-red-500" />}
+          icon={<HugeiconsIcon icon={BanknoteIcon} strokeWidth={1.8} className="size-5 text-red-500" />}
           description="Needs attention"
         />
       </div>
@@ -50,22 +51,22 @@ export default async function OverviewPage() {
         <StatCard
           title="Total Receipts"
           value={stats.totalReceipts}
-          icon={<FileInvoiceIcon size={20} />}
+          icon={<HugeiconsIcon icon={Invoice01Icon} strokeWidth={1.8} className="size-5" />}
         />
         <StatCard
           title="Total Projects"
           value={stats.totalProjects}
-          icon={<FactoryIcon size={20} />}
+          icon={<HugeiconsIcon icon={FactoryIcon} strokeWidth={1.8} className="size-5" />}
         />
         <StatCard
           title="Total Payments"
           value={stats.totalPayments}
-          icon={<BankNote01Icon size={20} />}
+          icon={<HugeiconsIcon icon={BanknoteIcon} strokeWidth={1.8} className="size-5" />}
         />
         <StatCard
           title="Attention Needed"
           value={stats.organizationsNeedingAttention}
-          icon={<Building03Icon size={20} className="text-amber-500" />}
+          icon={<HugeiconsIcon icon={Building03Icon} strokeWidth={1.8} className="size-5 text-amber-500" />}
           description="Organizations requiring support"
         />
       </div>
