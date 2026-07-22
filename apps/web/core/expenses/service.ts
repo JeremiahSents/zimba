@@ -167,7 +167,7 @@ export async function createPayableExpense(
       await tx
         .update(schema.expense)
         .set({ paymentStatus: paidAmount >= gross ? "paid" : "partial" })
-        .where(eq(schema.expense.id, expense.id))
+        .where(and(eq(schema.expense.id, expense.id), eq(schema.expense.organizationId, organizationId)))
     }
     return {
       id: expense.id,

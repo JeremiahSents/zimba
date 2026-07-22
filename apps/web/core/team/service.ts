@@ -3,7 +3,7 @@ import "server-only"
 import { createHash, randomBytes } from "node:crypto"
 import { db, schema } from "@workspace/db"
 import { sendMemberInviteEmail } from "@workspace/transactional"
-import { and, desc, eq } from "drizzle-orm"
+import { and, desc, eq, gt } from "drizzle-orm"
 import {
   canGrantRole,
   normalizeRole,
@@ -137,9 +137,14 @@ export async function acceptInvitation(token: string) {
   if (invite.status === "accepted" && invite.acceptedBy === user.id) return
   if (invite.status !== "pending") notFound("This invitation is no longer available.")
   await db.transaction(async (tx) => {
+    const now = new Date()
     const claimed = await tx.update(schema.invitation)
       .set({ status: "accepted", acceptedBy: user.id, acceptedAt: new Date() })
-      .where(and(eq(schema.invitation.id, invite.id), eq(schema.invitation.status, "pending")))
+      .where(and(
+        eq(schema.invitation.id, invite.id),
+        eq(schema.invitation.status, "pending"),
+        gt(schema.invitation.expiresAt, now),
+      ))
       .returning({ id: schema.invitation.id })
     if (!claimed[0]) return
     await tx

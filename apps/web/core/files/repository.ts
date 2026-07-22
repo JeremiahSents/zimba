@@ -8,6 +8,16 @@ export async function createUploadedFile(data: typeof schema.uploadedFile.$infer
 }
 
 export async function createProjectAttachment(data: typeof schema.projectAttachment.$inferInsert) {
+  const [project] = await db.select({ id: schema.project.id }).from(schema.project)
+    .where(and(eq(schema.project.id, data.projectId), eq(schema.project.organizationId, data.organizationId))).limit(1)
+  const [file] = await db.select({ id: schema.uploadedFile.id }).from(schema.uploadedFile)
+    .where(and(
+      eq(schema.uploadedFile.id, data.fileId),
+      eq(schema.uploadedFile.organizationId, data.organizationId),
+      eq(schema.uploadedFile.status, "completed"),
+      eq(schema.uploadedFile.purpose, "project_attachment"),
+    )).limit(1)
+  if (!project || !file) return undefined
   const [attachment] = await db.insert(schema.projectAttachment).values(data).returning()
   return attachment
 }
