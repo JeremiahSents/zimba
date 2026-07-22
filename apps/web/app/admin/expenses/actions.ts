@@ -22,12 +22,19 @@ import type {
   PayableExpenseCreate,
   PayableExpenseResponse,
 } from "@/lib/types"
+import { z } from "zod"
+
+const idSchema = z.string().trim().min(1).max(128)
+const expenseStatusSchema = z.enum(["draft", "submitted", "approved", "rejected", "paid"])
 
 export async function createPayableExpenseAction(
   expense: PayableExpenseCreate
 ): Promise<ActionResult<PayableExpenseResponse>> {
   const authFailure = await ensureActionSession("expenses.create-payable")
   if (authFailure) return authFailure
+  if (!z.object({ project_id: idSchema, supplier_id: idSchema }).safeParse(expense).success) {
+    return expectedActionFailure("VALIDATION_FAILED", "Select a valid project and supplier.")
+  }
   if (
     !expense.project_id ||
     !expense.supplier_id ||
@@ -54,6 +61,7 @@ export async function createExpenseReceiptAction(
 ): Promise<ActionResult> {
   const authFailure = await ensureActionSession("expenses.create-receipt")
   if (authFailure) return authFailure
+  if (!idSchema.safeParse(projectId).success) return expectedActionFailure("VALIDATION_FAILED", "Invalid project.")
   if (
     !receipt.expense_date ||
     receipt.items.length === 0 ||
@@ -89,6 +97,7 @@ export async function updateExpenseStatusAction(
 ): Promise<ActionResult> {
   const authFailure = await ensureActionSession("expenses.update-status")
   if (authFailure) return authFailure
+  if (!idSchema.safeParse(projectId).success || !idSchema.safeParse(expenseId).success || !expenseStatusSchema.safeParse(status).success) return expectedActionFailure("VALIDATION_FAILED", "Invalid receipt update.")
   try {
     await updateExpenseStatus(expenseId, status)
     revalidateConnectedRoutes(projectId)
@@ -105,6 +114,7 @@ export async function correctReceiptCategoryAction(
 ): Promise<ActionResult> {
   const authFailure = await ensureActionSession("expenses.correct-category")
   if (authFailure) return authFailure
+  if (![receiptId, projectId, allocationId].every((value) => idSchema.safeParse(value).success)) return expectedActionFailure("VALIDATION_FAILED", "Invalid receipt or category.")
   if (!allocationId) return expectedActionFailure("VALIDATION_FAILED", "Select a category.")
   try {
     await correctReceiptCategory(receiptId, allocationId)
@@ -122,6 +132,7 @@ export async function deleteReceiptAction(
 ): Promise<ActionResult> {
   const authFailure = await ensureActionSession("expenses.delete")
   if (authFailure) return authFailure
+  if (!idSchema.safeParse(receiptId).success || !idSchema.safeParse(projectId).success) return expectedActionFailure("VALIDATION_FAILED", "Invalid receipt.")
   try {
     await deleteReceipt(receiptId)
     revalidateConnectedRoutes(projectId)

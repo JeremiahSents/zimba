@@ -11,7 +11,7 @@ import {
   PlatformRoleSelect,
   RemovePlatformAccessButton,
 } from "@/components/platform-role-select"
-import { getPlatformUserDetail } from "@/core/services/users"
+import { getPlatformUserDetail } from "@/core/users/service"
 
 export default async function UserDetailPage({
   params,
@@ -46,7 +46,7 @@ export default async function UserDetailPage({
             </div>
             <div className="flex justify-between border-b pb-2">
               <span className="text-muted-foreground">Platform Role</span>
-              <PlatformRoleSelect userId={u.id} currentRole={u.platformRole} />
+              <PlatformRoleSelect userId={u.id} currentRole={u.platformRole ?? "none"} />
             </div>
             <div className="flex justify-between border-b pb-2">
               <span className="text-muted-foreground">Created</span>
@@ -63,19 +63,19 @@ export default async function UserDetailPage({
             <CardTitle>Organizations</CardTitle>
           </CardHeader>
           <CardContent>
-            {u.organizationMemberships.length === 0 ? (
+            {u.memberships.length === 0 ? (
               <p className="text-muted-foreground text-sm">
                 Not a member of any organization.
               </p>
             ) : (
               <div className="space-y-4">
-                {u.organizationMemberships.map((mem) => (
+                {u.memberships.map((mem) => (
                   <div
-                    key={mem.id}
+                    key={mem.organizationId}
                     className="flex items-center justify-between border-b pb-2"
                   >
                     <span className="font-medium">
-                      {mem.organization?.name}
+                      {mem.organizationName}
                     </span>
                     <Badge variant="secondary">{mem.role}</Badge>
                   </div>

@@ -8,7 +8,7 @@ import {
 } from "@workspace/ui/components/table"
 import { PageHeader } from "@/components/page-header"
 import { StatusBadge } from "@/components/status-badge"
-import { listPlatformReceipts } from "@/core/services/financials"
+import { listPlatformReceipts } from "@/core/finance/service"
 
 export default async function ReceiptsPage() {
   const receipts = await listPlatformReceipts()

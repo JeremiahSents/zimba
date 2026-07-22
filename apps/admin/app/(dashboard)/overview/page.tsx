@@ -10,9 +10,9 @@ import { Card } from "@workspace/ui/components/card"
 import { AdminDashboardShell } from "@/components/dashboard-shell"
 import { StatCard } from "@/components/stat-card"
 import { getPlatformSession } from "@/core/auth/service"
-import { getRecentActivity } from "@/core/services/activity"
-import { getPlatformStats } from "@/core/services/platform"
-import { getSystemHealth } from "@/core/services/system"
+import { getRecentActivity } from "@/core/audit/activity"
+import { getPlatformStats } from "@/core/platform/service"
+import { getSystemHealth } from "@/core/system/service"
 
 function getGreeting() {
   const hour = new Date().getHours()

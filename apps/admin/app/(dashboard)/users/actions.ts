@@ -5,34 +5,32 @@ import { ensureActionSession } from "@/core/auth/action-session"
 import {
   removePlatformUser,
   updatePlatformUserRole,
-} from "@/core/services/users"
+} from "@/core/users/service"
 import {
   type ActionResult,
   expectedActionFailure,
 } from "@/core/shared/action-result"
 import { handleActionError } from "@/core/shared/handle-action-error"
+import { z } from "zod"
+import { requirePlatformRole } from "@/core/auth/service"
 
-const VALID_ROLES = ["super_admin", "support", "none"]
+const inputSchema = z.object({ userId: z.string().trim().min(1), role: z.enum(["super_admin", "support", "none"]) })
 
 export async function updatePlatformUserRoleAction(
   userId: string,
   role: string
 ): Promise<ActionResult> {
-  const authFailure = await ensureActionSession("users.updateRole")
+  const authFailure = await ensureActionSession("users.updateRole", ["super_admin"])
   if (authFailure) return authFailure
-
-  if (!VALID_ROLES.includes(role)) {
-    return expectedActionFailure(
-      "VALIDATION_FAILED",
-      `Role must be one of: ${VALID_ROLES.join(", ")}`
-    )
-  }
+  const parsed = inputSchema.safeParse({ userId, role })
+  if (!parsed.success) return expectedActionFailure("VALIDATION_FAILED", "Invalid platform role or user.")
 
   try {
+    const actor = await requirePlatformRole(["super_admin"])
     if (role === "none") {
-      await removePlatformUser(userId)
+      await removePlatformUser(actor.user.id, userId)
     } else {
-      await updatePlatformUserRole(userId, role)
+      await updatePlatformUserRole(actor.user.id, userId, role as "support" | "super_admin")
     }
     revalidatePath("/users")
     revalidatePath(`/users/${userId}`)
@@ -45,11 +43,12 @@ export async function updatePlatformUserRoleAction(
 export async function removePlatformUserAction(
   userId: string
 ): Promise<ActionResult> {
-  const authFailure = await ensureActionSession("users.removePlatform")
+  const authFailure = await ensureActionSession("users.removePlatform", ["super_admin"])
   if (authFailure) return authFailure
 
   try {
-    await removePlatformUser(userId)
+    const actor = await requirePlatformRole(["super_admin"])
+    await removePlatformUser(actor.user.id, userId)
     revalidatePath("/users")
     revalidatePath(`/users/${userId}`)
     return { success: true, data: undefined }

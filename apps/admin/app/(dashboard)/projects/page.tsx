@@ -8,7 +8,7 @@ import {
 } from "@workspace/ui/components/table"
 import { PageHeader } from "@/components/page-header"
 import { StatusBadge } from "@/components/status-badge"
-import { listPlatformProjects } from "@/core/services/projects"
+import { listPlatformProjects } from "@/core/organizations/projects"
 
 export default async function ProjectsPage() {
   const projects = await listPlatformProjects()

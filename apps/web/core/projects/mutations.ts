@@ -45,6 +45,8 @@ export async function createProject(data: ProjectCreate) {
     )
     if (!file)
       badRequest("An attachment is invalid or belongs to another workspace.")
+    const attachmentProject = await projectRepo.getProject(organization.organizationId, project.id)
+    if (!attachmentProject) badRequest("Project not found.")
     await fileRepo.createProjectAttachment({
       organizationId: organization.organizationId,
       projectId: project.id,
@@ -105,6 +107,8 @@ export async function updateProject(projectId: string, data: ProjectUpdate) {
     )
     if (!file)
       badRequest("An attachment is invalid or belongs to another workspace.")
+    const attachmentProject = await projectRepo.getProject(organization.organizationId, projectId)
+    if (!attachmentProject) badRequest("Project not found.")
     await fileRepo.createProjectAttachment({
       organizationId: organization.organizationId,
       projectId,

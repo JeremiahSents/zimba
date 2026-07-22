@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { ensureActionSession } from "@/core/auth/action-session"
-import { updateOrganizationStatus } from "@/core/services/organizations"
+import { updateOrganizationStatus } from "@/core/organizations/service"
 import {
   type ActionResult,
   expectedActionFailure,

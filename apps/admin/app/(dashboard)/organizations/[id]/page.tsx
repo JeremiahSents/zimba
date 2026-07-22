@@ -11,7 +11,7 @@ import { StatusBadge } from "@/components/status-badge"
 import {
   getOrganizationDetail,
   getOrganizationStats,
-} from "@/core/services/organizations"
+} from "@/core/organizations/service"
 
 export default async function OrganizationDetailPage({
   params,

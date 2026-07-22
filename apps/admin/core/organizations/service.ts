@@ -3,6 +3,7 @@ import { db } from "@workspace/db"
 import { organization, organizationMember, project, expense, expenseLine, supplier, payment } from "@workspace/db/schema"
 import { count, desc, eq, sql } from "drizzle-orm"
 import { notFound } from "../shared/errors"
+import { requirePlatformRole } from "../auth/service"
 
 export async function listOrganizations() {
   const orgs = await db.query.organization.findMany({
@@ -94,6 +95,7 @@ export async function getOrganizationStats(id: string) {
 }
 
 export async function updateOrganizationStatus(id: string, status: string) {
+  await requirePlatformRole(["super_admin"])
   const [updated] = await db
     .update(organization)
     .set({ status, updatedAt: new Date() })

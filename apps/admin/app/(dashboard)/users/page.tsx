@@ -10,7 +10,7 @@ import {
 } from "@workspace/ui/components/table"
 import Link from "next/link"
 import { PageHeader } from "@/components/page-header"
-import { listPlatformUsers } from "@/core/services/users"
+import { listPlatformUsers } from "@/core/users/service"
 
 export default async function UsersPage() {
   const users = await listPlatformUsers()
@@ -47,7 +47,7 @@ export default async function UsersPage() {
                   <TableCell className="font-medium">{u.name}</TableCell>
                   <TableCell>{u.email}</TableCell>
                   <TableCell>
-                    {u.platformRole !== "none" ? (
+                    {u.platformRole ? (
                       <Badge variant="secondary">{u.platformRole}</Badge>
                     ) : (
                       <span className="text-muted-foreground text-sm">

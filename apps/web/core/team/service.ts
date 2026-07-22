@@ -138,6 +138,11 @@ export async function acceptInvitation(token: string) {
   if (invite.email !== user.email.toLowerCase())
     forbidden("Sign in with the email address that was invited.")
   await db.transaction(async (tx) => {
+    const claimed = await tx.update(schema.invitation)
+      .set({ status: "accepted", acceptedBy: user.id, acceptedAt: new Date() })
+      .where(and(eq(schema.invitation.id, invite.id), eq(schema.invitation.status, "pending")))
+      .returning({ id: schema.invitation.id })
+    if (!claimed[0]) return
     await tx
       .insert(schema.member)
       .values({
@@ -151,9 +156,21 @@ export async function acceptInvitation(token: string) {
         target: [schema.member.organizationId, schema.member.userId],
         set: { role: invite.role, responsibility: invite.responsibility },
       })
-    await tx
-      .update(schema.invitation)
-      .set({ status: "accepted", acceptedAt: new Date() })
-      .where(eq(schema.invitation.id, invite.id))
   })
+}
+
+export async function getInvitationPreview(token: string) {
+  const tokenHash = createHash("sha256").update(token).digest("hex")
+  const [invite] = await db.select({
+    organizationName: schema.organization.name,
+    email: schema.invitation.email,
+    status: schema.invitation.status,
+    expiresAt: schema.invitation.expiresAt,
+  }).from(schema.invitation)
+    .innerJoin(schema.organization, eq(schema.organization.id, schema.invitation.organizationId))
+    .where(eq(schema.invitation.tokenHash, tokenHash)).limit(1)
+  if (!invite) return { state: "invalid" as const }
+  if (invite.status === "accepted") return { state: "used" as const, ...invite }
+  if (invite.expiresAt < new Date()) return { state: "expired" as const, ...invite }
+  return { state: "pending" as const, ...invite }
 }

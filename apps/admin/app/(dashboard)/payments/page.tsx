@@ -7,7 +7,7 @@ import {
   TableRow,
 } from "@workspace/ui/components/table"
 import { PageHeader } from "@/components/page-header"
-import { listPlatformPayments } from "@/core/services/financials"
+import { listPlatformPayments } from "@/core/finance/service"
 
 export default async function PaymentsPage() {
   const payments = await listPlatformPayments()

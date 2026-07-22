@@ -141,6 +141,7 @@ export const invitation = pgTable(
     tokenHash: varchar("token_hash").notNull().unique(),
     status: varchar("status").notNull().default("pending"),
     expiresAt: timestamp("expires_at", { mode: "date" }).notNull(),
+    acceptedBy: text("accepted_by").references(() => user.id, { onDelete: "set null" }),
     acceptedAt: timestamp("accepted_at", { mode: "date" }),
     createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
   }
@@ -165,6 +166,17 @@ export const platformUser = pgTable("platform_user", {
     .references(() => user.id, { onDelete: "cascade" }),
   role: varchar("role").notNull().default("support"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => [uniqueIndex("platform_user_user_unique").on(table.userId)])
+
+export const platformAuditLog = pgTable("platform_audit_log", {
+  id: varchar("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  actorId: text("actor_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  targetUserId: text("target_user_id").references(() => user.id, { onDelete: "set null" }),
+  operation: varchar("operation").notNull(),
+  oldRole: varchar("old_role"),
+  newRole: varchar("new_role"),
+  metadata: jsonb("metadata").$type<Record<string, unknown>>(),
+  createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
 })
 
 export const project = pgTable("project", {

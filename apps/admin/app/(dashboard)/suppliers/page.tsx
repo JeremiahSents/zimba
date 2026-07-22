@@ -8,7 +8,7 @@ import {
 } from "@workspace/ui/components/table"
 import { PageHeader } from "@/components/page-header"
 import { StatusBadge } from "@/components/status-badge"
-import { listPlatformSuppliers } from "@/core/services/financials"
+import { listPlatformSuppliers } from "@/core/finance/service"
 
 export default async function SuppliersPage() {
   const suppliers = await listPlatformSuppliers()

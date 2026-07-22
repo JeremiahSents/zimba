@@ -513,6 +513,7 @@ export async function correctReceiptCategory(receiptId: string, allocationId: st
   const projectId = existing?.expense.projectId ?? payable?.payable.projectId
   if (!projectId) badRequest("This receipt is not linked to a project.")
   const [allocation] = await db.select().from(schema.allocation).where(and(eq(schema.allocation.id, allocationId), eq(schema.allocation.organizationId, organization.organizationId), eq(schema.allocation.projectId, projectId))).limit(1)
+  if (!allocation) badRequest("Allocation not found in this workspace.")
   if (!allocation) badRequest("Select a category belonging to this project.")
 
   if (existing) {

@@ -2,13 +2,15 @@
 
 import { revalidatePath } from "next/cache"
 import { ensureActionSession } from "@/core/auth/action-session"
-import { sendSuperAdminInvite } from "@/core/services/super-admin-invite"
+import { sendSuperAdminInvite } from "@/core/users/invite"
 import {
   type ActionResult,
   expectedActionFailure,
 } from "@/core/shared/action-result"
 import { handleActionError } from "@/core/shared/handle-action-error"
+import { z } from "zod"
 
+const inviteSchema = z.object({ email: z.string().trim().email(), name: z.string().trim().min(1).max(120) })
 export async function sendSuperAdminInviteAction(input: {
   email: string
   name: string
@@ -16,15 +18,11 @@ export async function sendSuperAdminInviteAction(input: {
   const authFailure = await ensureActionSession("settings.inviteSuperAdmin")
   if (authFailure) return authFailure
 
-  if (!input.email.includes("@") || !input.name.trim()) {
-    return expectedActionFailure(
-      "VALIDATION_FAILED",
-      "Enter a name and valid email address."
-    )
-  }
+  const parsed = inviteSchema.safeParse(input)
+  if (!parsed.success) return expectedActionFailure("VALIDATION_FAILED", "Enter a name and valid email address.")
 
   try {
-    await sendSuperAdminInvite(input)
+    await sendSuperAdminInvite(parsed.data)
     revalidatePath("/settings")
     return { success: true, data: undefined }
   } catch (error) {

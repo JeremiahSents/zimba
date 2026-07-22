@@ -104,7 +104,7 @@ export async function getProject(organizationId: string, projectId: string) {
   const allocations = await db
     .select()
     .from(schema.allocation)
-    .where(eq(schema.allocation.projectId, project.id))
+    .where(and(eq(schema.allocation.projectId, project.id), eq(schema.allocation.organizationId, organizationId)))
   const budgetCents = allocations.reduce((sum, a) => sum + a.budgetCents, 0)
 
   const spentCents = (await listFinancialExpenseRows(organizationId))

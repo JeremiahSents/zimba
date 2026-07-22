@@ -6,7 +6,7 @@ import {
   CardTitle,
 } from "@workspace/ui/components/card"
 import { PageHeader } from "@/components/page-header"
-import { getSystemHealth, getSystemMetrics } from "@/core/services/system"
+import { getSystemHealth, getSystemMetrics } from "@/core/system/service"
 
 export default async function SystemPage() {
   const [healthChecks, metrics] = await Promise.all([

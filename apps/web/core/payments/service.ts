@@ -6,12 +6,17 @@ import { updateExpense } from "../expenses/repository"
 import { badRequest, notFound } from "../shared/errors"
 import { recordAudit } from "../audit/service"
 import type { UpcomingPaymentCreate, UpcomingPaymentUpdate } from "@/lib/types"
+import { db, schema } from "@workspace/db"
+import { and, eq } from "drizzle-orm"
 
 export async function createUpcomingPayment(
   projectId: string,
   data: UpcomingPaymentCreate
 ) {
   const { organization } = await requireSession()
+  const project = await db.select({ id: schema.project.id }).from(schema.project)
+    .where(and(eq(schema.project.id, projectId), eq(schema.project.organizationId, organization.organizationId))).limit(1)
+  if (!project[0]) notFound("Project not found.")
 
   const paymentId = crypto.randomUUID()
   const payable = await paymentRepo.createPayable({
@@ -34,7 +39,6 @@ export async function updateUpcomingPayment(
   data: UpcomingPaymentUpdate
 ) {
   const { organization } = await requireSession()
-
   const payable = await paymentRepo.updatePayable(
     organization.organizationId,
     paymentId,
@@ -67,6 +71,9 @@ export async function createLedgerPayment(data: {
   allocations: { expense_id: string; amount: number }[]
 }) {
   const { organization } = await requireSession()
+  const supplier = await db.select({ id: schema.supplier.id }).from(schema.supplier)
+    .where(and(eq(schema.supplier.id, data.supplier_id), eq(schema.supplier.organizationId, organization.organizationId))).limit(1)
+  if (!supplier[0]) notFound("Supplier not found.")
   const receiptId = data.allocations[0]?.expense_id
   if (!receiptId) badRequest("Select a receipt for this payment.")
 

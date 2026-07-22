@@ -4,8 +4,8 @@ import { db } from "@workspace/db"
 import { platformUser, user } from "@workspace/db/schema"
 import { sendSuperAdminInviteEmail } from "@workspace/transactional"
 import { eq } from "drizzle-orm"
-import { getPlatformSession } from "../auth/service"
-import { badRequest, conflict, forbidden } from "../shared/errors"
+import { requirePlatformRole } from "../auth/service"
+import { badRequest, conflict } from "../shared/errors"
 
 function buildAdminInviteUrl(token: string): string {
   const base =
@@ -19,10 +19,7 @@ export async function sendSuperAdminInvite(input: {
   email: string
   name: string
 }): Promise<void> {
-  const session = await getPlatformSession()
-  if (session?.platformRole !== "super_admin") {
-    forbidden("Only super admins can send Super Admin invitations.")
-  }
+  const session = await requirePlatformRole(["super_admin"])
 
   const normalizedEmail = input.email.trim().toLowerCase()
 

@@ -2,14 +2,15 @@
 
 import { revalidatePath } from "next/cache"
 import { ensureActionSession } from "@/core/auth/action-session"
-import { updateOrganizationStatus } from "@/core/services/organizations"
+import { updateOrganizationStatus } from "@/core/organizations/service"
 import {
   type ActionResult,
   expectedActionFailure,
 } from "@/core/shared/action-result"
 import { handleActionError } from "@/core/shared/handle-action-error"
+import { z } from "zod"
 
-const VALID_STATUSES = ["active", "trial", "suspended"]
+const statusSchema = z.object({ organizationId: z.string().trim().min(1), status: z.enum(["active", "trial", "suspended"]) })
 
 export async function updateOrganizationStatusAction(
   organizationId: string,
@@ -18,15 +19,11 @@ export async function updateOrganizationStatusAction(
   const authFailure = await ensureActionSession("organizations.updateStatus")
   if (authFailure) return authFailure
 
-  if (!VALID_STATUSES.includes(status)) {
-    return expectedActionFailure(
-      "VALIDATION_FAILED",
-      `Status must be one of: ${VALID_STATUSES.join(", ")}`
-    )
-  }
+  const parsed = statusSchema.safeParse({ organizationId, status })
+  if (!parsed.success) return expectedActionFailure("VALIDATION_FAILED", "Invalid organization status.")
 
   try {
-    const updated = await updateOrganizationStatus(organizationId, status)
+    const updated = await updateOrganizationStatus(parsed.data.organizationId, parsed.data.status)
     if (!updated) {
       return expectedActionFailure("NOT_FOUND", "Organization not found.")
     }

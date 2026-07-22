@@ -7,7 +7,7 @@ import {
   TableRow,
 } from "@workspace/ui/components/table"
 import { PageHeader } from "@/components/page-header"
-import { listPlatformAuditLogs } from "@/core/services/audit"
+import { listPlatformAuditLogs } from "@/core/audit/service"
 
 export default async function ActivityPage() {
   const logs = await listPlatformAuditLogs()

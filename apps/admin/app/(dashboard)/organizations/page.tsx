@@ -10,7 +10,7 @@ import {
 import Link from "next/link"
 import { OrganizationStatusSelect } from "@/components/org-status-select"
 import { PageHeader } from "@/components/page-header"
-import { listOrganizations } from "@/core/services/organizations"
+import { listOrganizations } from "@/core/organizations/service"
 
 export default async function OrganizationsPage() {
   const organizations = await listOrganizations()

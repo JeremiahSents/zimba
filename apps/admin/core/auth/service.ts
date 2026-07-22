@@ -7,11 +7,14 @@ import { unauthorized, forbidden } from "../shared/errors"
 import { db } from "@workspace/db"
 import { platformUser } from "@workspace/db/schema"
 import { eq } from "drizzle-orm"
+import type { PlatformAccess, PlatformRole } from "./roles"
+export { platformRoles } from "./roles"
+export type { PlatformAccess, PlatformRole } from "./roles"
 
 export type PlatformSession = {
   user: typeof auth.$Infer.Session.user
   session: typeof auth.$Infer.Session.session
-  platformRole: string
+  platformRole: PlatformAccess
 }
 
 export const getPlatformSession = cache(async (): Promise<PlatformSession | null> => {
@@ -32,21 +35,21 @@ export const getPlatformSession = cache(async (): Promise<PlatformSession | null
     return {
       user: authSession.user,
       session: authSession.session,
-      platformRole: "none",
+      platformRole: null,
     }
   }
 
   return {
     user: authSession.user,
     session: authSession.session,
-    platformRole: pUser.role,
+    platformRole: pUser.role === "super_admin" || pUser.role === "support" ? pUser.role : null,
   }
 })
 
 export async function requirePlatformSession(): Promise<PlatformSession> {
   const session = await getPlatformSession()
 
-  if (!session || !session.user) {
+  if (!session?.user) {
     unauthorized("Sign in to access this resource.")
   }
 
@@ -54,5 +57,15 @@ export async function requirePlatformSession(): Promise<PlatformSession> {
     forbidden("You do not have permission to access the Super Admin Dashboard.")
   }
 
+  return session
+}
+
+export async function requirePlatformRole(
+  allowed: readonly PlatformRole[]
+): Promise<PlatformSession> {
+  const session = await requirePlatformSession()
+  if (!session.platformRole || !allowed.includes(session.platformRole)) {
+    forbidden("You do not have permission to perform this action.")
+  }
   return session
 }

@@ -1,0 +1,1 @@
+ALTER TABLE invitation ADD COLUMN IF NOT EXISTS accepted_by text REFERENCES "user"(id) ON DELETE SET NULL;

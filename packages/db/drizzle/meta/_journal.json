@@ -64,6 +64,20 @@
       "when": 1784489000000,
       "tag": "0008_repoint_project_attachment_file_fk",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1784700000000,
+      "tag": "0009_platform_security",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1784701000000,
+      "tag": "0010_invitation_acceptance",
+      "breakpoints": true
     }
   ]
 }
