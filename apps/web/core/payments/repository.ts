@@ -1,46 +1,11 @@
 import "server-only"
-import { and, desc, eq, sql } from "drizzle-orm"
-import { db, schema } from "@workspace/db"
+import { db } from "@workspace/db"
+import { createLedgerPayment as insertLedgerPayment, createPayable as insertPayable, deletePayableForOrganization, listPayablesForProject, syncExpensePaymentStatus as syncStatus, updatePayableForOrganization } from "@workspace/db/repositories"
+import type { ledgerPayment, payable } from "@workspace/db/schema"
 
-export async function createPayable(data: typeof schema.payable.$inferInsert) {
-  const [project] = await db.select({ id: schema.project.id }).from(schema.project)
-    .where(and(eq(schema.project.id, data.projectId), eq(schema.project.organizationId, data.organizationId))).limit(1)
-  if (!project) return undefined
-  const [payable] = await db.insert(schema.payable).values(data).returning()
-  return payable
-}
-
-export async function listProjectPayables(organizationId: string, projectId: string) {
-  return db.select().from(schema.payable).where(and(eq(schema.payable.organizationId, organizationId), eq(schema.payable.projectId, projectId))).orderBy(desc(schema.payable.dueDate))
-}
-
-export async function updatePayable(organizationId: string, id: string, data: Partial<typeof schema.payable.$inferInsert>) {
-  const [payable] = await db
-    .update(schema.payable)
-    .set(data)
-    .where(and(eq(schema.payable.id, id), eq(schema.payable.organizationId, organizationId)))
-    .returning()
-  return payable
-}
-
-export async function deletePayable(organizationId: string, id: string) {
-  await db.delete(schema.payable).where(and(eq(schema.payable.id, id), eq(schema.payable.organizationId, organizationId)))
-}
-
-export async function createLedgerPayment(data: typeof schema.ledgerPayment.$inferInsert) {
-  if (data.supplierId) {
-    const [supplier] = await db.select({ id: schema.supplier.id }).from(schema.supplier)
-      .where(and(eq(schema.supplier.id, data.supplierId), eq(schema.supplier.organizationId, data.organizationId))).limit(1)
-    if (!supplier) return undefined
-  }
-  const [payment] = await db.insert(schema.ledgerPayment).values(data).returning()
-  return payment
-}
-
-export async function syncExpensePaymentStatus(organizationId: string, expenseId: string) {
-  const [totals] = await db.select({ total: sql<number>`coalesce((select sum(${schema.expenseLine.amountCents}) from ${schema.expenseLine} where ${schema.expenseLine.expenseId} = ${expenseId} and ${schema.expenseLine.organizationId} = ${organizationId}), 0)`, paid: sql<number>`coalesce((select sum(${schema.ledgerPayment.amountCents}) from ${schema.ledgerPayment} where ${schema.ledgerPayment.expenseId} = ${expenseId} and ${schema.ledgerPayment.organizationId} = ${organizationId}), 0)` }).from(schema.expense).where(and(eq(schema.expense.id, expenseId), eq(schema.expense.organizationId, organizationId))).limit(1)
-  if (!totals) return
-  const total = Number(totals.total)
-  const paid = Number(totals.paid)
-  await db.update(schema.expense).set({ paymentStatus: paid >= total && total > 0 ? "paid" : paid > 0 ? "partial" : "unpaid" }).where(and(eq(schema.expense.id, expenseId), eq(schema.expense.organizationId, organizationId)))
-}
+export function createPayable(data: typeof payable.$inferInsert) { return insertPayable(db, data) }
+export function listProjectPayables(organizationId: string, projectId: string) { return listPayablesForProject(db, organizationId, projectId) }
+export function updatePayable(organizationId: string, id: string, data: Partial<typeof payable.$inferInsert>) { return updatePayableForOrganization(db, organizationId, id, data) }
+export function deletePayable(organizationId: string, id: string) { return deletePayableForOrganization(db, organizationId, id) }
+export function createLedgerPayment(data: typeof ledgerPayment.$inferInsert) { return insertLedgerPayment(db, data) }
+export function syncExpensePaymentStatus(organizationId: string, expenseId: string) { return syncStatus(db, organizationId, expenseId) }

@@ -32,6 +32,8 @@
     ".": "./src/index.ts",
     "./schema": "./src/schemas/index.ts",
     "./schemas": "./src/schemas/index.ts",
-    "./schemas/*": "./src/schemas/*.ts"
+    "./schemas/*": "./src/schemas/*.ts",
+    "./repositories": "./src/repositories/index.ts",
+    "./repositories/*": "./src/repositories/*.ts"
   }
 }

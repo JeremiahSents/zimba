@@ -1,157 +1,34 @@
 import "server-only"
-import { db, schema } from "@workspace/db"
-import { and, desc, eq, isNotNull, isNull } from "drizzle-orm"
+import { db } from "@workspace/db"
+import { allocation, project } from "@workspace/db/schema"
+import { createProject as insertProject, deleteProjectForOrganization, findActiveProjectForOrganization, listAllocationsForProject, listArchivedProjectsForOrganization, listProjectsForOrganization, updateProjectForOrganization } from "@workspace/db/repositories"
 import { listFinancialExpenseRows } from "../expenses/repository"
 
-export async function listProjects(organizationId: string) {
-  const projects = await db
-    .select()
-    .from(schema.project)
-    .where(
-      and(
-        eq(schema.project.organizationId, organizationId),
-        isNull(schema.project.archivedAt)
-      )
-    )
-    .orderBy(desc(schema.project.createdAt))
-
+async function withProjectFinancials(rows: Array<typeof project.$inferSelect>, organizationId: string) {
   const expenseRows = await listFinancialExpenseRows(organizationId)
-  const results = await Promise.all(
-    projects.map(async (p) => {
-      const allocations = await db
-        .select()
-        .from(schema.allocation)
-        .where(
-          and(
-            eq(schema.allocation.projectId, p.id),
-            eq(schema.allocation.organizationId, organizationId)
-          )
-        )
-      const budgetCents = allocations.reduce((sum, a) => sum + a.budgetCents, 0)
-      const spentCents = expenseRows
-        .filter((expense) => expense.projectId === p.id)
-        .reduce((sum, expense) => sum + expense.amountCents, 0)
-      const remainingCents = budgetCents - spentCents
+  return Promise.all(rows.map(async (row) => {
+    const allocations = await listAllocationsForProject(db, organizationId, row.id)
+    const budgetCents = allocations.reduce((sum, item) => sum + item.budgetCents, 0)
+    const spentCents = expenseRows.filter((expense) => expense.projectId === row.id).reduce((sum, expense) => sum + expense.amountCents, 0)
+    return { ...row, budgetCents, spentCents, remainingCents: budgetCents - spentCents }
+  }))
+}
 
-      return {
-        ...p,
-        budgetCents,
-        spentCents,
-        remainingCents,
-      }
-    })
-  )
-
-  return results
+export async function listProjects(organizationId: string) {
+  return withProjectFinancials(await listProjectsForOrganization(db, organizationId), organizationId)
 }
 
 export async function listArchivedProjects(organizationId: string) {
-  const projects = await db
-    .select()
-    .from(schema.project)
-    .where(
-      and(
-        eq(schema.project.organizationId, organizationId),
-        isNotNull(schema.project.archivedAt)
-      )
-    )
-    .orderBy(desc(schema.project.archivedAt))
-
-  const expenseRows = await listFinancialExpenseRows(organizationId)
-  const results = await Promise.all(
-    projects.map(async (p) => {
-      const allocations = await db
-        .select()
-        .from(schema.allocation)
-        .where(
-          and(
-            eq(schema.allocation.projectId, p.id),
-            eq(schema.allocation.organizationId, organizationId)
-          )
-        )
-      const budgetCents = allocations.reduce((sum, a) => sum + a.budgetCents, 0)
-      const spentCents = expenseRows
-        .filter((expense) => expense.projectId === p.id)
-        .reduce((sum, expense) => sum + expense.amountCents, 0)
-      const remainingCents = budgetCents - spentCents
-
-      return {
-        ...p,
-        budgetCents,
-        spentCents,
-        remainingCents,
-      }
-    })
-  )
-
-  return results
+  return withProjectFinancials(await listArchivedProjectsForOrganization(db, organizationId), organizationId)
 }
 
 export async function getProject(organizationId: string, projectId: string) {
-  const [project] = await db
-    .select()
-    .from(schema.project)
-    .where(
-      and(
-        eq(schema.project.id, projectId),
-        eq(schema.project.organizationId, organizationId),
-        isNull(schema.project.archivedAt)
-      )
-    )
-
-  if (!project) return null
-
-  const allocations = await db
-    .select()
-    .from(schema.allocation)
-    .where(and(eq(schema.allocation.projectId, project.id), eq(schema.allocation.organizationId, organizationId)))
-  const budgetCents = allocations.reduce((sum, a) => sum + a.budgetCents, 0)
-
-  const spentCents = (await listFinancialExpenseRows(organizationId))
-    .filter((expense) => expense.projectId === project.id)
-    .reduce((sum, expense) => sum + expense.amountCents, 0)
-  const remainingCents = budgetCents - spentCents
-
-  return {
-    ...project,
-    budgetCents,
-    spentCents,
-    remainingCents,
-  }
+  const [row] = await findActiveProjectForOrganization(db, organizationId, projectId)
+  if (!row) return null
+  const [result] = await withProjectFinancials([row], organizationId)
+  return result
 }
 
-export async function createProject(data: typeof schema.project.$inferInsert) {
-  const [project] = await db.insert(schema.project).values(data).returning()
-  return project
-}
-
-export async function updateProject(
-  organizationId: string,
-  projectId: string,
-  data: Partial<typeof schema.project.$inferInsert>
-) {
-  const [project] = await db
-    .update(schema.project)
-    .set({ ...data, updatedAt: new Date() })
-    .where(
-      and(
-        eq(schema.project.id, projectId),
-        eq(schema.project.organizationId, organizationId)
-      )
-    )
-    .returning()
-  return project
-}
-
-export async function deleteProject(organizationId: string, projectId: string) {
-  const [project] = await db
-    .delete(schema.project)
-    .where(
-      and(
-        eq(schema.project.id, projectId),
-        eq(schema.project.organizationId, organizationId)
-      )
-    )
-    .returning()
-  return project
-}
+export function createProject(data: typeof project.$inferInsert) { return insertProject(db, data) }
+export function updateProject(organizationId: string, projectId: string, data: Partial<typeof project.$inferInsert>) { return updateProjectForOrganization(db, organizationId, projectId, data) }
+export function deleteProject(organizationId: string, projectId: string) { return deleteProjectForOrganization(db, organizationId, projectId) }

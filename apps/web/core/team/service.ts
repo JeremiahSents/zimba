@@ -1,180 +1,63 @@
 import "server-only"
 
 import { createHash, randomBytes } from "node:crypto"
-import { db, schema } from "@workspace/db"
+import { db } from "@workspace/db"
+import { appendAuditEvent, claimInvitationAndUpsertMember, createInvitationRecord, deleteInvitation, findInvitationByTokenHash, findInvitationPreviewByTokenHash, findPendingInvitation, listPendingInvitations, listTeamMembers } from "@workspace/db/repositories"
 import { sendMemberInviteEmail } from "@workspace/transactional"
-import { and, desc, eq, gt } from "drizzle-orm"
-import {
-  canGrantRole,
-  normalizeRole,
-  requireRole,
-  type WorkspaceRole,
-} from "../auth/permissions"
+import { canGrantRole, normalizeRole, requireRole, type WorkspaceRole } from "../auth/permissions"
 import { requireSession } from "../auth/service"
 import { badRequest, forbidden, notFound } from "../shared/errors"
 import { buildInviteUrl } from "./invite-url"
 
 export async function listTeam() {
   const { organization } = await requireSession()
-  const members = await db
-    .select({
-      id: schema.member.id,
-      name: schema.user.name,
-      email: schema.user.email,
-      role: schema.member.role,
-      responsibility: schema.member.responsibility,
-    })
-    .from(schema.member)
-    .innerJoin(schema.user, eq(schema.user.id, schema.member.userId))
-    .where(eq(schema.member.organizationId, organization.organizationId))
-  const invitations = await db
-    .select()
-    .from(schema.invitation)
-    .where(
-      and(
-        eq(schema.invitation.organizationId, organization.organizationId),
-        eq(schema.invitation.status, "pending")
-      )
-    )
-    .orderBy(desc(schema.invitation.createdAt))
-  return {
-    members,
-    invitations,
-    canInvite: ["owner", "site_manager"].includes(
-      normalizeRole(organization.role)
-    ),
-  }
+  const members = await listTeamMembers(db, organization.organizationId)
+  const invitations = await listPendingInvitations(db, organization.organizationId)
+  return { members, invitations, canInvite: ["owner", "site_manager"].includes(normalizeRole(organization.role)) }
 }
 
-export async function createInvitation(input: {
-  email: string
-  role: WorkspaceRole
-}) {
+export async function createInvitation(input: { email: string; role: WorkspaceRole }) {
   const { user, organization } = await requireSession()
   requireRole(organization.role, ["owner", "site_manager"])
-  if (!canGrantRole(organization.role, input.role))
-    forbidden("Only an owner can invite another owner.")
-
+  if (!canGrantRole(organization.role, input.role)) forbidden("Only an owner can invite another owner.")
   const normalizedEmail = input.email.trim().toLowerCase()
   if (!normalizedEmail.includes("@")) badRequest("Enter a valid email address.")
-
-  const [existing] = await db
-    .select({ id: schema.invitation.id })
-    .from(schema.invitation)
-    .where(
-      and(
-        eq(schema.invitation.organizationId, organization.organizationId),
-        eq(schema.invitation.email, normalizedEmail),
-        eq(schema.invitation.status, "pending")
-      )
-    )
-    .limit(1)
-  // A previous delivery may have failed after its row was created. Replace
-  // pending invitations so the inviter can safely retry delivery.
-  if (existing) {
-    await db
-      .delete(schema.invitation)
-      .where(eq(schema.invitation.id, existing.id))
-  }
-
+  const [existing] = await findPendingInvitation(db, organization.organizationId, normalizedEmail)
+  if (existing) await deleteInvitation(db, existing.id)
   const token = randomBytes(32).toString("base64url")
   const tokenHash = createHash("sha256").update(token).digest("hex")
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-
   const inviteUrl = buildInviteUrl(token)
-
-  await db.insert(schema.invitation).values({
-    organizationId: organization.organizationId,
-    invitedBy: user.id,
-    name: normalizedEmail,
-    email: normalizedEmail,
-    role: input.role,
-    tokenHash,
-    expiresAt,
-  })
-
+  await createInvitationRecord(db, { organizationId: organization.organizationId, invitedBy: user.id, name: normalizedEmail, email: normalizedEmail, role: input.role, tokenHash, expiresAt })
   try {
-    await sendMemberInviteEmail({
-      to: normalizedEmail,
-      invitedByName: user.name,
-      organizationName: organization.organizationName,
-      role: input.role,
-      inviteUrl,
-    })
+    await sendMemberInviteEmail({ to: normalizedEmail, invitedByName: user.name, organizationName: organization.organizationName, role: input.role, inviteUrl })
   } catch (error) {
-    await db
-      .delete(schema.invitation)
-      .where(eq(schema.invitation.tokenHash, tokenHash))
+    await deleteInvitation(db, tokenHash)
     throw error
   }
-
-  await db.insert(schema.auditEvent).values({
-    organizationId: organization.organizationId,
-    actorId: user.id,
-    action: "team.invite",
-    entityType: "invitation",
-    entityId: tokenHash,
-    changes: { email: normalizedEmail, role: input.role },
-  })
-
+  await appendAuditEvent(db, { organizationId: organization.organizationId, actorId: user.id, action: "team.invite", entityType: "invitation", entityId: tokenHash, changes: { email: normalizedEmail, role: input.role } })
   return token
 }
 
 export async function acceptInvitation(token: string) {
   const { user } = await requireSession()
   const tokenHash = createHash("sha256").update(token).digest("hex")
-  const [invite] = await db
-    .select()
-    .from(schema.invitation)
-    .where(
-      eq(schema.invitation.tokenHash, tokenHash)
-    )
-    .limit(1)
-  if (!invite || invite.expiresAt < new Date())
-    notFound("This invitation is invalid or expired.")
-  if (invite.email !== user.email.toLowerCase())
-    forbidden("Sign in with the email address that was invited.")
+  const [invite] = await findInvitationByTokenHash(db, tokenHash)
+  if (!invite || invite.expiresAt < new Date()) notFound("This invitation is invalid or expired.")
+  if (invite.email !== user.email.toLowerCase()) forbidden("Sign in with the email address that was invited.")
   if (invite.status === "accepted" && invite.acceptedBy === user.id) return
   if (invite.status !== "pending") notFound("This invitation is no longer available.")
   await db.transaction(async (tx) => {
-    const now = new Date()
-    const claimed = await tx.update(schema.invitation)
-      .set({ status: "accepted", acceptedBy: user.id, acceptedAt: new Date() })
-      .where(and(
-        eq(schema.invitation.id, invite.id),
-        eq(schema.invitation.status, "pending"),
-        gt(schema.invitation.expiresAt, now),
-      ))
-      .returning({ id: schema.invitation.id })
-    if (!claimed[0]) return
-    await tx
-      .insert(schema.member)
-      .values({
-        id: crypto.randomUUID(),
-        organizationId: invite.organizationId,
-        userId: user.id,
-        role: invite.role,
-        responsibility: invite.responsibility,
-      })
-      .onConflictDoUpdate({
-        target: [schema.member.organizationId, schema.member.userId],
-        set: { role: invite.role, responsibility: invite.responsibility },
-      })
+    await claimInvitationAndUpsertMember(tx, invite.id, user.id, invite.organizationId, invite.role, invite.responsibility)
   })
 }
 
 export async function getInvitationPreview(token: string) {
   const tokenHash = createHash("sha256").update(token).digest("hex")
-  const [invite] = await db.select({
-    organizationName: schema.organization.name,
-    email: schema.invitation.email,
-    status: schema.invitation.status,
-    expiresAt: schema.invitation.expiresAt,
-  }).from(schema.invitation)
-    .innerJoin(schema.organization, eq(schema.organization.id, schema.invitation.organizationId))
-    .where(eq(schema.invitation.tokenHash, tokenHash)).limit(1)
+  const [invite] = await findInvitationPreviewByTokenHash(db, tokenHash)
   if (!invite) return { state: "invalid" as const }
-  if (invite.status === "accepted") return { state: "used" as const, ...invite }
-  if (invite.expiresAt < new Date()) return { state: "expired" as const, ...invite }
-  return { state: "pending" as const, ...invite }
+  const preview = { organizationName: invite.organizationName, email: invite.email, status: invite.status, expiresAt: invite.expiresAt }
+  if (invite.status === "accepted") return { state: "used" as const, ...preview }
+  if (invite.expiresAt < new Date()) return { state: "expired" as const, ...preview }
+  return { state: "pending" as const, ...preview }
 }

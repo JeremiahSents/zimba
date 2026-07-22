@@ -9,7 +9,7 @@ import {
 } from "@/core/shared/action-result"
 import { handleActionError } from "@/core/shared/handle-action-error"
 import { z } from "zod"
-import { adminInviteSchema } from "@/core/shared/validation"
+import { adminInviteSchema } from "@workspace/contracts"
 
 const inviteSchema = adminInviteSchema
 export async function sendSuperAdminInviteAction(input: {

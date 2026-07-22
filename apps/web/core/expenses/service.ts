@@ -1,6 +1,9 @@
 import "server-only"
 
 import { db, schema } from "@workspace/db"
+import { findActiveProjectForOrganization, findAllocationForProject, findExpenseForOrganization, insertReceipt } from "@workspace/db/repositories"
+import { findCompletedFile } from "@workspace/db/repositories"
+import { findSupplierByNameForOrganization, findSupplierForOrganization, insertReceiptLine, insertReceiptPayment } from "@workspace/db/repositories"
 import { and, eq } from "drizzle-orm"
 import type {
   ExpenseReceiptCreate,
@@ -62,41 +65,15 @@ export async function createPayableExpense(
   return db.transaction(async (tx) => {
     const projectId = String(data.project_id)
     const supplierId = String(data.supplier_id)
-    const [project] = await tx
-      .select()
-      .from(schema.project)
-      .where(
-        and(
-          eq(schema.project.id, projectId),
-          eq(schema.project.organizationId, organizationId)
-        )
-      )
-      .limit(1)
-    const [supplier] = await tx
-      .select()
-      .from(schema.supplier)
-      .where(
-        and(
-          eq(schema.supplier.id, supplierId),
-          eq(schema.supplier.organizationId, organizationId)
-        )
-      )
-      .limit(1)
+    const [project] = await findActiveProjectForOrganization(tx, organizationId, projectId)
+    const [supplier] = await findSupplierForOrganization(tx, organizationId, supplierId)
     if (!project || !supplier) notFound("Project or supplier not found.")
     if (data.receipt_file_id) {
-      const [file] = await tx.select({ id: schema.uploadedFile.id }).from(schema.uploadedFile)
-        .where(and(
-          eq(schema.uploadedFile.id, data.receipt_file_id),
-          eq(schema.uploadedFile.organizationId, organizationId),
-          eq(schema.uploadedFile.status, "completed"),
-          eq(schema.uploadedFile.purpose, "expense_receipt"),
-        )).limit(1)
+      const file = await findCompletedFile(tx, organizationId, data.receipt_file_id, "expense_receipt")
       if (!file) badRequest("The receipt file is invalid or belongs to another workspace.")
     }
     const expenseId = crypto.randomUUID()
-    const [expense] = await tx
-      .insert(schema.expense)
-      .values({
+    const expense = await insertReceipt(tx, {
         id: expenseId,
         organizationId,
         projectId,
@@ -107,27 +84,16 @@ export async function createPayableExpense(
           : new Date(),
         paymentStatus: data.amount_paid ? "partial" : "unpaid",
       })
-      .returning()
     if (!expense) throw new Error("Expense insert failed")
     const createdLines = []
     for (const line of data.lines) {
       const allocationId = String(line.allocation_id)
-      const [allocation] = await tx
-        .select()
-        .from(schema.allocation)
-        .where(
-          and(
-            eq(schema.allocation.id, allocationId),
-            eq(schema.allocation.projectId, projectId),
-            eq(schema.allocation.organizationId, organizationId)
-          )
-        )
-        .limit(1)
+      const [allocation] = await findAllocationForProject(tx, organizationId, projectId, allocationId)
       if (!allocation)
         badRequest("An allocation does not belong to this project.")
       const amount = line.quantity * line.unit_amount
       const id = crypto.randomUUID()
-      await tx.insert(schema.expenseLine).values({
+      await insertReceiptLine(tx, {
         id,
         organizationId,
         expenseId,
@@ -152,7 +118,7 @@ export async function createPayableExpense(
     const gross = createdLines.reduce((sum, line) => sum + line.line_amount, 0)
     const paidAmount = Math.min(data.amount_paid ?? 0, gross)
     if (paidAmount > 0) {
-      await tx.insert(schema.ledgerPayment).values({
+      await insertReceiptPayment(tx, {
         organizationId,
         expenseId: expense.id,
         supplierId,
@@ -204,39 +170,15 @@ export async function createExpenseReceipt(
   const { organization } = await requireSession()
   const organizationId = organization.organizationId
   return db.transaction(async (tx) => {
-    const [project] = await tx
-      .select()
-      .from(schema.project)
-      .where(
-        and(
-          eq(schema.project.id, projectId),
-          eq(schema.project.organizationId, organizationId)
-        )
-      )
-      .limit(1)
+    const [project] = await findActiveProjectForOrganization(tx, organizationId, projectId)
     if (!project) notFound("Project not found.")
     if (data.receipt_file_id) {
-      const [file] = await tx.select({ id: schema.uploadedFile.id }).from(schema.uploadedFile)
-        .where(and(
-          eq(schema.uploadedFile.id, data.receipt_file_id),
-          eq(schema.uploadedFile.organizationId, organizationId),
-          eq(schema.uploadedFile.status, "completed"),
-          eq(schema.uploadedFile.purpose, "expense_receipt"),
-        )).limit(1)
+      const file = await findCompletedFile(tx, organizationId, data.receipt_file_id, "expense_receipt")
       if (!file) badRequest("The receipt file is invalid or belongs to another workspace.")
     }
     const supplierName = data.items[0]?.supplier_name.trim()
     if (!supplierName) badRequest("A supplier is required.")
-    let [supplier] = await tx
-      .select()
-      .from(schema.supplier)
-      .where(
-        and(
-          eq(schema.supplier.organizationId, organizationId),
-          eq(schema.supplier.name, supplierName)
-        )
-      )
-      .limit(1)
+    let [supplier] = await findSupplierByNameForOrganization(tx, organizationId, supplierName)
     if (!supplier)
       [supplier] = await tx
         .insert(schema.supplier)
@@ -267,7 +209,7 @@ export async function createExpenseReceipt(
         : paidCents > 0
           ? "partial"
           : "unpaid"
-    await tx.insert(schema.expense).values({
+    await insertReceipt(tx, {
       id: expenseId,
       organizationId,
       projectId,
@@ -278,20 +220,10 @@ export async function createExpenseReceipt(
     })
     for (const item of data.items) {
       const allocationId = String(item.allocation_id)
-      const [allocation] = await tx
-        .select()
-        .from(schema.allocation)
-        .where(
-          and(
-            eq(schema.allocation.id, allocationId),
-            eq(schema.allocation.projectId, projectId),
-            eq(schema.allocation.organizationId, organizationId)
-          )
-        )
-        .limit(1)
+      const [allocation] = await findAllocationForProject(tx, organizationId, projectId, allocationId)
       if (!allocation)
         badRequest("An allocation does not belong to this project.")
-      await tx.insert(schema.expenseLine).values({
+      await insertReceiptLine(tx, {
         organizationId,
         expenseId,
         allocationId,
@@ -303,7 +235,7 @@ export async function createExpenseReceipt(
       })
     }
     if (paidCents > 0) {
-      await tx.insert(schema.ledgerPayment).values({
+      await insertReceiptPayment(tx, {
         organizationId,
         expenseId,
         supplierId: supplier.id,
@@ -333,35 +265,11 @@ export async function updateExpenseStatus(
   }
 
   return db.transaction(async (tx) => {
-    const [expense] = await tx
-      .select()
-      .from(schema.expense)
-      .where(
-        and(
-          eq(schema.expense.id, expenseId),
-          eq(schema.expense.organizationId, organization.organizationId)
-        )
-      )
-      .limit(1)
-    if (!expense) notFound("Expense not found.")
-    const lines = await tx
-      .select()
-      .from(schema.expenseLine)
-      .where(
-        and(
-          eq(schema.expenseLine.expenseId, expenseId),
-          eq(schema.expenseLine.organizationId, organization.organizationId)
-        )
-      )
-    const payments = await tx
-      .select()
-      .from(schema.ledgerPayment)
-      .where(
-        and(
-          eq(schema.ledgerPayment.expenseId, expenseId),
-          eq(schema.ledgerPayment.organizationId, organization.organizationId)
-        )
-      )
+    const detail = await findExpenseForOrganization(tx, organization.organizationId, expenseId)
+    if (!detail) notFound("Expense not found.")
+    const expense = detail.expense
+    const lines = detail.lines.map(({ line }) => line)
+    const payments = detail.payments
     const totalCents = lines.reduce((sum, line) => sum + line.amountCents, 0)
     const paidCents = payments.reduce(
       (sum, payment) => sum + payment.amountCents,
@@ -369,7 +277,7 @@ export async function updateExpenseStatus(
     )
     const outstandingCents = totalCents - paidCents
     if (outstandingCents > 0) {
-      await tx.insert(schema.ledgerPayment).values({
+      await insertReceiptPayment(tx, {
         organizationId: organization.organizationId,
         expenseId,
         supplierId: expense.supplierId,
@@ -532,7 +440,7 @@ export async function correctReceiptCategory(receiptId: string, allocationId: st
   const payable = existing ? null : await expenseRepo.getPayable(organization.organizationId, receiptId)
   const projectId = existing?.expense.projectId ?? payable?.payable.projectId
   if (!projectId) badRequest("This receipt is not linked to a project.")
-  const [allocation] = await db.select().from(schema.allocation).where(and(eq(schema.allocation.id, allocationId), eq(schema.allocation.organizationId, organization.organizationId), eq(schema.allocation.projectId, projectId))).limit(1)
+  const [allocation] = await findAllocationForProject(db, organization.organizationId, projectId, allocationId)
   if (!allocation) badRequest("Allocation not found in this workspace.")
   if (!allocation) badRequest("Select a category belonging to this project.")
 
@@ -540,7 +448,7 @@ export async function correctReceiptCategory(receiptId: string, allocationId: st
     await expenseRepo.updateExpenseLinesAllocation(organization.organizationId, receiptId, allocationId)
   } else if (payable) {
     await db.transaction(async (tx) => {
-      await tx.insert(schema.expense).values({
+      await insertReceipt(tx, {
         id: payable.payable.id,
         organizationId: organization.organizationId,
         projectId: payable.payable.projectId,
@@ -548,7 +456,7 @@ export async function correctReceiptCategory(receiptId: string, allocationId: st
         paymentStatus: payable.payable.status,
         expenseDate: payable.payable.dueDate ?? payable.payable.createdAt,
       })
-      await tx.insert(schema.expenseLine).values({
+      await insertReceiptLine(tx, {
         organizationId: organization.organizationId,
         expenseId: payable.payable.id,
         allocationId,

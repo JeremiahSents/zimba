@@ -1,6 +1,7 @@
 import "server-only"
 
 import { db, schema } from "@workspace/db"
+import { deletePayableForOrganization, deleteReceiptForOrganization, findExpenseForOrganization, findPayableForOrganization, listExpensesForOrganization, listPayablesForOrganization, listReceiptLinesWithAllocation, updateReceiptForOrganization, updateReceiptLinesAllocation } from "@workspace/db/repositories"
 import { and, desc, eq, sql } from "drizzle-orm"
 
 export type FinancialExpenseRow = {
@@ -24,22 +25,7 @@ export type FinancialExpenseRow = {
 }
 
 export async function listExpenses(organizationId: string, projectId?: string) {
-  return db
-    .select({
-      expense: schema.expense,
-      projectName: schema.project.name,
-      supplierName: schema.supplier.name,
-    })
-    .from(schema.expense)
-    .leftJoin(schema.project, and(eq(schema.project.id, schema.expense.projectId), eq(schema.project.organizationId, schema.expense.organizationId)))
-    .leftJoin(
-      schema.supplier,
-      and(eq(schema.supplier.id, schema.expense.supplierId), eq(schema.supplier.organizationId, schema.expense.organizationId))
-    )
-    .where(projectId
-      ? and(eq(schema.expense.organizationId, organizationId), eq(schema.expense.projectId, projectId))
-      : eq(schema.expense.organizationId, organizationId))
-    .orderBy(desc(schema.expense.createdAt))
+  return listExpensesForOrganization(db, organizationId, projectId)
 }
 
 export async function listFinancialExpenseRows(
@@ -138,172 +124,33 @@ export async function listFinancialExpenseRows(
 }
 
 export async function listPayables(organizationId: string) {
-  return db
-    .select({
-      payable: schema.payable,
-      projectName: schema.project.name,
-      supplierName: schema.supplier.name,
-    })
-    .from(schema.payable)
-    .leftJoin(schema.project, and(eq(schema.project.id, schema.payable.projectId), eq(schema.project.organizationId, schema.payable.organizationId)))
-    .leftJoin(
-      schema.supplier,
-      and(eq(schema.supplier.id, schema.payable.supplierId), eq(schema.supplier.organizationId, schema.payable.organizationId))
-    )
-    .where(eq(schema.payable.organizationId, organizationId))
-    .orderBy(desc(schema.payable.createdAt))
+  return listPayablesForOrganization(db, organizationId)
 }
 
 export async function getPayable(organizationId: string, payableId: string) {
-  const [row] = await db
-    .select({
-      payable: schema.payable,
-      projectName: schema.project.name,
-      supplierName: schema.supplier.name,
-    })
-    .from(schema.payable)
-    .leftJoin(schema.project, and(eq(schema.project.id, schema.payable.projectId), eq(schema.project.organizationId, schema.payable.organizationId)))
-    .leftJoin(
-      schema.supplier,
-      and(eq(schema.supplier.id, schema.payable.supplierId), eq(schema.supplier.organizationId, schema.payable.organizationId))
-    )
-    .where(
-      and(
-        eq(schema.payable.id, payableId),
-        eq(schema.payable.organizationId, organizationId)
-      )
-    )
-    .limit(1)
-  if (!row) return null
-  const payments = await db
-    .select()
-    .from(schema.ledgerPayment)
-    .where(
-      and(
-        eq(schema.ledgerPayment.payableId, payableId),
-        eq(schema.ledgerPayment.organizationId, organizationId)
-      )
-    )
-  return { ...row, payments }
+  return findPayableForOrganization(db, organizationId, payableId)
 }
 
 export async function getExpense(organizationId: string, expenseId: string) {
-  const [row] = await db
-    .select({
-      expense: schema.expense,
-      projectName: schema.project.name,
-      supplierName: schema.supplier.name,
-      receiptFile: schema.uploadedFile,
-    })
-    .from(schema.expense)
-    .leftJoin(schema.project, and(eq(schema.project.id, schema.expense.projectId), eq(schema.project.organizationId, schema.expense.organizationId)))
-    .leftJoin(
-      schema.supplier,
-      and(eq(schema.supplier.id, schema.expense.supplierId), eq(schema.supplier.organizationId, schema.expense.organizationId))
-    )
-    .leftJoin(schema.uploadedFile, and(eq(schema.uploadedFile.id, schema.expense.receiptFileId), eq(schema.uploadedFile.organizationId, schema.expense.organizationId)))
-    .where(
-      and(
-        eq(schema.expense.id, expenseId),
-        eq(schema.expense.organizationId, organizationId)
-      )
-    )
-    .limit(1)
-  if (!row) return null
-  const lines = await db
-    .select({
-      line: schema.expenseLine,
-      allocationName: schema.allocation.name,
-    })
-    .from(schema.expenseLine)
-    .leftJoin(
-      schema.allocation,
-      and(eq(schema.allocation.id, schema.expenseLine.allocationId), eq(schema.allocation.organizationId, schema.expenseLine.organizationId))
-    )
-    .where(
-      and(
-        eq(schema.expenseLine.expenseId, expenseId),
-        eq(schema.expenseLine.organizationId, organizationId)
-      )
-    )
-  const payments = await db
-    .select()
-    .from(schema.ledgerPayment)
-    .where(
-      and(
-        eq(schema.ledgerPayment.organizationId, organizationId),
-        // Legacy receipt repairs retain the payable as the source record.
-        // Include either reference so payment totals stay stable after a category is corrected.
-        sql`(${schema.ledgerPayment.expenseId} = ${expenseId} OR ${schema.ledgerPayment.payableId} = ${expenseId})`
-      )
-    )
-  return { ...row, lines, payments }
+  return findExpenseForOrganization(db, organizationId, expenseId)
 }
 
-export async function updateExpenseLinesAllocation(
-  organizationId: string,
-  expenseId: string,
-  allocationId: string
-) {
-  await db
-    .update(schema.expenseLine)
-    .set({ allocationId, legacyAllocationId: allocationId, updatedAt: new Date() })
-    .where(and(eq(schema.expenseLine.organizationId, organizationId), eq(schema.expenseLine.expenseId, expenseId)))
+export async function updateExpenseLinesAllocation(organizationId: string, expenseId: string, allocationId: string) {
+  return updateReceiptLinesAllocation(db, organizationId, expenseId, allocationId)
 }
 
 export async function deleteExpense(organizationId: string, expenseId: string) {
-  const [deleted] = await db
-    .delete(schema.expense)
-    .where(and(eq(schema.expense.organizationId, organizationId), eq(schema.expense.id, expenseId)))
-    .returning()
-  return deleted ?? null
+  return deleteReceiptForOrganization(db, organizationId, expenseId).then(([deleted]) => deleted ?? null)
 }
 
 export async function deletePayable(organizationId: string, payableId: string) {
-  await db.delete(schema.ledgerPayment).where(and(eq(schema.ledgerPayment.organizationId, organizationId), eq(schema.ledgerPayment.payableId, payableId)))
-  const [deleted] = await db
-    .delete(schema.payable)
-    .where(and(eq(schema.payable.organizationId, organizationId), eq(schema.payable.id, payableId)))
-    .returning()
-  return deleted ?? null
+  return deletePayableForOrganization(db, organizationId, payableId).then((deleted) => deleted ?? null)
 }
 
-export async function getExpenseLines(
-  organizationId: string,
-  expenseId: string
-) {
-  return db
-    .select({
-      line: schema.expenseLine,
-      allocationName: schema.allocation.name,
-    })
-    .from(schema.expenseLine)
-    .leftJoin(
-      schema.allocation,
-      and(eq(schema.allocation.id, schema.expenseLine.allocationId), eq(schema.allocation.organizationId, schema.expenseLine.organizationId))
-    )
-    .where(
-      and(
-        eq(schema.expenseLine.expenseId, expenseId),
-        eq(schema.expenseLine.organizationId, organizationId)
-      )
-    )
+export async function getExpenseLines(organizationId: string, expenseId: string) {
+  return listReceiptLinesWithAllocation(db, organizationId, expenseId)
 }
 
-export async function updateExpense(
-  organizationId: string,
-  id: string,
-  data: Partial<typeof schema.expense.$inferInsert>
-) {
-  const [expense] = await db
-    .update(schema.expense)
-    .set({ ...data, updatedAt: new Date() })
-    .where(
-      and(
-        eq(schema.expense.id, id),
-        eq(schema.expense.organizationId, organizationId)
-      )
-    )
-    .returning()
-  return expense
+export async function updateExpense(organizationId: string, id: string, data: Partial<typeof schema.expense.$inferInsert>) {
+  return updateReceiptForOrganization(db, organizationId, id, data)
 }
