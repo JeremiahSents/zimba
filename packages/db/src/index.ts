@@ -1,6 +1,6 @@
 import { drizzle } from "drizzle-orm/node-postgres"
 import { Pool } from "pg"
-import * as schema from "./schema"
+import * as schema from "./schemas/index"
 
 const globalForDatabase = globalThis as unknown as {
   zimbaPool?: Pool
@@ -50,7 +50,7 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 export { schema }
-export * from "./schema"
+export * from "./schemas/index"
 
 export const db = drizzle(pool, { schema })
 

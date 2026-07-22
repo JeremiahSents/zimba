@@ -4,7 +4,7 @@ import { sql } from "drizzle-orm"
 config({ path: "../../apps/web/.env.local", quiet: true })
 
 const { db, pool } = await import("./index")
-const schema = await import("./schema")
+const schema = await import("./schemas/index")
 
 async function main() {
   console.log("Seeding database...")

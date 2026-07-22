@@ -4,6 +4,8 @@
     { "path": "./apps/web" },
     { "path": "./apps/admin" },
     { "path": "./packages/ui" },
-    { "path": "./packages/db" }
+    { "path": "./packages/db" },
+    { "path": "./packages/api" },
+    { "path": "./packages/contracts" }
   ]
 }
