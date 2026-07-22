@@ -7,14 +7,10 @@ import { handleActionError } from "@/core/shared/handle-action-error"
 import { ensureActionSession } from "@/core/auth/action-session"
 import { z } from "zod"
 import { fieldErrorsFromZod } from "@workspace/server-primitives"
+import { boundedNameSchema, idSchema as contractIdSchema, supplierFormSchema } from "@workspace/contracts"
 
-const supplierSchema = z.object({
-  name: z.string().trim().min(1).max(160),
-  category: z.string().trim().min(1).max(80),
-  companyContact: z.string().max(160).optional(), contactName: z.string().max(160).optional(),
-  phone: z.string().max(80).optional(), email: z.string().email().optional().or(z.literal("")), notes: z.string().max(2000).optional(), status: z.string().max(40).optional(),
-})
-const idSchema = z.string().trim().min(1).max(128)
+const supplierSchema = supplierFormSchema
+const idSchema = contractIdSchema
 
 export async function createSupplierAction(input: {
   name: string
@@ -51,7 +47,7 @@ export async function createSupplierAction(input: {
 export async function createSupplierCategoryAction(name: string): Promise<ActionResult<{ name: string; slug: string }>> {
   const authFailure = await ensureActionSession("suppliers.create-category")
   if (authFailure) return authFailure
-  if (!z.string().trim().min(1).max(80).safeParse(name).success) return expectedActionFailure("VALIDATION_FAILED", "Enter a valid category name.")
+  if (!boundedNameSchema.max(80).safeParse(name).success) return expectedActionFailure("VALIDATION_FAILED", "Enter a valid category name.")
   try {
     const category = await createSupplierCategory(name)
     revalidatePath("/admin/suppliers/new")

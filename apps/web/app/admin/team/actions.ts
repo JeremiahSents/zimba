@@ -5,9 +5,8 @@ import { ensureActionSession } from "@/core/auth/action-session"
 import type { WorkspaceRole } from "@/core/auth/permissions"
 import { handleActionError } from "@/core/shared/handle-action-error"
 import { createInvitation } from "@/core/team/service"
-import { z } from "zod"
 import { fieldErrorsFromZod } from "@workspace/server-primitives"
-import { emailSchema, workspaceRoleSchema } from "@/core/shared/validation"
+import { teamInviteSchema } from "@workspace/contracts"
 
 export async function inviteMemberAction(input: {
   email: string
@@ -15,7 +14,7 @@ export async function inviteMemberAction(input: {
 }) {
   const authFailure = await ensureActionSession("team.invite")
   if (authFailure) return authFailure
-  const parsed = z.object({ email: emailSchema, role: workspaceRoleSchema }).safeParse(input)
+  const parsed = teamInviteSchema.safeParse(input)
   if (!parsed.success) return { success: false as const, error: { code: "VALIDATION_FAILED" as const, message: "Enter a valid email and role.", retryable: false, recoveryAction: "CORRECT_INPUT" as const, fieldErrors: fieldErrorsFromZod(parsed.error) } }
   try {
     await createInvitation(parsed.data)

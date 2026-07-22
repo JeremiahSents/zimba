@@ -51,6 +51,7 @@ if (process.env.NODE_ENV !== "production") {
 
 export { schema }
 export * from "./schemas/index"
+export * from "./repositories/index"
 
 export const db = drizzle(pool, { schema })
 

@@ -8,10 +8,9 @@ import {
   expectedActionFailure,
 } from "@/core/shared/action-result"
 import { handleActionError } from "@/core/shared/handle-action-error"
-import { z } from "zod"
-import { idSchema, organizationStatusSchema } from "@/core/shared/validation"
+import { organizationStatusInputSchema } from "@workspace/contracts"
 
-const statusSchema = z.object({ organizationId: idSchema, status: organizationStatusSchema })
+const statusSchema = organizationStatusInputSchema
 
 export async function updateOrganizationStatusAction(
   organizationId: string,

@@ -22,8 +22,7 @@ import type {
   PayableExpenseCreate,
   PayableExpenseResponse,
 } from "@/lib/types"
-import { z } from "zod"
-import { expenseStatusSchema, idSchema } from "@/core/shared/validation"
+import { expenseLinkSchema, idSchema, receiptStatusInputSchema } from "@workspace/contracts"
 
 
 export async function createPayableExpenseAction(
@@ -31,7 +30,7 @@ export async function createPayableExpenseAction(
 ): Promise<ActionResult<PayableExpenseResponse>> {
   const authFailure = await ensureActionSession("expenses.create-payable")
   if (authFailure) return authFailure
-  if (!z.object({ project_id: idSchema, supplier_id: idSchema }).safeParse(expense).success) {
+  if (!expenseLinkSchema.safeParse(expense).success) {
     return expectedActionFailure("VALIDATION_FAILED", "Select a valid project and supplier.")
   }
   if (
@@ -96,7 +95,7 @@ export async function updateExpenseStatusAction(
 ): Promise<ActionResult> {
   const authFailure = await ensureActionSession("expenses.update-status")
   if (authFailure) return authFailure
-  if (!idSchema.safeParse(projectId).success || !idSchema.safeParse(expenseId).success || !expenseStatusSchema.safeParse(status).success) return expectedActionFailure("VALIDATION_FAILED", "Invalid receipt update.")
+  if (!receiptStatusInputSchema.safeParse({ projectId, expenseId, status }).success) return expectedActionFailure("VALIDATION_FAILED", "Invalid receipt update.")
   try {
     await updateExpenseStatus(expenseId, status)
     revalidateConnectedRoutes(projectId)
