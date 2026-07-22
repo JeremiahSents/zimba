@@ -8,6 +8,7 @@
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "tsx src/seed.ts",
     "db:reset": "pnpm db:migrate && pnpm db:seed",
+    "test": "vitest run --passWithNoTests",
     "lint": "biome lint .",
     "format": "biome format --write .",
     "check": "biome check --write .",
@@ -24,6 +25,7 @@
     "dotenv": "^17.4.2",
     "drizzle-kit": "^0.31.10",
     "tsx": "^4.21.0",
+    "vitest": "^3.2.4",
     "typescript": "^5"
   },
   "exports": {

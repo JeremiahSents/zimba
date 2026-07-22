@@ -9,8 +9,9 @@ import {
 } from "@/core/shared/action-result"
 import { handleActionError } from "@/core/shared/handle-action-error"
 import { z } from "zod"
+import { adminInviteSchema } from "@/core/shared/validation"
 
-const inviteSchema = z.object({ email: z.string().trim().email(), name: z.string().trim().min(1).max(120) })
+const inviteSchema = adminInviteSchema
 export async function sendSuperAdminInviteAction(input: {
   email: string
   name: string

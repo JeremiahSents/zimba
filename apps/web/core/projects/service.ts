@@ -43,12 +43,10 @@ export async function getProjectDetail(
     projectId
   )
   const [expenseRows, attachments] = await Promise.all([
-    expenseRepo.listFinancialExpenseRows(organization.organizationId),
+    expenseRepo.listFinancialExpenseRows(organization.organizationId, projectId),
     fileRepo.listProjectAttachments(organization.organizationId, projectId),
   ])
-  const projectExpenseRows = expenseRows.filter(
-    (expense) => expense.projectId === projectId
-  )
+  const projectExpenseRows = expenseRows
   const flatExpenses = projectExpenseRows.map((expense) => ({
     id: expense.id,
     receipt_id: expense.receiptId,

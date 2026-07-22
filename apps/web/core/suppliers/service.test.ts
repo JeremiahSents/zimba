@@ -10,6 +10,7 @@ vi.mock("../auth/service")
 describe("Suppliers Service", () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    vi.mocked(supplierRepo.listSupplierSummaries).mockResolvedValue([])
     vi.mocked(authService.requireSession).mockResolvedValue({
       user: { id: "user-1", name: "Test User", email: "test@example.com", emailVerified: true, createdAt: new Date(), updatedAt: new Date() },
       session: { id: "session-1", userId: "user-1", expiresAt: new Date(), ipAddress: null, userAgent: null, token: "token-1", createdAt: new Date(), updatedAt: new Date() },
@@ -18,7 +19,7 @@ describe("Suppliers Service", () => {
   })
 
   it("should list suppliers", async () => {
-    vi.mocked(supplierRepo.listSuppliers).mockResolvedValue([
+    vi.mocked(supplierRepo.listSupplierSummaries).mockResolvedValue([
       {
         id: "sup-1",
         organizationId: "org-1",
@@ -30,6 +31,9 @@ describe("Suppliers Service", () => {
         status: "active",
         createdAt: new Date(),
         updatedAt: new Date(),
+        receiptCount: 1,
+        incurredCents: 10000,
+        paidCents: 5000,
       } as any,
     ])
 

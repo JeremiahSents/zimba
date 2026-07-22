@@ -3,7 +3,6 @@
 import { Label } from "@workspace/ui/components/label"
 import { Upload04Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { useRef } from "react"
 
 type UploadZoneProps = {
   files: File[]
@@ -12,32 +11,25 @@ type UploadZoneProps = {
 }
 
 export function UploadZone({ files, onFiles, onRemove }: UploadZoneProps) {
-  const inputRef = useRef<HTMLInputElement>(null)
-
   return (
     <div className="flex flex-1 flex-col gap-3">
       <Label>Images and documents</Label>
       <input
-        ref={inputRef}
+        id="project-attachments"
         hidden
         type="file"
         multiple
         accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"
         onChange={(event) => onFiles(Array.from(event.target.files ?? []))}
       />
-      <div
-        role="button"
-        tabIndex={0}
+      <label
+        htmlFor="project-attachments"
         onDragOver={(event) => event.preventDefault()}
         onDrop={(event) => {
           event.preventDefault()
           onFiles(Array.from(event.dataTransfer.files))
         }}
-        onClick={() => inputRef.current?.click()}
-        onKeyDown={(event) => {
-          if (event.key === "Enter" || event.key === " ") inputRef.current?.click()
-        }}
-        className={`flex min-h-40 w-full flex-1 cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed px-4 py-5 text-center transition-colors hover:bg-muted/40 ${files.length ? "bg-muted/15" : ""}`}
+        className={`flex min-h-40 w-full flex-1 cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed px-4 py-5 text-center transition-colors hover:bg-muted/40 focus-within:ring-2 focus-within:ring-ring ${files.length ? "bg-muted/15" : ""}`}
       >
         {files.length === 0 ? (
           <>
@@ -83,7 +75,7 @@ export function UploadZone({ files, onFiles, onRemove }: UploadZoneProps) {
             </div>
           </div>
         )}
-      </div>
+      </label>
     </div>
   )
 }

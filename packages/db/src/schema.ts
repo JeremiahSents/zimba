@@ -144,7 +144,8 @@ export const invitation = pgTable(
     acceptedBy: text("accepted_by").references(() => user.id, { onDelete: "set null" }),
     acceptedAt: timestamp("accepted_at", { mode: "date" }),
     createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
-  }
+  },
+  (table) => [index("invitation_status_hash_idx").on(table.status, table.tokenHash)]
 )
 
 export const memberProject = pgTable(
@@ -166,7 +167,7 @@ export const platformUser = pgTable("platform_user", {
     .references(() => user.id, { onDelete: "cascade" }),
   role: varchar("role").notNull().default("support"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-}, (table) => [uniqueIndex("platform_user_user_unique").on(table.userId)])
+}, (table) => [uniqueIndex("platform_user_user_unique").on(table.userId), index("platform_user_role_idx").on(table.role)])
 
 export const platformAuditLog = pgTable("platform_audit_log", {
   id: varchar("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
@@ -273,7 +274,7 @@ export const expense = pgTable("expense", {
     .defaultNow()
     .$onUpdate(() => new Date())
     .notNull(),
-})
+}, (table) => [index("expense_org_project_idx").on(table.organizationId, table.projectId)])
 
 export const expenseLine = pgTable("expense_line", {
   id: varchar("id").primaryKey().$defaultFn(() => crypto.randomUUID()),

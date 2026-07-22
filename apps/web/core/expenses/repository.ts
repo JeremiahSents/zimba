@@ -23,7 +23,7 @@ export type FinancialExpenseRow = {
   categoryState: "assigned" | "uncategorized"
 }
 
-export async function listExpenses(organizationId: string) {
+export async function listExpenses(organizationId: string, projectId?: string) {
   return db
     .select({
       expense: schema.expense,
@@ -31,19 +31,22 @@ export async function listExpenses(organizationId: string) {
       supplierName: schema.supplier.name,
     })
     .from(schema.expense)
-    .leftJoin(schema.project, eq(schema.project.id, schema.expense.projectId))
+    .leftJoin(schema.project, and(eq(schema.project.id, schema.expense.projectId), eq(schema.project.organizationId, schema.expense.organizationId)))
     .leftJoin(
       schema.supplier,
-      eq(schema.supplier.id, schema.expense.supplierId)
+      and(eq(schema.supplier.id, schema.expense.supplierId), eq(schema.supplier.organizationId, schema.expense.organizationId))
     )
-    .where(eq(schema.expense.organizationId, organizationId))
+    .where(projectId
+      ? and(eq(schema.expense.organizationId, organizationId), eq(schema.expense.projectId, projectId))
+      : eq(schema.expense.organizationId, organizationId))
     .orderBy(desc(schema.expense.createdAt))
 }
 
 export async function listFinancialExpenseRows(
-  organizationId: string
+  organizationId: string,
+  projectId?: string
 ): Promise<FinancialExpenseRow[]> {
-  const rows = await listExpenses(organizationId)
+  const rows = await listExpenses(organizationId, projectId)
   const payables = await listPayables(organizationId)
   const currentExpenseIds = new Set(rows.map(({ expense }) => expense.id))
 
@@ -142,10 +145,10 @@ export async function listPayables(organizationId: string) {
       supplierName: schema.supplier.name,
     })
     .from(schema.payable)
-    .leftJoin(schema.project, eq(schema.project.id, schema.payable.projectId))
+    .leftJoin(schema.project, and(eq(schema.project.id, schema.payable.projectId), eq(schema.project.organizationId, schema.payable.organizationId)))
     .leftJoin(
       schema.supplier,
-      eq(schema.supplier.id, schema.payable.supplierId)
+      and(eq(schema.supplier.id, schema.payable.supplierId), eq(schema.supplier.organizationId, schema.payable.organizationId))
     )
     .where(eq(schema.payable.organizationId, organizationId))
     .orderBy(desc(schema.payable.createdAt))
@@ -159,10 +162,10 @@ export async function getPayable(organizationId: string, payableId: string) {
       supplierName: schema.supplier.name,
     })
     .from(schema.payable)
-    .leftJoin(schema.project, eq(schema.project.id, schema.payable.projectId))
+    .leftJoin(schema.project, and(eq(schema.project.id, schema.payable.projectId), eq(schema.project.organizationId, schema.payable.organizationId)))
     .leftJoin(
       schema.supplier,
-      eq(schema.supplier.id, schema.payable.supplierId)
+      and(eq(schema.supplier.id, schema.payable.supplierId), eq(schema.supplier.organizationId, schema.payable.organizationId))
     )
     .where(
       and(
@@ -193,12 +196,12 @@ export async function getExpense(organizationId: string, expenseId: string) {
       receiptFile: schema.uploadedFile,
     })
     .from(schema.expense)
-    .leftJoin(schema.project, eq(schema.project.id, schema.expense.projectId))
+    .leftJoin(schema.project, and(eq(schema.project.id, schema.expense.projectId), eq(schema.project.organizationId, schema.expense.organizationId)))
     .leftJoin(
       schema.supplier,
-      eq(schema.supplier.id, schema.expense.supplierId)
+      and(eq(schema.supplier.id, schema.expense.supplierId), eq(schema.supplier.organizationId, schema.expense.organizationId))
     )
-    .leftJoin(schema.uploadedFile, eq(schema.uploadedFile.id, schema.expense.receiptFileId))
+    .leftJoin(schema.uploadedFile, and(eq(schema.uploadedFile.id, schema.expense.receiptFileId), eq(schema.uploadedFile.organizationId, schema.expense.organizationId)))
     .where(
       and(
         eq(schema.expense.id, expenseId),
@@ -215,7 +218,7 @@ export async function getExpense(organizationId: string, expenseId: string) {
     .from(schema.expenseLine)
     .leftJoin(
       schema.allocation,
-      eq(schema.allocation.id, schema.expenseLine.allocationId)
+      and(eq(schema.allocation.id, schema.expenseLine.allocationId), eq(schema.allocation.organizationId, schema.expenseLine.organizationId))
     )
     .where(
       and(
@@ -277,7 +280,7 @@ export async function getExpenseLines(
     .from(schema.expenseLine)
     .leftJoin(
       schema.allocation,
-      eq(schema.allocation.id, schema.expenseLine.allocationId)
+      and(eq(schema.allocation.id, schema.expenseLine.allocationId), eq(schema.allocation.organizationId, schema.expenseLine.organizationId))
     )
     .where(
       and(

@@ -16,8 +16,13 @@ export async function listProjectAttachments(organizationId: string, projectId: 
   return db.select({ file: schema.uploadedFile }).from(schema.projectAttachment).innerJoin(schema.uploadedFile, eq(schema.uploadedFile.id, schema.projectAttachment.fileId)).where(and(eq(schema.projectAttachment.organizationId, organizationId), eq(schema.projectAttachment.projectId, projectId)))
 }
 
-export async function getCompletedFile(organizationId: string, fileId: string) {
-  const [file] = await db.select().from(schema.uploadedFile).where(and(eq(schema.uploadedFile.id, fileId), eq(schema.uploadedFile.organizationId, organizationId), eq(schema.uploadedFile.status, "completed"))).limit(1)
+export async function getCompletedFile(organizationId: string, fileId: string, purpose?: string) {
+  const [file] = await db.select().from(schema.uploadedFile).where(and(
+    eq(schema.uploadedFile.id, fileId),
+    eq(schema.uploadedFile.organizationId, organizationId),
+    eq(schema.uploadedFile.status, "completed"),
+    ...(purpose ? [eq(schema.uploadedFile.purpose, purpose)] : []),
+  )).limit(1)
   return file
 }
 

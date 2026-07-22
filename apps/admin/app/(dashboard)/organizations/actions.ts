@@ -9,8 +9,9 @@ import {
 } from "@/core/shared/action-result"
 import { handleActionError } from "@/core/shared/handle-action-error"
 import { z } from "zod"
+import { idSchema, organizationStatusSchema } from "@/core/shared/validation"
 
-const statusSchema = z.object({ organizationId: z.string().trim().min(1), status: z.enum(["active", "trial", "suspended"]) })
+const statusSchema = z.object({ organizationId: idSchema, status: organizationStatusSchema })
 
 export async function updateOrganizationStatusAction(
   organizationId: string,

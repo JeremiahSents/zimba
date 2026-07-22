@@ -83,6 +83,16 @@ export async function createPayableExpense(
       )
       .limit(1)
     if (!project || !supplier) notFound("Project or supplier not found.")
+    if (data.receipt_file_id) {
+      const [file] = await tx.select({ id: schema.uploadedFile.id }).from(schema.uploadedFile)
+        .where(and(
+          eq(schema.uploadedFile.id, data.receipt_file_id),
+          eq(schema.uploadedFile.organizationId, organizationId),
+          eq(schema.uploadedFile.status, "completed"),
+          eq(schema.uploadedFile.purpose, "expense_receipt"),
+        )).limit(1)
+      if (!file) badRequest("The receipt file is invalid or belongs to another workspace.")
+    }
     const expenseId = crypto.randomUUID()
     const [expense] = await tx
       .insert(schema.expense)
@@ -205,6 +215,16 @@ export async function createExpenseReceipt(
       )
       .limit(1)
     if (!project) notFound("Project not found.")
+    if (data.receipt_file_id) {
+      const [file] = await tx.select({ id: schema.uploadedFile.id }).from(schema.uploadedFile)
+        .where(and(
+          eq(schema.uploadedFile.id, data.receipt_file_id),
+          eq(schema.uploadedFile.organizationId, organizationId),
+          eq(schema.uploadedFile.status, "completed"),
+          eq(schema.uploadedFile.purpose, "expense_receipt"),
+        )).limit(1)
+      if (!file) badRequest("The receipt file is invalid or belongs to another workspace.")
+    }
     const supplierName = data.items[0]?.supplier_name.trim()
     if (!supplierName) badRequest("A supplier is required.")
     let [supplier] = await tx

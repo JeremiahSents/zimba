@@ -41,7 +41,8 @@ export async function createProject(data: ProjectCreate) {
   for (const fileId of data.attachment_ids ?? []) {
     const file = await fileRepo.getCompletedFile(
       organization.organizationId,
-      fileId
+      fileId,
+      "project_attachment"
     )
     if (!file)
       badRequest("An attachment is invalid or belongs to another workspace.")
@@ -103,7 +104,8 @@ export async function updateProject(projectId: string, data: ProjectUpdate) {
   for (const fileId of data.attachment_ids ?? []) {
     const file = await fileRepo.getCompletedFile(
       organization.organizationId,
-      fileId
+      fileId,
+      "project_attachment"
     )
     if (!file)
       badRequest("An attachment is invalid or belongs to another workspace.")

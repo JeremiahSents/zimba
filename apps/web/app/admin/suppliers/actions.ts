@@ -5,6 +5,16 @@ import { createSupplier, createSupplierCategory, updateSupplier } from "@/core/s
 import { expectedActionFailure, type ActionResult } from "@/core/shared/action-result"
 import { handleActionError } from "@/core/shared/handle-action-error"
 import { ensureActionSession } from "@/core/auth/action-session"
+import { z } from "zod"
+import { fieldErrorsFromZod } from "@workspace/server-primitives"
+
+const supplierSchema = z.object({
+  name: z.string().trim().min(1).max(160),
+  category: z.string().trim().min(1).max(80),
+  companyContact: z.string().max(160).optional(), contactName: z.string().max(160).optional(),
+  phone: z.string().max(80).optional(), email: z.string().email().optional().or(z.literal("")), notes: z.string().max(2000).optional(), status: z.string().max(40).optional(),
+})
+const idSchema = z.string().trim().min(1).max(128)
 
 export async function createSupplierAction(input: {
   name: string
@@ -17,19 +27,17 @@ export async function createSupplierAction(input: {
 }): Promise<ActionResult> {
   const authFailure = await ensureActionSession("suppliers.create")
   if (authFailure) return authFailure
-  if (!input.name.trim()) {
-    return expectedActionFailure("VALIDATION_FAILED", "Add a supplier name.")
+  const parsed = supplierSchema.safeParse(input)
+  if (!parsed.success) {
+    return expectedActionFailure("VALIDATION_FAILED", "Review the supplier fields.", fieldErrorsFromZod(parsed.error))
   }
 
   try {
     await createSupplier({
-      name: input.name.trim(),
-      category: input.category,
-      phone: input.phone?.trim() || null,
-      email: input.email?.trim() || null,
-      notes: input.notes?.trim() || null,
-      companyContact: input.companyContact?.trim() || null,
-      contactName: input.contactName?.trim() || null,
+      name: parsed.data.name, category: parsed.data.category,
+      phone: parsed.data.phone?.trim() || null, email: parsed.data.email?.trim() || null,
+      notes: parsed.data.notes?.trim() || null, companyContact: parsed.data.companyContact?.trim() || null,
+      contactName: parsed.data.contactName?.trim() || null,
     })
     
     revalidatePath("/admin/suppliers")
@@ -43,6 +51,7 @@ export async function createSupplierAction(input: {
 export async function createSupplierCategoryAction(name: string): Promise<ActionResult<{ name: string; slug: string }>> {
   const authFailure = await ensureActionSession("suppliers.create-category")
   if (authFailure) return authFailure
+  if (!z.string().trim().min(1).max(80).safeParse(name).success) return expectedActionFailure("VALIDATION_FAILED", "Enter a valid category name.")
   try {
     const category = await createSupplierCategory(name)
     revalidatePath("/admin/suppliers/new")
@@ -57,8 +66,10 @@ export async function updateSupplierAction(supplierId: string, input: {
 }): Promise<ActionResult> {
   const authFailure = await ensureActionSession("suppliers.update")
   if (authFailure) return authFailure
+  const parsed = supplierSchema.safeParse(input)
+  if (!idSchema.safeParse(supplierId).success || !parsed.success) return expectedActionFailure("VALIDATION_FAILED", "Enter valid supplier details.")
   try {
-    await updateSupplier(supplierId, { ...input, email: input.email?.trim() || null })
+    await updateSupplier(supplierId, { ...parsed.data, email: parsed.data.email?.trim() || null })
     revalidatePath("/admin/suppliers")
     revalidatePath(`/admin/suppliers/${supplierId}`)
     return { success: true, data: undefined }

@@ -1,5 +1,5 @@
 import "server-only"
-import { and, asc, desc, eq } from "drizzle-orm"
+import { and, asc, desc, eq, sql } from "drizzle-orm"
 import { db, schema } from "@workspace/db"
 import * as expenseRepo from "../expenses/repository"
 
@@ -7,6 +7,25 @@ export async function listSuppliers(organizationId: string) {
   return await db
     .select()
     .from(schema.supplier)
+    .where(eq(schema.supplier.organizationId, organizationId))
+    .orderBy(desc(schema.supplier.createdAt))
+}
+
+export async function listSupplierSummaries(organizationId: string) {
+  return db.select({
+    id: schema.supplier.id,
+    name: schema.supplier.name,
+    category: schema.supplier.category,
+    phone: schema.supplier.phone,
+    email: schema.supplier.email,
+    notes: schema.supplier.notes,
+    companyContact: schema.supplier.companyContact,
+    contactName: schema.supplier.contactName,
+    status: schema.supplier.status,
+    receiptCount: sql<number>`coalesce((select count(distinct ${schema.expense.id}) from ${schema.expense} where ${schema.expense.organizationId} = ${organizationId} and ${schema.expense.supplierId} = ${schema.supplier.id}), 0)`,
+    incurredCents: sql<number>`coalesce((select sum(${schema.expenseLine.amountCents}) from ${schema.expenseLine} inner join ${schema.expense} on ${schema.expense.id} = ${schema.expenseLine.expenseId} where ${schema.expenseLine.organizationId} = ${organizationId} and ${schema.expense.supplierId} = ${schema.supplier.id}), 0)`,
+    paidCents: sql<number>`coalesce((select sum(${schema.ledgerPayment.amountCents}) from ${schema.ledgerPayment} where ${schema.ledgerPayment.organizationId} = ${organizationId} and ${schema.ledgerPayment.supplierId} = ${schema.supplier.id}), 0)`,
+  }).from(schema.supplier)
     .where(eq(schema.supplier.organizationId, organizationId))
     .orderBy(desc(schema.supplier.createdAt))
 }

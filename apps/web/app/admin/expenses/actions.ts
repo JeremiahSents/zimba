@@ -23,9 +23,8 @@ import type {
   PayableExpenseResponse,
 } from "@/lib/types"
 import { z } from "zod"
+import { expenseStatusSchema, idSchema } from "@/core/shared/validation"
 
-const idSchema = z.string().trim().min(1).max(128)
-const expenseStatusSchema = z.enum(["draft", "submitted", "approved", "rejected", "paid"])
 
 export async function createPayableExpenseAction(
   expense: PayableExpenseCreate

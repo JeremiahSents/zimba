@@ -8,11 +8,9 @@ import { recordAudit } from "../audit/service"
 
 export async function getSuppliersList(): Promise<SupplierResponse[]> {
   const { organization } = await requireSession()
-  const suppliers = await supplierRepo.listSuppliers(organization.organizationId)
-  
-  return Promise.all(suppliers.map(async s => {
-    const financials = await supplierRepo.getSupplierFinancials(organization.organizationId, s.id)
-    const { receiptCount = 0, incurredCents = 0, paidCents = 0 } = financials ?? {}
+  const suppliers = await supplierRepo.listSupplierSummaries(organization.organizationId)
+  return suppliers.map(s => {
+    const { receiptCount = 0, incurredCents = 0, paidCents = 0 } = s
     return {
     id: s.id,
     supplier_id: s.id,
@@ -29,7 +27,8 @@ export async function getSuppliersList(): Promise<SupplierResponse[]> {
     outstanding_amount: Math.max(0, incurredCents - paidCents) / 100,
     total_incurred: incurredCents / 100,
     total_paid: paidCents / 100,
-  }}))
+    }
+  })
 }
 
 export async function createSupplier(data: SupplierCreate) {

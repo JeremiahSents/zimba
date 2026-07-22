@@ -13,8 +13,9 @@ import {
 import { handleActionError } from "@/core/shared/handle-action-error"
 import { z } from "zod"
 import { requirePlatformRole } from "@/core/auth/service"
+import { idSchema, platformRoleSchema } from "@/core/shared/validation"
 
-const inputSchema = z.object({ userId: z.string().trim().min(1), role: z.enum(["super_admin", "support", "none"]) })
+const inputSchema = z.object({ userId: idSchema, role: platformRoleSchema })
 
 export async function updatePlatformUserRoleAction(
   userId: string,

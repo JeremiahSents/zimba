@@ -127,16 +127,15 @@ export async function acceptInvitation(token: string) {
     .select()
     .from(schema.invitation)
     .where(
-      and(
-        eq(schema.invitation.tokenHash, tokenHash),
-        eq(schema.invitation.status, "pending")
-      )
+      eq(schema.invitation.tokenHash, tokenHash)
     )
     .limit(1)
   if (!invite || invite.expiresAt < new Date())
     notFound("This invitation is invalid or expired.")
   if (invite.email !== user.email.toLowerCase())
     forbidden("Sign in with the email address that was invited.")
+  if (invite.status === "accepted" && invite.acceptedBy === user.id) return
+  if (invite.status !== "pending") notFound("This invitation is no longer available.")
   await db.transaction(async (tx) => {
     const claimed = await tx.update(schema.invitation)
       .set({ status: "accepted", acceptedBy: user.id, acceptedAt: new Date() })

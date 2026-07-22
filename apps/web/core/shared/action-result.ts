@@ -1,8 +1,7 @@
 import { ApplicationError, type ErrorCode, type PublicError } from "./errors"
+import type { ActionResult as SharedActionResult } from "@workspace/server-primitives"
 
-export type ActionResult<T = void> =
-  | { success: true; data: T }
-  | { success: false; error: PublicError }
+export type ActionResult<T = void> = SharedActionResult<T>
 
 export function actionFailure(error: PublicError): ActionResult<never> {
   return { success: false, error }

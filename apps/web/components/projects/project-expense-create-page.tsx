@@ -84,6 +84,9 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
   const [files, setFiles] = useState<File[]>([])
   const [uploadedReceiptFileId, setUploadedReceiptFileId] = useState<string>()
   const uploadPromiseRef = useRef<Promise<string> | null>(null)
+  const uploadFileRef = useRef<File | null>(null)
+  const uploadAttemptRef = useRef(0)
+  const submissionLockRef = useRef(false)
   const [categories, setCategories] = useState<TaskResponse[]>(project.tasks)
   const [lines, setLines] = useState([makeLine(1, project.tasks[0]?.id)])
   const [amountPaid, setAmountPaid] = useState("")
@@ -166,16 +169,27 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
 
   useEffect(() => {
     const file = files[0]
-    if (!file || uploadedReceiptFileId || uploadPromiseRef.current) return
+    if (!file) {
+      uploadFileRef.current = null
+      uploadPromiseRef.current = null
+      setUploadedReceiptFileId(undefined)
+      return
+    }
+    if (uploadFileRef.current === file && (uploadedReceiptFileId || uploadPromiseRef.current)) return
+    uploadFileRef.current = file
+    setUploadedReceiptFileId(undefined)
+    const attempt = ++uploadAttemptRef.current
     const promise = uploadZimbaFile(file, "expense_receipt")
     uploadPromiseRef.current = promise
     void promise
-      .then((fileId) => setUploadedReceiptFileId(fileId))
+      .then((fileId) => {
+        if (attempt === uploadAttemptRef.current && uploadFileRef.current === file) setUploadedReceiptFileId(fileId)
+      })
       .catch(() =>
         setError("The file could not be uploaded. You can try again.")
       )
       .finally(() => {
-        uploadPromiseRef.current = null
+        if (attempt === uploadAttemptRef.current) uploadPromiseRef.current = null
       })
   }, [files, uploadedReceiptFileId])
 
@@ -327,6 +341,7 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
   }
 
   async function saveReceipt() {
+    if (submissionLockRef.current) return
     if (!validateReceiptDetails()) return
     if (paid > total) {
       setError("Amount paid cannot exceed the receipt total.")
@@ -336,6 +351,7 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
       setError("Add the payment date and method.")
       return
     }
+    submissionLockRef.current = true
 
     setSaving(true)
     setError("")
@@ -385,6 +401,7 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
       )
     } finally {
       setSaving(false)
+      submissionLockRef.current = false
     }
   }
 
@@ -414,6 +431,9 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
               setSupplierId("")
               setPurchaseDate(today)
               setFiles([])
+              uploadFileRef.current = null
+              uploadAttemptRef.current += 1
+              uploadPromiseRef.current = null
               setUploadedReceiptFileId(undefined)
               setLines([makeLine(1, project.tasks[0]?.id)])
               setAmountPaid("")

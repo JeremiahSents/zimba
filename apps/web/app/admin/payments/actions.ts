@@ -15,9 +15,7 @@ import {
 import { markExpenseFullyPaid } from "@/core/payments/service"
 import type { UpcomingPaymentCreate, UpcomingPaymentUpdate } from "@/lib/types"
 import { ensureActionSession } from "@/core/auth/action-session"
-import { z } from "zod"
-
-const idSchema = z.string().trim().min(1).max(128)
+import { idSchema } from "@/core/shared/validation"
 
 export async function createUpcomingPaymentAction(
   projectId: string,

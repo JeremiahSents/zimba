@@ -3,6 +3,9 @@ import { and, desc, eq, sql } from "drizzle-orm"
 import { db, schema } from "@workspace/db"
 
 export async function createPayable(data: typeof schema.payable.$inferInsert) {
+  const [project] = await db.select({ id: schema.project.id }).from(schema.project)
+    .where(and(eq(schema.project.id, data.projectId), eq(schema.project.organizationId, data.organizationId))).limit(1)
+  if (!project) return undefined
   const [payable] = await db.insert(schema.payable).values(data).returning()
   return payable
 }
@@ -25,6 +28,11 @@ export async function deletePayable(organizationId: string, id: string) {
 }
 
 export async function createLedgerPayment(data: typeof schema.ledgerPayment.$inferInsert) {
+  if (data.supplierId) {
+    const [supplier] = await db.select({ id: schema.supplier.id }).from(schema.supplier)
+      .where(and(eq(schema.supplier.id, data.supplierId), eq(schema.supplier.organizationId, data.organizationId))).limit(1)
+    if (!supplier) return undefined
+  }
   const [payment] = await db.insert(schema.ledgerPayment).values(data).returning()
   return payment
 }

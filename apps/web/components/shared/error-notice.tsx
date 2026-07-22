@@ -48,8 +48,8 @@ export function ErrorNotice({ error, onRetry, className }: ErrorNoticeProps) {
   return (
     <div
       className={className ?? "flex flex-wrap items-center justify-between gap-3 rounded-lg border border-destructive/25 bg-destructive/5 px-4 py-3"}
-      role="alert"
-      aria-live="assertive"
+      role="status"
+      aria-live="polite"
     >
       <div className="min-w-0">
         <p className="font-medium text-destructive text-sm">{message}</p>
