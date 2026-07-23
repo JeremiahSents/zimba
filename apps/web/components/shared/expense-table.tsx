@@ -34,10 +34,12 @@ import {
   MobileDataMeta,
 } from "@/components/shared/mobile-data-card"
 import { ResponsiveDataView } from "@/components/shared/responsive-data-view"
+import { useWorkspaceSlug } from "@/components/shared/use-workspace-slug"
 import { formatCurrency, formatShortDate } from "@/lib/format"
 import type { ExpenseTableRow } from "@/lib/types"
 
 export function ExpenseTable({ expenses }: { expenses: ExpenseTableRow[] }) {
+  const slug = useWorkspaceSlug()
   const receiptRows = groupExpensesByReceipt(expenses)
   const [globalFilter, setGlobalFilter] = useState("")
   const [sorting, setSorting] = useState<SortingState>([])
@@ -65,7 +67,7 @@ export function ExpenseTable({ expenses }: { expenses: ExpenseTableRow[] }) {
         header: "Receipt",
         cell: ({ getValue, row }) => (
           <Link
-            href={`/admin/expenses/receipts/${row.original.receipt_id ?? row.original.id}`}
+            href={`/${slug}/expenses/receipts/${row.original.receipt_id ?? row.original.id}`}
             className="font-medium text-primary hover:underline"
           >
             {getValue<string>()}
@@ -78,7 +80,7 @@ export function ExpenseTable({ expenses }: { expenses: ExpenseTableRow[] }) {
         cell: ({ getValue }) => formatCurrency(getValue<number>()),
       },
     ],
-    []
+    [slug]
   )
 
   const table = useReactTable({
@@ -128,7 +130,7 @@ export function ExpenseTable({ expenses }: { expenses: ExpenseTableRow[] }) {
                 return (
                   <Link
                     key={row.id}
-                    href={`/admin/expenses/receipts/${expense.receipt_id ?? expense.id}`}
+                    href={`/${slug}/expenses/receipts/${expense.receipt_id ?? expense.id}`}
                     className="block transition-transform active:scale-[0.99]"
                   >
                     <MobileDataCard

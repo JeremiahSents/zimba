@@ -211,6 +211,7 @@ function ArchivedProjectsSection({
 }: {
   projects: ProjectDashboardResponse[]
 }) {
+  const slug = useWorkspaceSlug()
   const router = useRouter()
   const [pendingId, setPendingId] = useState<string | null>(null)
   const [error, setError] = useState("")
@@ -278,7 +279,7 @@ function ArchivedProjectsSection({
             >
               <div className="min-w-0">
                 <Link
-                  href={`/admin/projects/${project.id}`}
+                  href={`/${slug}/projects/${project.id}`}
                   className="block truncate font-semibold text-sm hover:text-primary"
                 >
                   {project.name}

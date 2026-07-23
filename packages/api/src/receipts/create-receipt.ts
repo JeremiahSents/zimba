@@ -1,6 +1,9 @@
 import type { ReceiptCreateOutputDto } from "@workspace/contracts"
 import { receiptCreateInputSchema } from "@workspace/contracts"
-import type { DatabaseExecutor } from "@workspace/db/repositories"
+import type {
+  DatabaseExecutor,
+  TransactionRunner,
+} from "@workspace/db/repositories"
 import {
   findActiveProjectForOrganization,
   findAllocationForProject,
@@ -16,11 +19,20 @@ import type { WorkspaceContext } from "../shared/workspace-context"
 
 export async function createReceipt(
   ctx: WorkspaceContext,
-  deps: { executor: DatabaseExecutor },
+  deps: { runInTransaction: TransactionRunner },
   rawInput: unknown
 ): Promise<ReceiptCreateOutputDto> {
   const input = receiptCreateInputSchema.parse(rawInput)
-  const { executor } = deps
+  return deps.runInTransaction((executor) =>
+    createReceiptInTransaction(ctx, executor, input)
+  )
+}
+
+async function createReceiptInTransaction(
+  ctx: WorkspaceContext,
+  executor: DatabaseExecutor,
+  input: ReturnType<typeof receiptCreateInputSchema.parse>
+): Promise<ReceiptCreateOutputDto> {
   const organizationId = ctx.organizationId
 
   const [project] = await findActiveProjectForOrganization(

@@ -1,14 +1,12 @@
 import "server-only"
 
-import { createWorkspaceContext } from "@workspace/api"
-import type { WorkspaceRole } from "@workspace/contracts"
+import { resolveWorkspace } from "@workspace/api"
+import { db } from "@workspace/db"
 import { requireSession } from "./service"
 
-export async function getWorkspaceContext() {
+export async function getWorkspaceContext(workspaceSlug: string) {
   const session = await requireSession()
-  return createWorkspaceContext({
-    userId: session.user.id,
-    organizationId: session.organization.organizationId,
-    role: session.organization.role as WorkspaceRole,
+  return resolveWorkspace(session.user.id, workspaceSlug, {
+    executor: db,
   })
 }

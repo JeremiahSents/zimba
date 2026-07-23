@@ -39,4 +39,14 @@ describe("proxy", () => {
 
     expect(getRequestHostname(proxiedHostRequest)).toBe("app.zimba.digital")
   })
+
+  it("forwards the workspace slug as trusted request context", () => {
+    const response = proxy(
+      request("https://app.zimba.digital/zimba-consultants/projects")
+    )
+
+    expect(response.headers.get("x-middleware-request-x-workspace-slug")).toBe(
+      "zimba-consultants"
+    )
+  })
 })

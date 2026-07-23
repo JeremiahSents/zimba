@@ -2,12 +2,10 @@ import "server-only"
 
 import { db } from "@workspace/db"
 import {
-  createSupplier,
   findActiveProjectForOrganization,
   findAllocationForProject,
   findCompletedFile,
   findExpenseForOrganization,
-  findSupplierByNameForOrganization,
   findSupplierForOrganization,
   insertReceipt,
   insertReceiptLine,
@@ -15,7 +13,6 @@ import {
   updateReceiptPaymentStatus,
 } from "@workspace/db/repositories"
 import type {
-  ExpenseReceiptCreate,
   ExpenseStatus,
   ExpenseTableRow,
   PayableExpenseCreate,
@@ -190,114 +187,6 @@ export async function createPayableExpense(
       lines: createdLines,
       payments: [],
     }
-  })
-}
-
-export async function createExpenseReceipt(
-  projectId: string,
-  data: ExpenseReceiptCreate
-) {
-  const { organization } = await requireSession()
-  const organizationId = organization.organizationId
-  return db.transaction(async (tx) => {
-    const [project] = await findActiveProjectForOrganization(
-      tx,
-      organizationId,
-      projectId
-    )
-    if (!project) notFound("Project not found.")
-    if (data.receipt_file_id) {
-      const file = await findCompletedFile(
-        tx,
-        organizationId,
-        data.receipt_file_id,
-        "expense_receipt"
-      )
-      if (!file)
-        badRequest(
-          "The receipt file is invalid or belongs to another workspace."
-        )
-    }
-    const supplierName = data.items[0]?.supplier_name.trim()
-    if (!supplierName) badRequest("A supplier is required.")
-    let [supplier] = await findSupplierByNameForOrganization(
-      tx,
-      organizationId,
-      supplierName
-    )
-    if (!supplier) {
-      supplier = await createSupplier(tx, {
-        organizationId,
-        name: supplierName,
-      })
-    }
-    if (!supplier) throw new Error("Supplier insert failed")
-    const expenseId = crypto.randomUUID()
-    const grossCents = data.items.reduce(
-      (sum, item) => sum + Math.round(item.quantity * item.unit_rate * 100),
-      0
-    )
-    const paidCents = Math.min(
-      grossCents,
-      Math.max(
-        0,
-        Math.round(
-          (data.amount_paid ??
-            data.items.reduce(
-              (sum, item) => sum + (item.amount_paid ?? 0),
-              0
-            )) * 100
-        )
-      )
-    )
-    const paymentStatus =
-      paidCents >= grossCents && grossCents > 0
-        ? "paid"
-        : paidCents > 0
-          ? "partial"
-          : "unpaid"
-    await insertReceipt(tx, {
-      id: expenseId,
-      organizationId,
-      projectId,
-      supplierId: supplier.id,
-      receiptFileId: data.receipt_file_id,
-      paymentStatus,
-      expenseDate: new Date(data.expense_date),
-    })
-    for (const item of data.items) {
-      const allocationId = String(item.allocation_id)
-      const [allocation] = await findAllocationForProject(
-        tx,
-        organizationId,
-        projectId,
-        allocationId
-      )
-      if (!allocation)
-        badRequest("An allocation does not belong to this project.")
-      await insertReceiptLine(tx, {
-        organizationId,
-        expenseId,
-        allocationId,
-        legacyAllocationId: allocationId,
-        itemDescription: item.item_description,
-        quantity: item.quantity,
-        unitRateCents: Math.round(item.unit_rate * 100),
-        amountCents: Math.round(item.quantity * item.unit_rate * 100),
-      })
-    }
-    if (paidCents > 0) {
-      await insertReceiptPayment(tx, {
-        organizationId,
-        expenseId,
-        supplierId: supplier.id,
-        amountCents: paidCents,
-        currency: "UGX",
-        paymentDate: new Date(data.expense_date),
-        method: "receipt_payment",
-      })
-    }
-    return { id: expenseId }
   })
 }
 

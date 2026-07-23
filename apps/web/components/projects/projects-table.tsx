@@ -25,6 +25,7 @@ import {
 } from "@workspace/ui/components/table"
 import Link from "next/link"
 import { useMemo, useState } from "react"
+import { useWorkspaceSlug } from "@/components/shared/use-workspace-slug"
 import { formatCurrency, formatPercent } from "@/lib/format"
 import type { ProjectDashboardResponse } from "@/lib/types"
 
@@ -40,6 +41,7 @@ export function ProjectsTable({
   projects: ProjectDashboardResponse[]
   details: Details
 }) {
+  const slug = useWorkspaceSlug()
   const [filter, setFilter] = useState("")
   const [sorting, setSorting] = useState<SortingState>([])
   const columns = useMemo<ColumnDef<ProjectDashboardResponse>[]>(
@@ -50,7 +52,7 @@ export function ProjectsTable({
         cell: ({ row }) => (
           <div>
             <Link
-              href={`/admin/projects/${row.original.id}`}
+              href={`/${slug}/projects/${row.original.id}`}
               className="font-medium hover:text-primary hover:underline"
             >
               {row.original.name}
@@ -122,7 +124,7 @@ export function ProjectsTable({
         ),
       },
     ],
-    [details]
+    [details, slug]
   )
   const table = useReactTable({
     data: projects,

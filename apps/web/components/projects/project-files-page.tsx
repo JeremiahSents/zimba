@@ -12,6 +12,7 @@ import { useRef, useState } from "react"
 import { updateProjectAction } from "@/app/admin/projects/actions"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { ErrorNotice } from "@/components/shared/error-notice"
+import { useWorkspaceSlug } from "@/components/shared/use-workspace-slug"
 import { ApplicationError, type PublicError } from "@/core/shared/errors"
 import type { ProjectAttachment, ProjectDetailResponse } from "@/lib/types"
 import { uploadZimbaFile } from "@/lib/upload-file"
@@ -21,6 +22,7 @@ export function ProjectFilesPage({
 }: {
   project: ProjectDetailResponse
 }) {
+  const slug = useWorkspaceSlug()
   const inputRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
   const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([])
@@ -37,7 +39,7 @@ export function ProjectFilesPage({
     >
       <div className="mb-6 grid gap-3">
         <Link
-          href={`/admin/projects/${project.id}`}
+          href={`/${slug}/projects/${project.id}`}
           className="inline-flex items-center gap-2 font-semibold text-primary text-xs hover:underline"
         >
           <HugeiconsIcon icon={ArrowLeft01Icon} size={15} /> Back to project

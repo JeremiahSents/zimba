@@ -1,3 +1,4 @@
+import type { TransactionRunner } from "@workspace/db/repositories"
 import { describe, expect, it, vi } from "vitest"
 import type { WorkspaceContext } from "../shared/workspace-context"
 import { createReceipt } from "./create-receipt"
@@ -37,13 +38,53 @@ function mockExecutor(overrides: Record<string, unknown> = {}) {
   return { ...base, ...overrides } as unknown
 }
 
+function transactionWith(executor: unknown) {
+  const transactionStarted = vi.fn()
+  const runInTransaction: TransactionRunner = (callback) => {
+    transactionStarted()
+    return callback(executor as never)
+  }
+  return {
+    runInTransaction,
+    transactionStarted,
+  }
+}
+
 describe("createReceipt use case", () => {
   it("creates a receipt with valid input", async () => {
     const executor = mockExecutor() as never
-    const result = await createReceipt(
-      makeCtx(),
-      { executor },
-      {
+    const transaction = transactionWith(executor)
+    const result = await createReceipt(makeCtx(), transaction, {
+      projectId: "p1",
+      supplierId: "s1",
+      currency: "UGX",
+      lines: [
+        {
+          allocationId: "a1",
+          itemDescription: "Cement",
+          quantity: 2,
+          unitRateCents: 5000,
+          amountCents: 10000,
+        },
+      ],
+    })
+    expect(result.id).toBeDefined()
+    expect(result.paymentStatus).toBe("unpaid")
+    expect(result.totalCents).toBe(10000)
+    expect(transaction.transactionStarted).toHaveBeenCalledOnce()
+  })
+
+  it("rejects invalid input with zod parse error", async () => {
+    const executor = mockExecutor() as never
+    await expect(
+      createReceipt(makeCtx(), transactionWith(executor), { projectId: "" })
+    ).rejects.toThrow()
+  })
+
+  it("rejects overpayment", async () => {
+    const executor = mockExecutor() as never
+    await expect(
+      createReceipt(makeCtx(), transactionWith(executor), {
         projectId: "p1",
         supplierId: "s1",
         currency: "UGX",
@@ -51,47 +92,13 @@ describe("createReceipt use case", () => {
           {
             allocationId: "a1",
             itemDescription: "Cement",
-            quantity: 2,
-            unitRateCents: 5000,
-            amountCents: 10000,
+            quantity: 1,
+            unitRateCents: 1000,
+            amountCents: 1000,
           },
         ],
-      }
-    )
-    expect(result.id).toBeDefined()
-    expect(result.paymentStatus).toBe("unpaid")
-    expect(result.totalCents).toBe(10000)
-  })
-
-  it("rejects invalid input with zod parse error", async () => {
-    const executor = mockExecutor() as never
-    await expect(
-      createReceipt(makeCtx(), { executor }, { projectId: "" })
-    ).rejects.toThrow()
-  })
-
-  it("rejects overpayment", async () => {
-    const executor = mockExecutor() as never
-    await expect(
-      createReceipt(
-        makeCtx(),
-        { executor },
-        {
-          projectId: "p1",
-          supplierId: "s1",
-          currency: "UGX",
-          lines: [
-            {
-              allocationId: "a1",
-              itemDescription: "Cement",
-              quantity: 1,
-              unitRateCents: 1000,
-              amountCents: 1000,
-            },
-          ],
-          payment: { amountCents: 2000, currency: "UGX" },
-        }
-      )
+        payment: { amountCents: 2000, currency: "UGX" },
+      })
     ).rejects.toThrow()
   })
 })

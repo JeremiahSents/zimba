@@ -95,6 +95,10 @@ async function assertUsersExist(
     findUserById(tx, targetId),
   ])
   if (!actor[0] || !target[0]) notFound("User not found.")
+  const actorAccess = await findPlatformAccessForUser(tx, actorId)
+  if (actorAccess[0]?.role !== "super_admin") {
+    forbidden("Only super admins can change platform access.")
+  }
 }
 
 export async function updatePlatformUserRole(

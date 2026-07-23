@@ -25,15 +25,17 @@ export type SessionLookupResult =
 
 export const getSessionWithOrganization = cache(
   async (): Promise<SessionLookupResult | null> => {
-    const authSession = await auth.api.getSession({
-      headers: await headers(),
-    })
+    const requestHeaders = await headers()
+    const authSession = await auth.api.getSession({ headers: requestHeaders })
 
     if (!authSession?.session) {
       return null
     }
 
-    const membership = await getOrganizationMembership(authSession.user.id)
+    const membership = await getOrganizationMembership(
+      authSession.user.id,
+      requestHeaders.get("x-workspace-slug")
+    )
     if (!membership) {
       return {
         user: authSession.user,

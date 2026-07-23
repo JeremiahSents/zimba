@@ -59,6 +59,7 @@ export function ProjectsList({
 }
 
 export function ProjectRow({ project }: { project: ProjectDashboardResponse }) {
+  const slug = useWorkspaceSlug()
   const budgetTone =
     project.pct >= 80 ? "critical" : project.pct >= 60 ? "warning" : "healthy"
   const utilizationPercent = Math.min(Math.max(project.pct, 0), 100)
@@ -94,7 +95,7 @@ export function ProjectRow({ project }: { project: ProjectDashboardResponse }) {
             className="size-4 shrink-0 text-primary"
           />
           <Link
-            href={`/admin/projects/${project.id}`}
+            href={`/${slug}/projects/${project.id}`}
             className="truncate font-semibold text-sm hover:text-primary"
           >
             {project.name}

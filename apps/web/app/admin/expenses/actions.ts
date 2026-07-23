@@ -8,13 +8,11 @@ import {
 } from "@workspace/contracts"
 import { db } from "@workspace/db"
 import { revalidatePath } from "next/cache"
-import { redirect } from "next/navigation"
 import { ensureActionSession } from "@/core/auth/action-session"
 import { getWorkspaceContext } from "@/core/auth/workspace-context"
 import { getWorkspaceSlug } from "@/core/auth/workspace-slug"
 import {
   correctReceiptCategory,
-  createExpenseReceipt,
   deleteReceipt,
   getPayableExpense,
   updateExpenseStatus,
@@ -26,13 +24,13 @@ import {
 import { handleActionError } from "@/core/shared/handle-action-error"
 import { hasValidPayableLines } from "@/lib/receipt-validation"
 import type {
-  ExpenseReceiptCreate,
   ExpenseStatus,
   PayableExpenseCreate,
   PayableExpenseResponse,
 } from "@/lib/types"
 
 export async function createPayableExpenseAction(
+  workspaceSlug: string,
   expense: PayableExpenseCreate
 ): Promise<ActionResult<PayableExpenseResponse>> {
   const authFailure = await ensureActionSession("expenses.create-payable")
@@ -55,10 +53,10 @@ export async function createPayableExpenseAction(
   }
 
   try {
-    const ctx = await getWorkspaceContext()
+    const ctx = await getWorkspaceContext(workspaceSlug)
     const created = await createReceiptUseCase(
       ctx,
-      { executor: db },
+      { runInTransaction: (callback) => db.transaction(callback) },
       {
         projectId: String(expense.project_id),
         supplierId: String(expense.supplier_id),
@@ -88,48 +86,11 @@ export async function createPayableExpenseAction(
       }
     )
     const payable = await getPayableExpense(created.id)
-    revalidateConnectedRoutes()
+    revalidateConnectedRoutes(undefined, workspaceSlug)
     return { success: true, data: payable }
   } catch (error) {
     return handleActionError(error, "expenses.create-payable")
   }
-}
-
-export async function createExpenseReceiptAction(
-  projectId: string,
-  receipt: ExpenseReceiptCreate
-): Promise<ActionResult> {
-  const authFailure = await ensureActionSession("expenses.create-receipt")
-  if (authFailure) return authFailure
-  if (!idSchema.safeParse(projectId).success)
-    return expectedActionFailure("VALIDATION_FAILED", "Invalid project.")
-  if (
-    !receipt.expense_date ||
-    receipt.items.length === 0 ||
-    receipt.items.some(
-      (item) =>
-        !item.allocation_id ||
-        !item.supplier_name.trim() ||
-        !item.item_description.trim() ||
-        item.quantity <= 0 ||
-        item.unit_rate < 0
-    )
-  ) {
-    return expectedActionFailure(
-      "VALIDATION_FAILED",
-      "Complete every required receipt field."
-    )
-  }
-
-  try {
-    await createExpenseReceipt(projectId, receipt)
-  } catch (error) {
-    return handleActionError(error, "expenses.create-receipt")
-  }
-
-  revalidateConnectedRoutes(projectId)
-  const slug = await getWorkspaceSlug()
-  redirect(`/${slug}/projects/${projectId}`)
 }
 
 export async function updateExpenseStatusAction(
@@ -202,8 +163,11 @@ export async function deleteReceiptAction(
   }
 }
 
-async function revalidateConnectedRoutes(projectId?: string) {
-  const slug = await getWorkspaceSlug()
+async function revalidateConnectedRoutes(
+  projectId?: string,
+  workspaceSlug?: string
+) {
+  const slug = workspaceSlug ?? (await getWorkspaceSlug())
   revalidatePath(`/${slug}/home`)
   revalidatePath(`/${slug}/expenses`)
   revalidatePath(`/${slug}/projects`)

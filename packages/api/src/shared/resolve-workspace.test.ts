@@ -52,7 +52,7 @@ describe("resolveWorkspace", () => {
     ).rejects.toThrow(ApplicationError)
   })
 
-  it("normalizes unknown role to viewer", async () => {
+  it("rejects an unknown membership role", async () => {
     vi.mocked(findWorkspaceBySlug).mockResolvedValue({
       id: "org-1",
       name: "Acme Ltd",
@@ -63,9 +63,24 @@ describe("resolveWorkspace", () => {
       id: "member-1",
       role: "unknown_role",
     })
-    const ctx = await resolveWorkspace("user-1", "acme-ltd", {
-      executor: {} as never,
+    await expect(
+      resolveWorkspace("user-1", "acme-ltd", {
+        executor: {} as never,
+      })
+    ).rejects.toThrow(ApplicationError)
+  })
+
+  it("rejects an inactive workspace", async () => {
+    vi.mocked(findWorkspaceBySlug).mockResolvedValue({
+      id: "org-1",
+      name: "Acme Ltd",
+      slug: "acme-ltd",
+      status: "suspended",
     })
-    expect(ctx.role).toBe("viewer")
+    await expect(
+      resolveWorkspace("user-1", "acme-ltd", {
+        executor: {} as never,
+      })
+    ).rejects.toThrow(ApplicationError)
   })
 })

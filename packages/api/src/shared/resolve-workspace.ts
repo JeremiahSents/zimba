@@ -2,6 +2,7 @@ import type {
   ResolvedWorkspaceContext,
   WorkspaceRole,
 } from "@workspace/contracts"
+import { workspaceSlugSchema } from "@workspace/contracts"
 import type { DatabaseExecutor } from "@workspace/db/repositories"
 import {
   findMembershipByUserAndOrganization,
@@ -16,10 +17,11 @@ const validRoles: WorkspaceRole[] = [
   "viewer",
 ]
 
-function normalizeRole(role: string): WorkspaceRole {
-  return validRoles.includes(role as WorkspaceRole)
-    ? (role as WorkspaceRole)
-    : "viewer"
+function parseRole(role: string): WorkspaceRole {
+  if (!validRoles.includes(role as WorkspaceRole)) {
+    notFoundError("Workspace not found.")
+  }
+  return role as WorkspaceRole
 }
 
 export async function resolveWorkspace(
@@ -27,8 +29,13 @@ export async function resolveWorkspace(
   slug: string,
   deps: { executor: DatabaseExecutor }
 ): Promise<ResolvedWorkspaceContext> {
-  const workspace = await findWorkspaceBySlug(deps.executor, slug)
-  if (!workspace) notFoundError("Workspace not found.")
+  const parsedSlug = workspaceSlugSchema.safeParse(slug)
+  if (!parsedSlug.success) notFoundError("Workspace not found.")
+
+  const workspace = await findWorkspaceBySlug(deps.executor, parsedSlug.data)
+  if (workspace?.status !== "active") {
+    notFoundError("Workspace not found.")
+  }
 
   const membership = await findMembershipByUserAndOrganization(
     deps.executor,
@@ -42,6 +49,6 @@ export async function resolveWorkspace(
     organizationName: workspace.name,
     slug: workspace.slug,
     userId,
-    role: normalizeRole(membership.role),
+    role: parseRole(membership.role),
   }
 }

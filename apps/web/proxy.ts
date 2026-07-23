@@ -17,17 +17,30 @@ export function getRequestHostname(request: NextRequest) {
 }
 
 export function proxy(request: NextRequest) {
+  const requestHeaders = new Headers(request.headers)
+  const firstSegment = request.nextUrl.pathname.split("/").filter(Boolean)[0]
+  if (
+    firstSegment &&
+    !["admin", "api", "login", "register", "onboarding", "invite"].includes(
+      firstSegment
+    )
+  ) {
+    requestHeaders.set("x-workspace-slug", firstSegment)
+  }
+
   if (getRequestHostname(request) !== APP_HOSTNAME) {
-    return NextResponse.next()
+    return NextResponse.next({ request: { headers: requestHeaders } })
   }
 
   if (request.nextUrl.pathname !== "/") {
-    return NextResponse.next()
+    return NextResponse.next({ request: { headers: requestHeaders } })
   }
 
-  return NextResponse.rewrite(new URL("/admin", request.url))
+  return NextResponse.rewrite(new URL("/admin", request.url), {
+    request: { headers: requestHeaders },
+  })
 }
 
 export const config = {
-  matcher: "/",
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 }

@@ -52,6 +52,33 @@ export function findUserOrganizationMembership(
     .limit(1)
 }
 
+export function findUserOrganizationMembershipBySlug(
+  executor: DatabaseExecutor,
+  userId: string,
+  slug: string
+) {
+  return executor
+    .select({
+      organizationId: organizationMember.organizationId,
+      organizationName: organization.name,
+      slug: organization.slug,
+      role: organizationMember.role,
+    })
+    .from(organizationMember)
+    .innerJoin(
+      organization,
+      eq(organization.id, organizationMember.organizationId)
+    )
+    .where(
+      and(
+        eq(organizationMember.userId, userId),
+        eq(organization.slug, slug),
+        eq(organization.status, "active")
+      )
+    )
+    .limit(1)
+}
+
 export function findMembershipByUser(
   executor: DatabaseExecutor,
   userId: string

@@ -32,6 +32,7 @@ import {
   TableRow,
 } from "@workspace/ui/components/table"
 import { useMemo, useState } from "react"
+import { useWorkspaceSlug } from "@/components/shared/use-workspace-slug"
 import { formatCurrency, formatShortDate } from "@/lib/format"
 import type {
   SupplierListItem,
@@ -53,6 +54,7 @@ export function SupplierTable({
   receipts: SupplierReceiptRow[]
   suppliers: SupplierListItem[]
 }) {
+  const slug = useWorkspaceSlug()
   const [globalFilter, setGlobalFilter] = useState("")
   const [statusFilter, setStatusFilter] = useState<
     SupplierReceiptStatus | "all"
@@ -207,7 +209,7 @@ export function SupplierTable({
                 type="button"
                 className="grid gap-4 rounded-xl border bg-card p-5 text-left shadow-sm transition-colors hover:bg-muted/35"
                 onClick={() => {
-                  window.location.href = `/admin/expenses/receipts/${row.original.id}`
+                  window.location.href = `/${slug}/expenses/receipts/${row.original.id}`
                 }}
               >
                 <div className="flex items-start justify-between gap-2">
@@ -312,12 +314,12 @@ export function SupplierTable({
                   key={row.id}
                   className="group cursor-pointer hover:bg-muted/40"
                   onClick={() => {
-                    window.location.href = `/admin/expenses/receipts/${row.original.id}`
+                    window.location.href = `/${slug}/expenses/receipts/${row.original.id}`
                   }}
                   tabIndex={0}
                   onKeyDown={(event) => {
                     if (event.key === "Enter" || event.key === " ")
-                      window.location.href = `/admin/expenses/receipts/${row.original.id}`
+                      window.location.href = `/${slug}/expenses/receipts/${row.original.id}`
                   }}
                 >
                   {row.getVisibleCells().map((cell) => (

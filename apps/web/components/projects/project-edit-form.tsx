@@ -18,6 +18,7 @@ import {
 } from "@/app/admin/projects/actions"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { ErrorNotice } from "@/components/shared/error-notice"
+import { useWorkspaceSlug } from "@/components/shared/use-workspace-slug"
 import type { PublicError } from "@/core/shared/errors"
 import type { ProjectDetailResponse, TaskResponse } from "@/lib/types"
 
@@ -27,6 +28,7 @@ export function ProjectEditForm({
   project: ProjectDetailResponse
 }) {
   const router = useRouter()
+  const slug = useWorkspaceSlug()
   const [error, setError] = useState<PublicError | string>("")
   const [tasks, setTasks] = useState<TaskResponse[]>(project.tasks)
   const [newCategoryName, setNewCategoryName] = useState("")
@@ -89,7 +91,7 @@ export function ProjectEditForm({
             if (!taskResult.success) return setError(taskResult.error)
           }
 
-          router.push(`/admin/projects/${project.id}`)
+          router.push(`/${slug}/projects/${project.id}`)
           router.refresh()
         }}
       >

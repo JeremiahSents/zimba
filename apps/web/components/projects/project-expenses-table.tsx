@@ -35,6 +35,7 @@ import {
   MobileDataMeta,
 } from "@/components/shared/mobile-data-card"
 import { ResponsiveDataView } from "@/components/shared/responsive-data-view"
+import { useWorkspaceSlug } from "@/components/shared/use-workspace-slug"
 import { formatCurrency, formatShortDate } from "@/lib/format"
 import type { ExpenseResponse, ExpenseStatus } from "@/lib/types"
 
@@ -58,6 +59,7 @@ export function ProjectExpensesTable({
 }: {
   expenses: ExpenseResponse[]
 }) {
+  const slug = useWorkspaceSlug()
   const [globalFilter, setGlobalFilter] = useState("")
   const [sorting, setSorting] = useState<SortingState>([])
   const columns = useMemo<ColumnDef<ExpenseResponse>[]>(
@@ -167,7 +169,7 @@ export function ProjectExpensesTable({
                 return (
                   <Link
                     key={row.id}
-                    href={`/admin/expenses/receipts/${expense.receipt_id ?? expense.id}`}
+                    href={`/${slug}/expenses/receipts/${expense.receipt_id ?? expense.id}`}
                     className="block transition-transform active:scale-[0.99]"
                   >
                     <MobileDataCard
@@ -253,7 +255,7 @@ export function ProjectExpensesTable({
                       >
                         {cell.column.id === "item_description" ? (
                           <Link
-                            href={`/admin/expenses/receipts/${row.original.receipt_id ?? row.original.id}`}
+                            href={`/${slug}/expenses/receipts/${row.original.receipt_id ?? row.original.id}`}
                             className="block truncate font-medium text-primary hover:underline"
                           >
                             {row.original.item_description}

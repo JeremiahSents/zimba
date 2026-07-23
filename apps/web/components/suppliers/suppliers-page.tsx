@@ -102,7 +102,7 @@ export function SuppliersPage({ data }: { data: DashboardOverviewData }) {
             return (
               <Link
                 key={id ?? supplier.name}
-                href={`/admin/suppliers/${id ?? supplier.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
+                href={`/${slug}/suppliers/${id ?? supplier.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
                 className="rounded-2xl border bg-card p-5 shadow-sm transition hover:border-primary/35 hover:shadow-md"
               >
                 <div className="flex items-start justify-between gap-3">
