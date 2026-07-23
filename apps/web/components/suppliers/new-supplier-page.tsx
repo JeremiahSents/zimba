@@ -20,6 +20,7 @@ import { useState } from "react"
 import { createSupplierAction } from "@/app/admin/suppliers/actions"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { ErrorNotice } from "@/components/shared/error-notice"
+import { useWorkspaceSlug } from "@/components/shared/use-workspace-slug"
 import { SupplierForm } from "@/components/suppliers/supplier-form"
 import type { PublicError } from "@/core/shared/errors"
 
@@ -31,6 +32,7 @@ export function NewSupplierPage({
   categories: { name: string; slug: string }[]
 }) {
   const router = useRouter()
+  const slug = useWorkspaceSlug()
   const [error, setError] = useState<PublicError | string>("")
   const [submitting, setSubmitting] = useState(false)
   return (
@@ -41,7 +43,7 @@ export function NewSupplierPage({
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem>
-                  <BreadcrumbLink href="/admin/suppliers">
+                  <BreadcrumbLink href={`/${slug}/suppliers`}>
                     Suppliers
                   </BreadcrumbLink>
                 </BreadcrumbItem>
@@ -87,8 +89,8 @@ export function NewSupplierPage({
                   setSubmitting(false)
                   return
                 }
-                const fallback = "/admin/suppliers"
-                const destination = returnTo?.startsWith("/admin/")
+                const fallback = `/${slug}/suppliers`
+                const destination = returnTo?.startsWith(`/${slug}/`)
                   ? returnTo
                   : fallback
                 const separator = destination.includes("?") ? "&" : "?"
@@ -98,9 +100,9 @@ export function NewSupplierPage({
               }}
               onCancel={() =>
                 router.push(
-                  returnTo?.startsWith("/admin/")
+                  returnTo?.startsWith(`/${slug}/`)
                     ? returnTo
-                    : "/admin/suppliers"
+                    : `/${slug}/suppliers`
                 )
               }
             />

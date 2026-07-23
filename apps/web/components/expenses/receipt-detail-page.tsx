@@ -44,6 +44,7 @@ import {
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { DatePicker } from "@/components/shared/date-picker"
 import { ErrorNotice } from "@/components/shared/error-notice"
+import { useWorkspaceSlug } from "@/components/shared/use-workspace-slug"
 import { useWorkspace } from "@/components/shared/workspace-context"
 import type { PublicError } from "@/core/shared/errors"
 import { formatCurrency, formatShortDate } from "@/lib/format"
@@ -67,6 +68,7 @@ export function ReceiptDetailPage({
 }) {
   const router = useRouter()
   const workspace = useWorkspace()
+  const slug = useWorkspaceSlug()
   const first = items[0]!
   const total = items.reduce((sum, item) => sum + item.amount, 0)
   const paid = payable?.paid_amount ?? (first.status === "Full" ? total : 0)
@@ -112,7 +114,7 @@ export function ReceiptDetailPage({
     >
       <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center print:hidden">
         <Link
-          href="/admin/projects"
+          href={`/${slug}/projects`}
           className="inline-flex w-fit items-center gap-2 rounded-lg font-medium text-muted-foreground text-sm transition-colors hover:text-foreground"
         >
           <HugeiconsIcon icon={ArrowLeft01Icon} size={16} /> Back to projects
@@ -176,7 +178,7 @@ export function ReceiptDetailPage({
               )
               setDeleting(false)
               if (!result.success) return setError(result.error)
-              router.push("/admin/expenses")
+              router.push(`/${slug}/expenses`)
             }}
           >
             {deleting ? "Deleting..." : "Delete"}

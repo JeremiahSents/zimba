@@ -33,6 +33,7 @@ import { UploadZone } from "@/components/projects/upload-zone"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { DatePicker } from "@/components/shared/date-picker"
 import { ErrorNotice } from "@/components/shared/error-notice"
+import { useWorkspaceSlug } from "@/components/shared/use-workspace-slug"
 import { useWorkspace } from "@/components/shared/workspace-context"
 import { ApplicationError, type PublicError } from "@/core/shared/errors"
 import { formatCurrency, formatShortDate } from "@/lib/format"
@@ -78,6 +79,7 @@ function formatNumericInput(value: string) {
 export function ProjectExpenseCreatePage({ project, vendors }: Props) {
   const router = useRouter()
   const workspace = useWorkspace()
+  const slug = useWorkspaceSlug()
   const today = new Date().toISOString().slice(0, 10)
   const [supplierId, setSupplierId] = useState("")
   const [purchaseDate, setPurchaseDate] = useState(today)
@@ -498,7 +500,7 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
                 </Select>
                 {suppliers.length === 0 && (
                   <Link
-                    href="/admin/suppliers/new"
+                    href={`/${slug}/suppliers/new`}
                     className="font-medium text-primary text-xs hover:underline"
                   >
                     + Create supplier

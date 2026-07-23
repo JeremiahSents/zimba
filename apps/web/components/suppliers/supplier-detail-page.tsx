@@ -35,6 +35,7 @@ import {
 import { useState } from "react"
 import { updateSupplierAction } from "@/app/admin/suppliers/actions"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
+import { useWorkspaceSlug } from "@/components/shared/use-workspace-slug"
 import { SupplierTable } from "@/components/suppliers/supplier-table"
 import { formatCurrency } from "@/lib/format"
 import {
@@ -52,6 +53,7 @@ export function SupplierDetailPage({
   expenses: ExpenseTableRow[]
 }) {
   const [supplier] = getSupplierListItems([supplierRecord], expenses)
+  const slug = useWorkspaceSlug()
   const [editOpen, setEditOpen] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState("")
@@ -78,7 +80,7 @@ export function SupplierDetailPage({
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
-                <BreadcrumbLink href="/admin/suppliers">
+                <BreadcrumbLink href={`/${slug}/suppliers`}>
                   Suppliers
                 </BreadcrumbLink>
               </BreadcrumbItem>

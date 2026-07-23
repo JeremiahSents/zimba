@@ -25,7 +25,12 @@ import {
 import { SidebarInset } from "@workspace/ui/components/sidebar"
 import { useIsMobile } from "@workspace/ui/hooks/use-mobile"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { type ReactNode, useEffect, useState } from "react"
+import {
+  buildWorkspaceHref,
+  getWorkspaceSlug,
+} from "@/components/shared/dashboard-navigation"
 import { MobileDashboardNav } from "@/components/shared/mobile-dashboard-nav"
 import {
   DashboardSidebar,
@@ -101,6 +106,8 @@ function DashboardTopbar({
   onAddNotification?: () => void
 }) {
   const user = useWorkspace()
+  const pathname = usePathname()
+  const slug = getWorkspaceSlug(pathname) ?? ""
   const initials = getInitials(user.name)
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const isMobile = useIsMobile()
@@ -213,7 +220,12 @@ function DashboardTopbar({
           size="icon"
           className="hidden md:inline-flex"
           nativeButton={false}
-          render={<Link href="/admin/settings" aria-label="Open settings" />}
+          render={
+            <Link
+              href={buildWorkspaceHref(slug, "settings")}
+              aria-label="Open settings"
+            />
+          }
         >
           <HugeiconsIcon
             icon={Settings02Icon}

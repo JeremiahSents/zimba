@@ -4,12 +4,15 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
+  buildWorkspaceHref,
+  getWorkspaceSlug,
   isDashboardRouteActive,
   mobilePrimaryNavigation,
 } from "@/components/shared/dashboard-navigation"
 
 export function MobileDashboardNav() {
   const pathname = usePathname()
+  const slug = getWorkspaceSlug(pathname) ?? ""
 
   return (
     <nav
@@ -18,11 +21,11 @@ export function MobileDashboardNav() {
     >
       <div className="grid h-full grid-cols-4 gap-1">
         {mobilePrimaryNavigation.map((item) => {
-          const active = isDashboardRouteActive(pathname, item.href)
+          const active = isDashboardRouteActive(pathname, slug, item.segment)
           return (
             <Link
               key={item.title}
-              href={item.href}
+              href={buildWorkspaceHref(slug, item.segment)}
               aria-label={item.title}
               aria-current={active ? "page" : undefined}
               className="group/nav-item relative flex min-h-11 min-w-0 items-center justify-center rounded-2xl px-1 font-medium text-[9px] text-muted-foreground outline-none transition-[background-color,color,transform] duration-150 ease-out focus-visible:ring-2 focus-visible:ring-ring/45 active:scale-[0.97] data-[active=true]:bg-success/10 data-[active=true]:text-success min-[360px]:text-[10px]"

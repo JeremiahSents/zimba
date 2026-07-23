@@ -1,18 +1,22 @@
 "use server"
 
+import { createReceipt as createReceiptUseCase } from "@workspace/api"
 import {
   expenseLinkSchema,
   idSchema,
   receiptStatusInputSchema,
 } from "@workspace/contracts"
+import { db } from "@workspace/db"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { ensureActionSession } from "@/core/auth/action-session"
+import { getWorkspaceContext } from "@/core/auth/workspace-context"
+import { getWorkspaceSlug } from "@/core/auth/workspace-slug"
 import {
   correctReceiptCategory,
   createExpenseReceipt,
-  createPayableExpense,
   deleteReceipt,
+  getPayableExpense,
   updateExpenseStatus,
 } from "@/core/expenses/service"
 import {
@@ -51,9 +55,41 @@ export async function createPayableExpenseAction(
   }
 
   try {
-    const created = await createPayableExpense(expense)
+    const ctx = await getWorkspaceContext()
+    const created = await createReceiptUseCase(
+      ctx,
+      { executor: db },
+      {
+        projectId: String(expense.project_id),
+        supplierId: String(expense.supplier_id),
+        expenseDate: expense.expense_date
+          ? new Date(expense.expense_date)
+          : undefined,
+        currency: expense.currency,
+        receiptFileId: expense.receipt_file_id,
+        lines: expense.lines.map((line) => ({
+          allocationId: String(line.allocation_id),
+          itemDescription: line.description,
+          quantity: line.quantity,
+          unitRateCents: Math.round(line.unit_amount * 100),
+          amountCents: Math.round(line.quantity * line.unit_amount * 100),
+        })),
+        payment: expense.amount_paid
+          ? {
+              amountCents: Math.round(expense.amount_paid * 100),
+              currency: expense.currency,
+              paymentDate: expense.payment_date
+                ? new Date(expense.payment_date)
+                : undefined,
+              method: expense.payment_method,
+              reference: expense.payment_reference,
+            }
+          : undefined,
+      }
+    )
+    const payable = await getPayableExpense(created.id)
     revalidateConnectedRoutes()
-    return { success: true, data: created }
+    return { success: true, data: payable }
   } catch (error) {
     return handleActionError(error, "expenses.create-payable")
   }
@@ -92,7 +128,8 @@ export async function createExpenseReceiptAction(
   }
 
   revalidateConnectedRoutes(projectId)
-  redirect(`/admin/projects/${projectId}`)
+  const slug = await getWorkspaceSlug()
+  redirect(`/${slug}/projects/${projectId}`)
 }
 
 export async function updateExpenseStatusAction(
@@ -137,7 +174,8 @@ export async function correctReceiptCategoryAction(
   try {
     await correctReceiptCategory(receiptId, allocationId)
     revalidateConnectedRoutes(projectId)
-    revalidatePath(`/admin/expenses/receipts/${receiptId}`)
+    const slug = await getWorkspaceSlug()
+    revalidatePath(`/${slug}/expenses/receipts/${receiptId}`)
     return { success: true, data: undefined }
   } catch (error) {
     return handleActionError(error, "expenses.correct-category")
@@ -164,14 +202,15 @@ export async function deleteReceiptAction(
   }
 }
 
-function revalidateConnectedRoutes(projectId?: string) {
-  revalidatePath("/admin/home")
-  revalidatePath("/admin/expenses")
-  revalidatePath("/admin/projects")
-  revalidatePath("/admin/suppliers")
-  revalidatePath("/admin/analytics")
-  revalidatePath("/admin/budget")
-  revalidatePath("/admin/reports")
-  if (projectId) revalidatePath(`/admin/projects/${projectId}`)
-  if (projectId) revalidatePath(`/admin/projects/${projectId}/files`)
+async function revalidateConnectedRoutes(projectId?: string) {
+  const slug = await getWorkspaceSlug()
+  revalidatePath(`/${slug}/home`)
+  revalidatePath(`/${slug}/expenses`)
+  revalidatePath(`/${slug}/projects`)
+  revalidatePath(`/${slug}/suppliers`)
+  revalidatePath(`/${slug}/analytics`)
+  revalidatePath(`/${slug}/budget`)
+  revalidatePath(`/${slug}/reports`)
+  if (projectId) revalidatePath(`/${slug}/projects/${projectId}`)
+  if (projectId) revalidatePath(`/${slug}/projects/${projectId}/files`)
 }

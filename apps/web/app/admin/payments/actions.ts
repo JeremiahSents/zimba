@@ -3,6 +3,7 @@
 import { idSchema } from "@workspace/contracts"
 import { revalidatePath } from "next/cache"
 import { ensureActionSession } from "@/core/auth/action-session"
+import { getWorkspaceSlug } from "@/core/auth/workspace-slug"
 import {
   createLedgerPayment,
   createUpcomingPayment,
@@ -142,21 +143,24 @@ export async function markReceiptFullyPaidAction(
   try {
     await markExpenseFullyPaid(expenseId, idempotencyKey)
     revalidateConnectedRoutes(projectId)
-    revalidatePath(`/admin/expenses/receipts/${expenseId}`)
+    revalidatePath(
+      `/${await getWorkspaceSlug()}/expenses/receipts/${expenseId}`
+    )
     return { success: true, data: undefined }
   } catch (error) {
     return handleActionError(error, "payments.mark-receipt-paid")
   }
 }
 
-function revalidateConnectedRoutes(projectId?: string) {
-  revalidatePath("/admin/home")
-  revalidatePath("/admin/expenses")
-  revalidatePath("/admin/projects")
-  revalidatePath("/admin/suppliers")
-  revalidatePath("/admin/analytics")
-  revalidatePath("/admin/budget")
-  revalidatePath("/admin/reports")
-  if (projectId) revalidatePath(`/admin/projects/${projectId}`)
-  if (projectId) revalidatePath(`/admin/projects/${projectId}/files`)
+async function revalidateConnectedRoutes(projectId?: string) {
+  const slug = await getWorkspaceSlug()
+  revalidatePath(`/${slug}/home`)
+  revalidatePath(`/${slug}/expenses`)
+  revalidatePath(`/${slug}/projects`)
+  revalidatePath(`/${slug}/suppliers`)
+  revalidatePath(`/${slug}/analytics`)
+  revalidatePath(`/${slug}/budget`)
+  revalidatePath(`/${slug}/reports`)
+  if (projectId) revalidatePath(`/${slug}/projects/${projectId}`)
+  if (projectId) revalidatePath(`/${slug}/projects/${projectId}/files`)
 }

@@ -8,31 +8,55 @@ import {
   Wallet02Icon,
 } from "@hugeicons/core-free-icons"
 
-export const dashboardNavigation = [
-  { title: "Home", href: "/admin/home", icon: DashboardSquare02Icon },
-  { title: "Projects", href: "/admin/projects", icon: FolderKanbanIcon },
-  { title: "Suppliers", href: "/admin/suppliers", icon: MoneyBag02Icon },
-  { title: "Team", href: "/admin/team", icon: UserGroupIcon },
-  { title: "Analytics", href: "/admin/analytics", icon: Analytics02Icon },
-  { title: "Reports", href: "/admin/reports", icon: Analytics02Icon },
+type NavSegment = {
+  title: string
+  segment: string
+  icon: typeof DashboardSquare02Icon
+}
+
+export const dashboardNavigation: readonly NavSegment[] = [
+  { title: "Home", segment: "home", icon: DashboardSquare02Icon },
+  { title: "Projects", segment: "projects", icon: FolderKanbanIcon },
+  { title: "Suppliers", segment: "suppliers", icon: MoneyBag02Icon },
+  { title: "Team", segment: "team", icon: UserGroupIcon },
+  { title: "Analytics", segment: "analytics", icon: Analytics02Icon },
+  { title: "Reports", segment: "reports", icon: Analytics02Icon },
 ] as const
 
 export const mobilePrimaryNavigation = dashboardNavigation.slice(0, 4)
 
-export const mobileMoreNavigation = [
-  dashboardNavigation[4],
-  dashboardNavigation[5],
-  { title: "Budget", href: "/admin/budget", icon: Wallet02Icon },
-  { title: "Settings", href: "/admin/settings", icon: Settings02Icon },
+export const mobileMoreNavigation: readonly NavSegment[] = [
+  { title: "Analytics", segment: "analytics", icon: Analytics02Icon },
+  { title: "Reports", segment: "reports", icon: Analytics02Icon },
+  { title: "Budget", segment: "budget", icon: Wallet02Icon },
+  { title: "Settings", segment: "settings", icon: Settings02Icon },
 ] as const
 
-export function isDashboardRouteActive(pathname: string, href: string) {
-  if (href === "/admin/home") return pathname === href
+export function getWorkspaceSlug(pathname: string): string | null {
+  const match = pathname.match(/^\/([^/]+)/)
+  const segment = match?.[1]
+  if (!segment) return null
+  if (["login", "register", "onboarding", "invite", "api"].includes(segment))
+    return null
+  return segment
+}
+
+export function buildWorkspaceHref(slug: string, segment: string): string {
+  return `/${slug}/${segment}`
+}
+
+export function isDashboardRouteActive(
+  pathname: string,
+  slug: string,
+  segment: string
+) {
+  const href = buildWorkspaceHref(slug, segment)
+  if (segment === "home") return pathname === href
   return pathname === href || pathname.startsWith(`${href}/`)
 }
 
-export function isMobileMoreRoute(pathname: string) {
+export function isMobileMoreRoute(pathname: string, slug: string) {
   return mobileMoreNavigation.some((item) =>
-    isDashboardRouteActive(pathname, item.href)
+    isDashboardRouteActive(pathname, slug, item.segment)
   )
 }

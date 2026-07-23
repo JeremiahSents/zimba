@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { ensureActionSession } from "@/core/auth/action-session"
+import { getWorkspaceSlug } from "@/core/auth/workspace-slug"
 import {
   archiveProject,
   createProject,
@@ -61,7 +62,8 @@ export async function createProjectAction(
   }
 
   revalidateConnectedRoutes(projectId)
-  redirect(`/admin/projects/${projectId}`)
+  const slug = await getWorkspaceSlug()
+  redirect(`/${slug}/projects/${projectId}`)
 }
 
 export async function updateProjectAction(
@@ -106,7 +108,8 @@ export async function archiveProjectAction(
   } catch (error) {
     return handleActionError(error, "projects.archive")
   }
-  redirect("/admin/projects")
+  const slug = await getWorkspaceSlug()
+  redirect(`/${slug}/projects`)
 }
 
 export async function restoreProjectAction(
@@ -177,12 +180,13 @@ export async function createProjectTaskAction(
   }
 }
 
-function revalidateConnectedRoutes(projectId?: string) {
-  revalidatePath("/admin/home")
-  revalidatePath("/admin/projects")
-  revalidatePath("/admin/analytics")
-  revalidatePath("/admin/budget")
-  revalidatePath("/admin/reports")
-  if (projectId) revalidatePath(`/admin/projects/${projectId}`)
-  if (projectId) revalidatePath(`/admin/projects/${projectId}/files`)
+async function revalidateConnectedRoutes(projectId?: string) {
+  const slug = await getWorkspaceSlug()
+  revalidatePath(`/${slug}/home`)
+  revalidatePath(`/${slug}/projects`)
+  revalidatePath(`/${slug}/analytics`)
+  revalidatePath(`/${slug}/budget`)
+  revalidatePath(`/${slug}/reports`)
+  if (projectId) revalidatePath(`/${slug}/projects/${projectId}`)
+  if (projectId) revalidatePath(`/${slug}/projects/${projectId}/files`)
 }

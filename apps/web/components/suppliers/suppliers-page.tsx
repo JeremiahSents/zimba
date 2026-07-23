@@ -12,6 +12,7 @@ import Link from "next/link"
 import { useMemo } from "react"
 
 import { DashboardShell } from "@/components/shared/dashboard-shell"
+import { useWorkspaceSlug } from "@/components/shared/use-workspace-slug"
 import { formatCurrency } from "@/lib/format"
 import {
   getSupplierListItems,
@@ -20,6 +21,7 @@ import {
 import type { DashboardOverviewData } from "@/lib/types"
 
 export function SuppliersPage({ data }: { data: DashboardOverviewData }) {
+  const slug = useWorkspaceSlug()
   const suppliers = useMemo<SupplierListItem[]>(
     () => getSupplierListItems(data.suppliers, data.expenses),
     [data.suppliers, data.expenses]
@@ -86,7 +88,7 @@ export function SuppliersPage({ data }: { data: DashboardOverviewData }) {
           <Button
             size="sm"
             nativeButton={false}
-            render={<Link href="/admin/suppliers/new" />}
+            render={<Link href={`/${slug}/suppliers/new`} />}
           >
             + Create supplier
           </Button>

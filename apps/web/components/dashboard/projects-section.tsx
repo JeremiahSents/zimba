@@ -5,6 +5,7 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import { Button } from "@workspace/ui/components/button"
 import { Progress } from "@workspace/ui/components/progress"
 import Link from "next/link"
+import { useWorkspaceSlug } from "@/components/shared/use-workspace-slug"
 import { formatCurrency } from "@/lib/format"
 import type { ProjectDashboardResponse } from "@/lib/types"
 
@@ -13,6 +14,7 @@ export function ProjectsSection({
 }: {
   projects: ProjectDashboardResponse[]
 }) {
+  const slug = useWorkspaceSlug()
   return (
     <section>
       <div className="mb-4 flex flex-row items-center justify-between gap-3">
@@ -23,7 +25,7 @@ export function ProjectsSection({
           variant="ghost"
           size="sm"
           nativeButton={false}
-          render={<Link href="/admin/projects" />}
+          render={<Link href={`/${slug}/projects`} />}
         >
           View all
         </Button>

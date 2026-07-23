@@ -5,6 +5,7 @@ import { fieldErrorsFromZod } from "@workspace/server-primitives"
 import { revalidatePath } from "next/cache"
 import { ensureActionSession } from "@/core/auth/action-session"
 import type { WorkspaceRole } from "@/core/auth/permissions"
+import { getWorkspaceSlug } from "@/core/auth/workspace-slug"
 import { handleActionError } from "@/core/shared/handle-action-error"
 import { createInvitation } from "@/core/team/service"
 
@@ -28,7 +29,7 @@ export async function inviteMemberAction(input: {
     }
   try {
     await createInvitation(parsed.data)
-    revalidatePath("/admin/team")
+    revalidatePath(`/${await getWorkspaceSlug()}/team`)
     return {
       success: true as const,
       data: {

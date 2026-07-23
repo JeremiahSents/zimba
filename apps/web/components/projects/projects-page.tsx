@@ -25,6 +25,7 @@ import {
 } from "@/app/admin/projects/actions"
 import { ProjectsList } from "@/components/dashboard/projects-section"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
+import { useWorkspaceSlug } from "@/components/shared/use-workspace-slug"
 import { formatCurrency } from "@/lib/format"
 import type {
   DashboardOverviewData,
@@ -41,6 +42,7 @@ export function ProjectsPage({
   archivedProjects: ProjectDashboardResponse[]
 }) {
   const projects = data.projects
+  const slug = useWorkspaceSlug()
   const [search, setSearch] = useState("")
   const [pageIndex, setPageIndex] = useState(0)
 
@@ -96,7 +98,7 @@ export function ProjectsPage({
           variant="secondary"
           size="sm"
           nativeButton={false}
-          render={<Link href="/admin/projects/new" />}
+          render={<Link href={`/${slug}/projects/new`} />}
         >
           <HugeiconsIcon icon={PlusSignIcon} strokeWidth={2} />
           New project

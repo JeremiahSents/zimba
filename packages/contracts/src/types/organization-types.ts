@@ -14,3 +14,10 @@ export type MembershipDto = {
   userId: string
   role: z.infer<typeof workspaceRoleSchema>
 }
+export type ResolvedWorkspaceContext = {
+  organizationId: string
+  organizationName: string
+  slug: string
+  userId: string
+  role: z.infer<typeof workspaceRoleSchema>
+}

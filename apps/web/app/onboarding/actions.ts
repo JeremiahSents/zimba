@@ -41,7 +41,7 @@ export async function completeOnboarding(
   if (Object.keys(fieldErrors).length > 0) return { fieldErrors }
 
   const existingMembership = await getOrganizationMembership(session.user.id)
-  if (existingMembership) redirect("/admin/home")
+  if (existingMembership) redirect(`/${existingMembership.slug}/home`)
 
   try {
     await db.transaction(async (tx) => {
@@ -74,7 +74,8 @@ export async function completeOnboarding(
     }
   }
 
-  redirect("/admin/home")
+  const membership = await getOrganizationMembership(session.user.id)
+  redirect(`/${membership?.slug ?? "workspace"}/home`)
 }
 
 async function createAvailableSlug(

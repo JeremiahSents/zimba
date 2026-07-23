@@ -8,6 +8,7 @@ import {
 import { fieldErrorsFromZod } from "@workspace/server-primitives"
 import { revalidatePath } from "next/cache"
 import { ensureActionSession } from "@/core/auth/action-session"
+import { getWorkspaceSlug } from "@/core/auth/workspace-slug"
 import {
   type ActionResult,
   expectedActionFailure,
@@ -53,8 +54,9 @@ export async function createSupplierAction(input: {
       contactName: parsed.data.contactName?.trim() || null,
     })
 
-    revalidatePath("/admin/suppliers")
-    revalidatePath("/admin/home")
+    const slug = await getWorkspaceSlug()
+    revalidatePath(`/${slug}/suppliers`)
+    revalidatePath(`/${slug}/home`)
     return { success: true, data: undefined }
   } catch (error) {
     return handleActionError(error, "suppliers.create")
@@ -73,7 +75,7 @@ export async function createSupplierCategoryAction(
     )
   try {
     const category = await createSupplierCategory(name)
-    revalidatePath("/admin/suppliers/new")
+    revalidatePath(`/${await getWorkspaceSlug()}/suppliers/new`)
     return { success: true, data: { name: category.name, slug: category.slug } }
   } catch (error) {
     return handleActionError(error, "suppliers.create-category")
@@ -106,8 +108,9 @@ export async function updateSupplierAction(
       ...parsed.data,
       email: parsed.data.email?.trim() || null,
     })
-    revalidatePath("/admin/suppliers")
-    revalidatePath(`/admin/suppliers/${supplierId}`)
+    const slug = await getWorkspaceSlug()
+    revalidatePath(`/${slug}/suppliers`)
+    revalidatePath(`/${slug}/suppliers/${supplierId}`)
     return { success: true, data: undefined }
   } catch (error) {
     return handleActionError(error, "suppliers.update")

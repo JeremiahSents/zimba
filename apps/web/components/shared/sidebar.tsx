@@ -30,7 +30,9 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import type { ComponentProps } from "react"
 import {
+  buildWorkspaceHref,
   dashboardNavigation,
+  getWorkspaceSlug,
   isDashboardRouteActive,
 } from "@/components/shared/dashboard-navigation"
 import { formatRole, useWorkspace } from "@/components/shared/workspace-context"
@@ -38,6 +40,7 @@ import { authClient } from "@/lib/auth-client"
 
 export function DashboardSidebar() {
   const pathname = usePathname()
+  const slug = getWorkspaceSlug(pathname) ?? ""
 
   return (
     <Sidebar
@@ -59,10 +62,14 @@ export function DashboardSidebar() {
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
                     tooltip={item.title}
-                    isActive={isDashboardRouteActive(pathname, item.href)}
+                    isActive={isDashboardRouteActive(
+                      pathname,
+                      slug,
+                      item.segment
+                    )}
                     className="relative h-10 rounded-md px-3 font-medium text-[13px] text-sidebar-foreground/75 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground data-active:bg-primary/10 data-active:text-primary group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:grid group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:place-items-center group-data-[collapsible=icon]:p-0! group-data-[collapsible=icon]:[&_span]:hidden [&_svg]:size-4! [&_svg]:text-sidebar-foreground/50 data-active:[&_svg]:text-primary"
                     render={
-                      <Link href={item.href}>
+                      <Link href={buildWorkspaceHref(slug, item.segment)}>
                         <HugeiconsIcon icon={item.icon} strokeWidth={2} />
                         <span>{item.title}</span>
                       </Link>

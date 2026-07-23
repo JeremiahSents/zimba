@@ -27,6 +27,7 @@ import { useEffect, useState } from "react"
 import { createProjectAction } from "@/app/admin/projects/actions"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { ErrorNotice } from "@/components/shared/error-notice"
+import { useWorkspaceSlug } from "@/components/shared/use-workspace-slug"
 import type { PublicError } from "@/core/shared/errors"
 import { formatCurrency } from "@/lib/format"
 import {
@@ -119,6 +120,7 @@ function MobileAllocationCards({
 
 export function ProjectAllocationCreatePage() {
   const router = useRouter()
+  const slug = useWorkspaceSlug()
   const [rows, setRows] = useState<InitialAllocation[]>(
     defaultInitialAllocations
   )
@@ -164,13 +166,13 @@ export function ProjectAllocationCreatePage() {
 
   function saveDraftAndGoBack() {
     persistRows(rows)
-    router.push("/admin/projects/new")
+    router.push(`/${slug}/projects/new`)
   }
 
   async function createProject() {
     const draft = readProjectCreateDraft()
     if (!draft || !hasCompleteDetails(draft.details)) {
-      router.replace("/admin/projects/new")
+      router.replace(`/${slug}/projects/new`)
       return
     }
     if (!rows.length || rows.some((row) => !row.name.trim())) {
@@ -217,13 +219,13 @@ export function ProjectAllocationCreatePage() {
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem>
-                  <BreadcrumbLink href="/admin/projects">
+                  <BreadcrumbLink href={`/${slug}/projects`}>
                     Projects
                   </BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
-                  <BreadcrumbLink href="/admin/projects/new">
+                  <BreadcrumbLink href={`/${slug}/projects/new`}>
                     Project details
                   </BreadcrumbLink>
                 </BreadcrumbItem>

@@ -25,7 +25,7 @@ export function proxy(request: NextRequest) {
     return NextResponse.next()
   }
 
-  return NextResponse.rewrite(new URL("/admin/home", request.url))
+  return NextResponse.rewrite(new URL("/admin", request.url))
 }
 
 export const config = {

@@ -40,6 +40,7 @@ export function findUserOrganizationMembership(
     .select({
       organizationId: organizationMember.organizationId,
       organizationName: organization.name,
+      slug: organization.slug,
       role: organizationMember.role,
     })
     .from(organizationMember)
@@ -317,4 +318,76 @@ export async function claimInvitationAndUpsertMember(
       set: { role, responsibility },
     })
   return true
+}
+
+export async function findWorkspaceBySlug(
+  executor: DatabaseExecutor,
+  slug: string
+) {
+  const [row] = await executor
+    .select({
+      id: organization.id,
+      name: organization.name,
+      slug: organization.slug,
+      status: organization.status,
+    })
+    .from(organization)
+    .where(eq(organization.slug, slug))
+    .limit(1)
+  return row ?? null
+}
+
+export async function findMembershipByUserAndOrganization(
+  executor: DatabaseExecutor,
+  userId: string,
+  organizationId: string
+) {
+  const [row] = await executor
+    .select({
+      id: organizationMember.id,
+      role: organizationMember.role,
+    })
+    .from(organizationMember)
+    .where(
+      and(
+        eq(organizationMember.userId, userId),
+        eq(organizationMember.organizationId, organizationId)
+      )
+    )
+    .limit(1)
+  return row ?? null
+}
+
+export async function isSlugAvailable(
+  executor: DatabaseExecutor,
+  slug: string,
+  excludeOrganizationId?: string
+) {
+  const conditions = [eq(organization.slug, slug)]
+  if (excludeOrganizationId)
+    conditions.push(sql`${organization.id} != ${excludeOrganizationId}`)
+  const [row] = await executor
+    .select({ value: count() })
+    .from(organization)
+    .where(and(...conditions))
+  return Number(row?.value ?? 0) === 0
+}
+
+export async function findUserMemberships(
+  executor: DatabaseExecutor,
+  userId: string
+) {
+  return executor
+    .select({
+      organizationId: organization.id,
+      organizationName: organization.name,
+      slug: organization.slug,
+      role: organizationMember.role,
+    })
+    .from(organizationMember)
+    .innerJoin(
+      organization,
+      eq(organization.id, organizationMember.organizationId)
+    )
+    .where(eq(organizationMember.userId, userId))
 }

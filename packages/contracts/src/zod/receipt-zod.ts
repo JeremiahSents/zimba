@@ -5,6 +5,7 @@ import {
   dateSchema,
   idSchema,
   nonNegativeMoneySchema,
+  positiveMoneySchema,
   quantitySchema,
 } from "./shared-zod"
 export const expenseStatusSchema = z.enum([
@@ -28,6 +29,22 @@ export const receiptInputSchema = z.object({
   expenseDate: dateSchema.optional(),
   currency: currencyCodeSchema.default("UGX"),
   lines: z.array(receiptLineSchema).min(1).max(200),
+})
+export const receiptPaymentInputSchema = z.object({
+  amountCents: positiveMoneySchema,
+  currency: currencyCodeSchema.default("UGX"),
+  paymentDate: dateSchema.optional(),
+  method: z.string().trim().max(80).optional(),
+  reference: z.string().max(160).optional(),
+})
+export const receiptCreateInputSchema = z.object({
+  projectId: idSchema,
+  supplierId: idSchema,
+  expenseDate: dateSchema.optional(),
+  currency: currencyCodeSchema.default("UGX"),
+  receiptFileId: idSchema.optional(),
+  lines: z.array(receiptLineSchema).min(1).max(200),
+  payment: receiptPaymentInputSchema.optional(),
 })
 export const expenseLinkSchema = z.object({
   project_id: idSchema,

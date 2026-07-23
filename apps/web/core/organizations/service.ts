@@ -6,6 +6,7 @@ import { findUserOrganizationMembership } from "@workspace/db/repositories"
 export type OrganizationMembership = {
   organizationId: string
   organizationName: string
+  slug: string
   role: string
 }
 

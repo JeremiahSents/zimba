@@ -40,6 +40,7 @@ describe("Payments Service", () => {
       organization: {
         organizationId: "org-1",
         organizationName: "Test Org",
+        slug: "test-org",
         role: "Owner / Admin",
       },
     })
