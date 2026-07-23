@@ -1,4 +1,5 @@
 export type InvalidationIdentity = {
+  workspaceSlug: string
   organizationId?: string
   projectId?: string
   expenseId?: string
@@ -10,14 +11,15 @@ export type InvalidationIdentity = {
  * mutations can test invalidation without invoking Next.js cache APIs.
  */
 export function getMutationInvalidationPaths(identity: InvalidationIdentity) {
-  const paths = new Set<string>(["/admin/home"])
+  const root = `/${identity.workspaceSlug}`
+  const paths = new Set<string>([`${root}/home`])
   if (identity.projectId) {
-    paths.add(`/admin/projects/${identity.projectId}`)
-    paths.add(`/admin/projects/${identity.projectId}/files`)
+    paths.add(`${root}/projects/${identity.projectId}`)
+    paths.add(`${root}/projects/${identity.projectId}/files`)
   }
   if (identity.expenseId)
-    paths.add(`/admin/expenses/receipts/${identity.expenseId}`)
-  if (identity.supplierId) paths.add(`/admin/suppliers/${identity.supplierId}`)
-  if (identity.organizationId) paths.add("/admin/expenses")
+    paths.add(`${root}/expenses/receipts/${identity.expenseId}`)
+  if (identity.supplierId) paths.add(`${root}/suppliers/${identity.supplierId}`)
+  if (identity.organizationId) paths.add(`${root}/expenses`)
   return [...paths]
 }

@@ -19,9 +19,9 @@ import {
   SelectValue,
 } from "@workspace/ui/components/select"
 import { useState } from "react"
-import { createSupplierCategoryAction } from "@/app/admin/suppliers/actions"
 import { ErrorNotice } from "@/components/shared/error-notice"
 import type { PublicError } from "@/core/shared/errors"
+import { createSupplierCategoryAction } from "@/core/suppliers/actions"
 import type { NewSupplierValues } from "@/lib/types"
 
 const builtInCategories = [

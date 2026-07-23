@@ -33,10 +33,10 @@ import {
   SelectValue,
 } from "@workspace/ui/components/select"
 import { useState } from "react"
-import { updateSupplierAction } from "@/app/admin/suppliers/actions"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { useWorkspaceSlug } from "@/components/shared/use-workspace-slug"
 import { SupplierTable } from "@/components/suppliers/supplier-table"
+import { updateSupplierAction } from "@/core/suppliers/actions"
 import { formatCurrency } from "@/lib/format"
 import {
   getSupplierListItems,

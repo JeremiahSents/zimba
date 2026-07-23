@@ -13,6 +13,7 @@ const RESERVED_ROUTE_NAMES = new Set([
   "auth",
   "www",
   "app",
+  "workspace",
 ])
 
 export function normalizeSlug(input: string): string {

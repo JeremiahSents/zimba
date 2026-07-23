@@ -27,21 +27,21 @@ import {
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useEffect, useMemo, useRef, useState } from "react"
-import { createPayableExpenseAction } from "@/app/admin/expenses/actions"
-import { createProjectTaskAction } from "@/app/admin/projects/actions"
+import {
+  type ReceiptFormLine,
+  ReceiptLineItems,
+} from "@/components/expenses/receipt-line-items"
+import { ReceiptPreview } from "@/components/expenses/receipt-preview"
 import { UploadZone } from "@/components/projects/upload-zone"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { DatePicker } from "@/components/shared/date-picker"
 import { ErrorNotice } from "@/components/shared/error-notice"
 import { useWorkspaceSlug } from "@/components/shared/use-workspace-slug"
 import { useWorkspace } from "@/components/shared/workspace-context"
+import { createPayableExpenseAction } from "@/core/expenses/actions"
+import { validateReceiptFile } from "@/core/expenses/receipt-file"
+import { createProjectTaskAction } from "@/core/projects/actions"
 import { ApplicationError, type PublicError } from "@/core/shared/errors"
-import {
-  type ReceiptFormLine,
-  ReceiptLineItems,
-} from "@/domains/receipts/components/receipt-line-items"
-import { ReceiptPreview } from "@/domains/receipts/components/receipt-preview"
-import { validateReceiptFile } from "@/domains/receipts/receipt-file"
 import {
   deleteReceiptDraft,
   readReceiptDraft,

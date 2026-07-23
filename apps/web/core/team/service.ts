@@ -9,6 +9,7 @@ import {
   deleteInvitation,
   findInvitationByTokenHash,
   findInvitationPreviewByTokenHash,
+  findOrganizationById,
   findPendingInvitation,
   listPendingInvitations,
   listTeamMembers,
@@ -100,7 +101,10 @@ export async function acceptInvitation(token: string) {
     notFound("This invitation is invalid or expired.")
   if (invite.email !== user.email.toLowerCase())
     forbidden("Sign in with the email address that was invited.")
-  if (invite.status === "accepted" && invite.acceptedBy === user.id) return
+  const [workspace] = await findOrganizationById(db, invite.organizationId)
+  if (!workspace) notFound("This workspace is no longer available.")
+  if (invite.status === "accepted" && invite.acceptedBy === user.id)
+    return workspace.slug
   if (invite.status !== "pending")
     notFound("This invitation is no longer available.")
   await db.transaction(async (tx) => {
@@ -113,6 +117,7 @@ export async function acceptInvitation(token: string) {
       invite.responsibility
     )
   })
+  return workspace.slug
 }
 
 export async function getInvitationPreview(token: string) {

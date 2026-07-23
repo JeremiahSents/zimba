@@ -15,7 +15,7 @@ export default async function OnboardingPage() {
   if (!session) redirect("/login")
 
   const membership = await getOrganizationMembership(session.user.id)
-  if (membership) redirect("/admin/home")
+  if (membership) redirect(`/${membership.slug}/home`)
 
   return (
     <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-background p-6 md:p-10">

@@ -17,12 +17,12 @@ import {
 } from "@workspace/ui/components/card"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
-import { createSupplierAction } from "@/app/admin/suppliers/actions"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { ErrorNotice } from "@/components/shared/error-notice"
 import { useWorkspaceSlug } from "@/components/shared/use-workspace-slug"
 import { SupplierForm } from "@/components/suppliers/supplier-form"
 import type { PublicError } from "@/core/shared/errors"
+import { createSupplierAction } from "@/core/suppliers/actions"
 
 export function NewSupplierPage({
   returnTo,

@@ -33,19 +33,19 @@ import {
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
-import {
-  correctReceiptCategoryAction,
-  deleteReceiptAction,
-} from "@/app/admin/expenses/actions"
-import {
-  markReceiptFullyPaidAction,
-  recordReceiptPaymentAction,
-} from "@/app/admin/payments/actions"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { DatePicker } from "@/components/shared/date-picker"
 import { ErrorNotice } from "@/components/shared/error-notice"
 import { useWorkspaceSlug } from "@/components/shared/use-workspace-slug"
 import { useWorkspace } from "@/components/shared/workspace-context"
+import {
+  correctReceiptCategoryAction,
+  deleteReceiptAction,
+} from "@/core/expenses/actions"
+import {
+  markReceiptFullyPaidAction,
+  recordReceiptPaymentAction,
+} from "@/core/payments/actions"
 import type { PublicError } from "@/core/shared/errors"
 import { formatCurrency, formatShortDate } from "@/lib/format"
 import { formatReceiptNumber } from "@/lib/receipt-number"

@@ -23,11 +23,10 @@ import {
 } from "@workspace/ui/components/table"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
-
-import { createProjectAction } from "@/app/admin/projects/actions"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { ErrorNotice } from "@/components/shared/error-notice"
 import { useWorkspaceSlug } from "@/components/shared/use-workspace-slug"
+import { createProjectAction } from "@/core/projects/actions"
 import type { PublicError } from "@/core/shared/errors"
 import { formatCurrency } from "@/lib/format"
 import {

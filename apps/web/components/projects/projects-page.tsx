@@ -18,14 +18,13 @@ import { Input } from "@workspace/ui/components/input"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState, useTransition } from "react"
-
-import {
-  deleteProjectAction,
-  restoreProjectAction,
-} from "@/app/admin/projects/actions"
 import { ProjectsList } from "@/components/dashboard/projects-section"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { useWorkspaceSlug } from "@/components/shared/use-workspace-slug"
+import {
+  deleteProjectAction,
+  restoreProjectAction,
+} from "@/core/projects/actions"
 import { formatCurrency } from "@/lib/format"
 import type {
   DashboardOverviewData,

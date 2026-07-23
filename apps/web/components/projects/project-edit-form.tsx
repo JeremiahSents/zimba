@@ -11,14 +11,14 @@ import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
 import { useRouter } from "next/navigation"
 import { useState, useTransition } from "react"
+import { DashboardShell } from "@/components/shared/dashboard-shell"
+import { ErrorNotice } from "@/components/shared/error-notice"
+import { useWorkspaceSlug } from "@/components/shared/use-workspace-slug"
 import {
   createProjectTaskAction,
   updateAllocationAction,
   updateProjectAction,
-} from "@/app/admin/projects/actions"
-import { DashboardShell } from "@/components/shared/dashboard-shell"
-import { ErrorNotice } from "@/components/shared/error-notice"
-import { useWorkspaceSlug } from "@/components/shared/use-workspace-slug"
+} from "@/core/projects/actions"
 import type { PublicError } from "@/core/shared/errors"
 import type { ProjectDetailResponse, TaskResponse } from "@/lib/types"
 

@@ -126,7 +126,9 @@ export async function recordReceiptPaymentAction(input: {
       allocations: [{ expense_id: input.expenseId, amount: input.amount }],
     })
     revalidateConnectedRoutes(input.projectId)
-    revalidatePath(`/admin/expenses/receipts/${input.expenseId}`)
+    revalidatePath(
+      `/${await getWorkspaceSlug()}/expenses/receipts/${input.expenseId}`
+    )
     return { success: true, data: undefined }
   } catch (error) {
     return handleActionError(error, "payments.record-receipt")

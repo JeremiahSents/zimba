@@ -19,10 +19,16 @@ export default async function LoginPage({
 }) {
   const session = await auth.api.getSession({ headers: await headers() })
   const { error, callbackUrl } = await searchParams
-  const destination = callbackUrl?.startsWith("/") ? callbackUrl : "/admin/home"
+  const destination = callbackUrl?.startsWith("/") ? callbackUrl : "/workspace"
   if (session) {
     const membership = await getOrganizationMembership(session.user.id)
-    redirect(membership ? destination : "/onboarding")
+    redirect(
+      membership && destination === "/workspace"
+        ? `/${membership.slug}/home`
+        : membership
+          ? destination
+          : "/onboarding"
+    )
   }
 
   return (

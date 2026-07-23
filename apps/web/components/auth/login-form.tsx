@@ -18,7 +18,7 @@ import { authClient } from "@/lib/auth-client"
 export function LoginForm({
   className,
   oauthError = false,
-  callbackUrl = "/admin/home",
+  callbackUrl = "/workspace",
   ...props
 }: React.ComponentProps<"div"> & {
   oauthError?: boolean

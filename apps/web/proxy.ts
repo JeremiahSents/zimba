@@ -21,7 +21,7 @@ export function proxy(request: NextRequest) {
   const firstSegment = request.nextUrl.pathname.split("/").filter(Boolean)[0]
   if (
     firstSegment &&
-    !["admin", "api", "login", "register", "onboarding", "invite"].includes(
+    !["api", "login", "register", "onboarding", "invite", "workspace"].includes(
       firstSegment
     )
   ) {
@@ -36,7 +36,7 @@ export function proxy(request: NextRequest) {
     return NextResponse.next({ request: { headers: requestHeaders } })
   }
 
-  return NextResponse.rewrite(new URL("/admin", request.url), {
+  return NextResponse.rewrite(new URL("/workspace", request.url), {
     request: { headers: requestHeaders },
   })
 }

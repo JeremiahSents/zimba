@@ -45,6 +45,7 @@ describe("reserved slug names", () => {
     expect(isReservedSlug("login")).toBe(true)
     expect(isReservedSlug("onboarding")).toBe(true)
     expect(isReservedSlug("settings")).toBe(true)
+    expect(isReservedSlug("workspace")).toBe(true)
   })
 
   it("allows non-reserved names", () => {

@@ -11,7 +11,7 @@ describe("proxy", () => {
     const response = proxy(request("https://app.zimba.digital/"))
 
     expect(response.headers.get("x-middleware-rewrite")).toBe(
-      "https://app.zimba.digital/admin"
+      "https://app.zimba.digital/workspace"
     )
   })
 
@@ -28,7 +28,7 @@ describe("proxy", () => {
     )
 
     expect(response.headers.get("x-middleware-rewrite")).toBe(
-      "https://zimba.digital/admin"
+      "https://zimba.digital/workspace"
     )
   })
 
