@@ -255,6 +255,7 @@ export function deleteReceiptForOrganization(
     .where(
       and(eq(expense.id, receiptId), eq(expense.organizationId, organizationId))
     )
+    .returning()
 }
 
 export async function createPayable(

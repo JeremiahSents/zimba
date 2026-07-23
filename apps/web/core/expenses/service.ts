@@ -1,7 +1,8 @@
 import "server-only"
 
-import { db, schema } from "@workspace/db"
+import { db } from "@workspace/db"
 import {
+  createSupplier,
   findActiveProjectForOrganization,
   findAllocationForProject,
   findCompletedFile,
@@ -11,8 +12,8 @@ import {
   insertReceipt,
   insertReceiptLine,
   insertReceiptPayment,
+  updateReceiptPaymentStatus,
 } from "@workspace/db/repositories"
-import { and, eq } from "drizzle-orm"
 import type {
   ExpenseReceiptCreate,
   ExpenseStatus,
@@ -157,15 +158,12 @@ export async function createPayableExpense(
         method: data.payment_method ?? "cash",
         reference: data.payment_reference,
       })
-      await tx
-        .update(schema.expense)
-        .set({ paymentStatus: paidAmount >= gross ? "paid" : "partial" })
-        .where(
-          and(
-            eq(schema.expense.id, expense.id),
-            eq(schema.expense.organizationId, organizationId)
-          )
-        )
+      await updateReceiptPaymentStatus(
+        tx,
+        organizationId,
+        expense.id,
+        paidAmount >= gross ? "paid" : "partial"
+      )
     }
     return {
       id: expense.id,
@@ -227,11 +225,12 @@ export async function createExpenseReceipt(
       organizationId,
       supplierName
     )
-    if (!supplier)
-      [supplier] = await tx
-        .insert(schema.supplier)
-        .values({ organizationId, name: supplierName })
-        .returning()
+    if (!supplier) {
+      supplier = await createSupplier(tx, {
+        organizationId,
+        name: supplierName,
+      })
+    }
     if (!supplier) throw new Error("Supplier insert failed")
     const expenseId = crypto.randomUUID()
     const grossCents = data.items.reduce(
@@ -344,16 +343,12 @@ export async function updateExpenseStatus(
         method: "full_payment",
       })
     }
-    const [updated] = await tx
-      .update(schema.expense)
-      .set({ paymentStatus: "paid", updatedAt: new Date() })
-      .where(
-        and(
-          eq(schema.expense.id, expenseId),
-          eq(schema.expense.organizationId, organization.organizationId)
-        )
-      )
-      .returning()
+    const updated = await updateReceiptPaymentStatus(
+      tx,
+      organization.organizationId,
+      expenseId,
+      "paid"
+    )
     if (!updated) notFound("Expense not found.")
     return updated
   })

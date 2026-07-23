@@ -1,8 +1,7 @@
 import "server-only"
 
 import { db } from "@workspace/db"
-import { platformUser } from "@workspace/db/schema"
-import { eq } from "drizzle-orm"
+import { findPlatformUserForUser } from "@workspace/db/repositories"
 import { headers } from "next/headers"
 import { cache } from "react"
 import { forbidden, unauthorized } from "../shared/errors"
@@ -28,12 +27,12 @@ export const getPlatformSession = cache(
       return null
     }
 
-    // Check if the user is a platform user
-    const pUser = await db.query.platformUser.findFirst({
-      where: eq(platformUser.userId, authSession.user.id),
-    })
+    const [platformUser] = await findPlatformUserForUser(
+      db,
+      authSession.user.id
+    )
 
-    if (!pUser) {
+    if (!platformUser) {
       return {
         user: authSession.user,
         session: authSession.session,
@@ -45,8 +44,8 @@ export const getPlatformSession = cache(
       user: authSession.user,
       session: authSession.session,
       platformRole:
-        pUser.role === "super_admin" || pUser.role === "support"
-          ? pUser.role
+        platformUser.role === "super_admin" || platformUser.role === "support"
+          ? platformUser.role
           : null,
     }
   }
