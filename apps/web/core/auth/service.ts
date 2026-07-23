@@ -1,13 +1,13 @@
 import "server-only"
 
-import { cache } from "react"
 import { headers } from "next/headers"
-import { auth } from "./auth"
+import { cache } from "react"
 import {
   getOrganizationMembership,
   type OrganizationMembership,
 } from "../organizations/service"
-import { unauthorized, forbidden } from "../shared/errors"
+import { forbidden, unauthorized } from "../shared/errors"
+import { auth } from "./auth"
 
 export type SessionWithOrganization = {
   user: typeof auth.$Infer.Session.user

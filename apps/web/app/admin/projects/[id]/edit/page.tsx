@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation"
-import { getProjectDetail } from "@/core/projects/service"
 import { ProjectEditForm } from "@/components/projects/project-edit-form"
+import { getProjectDetail } from "@/core/projects/service"
 
 export default async function Page({
   params,

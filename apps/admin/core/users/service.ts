@@ -1,31 +1,24 @@
 import "server-only"
 
+import type {
+  PlatformUserDetailDto,
+  PlatformUserListDto,
+} from "@workspace/contracts"
 import { db } from "@workspace/db"
 import {
   appendPlatformAudit,
   countSuperAdmins,
   createPlatformAccess,
   deletePlatformAccess,
-  findPlatformUserDetailRows,
   findPlatformAccessForUser,
+  findPlatformUserDetailRows,
   findUserById,
   listPlatformUserRows,
   updatePlatformAccess,
 } from "@workspace/db/repositories"
-import {
-  organization,
-  organizationMember,
-  platformAuditLog,
-  platformUser,
-  user,
-} from "@workspace/db/schema"
-import { count, desc, eq } from "drizzle-orm"
 import type { PlatformRole } from "../auth/service"
 import { conflict, forbidden, notFound } from "../shared/errors"
-import type {
-  PlatformUserDetailDto,
-  PlatformUserListDto,
-} from "@workspace/contracts"
+
 export type {
   PlatformUserDetailDto,
   PlatformUserListDto,

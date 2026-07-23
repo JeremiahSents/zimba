@@ -1,10 +1,10 @@
 import "server-only"
-import { requireSession } from "../auth/service"
-import * as supplierRepo from "./repository"
 import type { SupplierCreate, SupplierResponse } from "@/lib/types"
-import { badRequest, conflict } from "../shared/errors"
-import { requireRole } from "../auth/permissions"
 import { recordAudit } from "../audit/service"
+import { requireRole } from "../auth/permissions"
+import { requireSession } from "../auth/service"
+import { badRequest, conflict } from "../shared/errors"
+import * as supplierRepo from "./repository"
 
 export async function getSuppliersList(): Promise<SupplierResponse[]> {
   const { organization } = await requireSession()

@@ -14,10 +14,8 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@workspace/ui/components/breadcrumb"
-import { Card, CardContent } from "@workspace/ui/components/card"
 import { Button } from "@workspace/ui/components/button"
-import { Input } from "@workspace/ui/components/input"
-import { Label } from "@workspace/ui/components/label"
+import { Card, CardContent } from "@workspace/ui/components/card"
 import {
   Dialog,
   DialogContent,
@@ -25,6 +23,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@workspace/ui/components/dialog"
+import { Input } from "@workspace/ui/components/input"
+import { Label } from "@workspace/ui/components/label"
 import {
   Select,
   SelectContent,
@@ -34,8 +34,8 @@ import {
 } from "@workspace/ui/components/select"
 import { useState } from "react"
 import { updateSupplierAction } from "@/app/admin/suppliers/actions"
-import { SupplierTable } from "@/components/suppliers/supplier-table"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
+import { SupplierTable } from "@/components/suppliers/supplier-table"
 import { formatCurrency } from "@/lib/format"
 import {
   getSupplierListItems,

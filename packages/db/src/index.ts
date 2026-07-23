@@ -51,9 +51,9 @@ if (process.env.NODE_ENV !== "production") {
   globalForDatabase.zimbaPool = pool
 }
 
-export { schema }
-export * from "./schemas/index"
 export * from "./repositories/index"
+export * from "./schemas/index"
+export { schema }
 
 export const db = drizzle(pool, { schema })
 

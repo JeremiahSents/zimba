@@ -1,13 +1,13 @@
 import { and, count, desc, eq, gt, sql } from "drizzle-orm"
+import { user } from "../schemas/auth-schema"
 import {
   invitation,
   member,
   organization,
   organizationMember,
 } from "../schemas/organization-schema"
-import { user } from "../schemas/auth-schema"
-import { expense, expenseLine, payment } from "../schemas/receipt-schema"
 import { project } from "../schemas/project-schema"
+import { expense, expenseLine, payment } from "../schemas/receipt-schema"
 import { supplier } from "../schemas/supplier-schema"
 import type { DatabaseExecutor } from "./types"
 
@@ -146,16 +146,7 @@ export async function updateOrganizationStatus(
 }
 
 export async function listOrganizationsWithStats(executor: DatabaseExecutor) {
-  const relational = executor as any
-  const orgs: Array<{
-    id: string
-    name: string
-    status: string
-    createdAt: Date
-    members: unknown[]
-    projects: unknown[]
-    [key: string]: any
-  }> = await relational.query.organization.findMany({
+  const orgs = await executor.query.organization.findMany({
     orderBy: [desc(organization.createdAt)],
     with: {
       members: { columns: { id: true } },
@@ -188,8 +179,7 @@ export function findOrganizationDetail(
   executor: DatabaseExecutor,
   organizationId: string
 ) {
-  const relational = executor as any
-  return relational.query.organization.findFirst({
+  return executor.query.organization.findFirst({
     where: eq(organization.id, organizationId),
     with: {
       members: { with: { user: true } },

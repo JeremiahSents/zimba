@@ -1,8 +1,6 @@
 "use client"
 
 import { Button } from "@workspace/ui/components/button"
-import { Input } from "@workspace/ui/components/input"
-import { Label } from "@workspace/ui/components/label"
 import {
   Dialog,
   DialogContent,
@@ -11,6 +9,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@workspace/ui/components/dialog"
+import { Input } from "@workspace/ui/components/input"
+import { Label } from "@workspace/ui/components/label"
 import {
   Select,
   SelectContent,
@@ -19,10 +19,10 @@ import {
   SelectValue,
 } from "@workspace/ui/components/select"
 import { useState } from "react"
-import type { NewSupplierValues } from "@/lib/types"
 import { createSupplierCategoryAction } from "@/app/admin/suppliers/actions"
 import { ErrorNotice } from "@/components/shared/error-notice"
 import type { PublicError } from "@/core/shared/errors"
+import type { NewSupplierValues } from "@/lib/types"
 
 const builtInCategories = [
   { name: "Materials", slug: "materials" },

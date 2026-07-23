@@ -1,16 +1,4 @@
-import { relations } from "drizzle-orm"
-import {
-  bigint,
-  boolean,
-  integer,
-  jsonb,
-  index,
-  pgTable,
-  text,
-  timestamp,
-  uniqueIndex,
-  varchar,
-} from "drizzle-orm/pg-core"
+import { jsonb, pgTable, text, timestamp, varchar } from "drizzle-orm/pg-core"
 
 import { user } from "./auth-schema"
 import { organization } from "./organization-schema"

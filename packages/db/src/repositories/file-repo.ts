@@ -1,11 +1,11 @@
 import { and, eq } from "drizzle-orm"
-import { expense } from "../schemas/receipt-schema"
-import { project } from "../schemas/project-schema"
 import {
   documentLink,
   projectAttachment,
   uploadedFile,
 } from "../schemas/file-schema"
+import { project } from "../schemas/project-schema"
+import { expense } from "../schemas/receipt-schema"
 import type { DatabaseExecutor } from "./types"
 
 export function findFileForOrganization(

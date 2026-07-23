@@ -15,7 +15,6 @@ import {
   type SortingState,
   useReactTable,
 } from "@tanstack/react-table"
-import { Input } from "@workspace/ui/components/input"
 import {
   Dialog,
   DialogContent,
@@ -23,6 +22,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@workspace/ui/components/dialog"
+import { Input } from "@workspace/ui/components/input"
 import {
   Table,
   TableBody,
@@ -77,7 +77,7 @@ export function SupplierTable({
           <div>
             <button
               type="button"
-              className="font-medium text-left hover:text-primary hover:underline"
+              className="text-left font-medium hover:text-primary hover:underline"
               onClick={(event) => {
                 event.stopPropagation()
                 setSelectedSupplier(
@@ -212,7 +212,7 @@ export function SupplierTable({
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
-                    <p className="truncate font-semibold text-sm text-foreground">
+                    <p className="truncate font-semibold text-foreground text-sm">
                       {row.original.supplierName}
                     </p>
                     <p className="mt-1 truncate text-muted-foreground text-xs">
@@ -227,26 +227,26 @@ export function SupplierTable({
                 </div>
                 <div className="grid grid-cols-3 gap-2 border-t pt-4">
                   <div>
-                    <p className="text-muted-foreground text-[10px] uppercase tracking-wider">
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
                       Receipt
                     </p>
-                    <p className="mt-1 font-medium text-xs text-foreground">
+                    <p className="mt-1 font-medium text-foreground text-xs">
                       {formatCurrency(row.original.value)}
                     </p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground text-[10px] uppercase tracking-wider">
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
                       Paid
                     </p>
-                    <p className="mt-1 font-medium text-xs text-foreground">
+                    <p className="mt-1 font-medium text-foreground text-xs">
                       {formatCurrency(row.original.paid)}
                     </p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground text-[10px] uppercase tracking-wider">
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
                       Balance
                     </p>
-                    <p className="mt-1 font-medium text-xs text-foreground">
+                    <p className="mt-1 font-medium text-foreground text-xs">
                       {formatCurrency(row.original.remaining)}
                     </p>
                   </div>
@@ -265,7 +265,7 @@ export function SupplierTable({
             ))
           ) : (
             <div className="rounded-xl border border-dashed p-8 text-center">
-              <p className="font-medium text-sm text-foreground">
+              <p className="font-medium text-foreground text-sm">
                 No receipts found
               </p>
               <p className="mt-1 text-muted-foreground text-xs">
@@ -390,7 +390,7 @@ export function SupplierTable({
 function Metric({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="text-muted-foreground text-[10px] uppercase tracking-wider">
+      <dt className="text-[10px] text-muted-foreground uppercase tracking-wider">
         {label}
       </dt>
       <dd className="mt-1 font-semibold text-sm tabular-nums">{value}</dd>

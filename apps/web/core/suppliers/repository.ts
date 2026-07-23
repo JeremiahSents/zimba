@@ -1,12 +1,12 @@
 import "server-only"
 import { db } from "@workspace/db"
 import {
+  findSupplierCategoryBySlug,
   createSupplier as insertSupplier,
   createSupplierCategory as insertSupplierCategory,
-  findSupplierCategoryBySlug,
   listSupplierCategories as listSupplierCategoryRows,
-  listSupplierSummaries as listSupplierSummaryRows,
   listSuppliers as listSupplierRows,
+  listSupplierSummaries as listSupplierSummaryRows,
   updateSupplierForOrganization,
 } from "@workspace/db/repositories"
 import type { supplier, supplierCategory } from "@workspace/db/schema"

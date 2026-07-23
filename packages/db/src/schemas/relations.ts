@@ -1,41 +1,9 @@
 import { relations } from "drizzle-orm"
-import {
-  bigint,
-  boolean,
-  integer,
-  jsonb,
-  index,
-  pgTable,
-  text,
-  timestamp,
-  uniqueIndex,
-  varchar,
-} from "drizzle-orm/pg-core"
-
-import { user, session, account, verification } from "./auth-schema"
-import {
-  organization,
-  organizationMember,
-  invitation,
-  memberProject,
-} from "./organization-schema"
-import { project, budgetItem } from "./project-schema"
-import {
-  expense,
-  expenseLine,
-  payment,
-  paymentReceipt,
-  payable,
-} from "./receipt-schema"
-import { supplier, supplierCategory } from "./supplier-schema"
-import {
-  uploadedFile,
-  document,
-  documentLink,
-  projectAttachment,
-} from "./file-schema"
-import { auditLog, activityEvent } from "./audit-schema"
-import { platformUser, platformAuditLog } from "./platform-schema"
+import { account, session, user } from "./auth-schema"
+import { organization, organizationMember } from "./organization-schema"
+import { budgetItem, project } from "./project-schema"
+import { expense, expenseLine, payment } from "./receipt-schema"
+import { supplier } from "./supplier-schema"
 
 export const userRelations = relations(user, ({ many }) => ({
   sessions: many(session),

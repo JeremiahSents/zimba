@@ -1,8 +1,8 @@
 "use client"
 
-import { Label } from "@workspace/ui/components/label"
 import { Upload04Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
+import { Label } from "@workspace/ui/components/label"
 
 type UploadZoneProps = {
   files: File[]
@@ -29,7 +29,7 @@ export function UploadZone({ files, onFiles, onRemove }: UploadZoneProps) {
           event.preventDefault()
           onFiles(Array.from(event.dataTransfer.files))
         }}
-        className={`flex min-h-40 w-full flex-1 cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed px-4 py-5 text-center transition-colors hover:bg-muted/40 focus-within:ring-2 focus-within:ring-ring ${files.length ? "bg-muted/15" : ""}`}
+        className={`flex min-h-40 w-full flex-1 cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed px-4 py-5 text-center transition-colors focus-within:ring-2 focus-within:ring-ring hover:bg-muted/40 ${files.length ? "bg-muted/15" : ""}`}
       >
         {files.length === 0 ? (
           <>
@@ -65,14 +65,14 @@ export function UploadZone({ files, onFiles, onRemove }: UploadZoneProps) {
                   <span className="block truncate font-medium">
                     {file.name}
                   </span>
-                  <span className="mt-0.5 block text-muted-foreground text-[10px]">
+                  <span className="mt-0.5 block text-[10px] text-muted-foreground">
                     {file.type.startsWith("image/") ? "Image" : "Document"} ·{" "}
                     {(file.size / 1024 / 1024).toFixed(1)} MB
                   </span>
                 </span>
                 <button
                   type="button"
-                  className="shrink-0 rounded px-1.5 py-0.5 text-destructive text-[10px] opacity-0 transition-opacity group-hover:opacity-100 focus:opacity-100"
+                  className="shrink-0 rounded px-1.5 py-0.5 text-[10px] text-destructive opacity-0 transition-opacity focus:opacity-100 group-hover:opacity-100"
                   onClick={(event) => {
                     event.stopPropagation()
                     onRemove(index)

@@ -12,14 +12,14 @@ export default function PrivacyPage() {
   return (
     <main className="min-h-svh bg-background text-foreground">
       <article className="mx-auto max-w-2xl px-6 py-20">
-        <h1 className="font-heading text-3xl font-medium tracking-tight">
+        <h1 className="font-heading font-medium text-3xl tracking-tight">
           Privacy Policy
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
+        <p className="mt-2 text-muted-foreground text-sm">
           Last updated: {new Date().getFullYear()}
         </p>
 
-        <div className="mt-10 space-y-8 text-sm leading-relaxed text-muted-foreground">
+        <div className="mt-10 space-y-8 text-muted-foreground text-sm leading-relaxed">
           <section>
             <h2 className="font-medium text-foreground">
               1. Information We Collect
@@ -103,7 +103,7 @@ export default function PrivacyPage() {
         <div className="mt-12">
           <Link
             href="/"
-            className="text-sm text-primary underline underline-offset-4"
+            className="text-primary text-sm underline underline-offset-4"
           >
             &larr; Back to home
           </Link>

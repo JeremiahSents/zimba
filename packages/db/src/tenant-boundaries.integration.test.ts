@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest"
 import { Pool } from "pg"
+import { describe, expect, it } from "vitest"
 
 const databaseUrl = process.env.TEST_DATABASE_URL
 

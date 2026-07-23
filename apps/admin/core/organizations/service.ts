@@ -6,18 +6,8 @@ import {
   readOrganizationStats,
   updateOrganizationStatus as updateOrganizationStatusInDb,
 } from "@workspace/db/repositories"
-import {
-  organization,
-  organizationMember,
-  project,
-  expense,
-  expenseLine,
-  supplier,
-  payment,
-} from "@workspace/db/schema"
-import { count, desc, eq, sql } from "drizzle-orm"
-import { notFound } from "../shared/errors"
 import { requirePlatformRole } from "../auth/service"
+import { notFound } from "../shared/errors"
 
 export async function listOrganizations() {
   return listOrganizationsWithStats(db)

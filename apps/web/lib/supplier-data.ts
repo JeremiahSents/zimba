@@ -1,4 +1,3 @@
-import type { ExpenseTableRow, SupplierResponse } from "@/lib/types"
 import type {
   SupplierLedgerEntry,
   SupplierListItem,
@@ -7,6 +6,8 @@ import type {
   SupplierReceiptRow,
   SupplierReceiptStatus,
 } from "@workspace/contracts"
+import type { ExpenseTableRow, SupplierResponse } from "@/lib/types"
+
 export type {
   SupplierLedgerEntry,
   SupplierListItem,

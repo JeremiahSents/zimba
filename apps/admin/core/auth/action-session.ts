@@ -2,7 +2,7 @@ import "server-only"
 
 import type { ActionResult } from "../shared/action-result"
 import { handleActionError } from "../shared/handle-action-error"
-import { requirePlatformRole, type PlatformRole } from "./service"
+import { type PlatformRole, requirePlatformRole } from "./service"
 
 export async function ensureActionSession(
   operation: string,

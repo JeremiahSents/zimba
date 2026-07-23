@@ -1,6 +1,6 @@
+import type { ActionResult } from "./action-result"
 import { classifyError } from "./error-classifier"
 import { logApplicationError } from "./error-logger"
-import type { ActionResult } from "./action-result"
 
 export function handleActionError(
   error: unknown,

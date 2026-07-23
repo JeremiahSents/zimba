@@ -20,8 +20,8 @@ import { useState } from "react"
 import { createSupplierAction } from "@/app/admin/suppliers/actions"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { ErrorNotice } from "@/components/shared/error-notice"
-import type { PublicError } from "@/core/shared/errors"
 import { SupplierForm } from "@/components/suppliers/supplier-form"
+import type { PublicError } from "@/core/shared/errors"
 
 export function NewSupplierPage({
   returnTo,

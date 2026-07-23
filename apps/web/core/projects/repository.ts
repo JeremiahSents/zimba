@@ -1,15 +1,15 @@
 import "server-only"
 import { db } from "@workspace/db"
-import { allocation, project } from "@workspace/db/schema"
 import {
-  createProject as insertProject,
   deleteProjectForOrganization,
   findActiveProjectForOrganization,
+  createProject as insertProject,
   listAllocationsForProject,
   listArchivedProjectsForOrganization,
   listProjectsForOrganization,
   updateProjectForOrganization,
 } from "@workspace/db/repositories"
+import type { project } from "@workspace/db/schema"
 import { listFinancialExpenseRows } from "../expenses/repository"
 
 async function withProjectFinancials(

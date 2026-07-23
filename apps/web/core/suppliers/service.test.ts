@@ -1,12 +1,14 @@
-import { describe, it, expect, vi, beforeEach } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vitest"
+
 vi.mock("server-only", () => ({}))
+
+import * as authService from "../auth/service"
+import * as supplierRepo from "./repository"
 import {
-  getSuppliersList,
   createSupplier,
   createSupplierCategory,
+  getSuppliersList,
 } from "./service"
-import * as supplierRepo from "./repository"
-import * as authService from "../auth/service"
 
 vi.mock("./repository")
 vi.mock("../auth/service")

@@ -1,15 +1,16 @@
 import "server-only"
 
-import { cache } from "react"
-import { headers } from "next/headers"
-import { auth } from "./auth"
-import { unauthorized, forbidden } from "../shared/errors"
 import { db } from "@workspace/db"
 import { platformUser } from "@workspace/db/schema"
 import { eq } from "drizzle-orm"
+import { headers } from "next/headers"
+import { cache } from "react"
+import { forbidden, unauthorized } from "../shared/errors"
+import { auth } from "./auth"
 import type { PlatformAccess, PlatformRole } from "./roles"
-export { platformRoles } from "./roles"
+
 export type { PlatformAccess, PlatformRole } from "./roles"
+export { platformRoles } from "./roles"
 
 export type PlatformSession = {
   user: typeof auth.$Infer.Session.user

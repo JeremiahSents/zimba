@@ -1,6 +1,6 @@
-import { uploadFiles } from "@/lib/uploadthing"
-import type { FileUploadPurpose } from "@/lib/types"
 import { ApplicationError } from "@/core/shared/errors"
+import type { FileUploadPurpose } from "@/lib/types"
+import { uploadFiles } from "@/lib/uploadthing"
 
 export async function uploadZimbaFile(
   file: File,

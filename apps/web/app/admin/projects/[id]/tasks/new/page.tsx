@@ -18,4 +18,5 @@ export default async function Page({
   const destination = returnTo?.startsWith(fallback) ? returnTo : fallback
   return <NewProjectTaskPage project={project} returnTo={destination} />
 }
+
 import { notFound } from "next/navigation"

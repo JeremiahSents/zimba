@@ -1,6 +1,6 @@
 import { z } from "zod"
-import { boundedNameSchema, emailSchema, idSchema } from "./shared-zod"
 import { workspaceRoleSchema } from "./auth-zod"
+import { boundedNameSchema, emailSchema, idSchema } from "./shared-zod"
 export const organizationStatusSchema = z.enum(["active", "trial", "suspended"])
 export const organizationIdSchema = z.object({ organizationId: idSchema })
 export const organizationInviteSchema = z.object({

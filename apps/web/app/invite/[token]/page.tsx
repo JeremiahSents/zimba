@@ -1,6 +1,6 @@
-import { redirect } from "next/navigation"
 import type { Metadata } from "next"
 import { headers } from "next/headers"
+import { redirect } from "next/navigation"
 import { auth } from "@/core/auth/auth"
 import { getInvitationPreview } from "@/core/team/service"
 import { acceptInvitationAction } from "./actions"

@@ -1,12 +1,12 @@
 import { count, desc, eq, sql } from "drizzle-orm"
+import { user } from "../schemas/auth-schema"
 import {
   organization,
   organizationMember,
 } from "../schemas/organization-schema"
-import { expense, expenseLine, payment } from "../schemas/receipt-schema"
-import { project } from "../schemas/project-schema"
-import { user } from "../schemas/auth-schema"
 import { platformAuditLog, platformUser } from "../schemas/platform-schema"
+import { project } from "../schemas/project-schema"
+import { expense, expenseLine, payment } from "../schemas/receipt-schema"
 import { supplier } from "../schemas/supplier-schema"
 import type { DatabaseExecutor } from "./types"
 
@@ -225,11 +225,8 @@ export function listPlatformPayments(executor: DatabaseExecutor) {
     .orderBy(desc(payment.createdAt))
 }
 
-export async function listPlatformProjects(
-  executor: DatabaseExecutor
-): Promise<Array<Record<string, any>>> {
-  const relational = executor as any
-  const projects = await relational.query.project.findMany({
+export async function listPlatformProjects(executor: DatabaseExecutor) {
+  const projects = await executor.query.project.findMany({
     orderBy: [desc(project.createdAt)],
     with: {
       organization: { columns: { name: true } },
@@ -248,7 +245,7 @@ export async function listPlatformProjects(
   const spendMap = new Map(
     spendStats.map((row) => [row.projectId, row.totalSpendCents])
   )
-  return projects.map((row: any) => ({
+  return projects.map((row) => ({
     ...row,
     receiptCount: row.expenses.length,
     organizationName: row.organization?.name || "Unknown",

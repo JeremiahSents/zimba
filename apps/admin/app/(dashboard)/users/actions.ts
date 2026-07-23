@@ -1,18 +1,18 @@
 "use server"
 
+import { platformRoleUpdateSchema } from "@workspace/contracts"
 import { revalidatePath } from "next/cache"
 import { ensureActionSession } from "@/core/auth/action-session"
-import {
-  removePlatformUser,
-  updatePlatformUserRole,
-} from "@/core/users/service"
+import { requirePlatformRole } from "@/core/auth/service"
 import {
   type ActionResult,
   expectedActionFailure,
 } from "@/core/shared/action-result"
 import { handleActionError } from "@/core/shared/handle-action-error"
-import { requirePlatformRole } from "@/core/auth/service"
-import { platformRoleUpdateSchema } from "@workspace/contracts"
+import {
+  removePlatformUser,
+  updatePlatformUserRole,
+} from "@/core/users/service"
 
 const inputSchema = platformRoleUpdateSchema
 

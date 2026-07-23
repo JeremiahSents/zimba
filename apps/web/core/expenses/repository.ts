@@ -1,6 +1,6 @@
 import "server-only"
 
-import { db, schema } from "@workspace/db"
+import { db, type schema } from "@workspace/db"
 import {
   deletePayableForOrganization,
   deleteReceiptForOrganization,
@@ -12,7 +12,6 @@ import {
   updateReceiptForOrganization,
   updateReceiptLinesAllocation,
 } from "@workspace/db/repositories"
-import { and, desc, eq, sql } from "drizzle-orm"
 
 export type FinancialExpenseRow = {
   id: string

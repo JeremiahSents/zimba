@@ -114,7 +114,7 @@ export function SuppliersPage({ data }: { data: DashboardOverviewData }) {
                         "No contact details"}
                     </p>
                   </div>
-                  <span className="rounded-full bg-primary/10 px-2 py-1 text-[10px] font-semibold text-primary">
+                  <span className="rounded-full bg-primary/10 px-2 py-1 font-semibold text-[10px] text-primary">
                     {supplier.payments} receipts
                   </span>
                 </div>
@@ -146,7 +146,7 @@ export function SuppliersPage({ data }: { data: DashboardOverviewData }) {
 function Metric({ label, value }: { label: string; value: string }) {
   return (
     <div className="min-w-0">
-      <dt className="text-[10px] uppercase tracking-wide text-muted-foreground">
+      <dt className="text-[10px] text-muted-foreground uppercase tracking-wide">
         {label}
       </dt>
       <dd className="mt-1 truncate font-semibold text-xs tabular-nums">

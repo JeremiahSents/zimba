@@ -1,9 +1,9 @@
 import "server-only"
 import { db } from "@workspace/db"
 import {
+  updateAllocation as changeAllocation,
   createAllocation as insertAllocation,
   listAllocationsForProject,
-  updateAllocation as changeAllocation,
 } from "@workspace/db/repositories"
 import type { allocation } from "@workspace/db/schema"
 

@@ -1,13 +1,13 @@
 import { and, desc, eq, sql } from "drizzle-orm"
+import { uploadedFile } from "../schemas/file-schema"
+import { allocation, project } from "../schemas/project-schema"
 import {
   expense,
   expenseLine,
   ledgerPayment,
   payable,
 } from "../schemas/receipt-schema"
-import { allocation, project } from "../schemas/project-schema"
 import { supplier } from "../schemas/supplier-schema"
-import { uploadedFile } from "../schemas/file-schema"
 import type { DatabaseExecutor } from "./types"
 
 export function findReceiptForOrganization(

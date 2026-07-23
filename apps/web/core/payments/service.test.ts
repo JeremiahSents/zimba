@@ -1,13 +1,15 @@
-import { describe, it, expect, vi, beforeEach } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vitest"
+
 vi.mock("server-only", () => ({}))
-import {
-  createUpcomingPayment,
-  updateUpcomingPayment,
-  createLedgerPayment,
-} from "./service"
-import * as paymentRepo from "./repository"
+
 import * as authService from "../auth/service"
 import * as expenseRepo from "../expenses/repository"
+import * as paymentRepo from "./repository"
+import {
+  createLedgerPayment,
+  createUpcomingPayment,
+  updateUpcomingPayment,
+} from "./service"
 
 vi.mock("./repository")
 vi.mock("../auth/service")

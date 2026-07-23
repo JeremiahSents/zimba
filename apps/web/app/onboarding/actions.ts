@@ -1,16 +1,16 @@
 "use server"
 
-import { headers } from "next/headers"
-import { redirect } from "next/navigation"
-import { auth } from "@/core/auth/auth"
 import { db } from "@workspace/db"
 import {
   createOrganization,
   createOrganizationMember,
   findMembershipByUser,
   findOrganizationBySlug,
+  updateUserName,
 } from "@workspace/db/repositories"
-import { updateUserName } from "@workspace/db/repositories"
+import { headers } from "next/headers"
+import { redirect } from "next/navigation"
+import { auth } from "@/core/auth/auth"
 import { getOrganizationMembership } from "@/core/organizations/service"
 
 export type OnboardingState = {

@@ -5,9 +5,6 @@ import {
   Settings02Icon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
-import Link from "next/link"
-import { type ReactNode } from "react"
-
 import {
   Avatar,
   AvatarFallback,
@@ -15,6 +12,8 @@ import {
 } from "@workspace/ui/components/avatar"
 import { Button } from "@workspace/ui/components/button"
 import { useSidebar } from "@workspace/ui/components/sidebar"
+import Link from "next/link"
+import type { ReactNode } from "react"
 
 type AdminDashboardShellProps = {
   title: ReactNode

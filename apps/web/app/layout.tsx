@@ -1,4 +1,4 @@
-import { Geist, Inter, Roboto, Public_Sans } from "next/font/google"
+import { Geist, Inter, Public_Sans, Roboto } from "next/font/google"
 
 import "@workspace/ui/globals.css"
 import { TooltipProvider } from "@workspace/ui/components/tooltip"

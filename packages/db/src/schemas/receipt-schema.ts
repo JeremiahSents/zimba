@@ -1,10 +1,7 @@
-import { relations } from "drizzle-orm"
 import {
   bigint,
-  boolean,
-  integer,
-  jsonb,
   index,
+  integer,
   pgTable,
   text,
   timestamp,
@@ -13,7 +10,7 @@ import {
 } from "drizzle-orm/pg-core"
 
 import { organization } from "./organization-schema"
-import { project, budgetItem } from "./project-schema"
+import { budgetItem, project } from "./project-schema"
 import { supplier } from "./supplier-schema"
 
 export const expense = pgTable(

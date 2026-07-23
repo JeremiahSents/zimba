@@ -1,5 +1,6 @@
 "use server"
 
+import { organizationStatusInputSchema } from "@workspace/contracts"
 import { revalidatePath } from "next/cache"
 import { ensureActionSession } from "@/core/auth/action-session"
 import { updateOrganizationStatus } from "@/core/organizations/service"
@@ -8,7 +9,6 @@ import {
   expectedActionFailure,
 } from "@/core/shared/action-result"
 import { handleActionError } from "@/core/shared/handle-action-error"
-import { organizationStatusInputSchema } from "@workspace/contracts"
 
 const statusSchema = organizationStatusInputSchema
 

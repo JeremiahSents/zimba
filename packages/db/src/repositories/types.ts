@@ -1,6 +1,7 @@
-import type { PgDatabase } from "drizzle-orm/pg-core"
-import type { PgTransaction } from "drizzle-orm/pg-core"
+import type { db } from "../index"
 
-export type DatabaseExecutor =
-  | PgDatabase<any, any, any>
-  | PgTransaction<any, any, any>
+export type Database = typeof db
+export type DatabaseTransaction = Parameters<
+  Parameters<Database["transaction"]>[0]
+>[0]
+export type DatabaseExecutor = Database | DatabaseTransaction

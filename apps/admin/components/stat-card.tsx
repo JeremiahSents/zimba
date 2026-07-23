@@ -4,8 +4,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components/card"
-import { ReactNode } from "react"
 import { cn } from "@workspace/ui/lib/utils"
+import type { ReactNode } from "react"
 
 interface StatCardProps {
   title: string
@@ -39,7 +39,7 @@ export function StatCard({
           {value}
         </p>
         {(description || trend) && (
-          <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+          <p className="mt-1 flex items-center gap-1 text-muted-foreground text-xs">
             {trend && (
               <span
                 className={cn(

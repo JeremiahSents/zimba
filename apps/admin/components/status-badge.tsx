@@ -52,7 +52,7 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
   return (
     <Badge
       variant={customColor ? "outline" : baseVariant}
-      className={cn("capitalize font-medium", customColor, className)}
+      className={cn("font-medium capitalize", customColor, className)}
     >
       {status}
     </Badge>
