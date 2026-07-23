@@ -46,7 +46,10 @@ export default async function UserDetailPage({
             </div>
             <div className="flex justify-between border-b pb-2">
               <span className="text-muted-foreground">Platform Role</span>
-              <PlatformRoleSelect userId={u.id} currentRole={u.platformRole ?? "none"} />
+              <PlatformRoleSelect
+                userId={u.id}
+                currentRole={u.platformRole ?? "none"}
+              />
             </div>
             <div className="flex justify-between border-b pb-2">
               <span className="text-muted-foreground">Created</span>
@@ -74,9 +77,7 @@ export default async function UserDetailPage({
                     key={mem.organizationId}
                     className="flex items-center justify-between border-b pb-2"
                   >
-                    <span className="font-medium">
-                      {mem.organizationName}
-                    </span>
+                    <span className="font-medium">{mem.organizationName}</span>
                     <Badge variant="secondary">{mem.role}</Badge>
                   </div>
                 ))}

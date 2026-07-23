@@ -16,7 +16,9 @@ import { user } from "./auth-schema"
 import { organization } from "./organization-schema"
 
 export const auditLog = pgTable("audit_log", {
-  id: varchar("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  id: varchar("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
   organizationId: varchar("organization_id")
     .notNull()
     .references(() => organization.id, { onDelete: "cascade" }),
@@ -31,7 +33,9 @@ export const auditLog = pgTable("audit_log", {
 })
 
 export const activityEvent = pgTable("activity_event", {
-  id: varchar("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  id: varchar("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
   organizationId: varchar("organization_id")
     .notNull()
     .references(() => organization.id, { onDelete: "cascade" }),

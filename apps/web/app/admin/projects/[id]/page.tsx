@@ -15,7 +15,5 @@ export default async function Page({
   const project = await getProjectDetail(id)
   if (!project) notFound()
 
-  return (
-    <ProjectDetailPageWrapper initialProject={project} />
-  )
+  return <ProjectDetailPageWrapper initialProject={project} />
 }

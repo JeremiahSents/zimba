@@ -1,9 +1,19 @@
 import "server-only"
 
 import { db, schema } from "@workspace/db"
-import { findActiveProjectForOrganization, findAllocationForProject, findExpenseForOrganization, insertReceipt } from "@workspace/db/repositories"
+import {
+  findActiveProjectForOrganization,
+  findAllocationForProject,
+  findExpenseForOrganization,
+  insertReceipt,
+} from "@workspace/db/repositories"
 import { findCompletedFile } from "@workspace/db/repositories"
-import { findSupplierByNameForOrganization, findSupplierForOrganization, insertReceiptLine, insertReceiptPayment } from "@workspace/db/repositories"
+import {
+  findSupplierByNameForOrganization,
+  findSupplierForOrganization,
+  insertReceiptLine,
+  insertReceiptPayment,
+} from "@workspace/db/repositories"
 import { and, eq } from "drizzle-orm"
 import type {
   ExpenseReceiptCreate,
@@ -65,30 +75,49 @@ export async function createPayableExpense(
   return db.transaction(async (tx) => {
     const projectId = String(data.project_id)
     const supplierId = String(data.supplier_id)
-    const [project] = await findActiveProjectForOrganization(tx, organizationId, projectId)
-    const [supplier] = await findSupplierForOrganization(tx, organizationId, supplierId)
+    const [project] = await findActiveProjectForOrganization(
+      tx,
+      organizationId,
+      projectId
+    )
+    const [supplier] = await findSupplierForOrganization(
+      tx,
+      organizationId,
+      supplierId
+    )
     if (!project || !supplier) notFound("Project or supplier not found.")
     if (data.receipt_file_id) {
-      const file = await findCompletedFile(tx, organizationId, data.receipt_file_id, "expense_receipt")
-      if (!file) badRequest("The receipt file is invalid or belongs to another workspace.")
+      const file = await findCompletedFile(
+        tx,
+        organizationId,
+        data.receipt_file_id,
+        "expense_receipt"
+      )
+      if (!file)
+        badRequest(
+          "The receipt file is invalid or belongs to another workspace."
+        )
     }
     const expenseId = crypto.randomUUID()
     const expense = await insertReceipt(tx, {
-        id: expenseId,
-        organizationId,
-        projectId,
-        supplierId,
-        receiptFileId: data.receipt_file_id,
-        expenseDate: data.expense_date
-          ? new Date(data.expense_date)
-          : new Date(),
-        paymentStatus: data.amount_paid ? "partial" : "unpaid",
-      })
+      id: expenseId,
+      organizationId,
+      projectId,
+      supplierId,
+      receiptFileId: data.receipt_file_id,
+      expenseDate: data.expense_date ? new Date(data.expense_date) : new Date(),
+      paymentStatus: data.amount_paid ? "partial" : "unpaid",
+    })
     if (!expense) throw new Error("Expense insert failed")
     const createdLines = []
     for (const line of data.lines) {
       const allocationId = String(line.allocation_id)
-      const [allocation] = await findAllocationForProject(tx, organizationId, projectId, allocationId)
+      const [allocation] = await findAllocationForProject(
+        tx,
+        organizationId,
+        projectId,
+        allocationId
+      )
       if (!allocation)
         badRequest("An allocation does not belong to this project.")
       const amount = line.quantity * line.unit_amount
@@ -133,7 +162,12 @@ export async function createPayableExpense(
       await tx
         .update(schema.expense)
         .set({ paymentStatus: paidAmount >= gross ? "paid" : "partial" })
-        .where(and(eq(schema.expense.id, expense.id), eq(schema.expense.organizationId, organizationId)))
+        .where(
+          and(
+            eq(schema.expense.id, expense.id),
+            eq(schema.expense.organizationId, organizationId)
+          )
+        )
     }
     return {
       id: expense.id,
@@ -170,15 +204,31 @@ export async function createExpenseReceipt(
   const { organization } = await requireSession()
   const organizationId = organization.organizationId
   return db.transaction(async (tx) => {
-    const [project] = await findActiveProjectForOrganization(tx, organizationId, projectId)
+    const [project] = await findActiveProjectForOrganization(
+      tx,
+      organizationId,
+      projectId
+    )
     if (!project) notFound("Project not found.")
     if (data.receipt_file_id) {
-      const file = await findCompletedFile(tx, organizationId, data.receipt_file_id, "expense_receipt")
-      if (!file) badRequest("The receipt file is invalid or belongs to another workspace.")
+      const file = await findCompletedFile(
+        tx,
+        organizationId,
+        data.receipt_file_id,
+        "expense_receipt"
+      )
+      if (!file)
+        badRequest(
+          "The receipt file is invalid or belongs to another workspace."
+        )
     }
     const supplierName = data.items[0]?.supplier_name.trim()
     if (!supplierName) badRequest("A supplier is required.")
-    let [supplier] = await findSupplierByNameForOrganization(tx, organizationId, supplierName)
+    let [supplier] = await findSupplierByNameForOrganization(
+      tx,
+      organizationId,
+      supplierName
+    )
     if (!supplier)
       [supplier] = await tx
         .insert(schema.supplier)
@@ -220,7 +270,12 @@ export async function createExpenseReceipt(
     })
     for (const item of data.items) {
       const allocationId = String(item.allocation_id)
-      const [allocation] = await findAllocationForProject(tx, organizationId, projectId, allocationId)
+      const [allocation] = await findAllocationForProject(
+        tx,
+        organizationId,
+        projectId,
+        allocationId
+      )
       if (!allocation)
         badRequest("An allocation does not belong to this project.")
       await insertReceiptLine(tx, {
@@ -265,7 +320,11 @@ export async function updateExpenseStatus(
   }
 
   return db.transaction(async (tx) => {
-    const detail = await findExpenseForOrganization(tx, organization.organizationId, expenseId)
+    const detail = await findExpenseForOrganization(
+      tx,
+      organization.organizationId,
+      expenseId
+    )
     if (!detail) notFound("Expense not found.")
     const expense = detail.expense
     const lines = detail.lines.map(({ line }) => line)
@@ -397,16 +456,18 @@ export async function getPayableExpense(
     supplier_name: result.supplierName,
     receipt_file_url: result.receiptFile?.url ?? null,
     attachments: result.receiptFile
-      ? [{
-          id: result.receiptFile.id,
-          key: result.receiptFile.key,
-          filename: result.receiptFile.filename,
-          content_type: result.receiptFile.contentType,
-          size_bytes: result.receiptFile.sizeBytes,
-          url: result.receiptFile.url,
-          purpose: result.receiptFile.purpose,
-          created_at: result.receiptFile.createdAt.toISOString(),
-        }]
+      ? [
+          {
+            id: result.receiptFile.id,
+            key: result.receiptFile.key,
+            filename: result.receiptFile.filename,
+            content_type: result.receiptFile.contentType,
+            size_bytes: result.receiptFile.sizeBytes,
+            url: result.receiptFile.url,
+            purpose: result.receiptFile.purpose,
+            created_at: result.receiptFile.createdAt.toISOString(),
+          },
+        ]
       : [],
     category_state: result.lines.every(({ allocationName }) => !allocationName)
       ? "uncategorized"
@@ -433,19 +494,36 @@ export async function getPayableExpense(
   }
 }
 
-export async function correctReceiptCategory(receiptId: string, allocationId: string) {
+export async function correctReceiptCategory(
+  receiptId: string,
+  allocationId: string
+) {
   const { user, organization } = await requireSession()
   requireRole(organization.role, ["owner", "site_manager", "accountant"])
-  const existing = await expenseRepo.getExpense(organization.organizationId, receiptId)
-  const payable = existing ? null : await expenseRepo.getPayable(organization.organizationId, receiptId)
+  const existing = await expenseRepo.getExpense(
+    organization.organizationId,
+    receiptId
+  )
+  const payable = existing
+    ? null
+    : await expenseRepo.getPayable(organization.organizationId, receiptId)
   const projectId = existing?.expense.projectId ?? payable?.payable.projectId
   if (!projectId) badRequest("This receipt is not linked to a project.")
-  const [allocation] = await findAllocationForProject(db, organization.organizationId, projectId, allocationId)
+  const [allocation] = await findAllocationForProject(
+    db,
+    organization.organizationId,
+    projectId,
+    allocationId
+  )
   if (!allocation) badRequest("Allocation not found in this workspace.")
   if (!allocation) badRequest("Select a category belonging to this project.")
 
   if (existing) {
-    await expenseRepo.updateExpenseLinesAllocation(organization.organizationId, receiptId, allocationId)
+    await expenseRepo.updateExpenseLinesAllocation(
+      organization.organizationId,
+      receiptId,
+      allocationId
+    )
   } else if (payable) {
     await db.transaction(async (tx) => {
       await insertReceipt(tx, {
@@ -468,26 +546,65 @@ export async function correctReceiptCategory(receiptId: string, allocationId: st
       })
     })
   } else notFound("Receipt not found.")
-  await recordAudit({ organizationId: organization.organizationId, actorId: user.id, action: "receipt.category.correct", entityType: "receipt", entityId: receiptId, changes: { allocationId } })
+  await recordAudit({
+    organizationId: organization.organizationId,
+    actorId: user.id,
+    action: "receipt.category.correct",
+    entityType: "receipt",
+    entityId: receiptId,
+    changes: { allocationId },
+  })
 }
 
 export async function deleteReceipt(receiptId: string) {
   const { user, organization } = await requireSession()
   requireRole(organization.role, ["owner", "site_manager", "accountant"])
-  const deletedExpense = await expenseRepo.deleteExpense(organization.organizationId, receiptId)
-  const deletedPayable = await expenseRepo.deletePayable(organization.organizationId, receiptId)
+  const deletedExpense = await expenseRepo.deleteExpense(
+    organization.organizationId,
+    receiptId
+  )
+  const deletedPayable = await expenseRepo.deletePayable(
+    organization.organizationId,
+    receiptId
+  )
   if (!deletedExpense && !deletedPayable) notFound("Receipt not found.")
-  await recordAudit({ organizationId: organization.organizationId, actorId: user.id, action: "receipt.delete", entityType: "receipt", entityId: receiptId })
+  await recordAudit({
+    organizationId: organization.organizationId,
+    actorId: user.id,
+    action: "receipt.delete",
+    entityType: "receipt",
+    entityId: receiptId,
+  })
 }
 
 /** Read-only operational report used before any historical data repair. */
 export async function getReceiptCategoryAudit() {
   const { organization } = await requireSession()
-  const rows = await expenseRepo.listFinancialExpenseRows(organization.organizationId)
+  const rows = await expenseRepo.listFinancialExpenseRows(
+    organization.organizationId
+  )
   return {
     assigned: rows.filter((row) => row.categoryState === "assigned").length,
-    uncategorizedLegacyPayables: rows.filter((row) => row.source === "payable" && row.categoryState === "uncategorized").map((row) => ({ receiptId: row.receiptId, projectId: row.projectId, item: row.itemDescription })),
-    missingAllocationReferences: rows.filter((row) => row.source === "expense" && row.categoryState === "uncategorized").map((row) => ({ receiptId: row.receiptId, projectId: row.projectId, item: row.itemDescription })),
+    uncategorizedLegacyPayables: rows
+      .filter(
+        (row) =>
+          row.source === "payable" && row.categoryState === "uncategorized"
+      )
+      .map((row) => ({
+        receiptId: row.receiptId,
+        projectId: row.projectId,
+        item: row.itemDescription,
+      })),
+    missingAllocationReferences: rows
+      .filter(
+        (row) =>
+          row.source === "expense" && row.categoryState === "uncategorized"
+      )
+      .map((row) => ({
+        receiptId: row.receiptId,
+        projectId: row.projectId,
+        item: row.itemDescription,
+      })),
   }
 }
 

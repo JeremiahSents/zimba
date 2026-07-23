@@ -1,9 +1,11 @@
 import "server-only"
 
 import { db } from "@workspace/db"
-import { platformUser, user } from "@workspace/db/schema"
+import {
+  findPlatformUserForUser,
+  findUserByEmail,
+} from "@workspace/db/repositories"
 import { sendSuperAdminInviteEmail } from "@workspace/transactional"
-import { eq } from "drizzle-orm"
 import { requirePlatformRole } from "../auth/service"
 import { badRequest, conflict } from "../shared/errors"
 
@@ -27,18 +29,13 @@ export async function sendSuperAdminInvite(input: {
     badRequest("Enter a name and valid email address.")
   }
 
-  const [existingUser] = await db
-    .select()
-    .from(user)
-    .where(eq(user.email, normalizedEmail))
-    .limit(1)
+  const [existingUser] = await findUserByEmail(db, normalizedEmail)
 
   if (existingUser) {
-    const [existingPlatform] = await db
-      .select()
-      .from(platformUser)
-      .where(eq(platformUser.userId, existingUser.id))
-      .limit(1)
+    const [existingPlatform] = await findPlatformUserForUser(
+      db,
+      existingUser.id
+    )
 
     if (existingPlatform) {
       conflict("This user already has platform access.")

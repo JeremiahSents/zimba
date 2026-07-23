@@ -20,7 +20,10 @@ export function LoginForm({
   oauthError = false,
   callbackUrl = "/admin/home",
   ...props
-}: React.ComponentProps<"div"> & { oauthError?: boolean; callbackUrl?: string }) {
+}: React.ComponentProps<"div"> & {
+  oauthError?: boolean
+  callbackUrl?: string
+}) {
   const [error, setError] = useState<string | null>(
     oauthError
       ? "Google sign-in could not be completed. Please try again."

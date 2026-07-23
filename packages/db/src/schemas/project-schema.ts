@@ -15,7 +15,9 @@ import {
 import { organization } from "./organization-schema"
 
 export const project = pgTable("project", {
-  id: varchar("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  id: varchar("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
   organizationId: varchar("organization_id")
     .notNull()
     .references(() => organization.id, { onDelete: "cascade" }),
@@ -39,7 +41,9 @@ export const project = pgTable("project", {
 })
 
 export const budgetItem = pgTable("budget_item", {
-  id: varchar("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  id: varchar("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
   organizationId: varchar("organization_id")
     .notNull()
     .references(() => organization.id, { onDelete: "cascade" }),

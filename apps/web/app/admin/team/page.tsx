@@ -10,5 +10,14 @@ export const metadata: Metadata = {
 
 export default async function Page() {
   const team = await listTeam()
-  return <TeamPage members={team.members.map((member) => ({ ...member, responsibility: member.responsibility ?? "General access" }))} invitations={team.invitations} canInvite={team.canInvite} />
+  return (
+    <TeamPage
+      members={team.members.map((member) => ({
+        ...member,
+        responsibility: member.responsibility ?? "General access",
+      }))}
+      invitations={team.invitations}
+      canInvite={team.canInvite}
+    />
+  )
 }

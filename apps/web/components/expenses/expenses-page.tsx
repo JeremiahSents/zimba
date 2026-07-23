@@ -24,7 +24,11 @@ export function ExpensesPage({ data }: { data: DashboardOverviewData }) {
     ...data.expenses.map((expense) => expense.amount)
   )
   const outstanding = data.expenses.reduce(
-    (total, expense) => total + (expense.status === "Full" ? 0 : expense.outstanding_amount ?? expense.amount),
+    (total, expense) =>
+      total +
+      (expense.status === "Full"
+        ? 0
+        : (expense.outstanding_amount ?? expense.amount)),
     0
   )
 

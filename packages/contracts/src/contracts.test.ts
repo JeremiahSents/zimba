@@ -3,7 +3,15 @@ import { emailSchema, receiptLineSchema, supplierInputSchema } from "./index"
 
 describe("shared contracts", () => {
   it("accepts valid receipt lines", () => {
-    expect(receiptLineSchema.parse({ allocationId: "allocation-1", itemDescription: "Cement", quantity: 2, unitRateCents: 5000, amountCents: 10000 })).toMatchObject({ quantity: 2 })
+    expect(
+      receiptLineSchema.parse({
+        allocationId: "allocation-1",
+        itemDescription: "Cement",
+        quantity: 2,
+        unitRateCents: 5000,
+        amountCents: 10000,
+      })
+    ).toMatchObject({ quantity: 2 })
   })
 
   it("rejects invalid emails", () => {
@@ -11,6 +19,12 @@ describe("shared contracts", () => {
   })
 
   it("enforces supplier field bounds", () => {
-    expect(supplierInputSchema.safeParse({ organizationId: "org-1", name: "", category: "materials" }).success).toBe(false)
+    expect(
+      supplierInputSchema.safeParse({
+        organizationId: "org-1",
+        name: "",
+        category: "materials",
+      }).success
+    ).toBe(false)
   })
 })

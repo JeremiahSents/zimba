@@ -23,7 +23,13 @@ import { ErrorNotice } from "@/components/shared/error-notice"
 import type { PublicError } from "@/core/shared/errors"
 import { SupplierForm } from "@/components/suppliers/supplier-form"
 
-export function NewSupplierPage({ returnTo, categories }: { returnTo?: string; categories: { name: string; slug: string }[] }) {
+export function NewSupplierPage({
+  returnTo,
+  categories,
+}: {
+  returnTo?: string
+  categories: { name: string; slug: string }[]
+}) {
   const router = useRouter()
   const [error, setError] = useState<PublicError | string>("")
   const [submitting, setSubmitting] = useState(false)
@@ -64,7 +70,10 @@ export function NewSupplierPage({ returnTo, categories }: { returnTo?: string; c
           </CardHeader>
           <CardContent>
             {error ? (
-              <ErrorNotice className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-destructive/25 bg-destructive/5 px-4 py-3" error={error} />
+              <ErrorNotice
+                className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-destructive/25 bg-destructive/5 px-4 py-3"
+                error={error}
+              />
             ) : null}
             <SupplierForm
               initialCategories={categories}

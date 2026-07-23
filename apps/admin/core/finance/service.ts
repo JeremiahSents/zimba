@@ -1,6 +1,10 @@
 import "server-only"
 import { db } from "@workspace/db"
-import { listPlatformPayments as readPlatformPayments, listPlatformReceipts as readPlatformReceipts, listPlatformSuppliers as readPlatformSuppliers } from "@workspace/db/repositories"
+import {
+  listPlatformPayments as readPlatformPayments,
+  listPlatformReceipts as readPlatformReceipts,
+  listPlatformSuppliers as readPlatformSuppliers,
+} from "@workspace/db/repositories"
 
 export async function listPlatformSuppliers() {
   return readPlatformSuppliers(db)

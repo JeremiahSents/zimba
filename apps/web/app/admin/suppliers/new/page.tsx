@@ -12,6 +12,14 @@ export default async function Page({
 }: {
   searchParams: Promise<{ returnTo?: string }>
 }) {
-  const [{ returnTo }, categories] = await Promise.all([searchParams, getSupplierCategories()])
-  return <NewSupplierPage returnTo={returnTo} categories={categories.map(({ name, slug }) => ({ name, slug }))} />
+  const [{ returnTo }, categories] = await Promise.all([
+    searchParams,
+    getSupplierCategories(),
+  ])
+  return (
+    <NewSupplierPage
+      returnTo={returnTo}
+      categories={categories.map(({ name, slug }) => ({ name, slug }))}
+    />
+  )
 }

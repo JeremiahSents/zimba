@@ -14,11 +14,29 @@ describe.skipIf(!databaseUrl)("tenant boundary integration", () => {
       await client.query("begin")
       await client.query(
         'insert into "organization" (id, name, slug, base_currency, status) values ($1, $2, $3, $4, $5), ($6, $7, $8, $9, $10)',
-        [organizationA, "Tenant A", `tenant-a-${organizationA}`, "UGX", "active", organizationB, "Tenant B", `tenant-b-${organizationB}`, "UGX", "active"]
+        [
+          organizationA,
+          "Tenant A",
+          `tenant-a-${organizationA}`,
+          "UGX",
+          "active",
+          organizationB,
+          "Tenant B",
+          `tenant-b-${organizationB}`,
+          "UGX",
+          "active",
+        ]
       )
       await client.query(
         'insert into "project" (id, organization_id, name, location, currency, status) values ($1, $2, $3, $4, $5, $6)',
-        [projectId, organizationA, "Private project", "Kampala", "UGX", "active"]
+        [
+          projectId,
+          organizationA,
+          "Private project",
+          "Kampala",
+          "UGX",
+          "active",
+        ]
       )
       const result = await client.query(
         'select id from "project" where id = $1 and organization_id = $2',

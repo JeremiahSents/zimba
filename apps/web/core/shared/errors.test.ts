@@ -45,9 +45,13 @@ describe("application errors", () => {
   })
 
   it("creates typed expected action failures", () => {
-    const result = expectedActionFailure("VALIDATION_FAILED", "Add a project name.", {
-      name: ["Required"],
-    })
+    const result = expectedActionFailure(
+      "VALIDATION_FAILED",
+      "Add a project name.",
+      {
+        name: ["Required"],
+      }
+    )
     expect(result.success).toBe(false)
     if (!result.success) {
       expect(result.error.fieldErrors).toEqual({ name: ["Required"] })

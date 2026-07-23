@@ -17,7 +17,9 @@ import { organization } from "./organization-schema"
 import { project } from "./project-schema"
 
 export const uploadedFile = pgTable("file", {
-  id: varchar("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  id: varchar("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
   organizationId: varchar("organization_id")
     .notNull()
     .references(() => organization.id, { onDelete: "cascade" }),
@@ -39,7 +41,9 @@ export const uploadedFile = pgTable("file", {
 })
 
 export const document = pgTable("document", {
-  id: varchar("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  id: varchar("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
   organizationId: varchar("organization_id")
     .notNull()
     .references(() => organization.id, { onDelete: "cascade" }),
@@ -51,7 +55,9 @@ export const document = pgTable("document", {
 })
 
 export const documentLink = pgTable("document_link", {
-  id: varchar("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  id: varchar("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
   organizationId: varchar("organization_id")
     .notNull()
     .references(() => organization.id, { onDelete: "cascade" }),
@@ -63,19 +69,18 @@ export const documentLink = pgTable("document_link", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 })
 
-export const projectAttachment = pgTable(
-  "project_attachment",
-  {
-    id: varchar("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
-    organizationId: varchar("organization_id")
-      .notNull()
-      .references(() => organization.id, { onDelete: "cascade" }),
-    projectId: varchar("project_id")
-      .notNull()
-      .references(() => project.id, { onDelete: "cascade" }),
-    fileId: varchar("file_id")
-      .notNull()
-      .references(() => uploadedFile.id, { onDelete: "cascade" }),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-  }
-)
+export const projectAttachment = pgTable("project_attachment", {
+  id: varchar("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  organizationId: varchar("organization_id")
+    .notNull()
+    .references(() => organization.id, { onDelete: "cascade" }),
+  projectId: varchar("project_id")
+    .notNull()
+    .references(() => project.id, { onDelete: "cascade" }),
+  fileId: varchar("file_id")
+    .notNull()
+    .references(() => uploadedFile.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+})

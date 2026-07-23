@@ -17,7 +17,9 @@ import { user } from "./auth-schema"
 export const organization = pgTable(
   "organization",
   {
-    id: varchar("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+    id: varchar("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
     name: varchar("name").notNull(),
     slug: varchar("slug").notNull(),
     baseCurrency: varchar("base_currency").notNull().default("UGX"),
@@ -34,7 +36,9 @@ export const organization = pgTable(
 export const organizationMember = pgTable(
   "organization_member",
   {
-    id: varchar("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+    id: varchar("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
     organizationId: varchar("organization_id")
       .notNull()
       .references(() => organization.id, { onDelete: "cascade" }),
@@ -50,14 +54,19 @@ export const organizationMember = pgTable(
       .notNull(),
   },
   (table) => [
-    uniqueIndex("organization_member_org_user_unique").on(table.organizationId, table.userId),
+    uniqueIndex("organization_member_org_user_unique").on(
+      table.organizationId,
+      table.userId
+    ),
   ]
 )
 
 export const invitation = pgTable(
   "invitation",
   {
-    id: varchar("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+    id: varchar("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
     organizationId: varchar("organization_id")
       .notNull()
       .references(() => organization.id, { onDelete: "cascade" }),
@@ -71,23 +80,31 @@ export const invitation = pgTable(
     tokenHash: varchar("token_hash").notNull().unique(),
     status: varchar("status").notNull().default("pending"),
     expiresAt: timestamp("expires_at", { mode: "date" }).notNull(),
-    acceptedBy: text("accepted_by").references(() => user.id, { onDelete: "set null" }),
+    acceptedBy: text("accepted_by").references(() => user.id, {
+      onDelete: "set null",
+    }),
     acceptedAt: timestamp("accepted_at", { mode: "date" }),
     createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
   },
-  (table) => [index("invitation_status_hash_idx").on(table.status, table.tokenHash)]
+  (table) => [
+    index("invitation_status_hash_idx").on(table.status, table.tokenHash),
+  ]
 )
 
 export const memberProject = pgTable(
   "member_project",
   {
-    id: varchar("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+    id: varchar("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
     memberId: varchar("member_id")
       .notNull()
       .references(() => organizationMember.id, { onDelete: "cascade" }),
     projectId: varchar("project_id").notNull(),
   },
-  (table) => [uniqueIndex("member_project_unique").on(table.memberId, table.projectId)]
+  (table) => [
+    uniqueIndex("member_project_unique").on(table.memberId, table.projectId),
+  ]
 )
 
 export const member = organizationMember

@@ -184,7 +184,9 @@ function UploadProgress({ files }: { files: PendingFile[] }) {
                 />
               </div>
               <p className="text-[10px] text-muted-foreground">
-                {file.progress === 100 ? "Saving file…" : `${file.progress}% uploaded`}
+                {file.progress === 100
+                  ? "Saving file…"
+                  : `${file.progress}% uploaded`}
               </p>
             </div>
           </div>

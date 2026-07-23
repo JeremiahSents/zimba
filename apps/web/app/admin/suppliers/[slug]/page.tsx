@@ -28,10 +28,5 @@ export default async function Page({
   ])
   const supplier = getSupplierBySlug(slug, data.suppliers)
   if (!supplier) notFound()
-  return (
-    <SupplierDetailPage
-      supplier={supplier}
-      expenses={data.expenses}
-    />
-  )
+  return <SupplierDetailPage supplier={supplier} expenses={data.expenses} />
 }

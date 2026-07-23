@@ -10,5 +10,10 @@ export const metadata: Metadata = {
 
 export default async function Page() {
   const { organization } = await requireSession()
-  return <SettingsPage company={organization.organizationName} role={organization.role} />
+  return (
+    <SettingsPage
+      company={organization.organizationName}
+      role={organization.role}
+    />
+  )
 }

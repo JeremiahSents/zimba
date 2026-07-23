@@ -13,11 +13,27 @@ import {
 } from "drizzle-orm/pg-core"
 
 import { user, session, account, verification } from "./auth-schema"
-import { organization, organizationMember, invitation, memberProject } from "./organization-schema"
+import {
+  organization,
+  organizationMember,
+  invitation,
+  memberProject,
+} from "./organization-schema"
 import { project, budgetItem } from "./project-schema"
-import { expense, expenseLine, payment, paymentReceipt, payable } from "./receipt-schema"
+import {
+  expense,
+  expenseLine,
+  payment,
+  paymentReceipt,
+  payable,
+} from "./receipt-schema"
 import { supplier, supplierCategory } from "./supplier-schema"
-import { uploadedFile, document, documentLink, projectAttachment } from "./file-schema"
+import {
+  uploadedFile,
+  document,
+  documentLink,
+  projectAttachment,
+} from "./file-schema"
 import { auditLog, activityEvent } from "./audit-schema"
 import { platformUser, platformAuditLog } from "./platform-schema"
 
@@ -47,16 +63,19 @@ export const organizationRelations = relations(organization, ({ many }) => ({
   suppliers: many(supplier),
 }))
 
-export const organizationMemberRelations = relations(organizationMember, ({ one }) => ({
-  organization: one(organization, {
-    fields: [organizationMember.organizationId],
-    references: [organization.id],
-  }),
-  user: one(user, {
-    fields: [organizationMember.userId],
-    references: [user.id],
-  }),
-}))
+export const organizationMemberRelations = relations(
+  organizationMember,
+  ({ one }) => ({
+    organization: one(organization, {
+      fields: [organizationMember.organizationId],
+      references: [organization.id],
+    }),
+    user: one(user, {
+      fields: [organizationMember.userId],
+      references: [user.id],
+    }),
+  })
+)
 
 export const projectRelations = relations(project, ({ many, one }) => ({
   organization: one(organization, {

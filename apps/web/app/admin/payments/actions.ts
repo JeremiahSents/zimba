@@ -23,7 +23,8 @@ export async function createUpcomingPaymentAction(
 ): Promise<ActionResult> {
   const authFailure = await ensureActionSession("payments.create-upcoming")
   if (authFailure) return authFailure
-  if (!idSchema.safeParse(projectId).success) return expectedActionFailure("VALIDATION_FAILED", "Invalid project.")
+  if (!idSchema.safeParse(projectId).success)
+    return expectedActionFailure("VALIDATION_FAILED", "Invalid project.")
   if (!payment.title.trim() || payment.amount <= 0 || !payment.due_date) {
     return expectedActionFailure(
       "VALIDATION_FAILED",
@@ -47,7 +48,10 @@ export async function updateUpcomingPaymentAction(
 ): Promise<ActionResult> {
   const authFailure = await ensureActionSession("payments.update-upcoming")
   if (authFailure) return authFailure
-  if (![projectId, paymentId].every((value) => idSchema.safeParse(value).success)) return expectedActionFailure("VALIDATION_FAILED", "Invalid payment.")
+  if (
+    ![projectId, paymentId].every((value) => idSchema.safeParse(value).success)
+  )
+    return expectedActionFailure("VALIDATION_FAILED", "Invalid payment.")
   try {
     await updateUpcomingPayment(paymentId, payment)
     revalidateConnectedRoutes(projectId)
@@ -63,7 +67,10 @@ export async function deleteUpcomingPaymentAction(
 ): Promise<ActionResult> {
   const authFailure = await ensureActionSession("payments.delete-upcoming")
   if (authFailure) return authFailure
-  if (![projectId, paymentId].every((value) => idSchema.safeParse(value).success)) return expectedActionFailure("VALIDATION_FAILED", "Invalid payment.")
+  if (
+    ![projectId, paymentId].every((value) => idSchema.safeParse(value).success)
+  )
+    return expectedActionFailure("VALIDATION_FAILED", "Invalid payment.")
   try {
     await deleteUpcomingPayment(paymentId)
     revalidateConnectedRoutes(projectId)
@@ -86,7 +93,15 @@ export async function recordReceiptPaymentAction(input: {
 }): Promise<ActionResult> {
   const authFailure = await ensureActionSession("payments.record-receipt")
   if (authFailure) return authFailure
-  if (![input.expenseId, input.projectId, input.supplierId].every((value) => idSchema.safeParse(value).success)) return expectedActionFailure("VALIDATION_FAILED", "Invalid receipt, project, or supplier.")
+  if (
+    ![input.expenseId, input.projectId, input.supplierId].every(
+      (value) => idSchema.safeParse(value).success
+    )
+  )
+    return expectedActionFailure(
+      "VALIDATION_FAILED",
+      "Invalid receipt, project, or supplier."
+    )
   if (
     input.amount <= 0 ||
     input.amount > input.outstandingAmount ||

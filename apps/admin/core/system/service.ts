@@ -16,15 +16,26 @@ export async function getSystemHealth(): Promise<HealthCheck[]> {
     await checkDatabaseHealth()
     checks.push({ label: "Database (PostgreSQL)", status: "operational" })
   } catch {
-    checks.push({ label: "Database (PostgreSQL)", status: "down", detail: "Connection failed" })
+    checks.push({
+      label: "Database (PostgreSQL)",
+      status: "down",
+      detail: "Connection failed",
+    })
   }
 
   const hasAuthSecret = Boolean(process.env.BETTER_AUTH_SECRET)
-  const hasGoogleCreds = Boolean(process.env.GOOGLE_CLIENT_ID && (process.env.GOOGLE_CLIENT_SECRET || process.env.GOOGLE_SECRET))
+  const hasGoogleCreds = Boolean(
+    process.env.GOOGLE_CLIENT_ID &&
+      (process.env.GOOGLE_CLIENT_SECRET || process.env.GOOGLE_SECRET)
+  )
   checks.push({
     label: "Authentication",
     status: hasAuthSecret && hasGoogleCreds ? "operational" : "degraded",
-    detail: !hasAuthSecret ? "Missing BETTER_AUTH_SECRET" : !hasGoogleCreds ? "Missing Google OAuth credentials" : undefined,
+    detail: !hasAuthSecret
+      ? "Missing BETTER_AUTH_SECRET"
+      : !hasGoogleCreds
+        ? "Missing Google OAuth credentials"
+        : undefined,
   })
 
   const hasUploadThingToken = Boolean(process.env.UPLOADTHING_TOKEN)

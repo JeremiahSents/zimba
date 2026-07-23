@@ -21,9 +21,6 @@ export default async function Page({
   if (!project) notFound()
 
   return (
-    <ProjectExpenseCreatePage
-      project={project}
-      vendors={dashboard.suppliers}
-    />
+    <ProjectExpenseCreatePage project={project} vendors={dashboard.suppliers} />
   )
 }

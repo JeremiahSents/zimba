@@ -175,7 +175,11 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
       setUploadedReceiptFileId(undefined)
       return
     }
-    if (uploadFileRef.current === file && (uploadedReceiptFileId || uploadPromiseRef.current)) return
+    if (
+      uploadFileRef.current === file &&
+      (uploadedReceiptFileId || uploadPromiseRef.current)
+    )
+      return
     uploadFileRef.current = file
     setUploadedReceiptFileId(undefined)
     const attempt = ++uploadAttemptRef.current
@@ -183,13 +187,18 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
     uploadPromiseRef.current = promise
     void promise
       .then((fileId) => {
-        if (attempt === uploadAttemptRef.current && uploadFileRef.current === file) setUploadedReceiptFileId(fileId)
+        if (
+          attempt === uploadAttemptRef.current &&
+          uploadFileRef.current === file
+        )
+          setUploadedReceiptFileId(fileId)
       })
       .catch(() =>
         setError("The file could not be uploaded. You can try again.")
       )
       .finally(() => {
-        if (attempt === uploadAttemptRef.current) uploadPromiseRef.current = null
+        if (attempt === uploadAttemptRef.current)
+          uploadPromiseRef.current = null
       })
   }, [files, uploadedReceiptFileId])
 

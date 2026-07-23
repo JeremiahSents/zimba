@@ -17,34 +17,39 @@ export type PlatformSession = {
   platformRole: PlatformAccess
 }
 
-export const getPlatformSession = cache(async (): Promise<PlatformSession | null> => {
-  const authSession = await auth.api.getSession({
-    headers: await headers(),
-  })
+export const getPlatformSession = cache(
+  async (): Promise<PlatformSession | null> => {
+    const authSession = await auth.api.getSession({
+      headers: await headers(),
+    })
 
-  if (!authSession?.session) {
-    return null
-  }
+    if (!authSession?.session) {
+      return null
+    }
 
-  // Check if the user is a platform user
-  const pUser = await db.query.platformUser.findFirst({
-    where: eq(platformUser.userId, authSession.user.id),
-  })
+    // Check if the user is a platform user
+    const pUser = await db.query.platformUser.findFirst({
+      where: eq(platformUser.userId, authSession.user.id),
+    })
 
-  if (!pUser) {
+    if (!pUser) {
+      return {
+        user: authSession.user,
+        session: authSession.session,
+        platformRole: null,
+      }
+    }
+
     return {
       user: authSession.user,
       session: authSession.session,
-      platformRole: null,
+      platformRole:
+        pUser.role === "super_admin" || pUser.role === "support"
+          ? pUser.role
+          : null,
     }
   }
-
-  return {
-    user: authSession.user,
-    session: authSession.session,
-    platformRole: pUser.role === "super_admin" || pUser.role === "support" ? pUser.role : null,
-  }
-})
+)
 
 export async function requirePlatformSession(): Promise<PlatformSession> {
   const session = await getPlatformSession()
@@ -53,7 +58,10 @@ export async function requirePlatformSession(): Promise<PlatformSession> {
     unauthorized("Sign in to access this resource.")
   }
 
-  if (session.platformRole !== "super_admin" && session.platformRole !== "support") {
+  if (
+    session.platformRole !== "super_admin" &&
+    session.platformRole !== "support"
+  ) {
     forbidden("You do not have permission to access the Super Admin Dashboard.")
   }
 

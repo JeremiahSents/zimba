@@ -20,10 +20,17 @@ export async function updateOrganizationStatusAction(
   if (authFailure) return authFailure
 
   const parsed = statusSchema.safeParse({ organizationId, status })
-  if (!parsed.success) return expectedActionFailure("VALIDATION_FAILED", "Invalid organization status.")
+  if (!parsed.success)
+    return expectedActionFailure(
+      "VALIDATION_FAILED",
+      "Invalid organization status."
+    )
 
   try {
-    const updated = await updateOrganizationStatus(parsed.data.organizationId, parsed.data.status)
+    const updated = await updateOrganizationStatus(
+      parsed.data.organizationId,
+      parsed.data.status
+    )
     if (!updated) {
       return expectedActionFailure("NOT_FOUND", "Organization not found.")
     }

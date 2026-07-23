@@ -227,31 +227,47 @@ export function SupplierTable({
                 </div>
                 <div className="grid grid-cols-3 gap-2 border-t pt-4">
                   <div>
-                    <p className="text-muted-foreground text-[10px] uppercase tracking-wider">Receipt</p>
-                    <p className="mt-1 font-medium text-xs text-foreground">{formatCurrency(row.original.value)}</p>
+                    <p className="text-muted-foreground text-[10px] uppercase tracking-wider">
+                      Receipt
+                    </p>
+                    <p className="mt-1 font-medium text-xs text-foreground">
+                      {formatCurrency(row.original.value)}
+                    </p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground text-[10px] uppercase tracking-wider">Paid</p>
-                    <p className="mt-1 font-medium text-xs text-foreground">{formatCurrency(row.original.paid)}</p>
+                    <p className="text-muted-foreground text-[10px] uppercase tracking-wider">
+                      Paid
+                    </p>
+                    <p className="mt-1 font-medium text-xs text-foreground">
+                      {formatCurrency(row.original.paid)}
+                    </p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground text-[10px] uppercase tracking-wider">Balance</p>
-                    <p className="mt-1 font-medium text-xs text-foreground">{formatCurrency(row.original.remaining)}</p>
+                    <p className="text-muted-foreground text-[10px] uppercase tracking-wider">
+                      Balance
+                    </p>
+                    <p className="mt-1 font-medium text-xs text-foreground">
+                      {formatCurrency(row.original.remaining)}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center justify-between border-t pt-3 text-[10px]">
-                  <div className="text-muted-foreground">
-                    Date & time
-                  </div>
+                  <div className="text-muted-foreground">Date & time</div>
                   <div className="font-medium text-muted-foreground">
-                    {formatShortDate(row.original.date)} · {new Date(row.original.createdAt).toLocaleTimeString("en-UG", { hour: "numeric", minute: "2-digit" })}
+                    {formatShortDate(row.original.date)} ·{" "}
+                    {new Date(row.original.createdAt).toLocaleTimeString(
+                      "en-UG",
+                      { hour: "numeric", minute: "2-digit" }
+                    )}
                   </div>
                 </div>
               </button>
             ))
           ) : (
             <div className="rounded-xl border border-dashed p-8 text-center">
-              <p className="font-medium text-sm text-foreground">No receipts found</p>
+              <p className="font-medium text-sm text-foreground">
+                No receipts found
+              </p>
               <p className="mt-1 text-muted-foreground text-xs">
                 No receipts match your search.
               </p>
@@ -334,22 +350,35 @@ export function SupplierTable({
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>{selectedSupplier?.name}</DialogTitle>
-            <DialogDescription>
-              Supplier account summary
-            </DialogDescription>
+            <DialogDescription>Supplier account summary</DialogDescription>
           </DialogHeader>
           {selectedSupplier && (
             <div className="grid grid-cols-3 gap-3 rounded-xl border bg-muted/25 p-4">
-              <Metric label="Receipt total" value={formatCurrency(selectedSupplier.amount)} />
-              <Metric label="Paid" value={formatCurrency(selectedSupplier.paid)} />
-              <Metric label="Balance" value={formatCurrency(selectedSupplier.remaining)} />
+              <Metric
+                label="Receipt total"
+                value={formatCurrency(selectedSupplier.amount)}
+              />
+              <Metric
+                label="Paid"
+                value={formatCurrency(selectedSupplier.paid)}
+              />
+              <Metric
+                label="Balance"
+                value={formatCurrency(selectedSupplier.remaining)}
+              />
             </div>
           )}
           {selectedSupplier && (
             <dl className="grid gap-3 text-sm">
               <Contact label="Phone" value={selectedSupplier.phone} />
               <Contact label="Email" value={selectedSupplier.email} />
-              <Contact label="Contact" value={selectedSupplier.contactName ?? selectedSupplier.companyContact} />
+              <Contact
+                label="Contact"
+                value={
+                  selectedSupplier.contactName ??
+                  selectedSupplier.companyContact
+                }
+              />
             </dl>
           )}
         </DialogContent>
@@ -359,9 +388,21 @@ export function SupplierTable({
 }
 
 function Metric({ label, value }: { label: string; value: string }) {
-  return <div><dt className="text-muted-foreground text-[10px] uppercase tracking-wider">{label}</dt><dd className="mt-1 font-semibold text-sm tabular-nums">{value}</dd></div>
+  return (
+    <div>
+      <dt className="text-muted-foreground text-[10px] uppercase tracking-wider">
+        {label}
+      </dt>
+      <dd className="mt-1 font-semibold text-sm tabular-nums">{value}</dd>
+    </div>
+  )
 }
 
 function Contact({ label, value }: { label: string; value?: string | null }) {
-  return <div className="flex items-center justify-between gap-4"><dt className="text-muted-foreground">{label}</dt><dd className="truncate font-medium">{value || "Not provided"}</dd></div>
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <dt className="text-muted-foreground">{label}</dt>
+      <dd className="truncate font-medium">{value || "Not provided"}</dd>
+    </div>
+  )
 }

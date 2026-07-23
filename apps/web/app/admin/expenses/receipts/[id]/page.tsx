@@ -10,18 +10,25 @@ import type { PayableExpenseResponse } from "@/lib/types"
 export const dynamic = "force-dynamic"
 export const metadata: Metadata = { title: "Receipt details | Zimba" }
 
-export default async function Page({ params }: { params: Promise<{ id: string }> }) {
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
   const { id } = await params
   let payable: PayableExpenseResponse
   try {
     payable = await getPayableExpense(id)
   } catch (error) {
-    if (error instanceof ApplicationError && error.code === "NOT_FOUND") notFound()
+    if (error instanceof ApplicationError && error.code === "NOT_FOUND")
+      notFound()
     throw error
   }
   const [dashboard, project] = await Promise.all([
     getDashboardOverviewData(),
-    payable.project_id ? getProjectDetail(payable.project_id) : Promise.resolve(null),
+    payable.project_id
+      ? getProjectDetail(payable.project_id)
+      : Promise.resolve(null),
   ])
   const items = payable.lines.map((line) => ({
     id: line.id,
@@ -36,8 +43,22 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
     quantity: line.quantity,
     unit_rate: line.unit_amount,
     receipt_url: payable.receipt_file_url,
-    status: payable.settlement_status === "paid" ? "Full" as const : payable.settlement_status === "partially_paid" ? "Partial" as const : "Not paid" as const,
+    status:
+      payable.settlement_status === "paid"
+        ? ("Full" as const)
+        : payable.settlement_status === "partially_paid"
+          ? ("Partial" as const)
+          : ("Not paid" as const),
   }))
-  const supplier = dashboard.suppliers.find((item) => item.supplier_id === payable.supplier_id)
-  return <ReceiptDetailPage items={items} supplier={supplier} payable={payable} allocations={project?.tasks ?? []} />
+  const supplier = dashboard.suppliers.find(
+    (item) => item.supplier_id === payable.supplier_id
+  )
+  return (
+    <ReceiptDetailPage
+      items={items}
+      supplier={supplier}
+      payable={payable}
+      allocations={project?.tasks ?? []}
+    />
+  )
 }

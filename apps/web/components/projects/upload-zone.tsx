@@ -33,7 +33,11 @@ export function UploadZone({ files, onFiles, onRemove }: UploadZoneProps) {
       >
         {files.length === 0 ? (
           <>
-            <HugeiconsIcon icon={Upload04Icon} strokeWidth={1.8} className="mb-2 size-6 text-primary" />
+            <HugeiconsIcon
+              icon={Upload04Icon}
+              strokeWidth={1.8}
+              className="mb-2 size-6 text-primary"
+            />
             <p className="font-semibold text-sm">Drag and drop files here</p>
             <p className="mt-1 text-muted-foreground text-xs">
               Images, PDF, Word, and spreadsheet files
@@ -47,15 +51,24 @@ export function UploadZone({ files, onFiles, onRemove }: UploadZoneProps) {
                 className="group relative flex min-h-16 items-center gap-3 overflow-hidden rounded-md border bg-background px-3 py-2 text-left text-xs"
               >
                 {file.type.startsWith("image/") ? (
-                  <img src={URL.createObjectURL(file)} alt={file.name} className="size-11 shrink-0 rounded-md object-cover" />
+                  <img
+                    src={URL.createObjectURL(file)}
+                    alt={file.name}
+                    className="size-11 shrink-0 rounded-md object-cover"
+                  />
                 ) : (
                   <span className="flex size-11 shrink-0 items-center justify-center rounded-md bg-primary/10 font-semibold text-primary">
                     DOC
                   </span>
                 )}
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate font-medium">{file.name}</span>
-                  <span className="mt-0.5 block text-muted-foreground text-[10px]">{file.type.startsWith("image/") ? "Image" : "Document"} · {(file.size / 1024 / 1024).toFixed(1)} MB</span>
+                  <span className="block truncate font-medium">
+                    {file.name}
+                  </span>
+                  <span className="mt-0.5 block text-muted-foreground text-[10px]">
+                    {file.type.startsWith("image/") ? "Image" : "Document"} ·{" "}
+                    {(file.size / 1024 / 1024).toFixed(1)} MB
+                  </span>
                 </span>
                 <button
                   type="button"
@@ -70,7 +83,11 @@ export function UploadZone({ files, onFiles, onRemove }: UploadZoneProps) {
               </div>
             ))}
             <div className="flex min-h-28 flex-col items-center justify-center rounded-md border border-dashed bg-muted/35 text-muted-foreground">
-              <HugeiconsIcon icon={Upload04Icon} strokeWidth={1.8} className="mb-1 size-5 text-primary" />
+              <HugeiconsIcon
+                icon={Upload04Icon}
+                strokeWidth={1.8}
+                className="mb-1 size-5 text-primary"
+              />
               <span className="font-medium text-xs">Add more files</span>
             </div>
           </div>

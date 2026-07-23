@@ -9,7 +9,13 @@ import { ActivityRow } from "@/components/shared/activity-row"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { SettingField } from "@/components/shared/setting-field"
 
-export function SettingsPage({ company, role }: { company: string; role: string }) {
+export function SettingsPage({
+  company,
+  role,
+}: {
+  company: string
+  role: string
+}) {
   return (
     <DashboardShell
       title="Settings"
@@ -25,22 +31,10 @@ export function SettingsPage({ company, role }: { company: string; role: string 
               </CardDescription>
             </CardHeader>
             <CardContent className="grid gap-4 sm:grid-cols-2">
-              <SettingField
-                label="Company"
-                value={company}
-              />
-              <SettingField
-                label="Currency"
-                value="UGX"
-              />
-              <SettingField
-                label="Default region"
-                value="Uganda"
-              />
-              <SettingField
-                label="Fiscal period"
-                value="Monthly"
-              />
+              <SettingField label="Company" value={company} />
+              <SettingField label="Currency" value="UGX" />
+              <SettingField label="Default region" value="Uganda" />
+              <SettingField label="Fiscal period" value="Monthly" />
             </CardContent>
           </Card>
           <Card>
@@ -80,7 +74,9 @@ export function SettingsPage({ company, role }: { company: string; role: string 
             <CardContent className="space-y-3">
               <div className="py-2">
                 <p className="font-medium">{role}</p>
-                <p className="text-muted-foreground text-sm">Your current workspace role.</p>
+                <p className="text-muted-foreground text-sm">
+                  Your current workspace role.
+                </p>
               </div>
             </CardContent>
           </Card>

@@ -115,7 +115,10 @@ describe("Projects Service", () => {
 
     const detail = await getProjectDetail("1")
 
-    expect(expenseRepo.listFinancialExpenseRows).toHaveBeenCalledWith("org-1", "1")
+    expect(expenseRepo.listFinancialExpenseRows).toHaveBeenCalledWith(
+      "org-1",
+      "1"
+    )
     expect(detail?.name).toBe("Test Project")
     expect(detail?.tasks).toHaveLength(2)
     expect(detail?.tasks[0]).toMatchObject({ name: "Foundation", budget: 50 })

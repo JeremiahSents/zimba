@@ -45,6 +45,10 @@ describe("supplier data helpers", () => {
       statusSummary: { Full: 0, Partial: 1, "Not paid": 0 },
     })
     expect(ledger).toHaveLength(1)
-    expect(ledger[0]).toMatchObject({ receiptValue: 1200, paid: 450, remaining: 750 })
+    expect(ledger[0]).toMatchObject({
+      receiptValue: 1200,
+      paid: 450,
+      remaining: 750,
+    })
   })
 })

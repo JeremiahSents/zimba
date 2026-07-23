@@ -131,34 +131,34 @@ export function ExpenseTable({ expenses }: { expenses: ExpenseTableRow[] }) {
                     href={`/admin/expenses/receipts/${expense.receipt_id ?? expense.id}`}
                     className="block transition-transform active:scale-[0.99]"
                   >
-                  <MobileDataCard
-                    eyebrow={expense.project_name}
-                    title={
-                      <span className="font-medium text-primary">
-                        {expense.item_description}
-                      </span>
-                    }
-                    value={formatCurrency(expense.amount)}
-                    status={
-                      <span className="inline-flex rounded-full border bg-muted/50 px-2 py-1 font-medium text-[10px] text-muted-foreground">
-                        {expense.status}
-                      </span>
-                    }
-                  >
-                    <dl className="grid grid-cols-2 gap-x-4 gap-y-3">
-                      <MobileDataMeta label="Task">
-                        {expense.task_name}
-                      </MobileDataMeta>
-                      <MobileDataMeta label="Date">
-                        {formatShortDate(expense.date)}
-                      </MobileDataMeta>
-                      <div className="col-span-2">
-                        <MobileDataMeta label="Supplier">
-                          {expense.supplier_name}
+                    <MobileDataCard
+                      eyebrow={expense.project_name}
+                      title={
+                        <span className="font-medium text-primary">
+                          {expense.item_description}
+                        </span>
+                      }
+                      value={formatCurrency(expense.amount)}
+                      status={
+                        <span className="inline-flex rounded-full border bg-muted/50 px-2 py-1 font-medium text-[10px] text-muted-foreground">
+                          {expense.status}
+                        </span>
+                      }
+                    >
+                      <dl className="grid grid-cols-2 gap-x-4 gap-y-3">
+                        <MobileDataMeta label="Task">
+                          {expense.task_name}
                         </MobileDataMeta>
-                      </div>
-                    </dl>
-                  </MobileDataCard>
+                        <MobileDataMeta label="Date">
+                          {formatShortDate(expense.date)}
+                        </MobileDataMeta>
+                        <div className="col-span-2">
+                          <MobileDataMeta label="Supplier">
+                            {expense.supplier_name}
+                          </MobileDataMeta>
+                        </div>
+                      </dl>
+                    </MobileDataCard>
                   </Link>
                 )
               })}

@@ -1,6 +1,9 @@
 "use client"
 
-import { LayoutAlignRightIcon, Settings02Icon } from "@hugeicons/core-free-icons"
+import {
+  LayoutAlignRightIcon,
+  Settings02Icon,
+} from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import Link from "next/link"
 import { type ReactNode } from "react"
@@ -110,9 +113,7 @@ function DashboardTopbar({
           />
         </Button>
         <Avatar className="size-8">
-          {userImage ? (
-            <AvatarImage src={userImage} alt={userName} />
-          ) : null}
+          {userImage ? <AvatarImage src={userImage} alt={userName} /> : null}
           <AvatarFallback className="bg-primary font-medium text-primary-foreground text-xs">
             {initials}
           </AvatarFallback>

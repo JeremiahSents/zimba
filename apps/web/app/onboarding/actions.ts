@@ -1,13 +1,17 @@
 "use server"
 
-import { eq } from "drizzle-orm"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { auth } from "@/core/auth/auth"
-import { user } from "@workspace/db/schema"
 import { db } from "@workspace/db"
+import {
+  createOrganization,
+  createOrganizationMember,
+  findMembershipByUser,
+  findOrganizationBySlug,
+} from "@workspace/db/repositories"
+import { updateUserName } from "@workspace/db/repositories"
 import { getOrganizationMembership } from "@/core/organizations/service"
-import { member, organization } from "@workspace/db/schema"
 
 export type OnboardingState = {
   error?: string
@@ -41,29 +45,22 @@ export async function completeOnboarding(
 
   try {
     await db.transaction(async (tx) => {
-      const [membership] = await tx
-        .select({ id: member.id })
-        .from(member)
-        .where(eq(member.userId, session.user.id))
-        .limit(1)
+      const [membership] = await findMembershipByUser(tx, session.user.id)
 
       if (membership) return
 
       const organizationId = crypto.randomUUID()
       const slug = await createAvailableSlug(tx, companyName)
 
-      await tx
-        .update(user)
-        .set({ name: fullName, updatedAt: new Date() })
-        .where(eq(user.id, session.user.id))
+      await updateUserName(tx, session.user.id, fullName)
 
-      await tx.insert(organization).values({
+      await createOrganization(tx, {
         id: organizationId,
         name: companyName,
         slug,
       })
 
-      await tx.insert(member).values({
+      await createOrganizationMember(tx, {
         id: crypto.randomUUID(),
         organizationId,
         role: "owner",
@@ -93,11 +90,7 @@ async function createAvailableSlug(
       .replace(/^-|-$/g, "")
       .slice(0, 54) || "company"
 
-  const [existing] = await tx
-    .select({ id: organization.id })
-    .from(organization)
-    .where(eq(organization.slug, base))
-    .limit(1)
+  const [existing] = await findOrganizationBySlug(tx, base)
 
   if (!existing) return base
   return `${base}-${crypto.randomUUID().slice(0, 6)}`

@@ -20,7 +20,11 @@ export async function sendSuperAdminInviteAction(input: {
   if (authFailure) return authFailure
 
   const parsed = inviteSchema.safeParse(input)
-  if (!parsed.success) return expectedActionFailure("VALIDATION_FAILED", "Enter a name and valid email address.")
+  if (!parsed.success)
+    return expectedActionFailure(
+      "VALIDATION_FAILED",
+      "Enter a name and valid email address."
+    )
 
   try {
     await sendSuperAdminInvite(parsed.data)

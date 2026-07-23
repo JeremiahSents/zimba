@@ -13,7 +13,9 @@ function getDatabaseUrl() {
     throw new Error("DATABASE_URL is required.")
   }
 
-  const connectionUrl = new URL(databaseUrl.replace(/^postgresql\+psycopg:/, "postgresql:"))
+  const connectionUrl = new URL(
+    databaseUrl.replace(/^postgresql\+psycopg:/, "postgresql:")
+  )
 
   if (connectionUrl.searchParams.get("sslmode") === "require") {
     connectionUrl.searchParams.set("sslmode", "verify-full")

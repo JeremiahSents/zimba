@@ -29,6 +29,14 @@
     "format": {
       "dependsOn": ["^format"]
     },
+    "format:check": {
+      "dependsOn": ["^format:check"],
+      "outputs": []
+    },
+    "check:ci": {
+      "dependsOn": ["^check:ci"],
+      "outputs": []
+    },
     "typecheck": {
       "dependsOn": ["^typecheck"]
     },

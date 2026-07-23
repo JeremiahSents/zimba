@@ -44,8 +44,8 @@ export default function AdminError({
           Something went wrong
         </h1>
         <p className="mx-auto mt-3 max-w-sm text-balance text-muted-foreground text-sm leading-relaxed">
-          The admin page could not finish loading. Try again, or return home
-          and reopen this section.
+          The admin page could not finish loading. Try again, or return home and
+          reopen this section.
         </p>
 
         <div className="mt-8 flex items-center justify-center gap-3">

@@ -12,5 +12,7 @@ export function expectedActionFailure(
   message?: string,
   fieldErrors?: Record<string, string[]>
 ): ActionResult<never> {
-  return actionFailure(new ApplicationError(code, message, { fieldErrors }).toPublicError())
+  return actionFailure(
+    new ApplicationError(code, message, { fieldErrors }).toPublicError()
+  )
 }

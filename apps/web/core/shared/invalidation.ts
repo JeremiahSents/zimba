@@ -15,7 +15,8 @@ export function getMutationInvalidationPaths(identity: InvalidationIdentity) {
     paths.add(`/admin/projects/${identity.projectId}`)
     paths.add(`/admin/projects/${identity.projectId}/files`)
   }
-  if (identity.expenseId) paths.add(`/admin/expenses/receipts/${identity.expenseId}`)
+  if (identity.expenseId)
+    paths.add(`/admin/expenses/receipts/${identity.expenseId}`)
   if (identity.supplierId) paths.add(`/admin/suppliers/${identity.supplierId}`)
   if (identity.organizationId) paths.add("/admin/expenses")
   return [...paths]

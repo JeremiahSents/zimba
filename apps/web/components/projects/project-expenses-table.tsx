@@ -245,10 +245,7 @@ export function ProjectExpensesTable({
             <TableBody>
               {rows.length ? (
                 rows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    className="hover:bg-muted/25"
-                  >
+                  <TableRow key={row.id} className="hover:bg-muted/25">
                     {row.getVisibleCells().map((cell) => (
                       <TableCell
                         key={cell.id}

@@ -9,6 +9,8 @@
     "start": "next start --port 4000",
     "lint": "biome lint .",
     "format": "biome format --write .",
+    "format:check": "biome format .",
+    "check:ci": "biome check .",
     "check": "biome check --write .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"

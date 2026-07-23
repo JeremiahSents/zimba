@@ -1,7 +1,17 @@
 import "server-only"
 
 import { db, schema } from "@workspace/db"
-import { deletePayableForOrganization, deleteReceiptForOrganization, findExpenseForOrganization, findPayableForOrganization, listExpensesForOrganization, listPayablesForOrganization, listReceiptLinesWithAllocation, updateReceiptForOrganization, updateReceiptLinesAllocation } from "@workspace/db/repositories"
+import {
+  deletePayableForOrganization,
+  deleteReceiptForOrganization,
+  findExpenseForOrganization,
+  findPayableForOrganization,
+  listExpensesForOrganization,
+  listPayablesForOrganization,
+  listReceiptLinesWithAllocation,
+  updateReceiptForOrganization,
+  updateReceiptLinesAllocation,
+} from "@workspace/db/repositories"
 import { and, desc, eq, sql } from "drizzle-orm"
 
 export type FinancialExpenseRow = {
@@ -80,7 +90,9 @@ export async function listFinancialExpenseRows(
           amountCents: line.amountCents,
           paidCents,
           paymentStatus: expense.paymentStatus,
-          categoryState: allocationName ? ("assigned" as const) : ("uncategorized" as const),
+          categoryState: allocationName
+            ? ("assigned" as const)
+            : ("uncategorized" as const),
         }
       })
     })
@@ -135,22 +147,42 @@ export async function getExpense(organizationId: string, expenseId: string) {
   return findExpenseForOrganization(db, organizationId, expenseId)
 }
 
-export async function updateExpenseLinesAllocation(organizationId: string, expenseId: string, allocationId: string) {
-  return updateReceiptLinesAllocation(db, organizationId, expenseId, allocationId)
+export async function updateExpenseLinesAllocation(
+  organizationId: string,
+  expenseId: string,
+  allocationId: string
+) {
+  return updateReceiptLinesAllocation(
+    db,
+    organizationId,
+    expenseId,
+    allocationId
+  )
 }
 
 export async function deleteExpense(organizationId: string, expenseId: string) {
-  return deleteReceiptForOrganization(db, organizationId, expenseId).then(([deleted]) => deleted ?? null)
+  return deleteReceiptForOrganization(db, organizationId, expenseId).then(
+    ([deleted]) => deleted ?? null
+  )
 }
 
 export async function deletePayable(organizationId: string, payableId: string) {
-  return deletePayableForOrganization(db, organizationId, payableId).then((deleted) => deleted ?? null)
+  return deletePayableForOrganization(db, organizationId, payableId).then(
+    (deleted) => deleted ?? null
+  )
 }
 
-export async function getExpenseLines(organizationId: string, expenseId: string) {
+export async function getExpenseLines(
+  organizationId: string,
+  expenseId: string
+) {
   return listReceiptLinesWithAllocation(db, organizationId, expenseId)
 }
 
-export async function updateExpense(organizationId: string, id: string, data: Partial<typeof schema.expense.$inferInsert>) {
+export async function updateExpense(
+  organizationId: string,
+  id: string,
+  data: Partial<typeof schema.expense.$inferInsert>
+) {
   return updateReceiptForOrganization(db, organizationId, id, data)
 }

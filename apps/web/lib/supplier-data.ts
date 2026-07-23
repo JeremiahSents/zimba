@@ -1,45 +1,20 @@
 import type { ExpenseTableRow, SupplierResponse } from "@/lib/types"
-
-export type SupplierPaymentStatus = "Full" | "Partial" | "Not paid"
-export type SupplierReceiptStatus =
-  | "New"
-  | "Pending"
-  | "Partial"
-  | "Paid in full"
-export type SupplierListItem = SupplierResponse & {
-  paid: number
-  remaining: number
-  statusSummary: Record<SupplierPaymentStatus, number>
-}
-export type SupplierLedgerEntry = {
-  id: string
-  date: string
-  project: string
-  item: string
-  receiptValue: number
-  paid: number
-  remaining: number
-  status: SupplierPaymentStatus
-}
-export type SupplierReceiptRow = {
-  id: string
-  supplierId?: string
-  supplierName: string
-  item: string
-  project: string
-  value: number
-  paid: number
-  remaining: number
-  date: string
-  createdAt: string
-  status: SupplierReceiptStatus
-}
-export type SupplierProfile = {
-  companyContact: string
-  contactName: string
-  phone: string
-  email: string
-}
+import type {
+  SupplierLedgerEntry,
+  SupplierListItem,
+  SupplierPaymentStatus,
+  SupplierProfile,
+  SupplierReceiptRow,
+  SupplierReceiptStatus,
+} from "@workspace/contracts"
+export type {
+  SupplierLedgerEntry,
+  SupplierListItem,
+  SupplierPaymentStatus,
+  SupplierProfile,
+  SupplierReceiptRow,
+  SupplierReceiptStatus,
+} from "@workspace/contracts"
 
 export function getSupplierSlug(name: string) {
   return name
@@ -49,7 +24,12 @@ export function getSupplierSlug(name: string) {
 }
 
 export function getSupplierBySlug(slug: string, suppliers: SupplierResponse[]) {
-  return suppliers.find((supplier) => supplier.id === slug || supplier.supplier_id === slug || getSupplierSlug(supplier.name) === slug)
+  return suppliers.find(
+    (supplier) =>
+      supplier.id === slug ||
+      supplier.supplier_id === slug ||
+      getSupplierSlug(supplier.name) === slug
+  )
 }
 
 export function getSupplierListItems(

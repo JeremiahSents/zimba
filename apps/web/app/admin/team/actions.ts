@@ -15,7 +15,17 @@ export async function inviteMemberAction(input: {
   const authFailure = await ensureActionSession("team.invite")
   if (authFailure) return authFailure
   const parsed = teamInviteSchema.safeParse(input)
-  if (!parsed.success) return { success: false as const, error: { code: "VALIDATION_FAILED" as const, message: "Enter a valid email and role.", retryable: false, recoveryAction: "CORRECT_INPUT" as const, fieldErrors: fieldErrorsFromZod(parsed.error) } }
+  if (!parsed.success)
+    return {
+      success: false as const,
+      error: {
+        code: "VALIDATION_FAILED" as const,
+        message: "Enter a valid email and role.",
+        retryable: false,
+        recoveryAction: "CORRECT_INPUT" as const,
+        fieldErrors: fieldErrorsFromZod(parsed.error),
+      },
+    }
   try {
     await createInvitation(parsed.data)
     revalidatePath("/admin/team")

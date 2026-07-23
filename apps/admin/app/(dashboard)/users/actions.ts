@@ -20,17 +20,27 @@ export async function updatePlatformUserRoleAction(
   userId: string,
   role: string
 ): Promise<ActionResult> {
-  const authFailure = await ensureActionSession("users.updateRole", ["super_admin"])
+  const authFailure = await ensureActionSession("users.updateRole", [
+    "super_admin",
+  ])
   if (authFailure) return authFailure
   const parsed = inputSchema.safeParse({ userId, role })
-  if (!parsed.success) return expectedActionFailure("VALIDATION_FAILED", "Invalid platform role or user.")
+  if (!parsed.success)
+    return expectedActionFailure(
+      "VALIDATION_FAILED",
+      "Invalid platform role or user."
+    )
 
   try {
     const actor = await requirePlatformRole(["super_admin"])
     if (role === "none") {
       await removePlatformUser(actor.user.id, userId)
     } else {
-      await updatePlatformUserRole(actor.user.id, userId, role as "support" | "super_admin")
+      await updatePlatformUserRole(
+        actor.user.id,
+        userId,
+        role as "support" | "super_admin"
+      )
     }
     revalidatePath("/users")
     revalidatePath(`/users/${userId}`)
@@ -43,7 +53,9 @@ export async function updatePlatformUserRoleAction(
 export async function removePlatformUserAction(
   userId: string
 ): Promise<ActionResult> {
-  const authFailure = await ensureActionSession("users.removePlatform", ["super_admin"])
+  const authFailure = await ensureActionSession("users.removePlatform", [
+    "super_admin",
+  ])
   if (authFailure) return authFailure
 
   try {

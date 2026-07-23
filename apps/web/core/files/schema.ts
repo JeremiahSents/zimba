@@ -1,1 +1,6 @@
-export { document, documentLink, projectAttachment, uploadedFile } from "@workspace/db/schema"
+export {
+  document,
+  documentLink,
+  projectAttachment,
+  uploadedFile,
+} from "@workspace/db/schema"
