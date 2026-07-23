@@ -1,8 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 vi.mock("server-only", () => ({}))
+vi.mock("@workspace/api", () => ({ listProjectAllocationsUseCase: vi.fn() }))
 
-import * as allocationRepo from "../allocations/repository"
+import * as api from "@workspace/api"
 import * as authService from "../auth/service"
 import * as expenseRepo from "../expenses/repository"
 import * as fileRepo from "../files/repository"
@@ -11,7 +12,6 @@ import * as projectRepo from "./repository"
 import { getProjectDetail, getProjectsList } from "./service"
 
 vi.mock("./repository")
-vi.mock("../allocations/repository")
 vi.mock("../expenses/repository")
 vi.mock("../files/repository")
 vi.mock("../payments/repository")
@@ -23,6 +23,7 @@ describe("Projects Service", () => {
     vi.mocked(expenseRepo.listFinancialExpenseRows).mockResolvedValue([])
     vi.mocked(fileRepo.listProjectAttachments).mockResolvedValue([])
     vi.mocked(paymentRepo.listProjectPayables).mockResolvedValue([])
+    vi.mocked(api.listProjectAllocationsUseCase).mockResolvedValue([])
     vi.mocked(authService.requireSession).mockResolvedValue({
       user: {
         id: "user-1",
@@ -97,7 +98,7 @@ describe("Projects Service", () => {
       remainingCents: 10000,
     } as never)
 
-    vi.mocked(allocationRepo.listAllocations).mockResolvedValue([
+    vi.mocked(api.listProjectAllocationsUseCase).mockResolvedValue([
       {
         id: "10",
         organizationId: "org-1",

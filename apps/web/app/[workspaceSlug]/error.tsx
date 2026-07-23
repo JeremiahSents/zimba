@@ -16,7 +16,7 @@ export default function WorkspaceError({
   }, [error])
 
   return (
-    <div className="flex min-h-svh flex-col items-center justify-center gap-4 p-8 text-center">
+    <div className="fixed inset-0 flex min-h-svh w-screen flex-col items-center justify-center gap-4 p-8 text-center">
       <h1 className="font-semibold text-2xl">Something went wrong</h1>
       <p className="max-w-md text-muted-foreground">
         An unexpected error occurred while loading this workspace.

@@ -23,16 +23,10 @@ import {
 import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
 import { Progress } from "@workspace/ui/components/progress"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@workspace/ui/components/select"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
+import { ReceiptCategoryDialog } from "@/components/expenses/receipt-category-dialog"
 import { ReceiptFiles } from "@/components/expenses/receipt-files"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { DatePicker } from "@/components/shared/date-picker"
@@ -571,55 +565,30 @@ export function ReceiptDetailPage({
           </DialogContent>
         </Dialog>
       )}
-      <Dialog open={categoryOpen} onOpenChange={setCategoryOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Set receipt category</DialogTitle>
-            <DialogDescription>
-              Choose the project category this receipt should use.
-            </DialogDescription>
-          </DialogHeader>
-          <Select
-            value={selectedAllocation || undefined}
-            onValueChange={(value) => setSelectedAllocation(value ?? "")}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select a category" />
-            </SelectTrigger>
-            <SelectContent>
-              {allocations.map((allocation) => (
-                <SelectItem key={allocation.id} value={allocation.id}>
-                  {allocation.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <DialogFooter>
-            <Button variant="secondary" onClick={() => setCategoryOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              disabled={!selectedAllocation || correcting || !payable}
-              onClick={async () => {
-                if (!payable) return
-                setCorrecting(true)
-                setError("")
-                const result = await correctReceiptCategoryAction(
-                  payable.id,
-                  payable.project_id,
-                  selectedAllocation
-                )
-                setCorrecting(false)
-                if (!result.success) return setError(result.error)
-                setCategoryOpen(false)
-                router.refresh()
-              }}
-            >
-              {correcting ? "Saving..." : "Save category"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ReceiptCategoryDialog
+        open={categoryOpen}
+        onOpenChange={setCategoryOpen}
+        allocations={allocations}
+        selectedAllocation={selectedAllocation}
+        onSelect={setSelectedAllocation}
+        payable={Boolean(payable)}
+        correcting={correcting}
+        error={error}
+        onSave={async () => {
+          if (!payable) return
+          setCorrecting(true)
+          setError("")
+          const result = await correctReceiptCategoryAction(
+            payable.id,
+            payable.project_id,
+            selectedAllocation
+          )
+          setCorrecting(false)
+          if (!result.success) return setError(result.error)
+          setCategoryOpen(false)
+          router.refresh()
+        }}
+      />
     </DashboardShell>
   )
 }

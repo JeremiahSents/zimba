@@ -1,9 +1,11 @@
 import "server-only"
+import { listProjectAllocationsUseCase } from "@workspace/api"
+import type { WorkspaceRole } from "@workspace/contracts"
+import { db } from "@workspace/db"
 import type {
   ProjectDashboardResponse,
   ProjectDetailResponse,
 } from "@/lib/types"
-import * as allocationRepo from "../allocations/repository"
 import { requireSession } from "../auth/service"
 import * as expenseRepo from "../expenses/repository"
 import * as fileRepo from "../files/repository"
@@ -28,7 +30,7 @@ export async function getArchivedProjectsList() {
 export async function getProjectDetail(
   projectId: string
 ): Promise<ProjectDetailResponse | null> {
-  const { organization } = await requireSession()
+  const { user, organization } = await requireSession()
   const project = await projectRepo.getProject(
     organization.organizationId,
     projectId
@@ -38,8 +40,13 @@ export async function getProjectDetail(
     return null
   }
 
-  const allocations = await allocationRepo.listAllocations(
-    organization.organizationId,
+  const allocations = await listProjectAllocationsUseCase(
+    {
+      userId: user.id,
+      organizationId: organization.organizationId,
+      role: organization.role as WorkspaceRole,
+    },
+    { executor: db },
     projectId
   )
   const [expenseRows, attachments] = await Promise.all([

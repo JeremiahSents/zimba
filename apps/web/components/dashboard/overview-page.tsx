@@ -73,14 +73,6 @@ export function DashboardPage({ data }: { data: DashboardOverviewData }) {
             <HugeiconsIcon icon={FolderKanbanIcon} strokeWidth={2} />
             New project
           </Button>
-          {/* <Button
-            size="sm"
-            nativeButton={false}
-            render={<Link href={`/${slug}/projects`} />}
-          >
-            <HugeiconsIcon icon={PlusSignIcon} strokeWidth={2} />
-            Add expense
-          </Button> */}
         </div>
       </section>
 

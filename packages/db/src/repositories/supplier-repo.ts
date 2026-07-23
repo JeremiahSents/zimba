@@ -70,9 +70,9 @@ export function listSupplierSummaries(
       companyContact: supplier.companyContact,
       contactName: supplier.contactName,
       status: supplier.status,
-      receiptCount: sql<number>`coalesce((select count(distinct ${expense.id}) from ${expense} where ${expense.organizationId} = ${organizationId} and ${expense.supplierId} = ${supplier.id}), 0)`,
-      incurredCents: sql<number>`coalesce((select sum(${expenseLine.amountCents}) from ${expenseLine} inner join ${expense} on ${expense.id} = ${expenseLine.expenseId} where ${expenseLine.organizationId} = ${organizationId} and ${expense.supplierId} = ${supplier.id}), 0)`,
-      paidCents: sql<number>`coalesce((select sum(${ledgerPayment.amountCents}) from ${ledgerPayment} where ${ledgerPayment.organizationId} = ${organizationId} and ${ledgerPayment.supplierId} = ${supplier.id}), 0)`,
+      receiptCount: sql<number>`coalesce((select count(distinct ${expense.id}) from ${expense} where ${expense.organizationId} = ${organizationId} and ${expense.supplierId} = "supplier"."id"), 0)`,
+      incurredCents: sql<number>`coalesce((select sum(${expenseLine.amountCents}) from ${expenseLine} inner join ${expense} on "expense"."id" = ${expenseLine.expenseId} where ${expenseLine.organizationId} = ${organizationId} and ${expense.supplierId} = "supplier"."id"), 0)`,
+      paidCents: sql<number>`coalesce((select sum(${ledgerPayment.amountCents}) from ${ledgerPayment} where ${ledgerPayment.organizationId} = ${organizationId} and ${ledgerPayment.supplierId} = "supplier"."id"), 0)`,
     })
     .from(supplier)
     .where(eq(supplier.organizationId, organizationId))
