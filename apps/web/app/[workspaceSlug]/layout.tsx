@@ -1,13 +1,12 @@
 import "server-only"
 
-import { resolveWorkspace } from "@workspace/api"
 import type { ResolvedWorkspaceContext } from "@workspace/contracts"
-import { db } from "@workspace/db"
 import { SidebarProvider } from "@workspace/ui/components/sidebar"
 import { cookies } from "next/headers"
 import { notFound, redirect } from "next/navigation"
 import { WorkspaceProvider } from "@/components/shared/workspace-provider"
 import { getSessionWithOrganization } from "@/core/auth/service"
+import { getWorkspaceContext } from "@/core/auth/workspace-context"
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 
@@ -28,9 +27,7 @@ export default async function WorkspaceLayout({
 
   let workspace: ResolvedWorkspaceContext
   try {
-    workspace = await resolveWorkspace(session.user.id, workspaceSlug, {
-      executor: db,
-    })
+    workspace = await getWorkspaceContext(workspaceSlug)
   } catch {
     notFound()
   }

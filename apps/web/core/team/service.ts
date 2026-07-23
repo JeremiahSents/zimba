@@ -1,15 +1,13 @@
 import "server-only"
 
 import { createHash, randomBytes } from "node:crypto"
+import { acceptInvitationUseCase } from "@workspace/api"
 import { db } from "@workspace/db"
 import {
   appendAuditEvent,
-  claimInvitationAndUpsertMember,
   createInvitationRecord,
   deleteInvitation,
-  findInvitationByTokenHash,
   findInvitationPreviewByTokenHash,
-  findOrganizationById,
   findPendingInvitation,
   listPendingInvitations,
   listTeamMembers,
@@ -22,7 +20,7 @@ import {
   type WorkspaceRole,
 } from "../auth/permissions"
 import { requireSession } from "../auth/service"
-import { badRequest, forbidden, notFound } from "../shared/errors"
+import { badRequest, forbidden } from "../shared/errors"
 import { buildInviteUrl } from "./invite-url"
 
 export async function listTeam() {
@@ -95,29 +93,12 @@ export async function createInvitation(input: {
 
 export async function acceptInvitation(token: string) {
   const { user } = await requireSession()
-  const tokenHash = createHash("sha256").update(token).digest("hex")
-  const [invite] = await findInvitationByTokenHash(db, tokenHash)
-  if (!invite || invite.expiresAt < new Date())
-    notFound("This invitation is invalid or expired.")
-  if (invite.email !== user.email.toLowerCase())
-    forbidden("Sign in with the email address that was invited.")
-  const [workspace] = await findOrganizationById(db, invite.organizationId)
-  if (!workspace) notFound("This workspace is no longer available.")
-  if (invite.status === "accepted" && invite.acceptedBy === user.id)
-    return workspace.slug
-  if (invite.status !== "pending")
-    notFound("This invitation is no longer available.")
-  await db.transaction(async (tx) => {
-    await claimInvitationAndUpsertMember(
-      tx,
-      invite.id,
-      user.id,
-      invite.organizationId,
-      invite.role,
-      invite.responsibility
-    )
-  })
-  return workspace.slug
+  const result = await acceptInvitationUseCase(
+    { userId: user.id, email: user.email },
+    { executor: db, transaction: (callback) => db.transaction(callback) },
+    token
+  )
+  return result.workspaceSlug
 }
 
 export async function getInvitationPreview(token: string) {

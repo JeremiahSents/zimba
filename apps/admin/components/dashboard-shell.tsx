@@ -36,7 +36,6 @@ function getInitials(name: string) {
 
 export function AdminDashboardShell({
   title,
-  subtitle,
   headerGreeting,
   userName,
   userImage,

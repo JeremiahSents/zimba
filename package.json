@@ -11,7 +11,8 @@
     "test": "turbo test",
     "format": "turbo format",
     "format:check": "turbo format:check",
-    "check": "turbo check:ci",
+    "check": "pnpm check:boundaries && turbo check:ci",
+    "check:boundaries": "node scripts/check-boundaries.mjs",
     "typecheck": "turbo typecheck"
   },
   "devDependencies": {

@@ -71,7 +71,7 @@ describe("Projects Service", () => {
         budgetCents: 10000000, // 100k
         spentCents: 5000000, // 50k
         remainingCents: 5000000,
-      } as any,
+      } as never,
     ])
 
     const projects = await getProjectsList()
@@ -95,7 +95,7 @@ describe("Projects Service", () => {
       budgetCents: 10000,
       spentCents: 0,
       remainingCents: 10000,
-    } as any)
+    } as never)
 
     vi.mocked(allocationRepo.listAllocations).mockResolvedValue([
       {
@@ -104,14 +104,14 @@ describe("Projects Service", () => {
         projectId: "1",
         name: "Foundation",
         budgetCents: 5000,
-      } as any,
+      } as never,
       {
         id: "11",
         organizationId: "org-1",
         projectId: "1",
         name: "Roofing",
         budgetCents: 5000,
-      } as any,
+      } as never,
     ])
 
     const detail = await getProjectDetail("1")

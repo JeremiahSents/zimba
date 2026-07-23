@@ -1,7 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 vi.mock("server-only", () => ({}))
+vi.mock("@workspace/api", () => ({
+  createSupplierUseCase: vi.fn(),
+  createSupplierCategoryUseCase: vi.fn(),
+}))
 
+import * as api from "@workspace/api"
 import * as authService from "../auth/service"
 import * as supplierRepo from "./repository"
 import {
@@ -17,6 +22,22 @@ describe("Suppliers Service", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.mocked(supplierRepo.listSupplierSummaries).mockResolvedValue([])
+    vi.mocked(api.createSupplierUseCase).mockResolvedValue({
+      id: "sup-2",
+      organizationId: "org-1",
+      name: "New Supplier",
+      category: "labour",
+      email: "",
+      status: "active",
+    })
+    vi.mocked(api.createSupplierCategoryUseCase).mockResolvedValue({
+      id: "category-1",
+      organizationId: "org-1",
+      name: "Heavy Transport",
+      slug: "heavy-transport",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    })
     vi.mocked(authService.requireSession).mockResolvedValue({
       user: {
         id: "user-1",
@@ -61,7 +82,7 @@ describe("Suppliers Service", () => {
         receiptCount: 1,
         incurredCents: 10000,
         paidCents: 5000,
-      } as any,
+      } as never,
     ])
 
     const suppliers = await getSuppliersList()
@@ -76,43 +97,27 @@ describe("Suppliers Service", () => {
   })
 
   it("should create supplier", async () => {
-    vi.mocked(supplierRepo.createSupplier).mockResolvedValue({
-      id: "sup-2",
-      name: "New Supplier",
-    } as any)
-
     const created = await createSupplier({
       name: "New Supplier",
       category: "labour",
     })
 
     expect(created?.id).toBe("sup-2")
-    expect(supplierRepo.createSupplier).toHaveBeenCalledWith(
+    expect(vi.mocked(api.createSupplierUseCase).mock.calls[0]?.[2]).toEqual(
       expect.objectContaining({
+        organizationId: "org-1",
         name: "New Supplier",
         category: "labour",
-        organizationId: "org-1",
       })
     )
   })
 
   it("creates a normalized category inside the active organization", async () => {
-    vi.mocked(supplierRepo.getSupplierCategoryBySlug).mockResolvedValue(null)
-    vi.mocked(supplierRepo.createSupplierCategory).mockResolvedValue({
-      id: "category-1",
-      organizationId: "org-1",
-      name: "Heavy Transport",
-      slug: "heavy-transport",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    })
     await createSupplierCategory("  Heavy   Transport ")
-    expect(supplierRepo.createSupplierCategory).toHaveBeenCalledWith(
-      expect.objectContaining({
-        organizationId: "org-1",
-        name: "Heavy Transport",
-        slug: "heavy-transport",
-      })
+    expect(api.createSupplierCategoryUseCase).toHaveBeenCalledWith(
+      expect.objectContaining({ organizationId: "org-1" }),
+      expect.anything(),
+      "  Heavy   Transport "
     )
   })
 })

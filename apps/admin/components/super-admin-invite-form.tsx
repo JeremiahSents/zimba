@@ -11,7 +11,7 @@ import {
 import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
 import { useState } from "react"
-import { sendSuperAdminInviteAction } from "@/app/(dashboard)/settings/actions"
+import { sendSuperAdminInviteAction } from "@/core/settings/actions"
 import type { PublicError } from "@/core/shared/errors"
 
 export function SuperAdminInviteForm() {

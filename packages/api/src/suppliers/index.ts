@@ -3,10 +3,18 @@ import { supplierInputSchema } from "@workspace/contracts"
 import type { DatabaseExecutor } from "@workspace/db/repositories"
 import {
   createSupplier,
+  createSupplierCategory,
+  findSupplierCategoryBySlug,
   findSupplierForOrganization,
   listSuppliersForOrganization,
+  updateSupplierForOrganization,
 } from "@workspace/db/repositories"
-import { notFoundError, validationError } from "../shared/application-error"
+import {
+  conflictError,
+  notFoundError,
+  validationError,
+} from "../shared/application-error"
+import { requireRole } from "../shared/authorization"
 import type { WorkspaceContext } from "../shared/workspace-context"
 
 export async function createSupplierUseCase(
@@ -76,4 +84,74 @@ export async function listSuppliersUseCase(
     email: row.email,
     status: row.status,
   }))
+}
+
+export async function updateSupplierUseCase(
+  ctx: WorkspaceContext,
+  deps: { executor: DatabaseExecutor },
+  supplierId: string,
+  rawInput: unknown
+): Promise<SupplierDto> {
+  requireRole(ctx.role, ["owner", "site_manager", "accountant"])
+  const input = supplierInputSchema
+    .omit({ organizationId: true })
+    .safeParse(rawInput)
+  if (!input.success) validationError("Enter valid supplier details.")
+  const updated = await updateSupplierForOrganization(
+    deps.executor,
+    ctx.organizationId,
+    supplierId,
+    {
+      name: input.data.name,
+      category: input.data.category,
+      companyContact: input.data.companyContact,
+      contactName: input.data.contactName,
+      phone: input.data.phone,
+      email: input.data.email || null,
+      notes: input.data.notes,
+      status: input.data.status,
+    }
+  )
+  if (!updated) notFoundError("Supplier not found.")
+  return {
+    id: updated.id,
+    organizationId: updated.organizationId,
+    name: updated.name,
+    category: updated.category,
+    email: updated.email,
+    status: updated.status,
+  }
+}
+
+export async function createSupplierCategoryUseCase(
+  ctx: WorkspaceContext,
+  deps: { executor: DatabaseExecutor },
+  rawName: unknown
+) {
+  requireRole(ctx.role, ["owner", "site_manager", "accountant"])
+  if (typeof rawName !== "string") validationError("Enter a category name.")
+  const name = rawName.trim().replace(/\s+/g, " ")
+  if (!name) validationError("Enter a category name.")
+  const slug = name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "")
+  if (!slug)
+    validationError("Enter a category name containing letters or numbers.")
+  if (["materials", "labour", "equipment", "services"].includes(slug))
+    conflictError("That category already exists in this organization.")
+  const [existing] = await findSupplierCategoryBySlug(
+    deps.executor,
+    ctx.organizationId,
+    slug
+  )
+  if (existing)
+    conflictError("That category already exists in this organization.")
+  const category = await createSupplierCategory(deps.executor, {
+    organizationId: ctx.organizationId,
+    name,
+    slug,
+  })
+  if (!category) throw new Error("Supplier category insert failed")
+  return category
 }

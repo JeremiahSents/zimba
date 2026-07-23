@@ -10,21 +10,18 @@ import {
 import { handleActionError } from "@/core/shared/handle-action-error"
 import { sendSuperAdminInvite } from "@/core/users/invite"
 
-const inviteSchema = adminInviteSchema
 export async function sendSuperAdminInviteAction(input: {
   email: string
   name: string
 }): Promise<ActionResult> {
   const authFailure = await ensureActionSession("settings.inviteSuperAdmin")
   if (authFailure) return authFailure
-
-  const parsed = inviteSchema.safeParse(input)
+  const parsed = adminInviteSchema.safeParse(input)
   if (!parsed.success)
     return expectedActionFailure(
       "VALIDATION_FAILED",
       "Enter a name and valid email address."
     )
-
   try {
     await sendSuperAdminInvite(parsed.data)
     revalidatePath("/settings")

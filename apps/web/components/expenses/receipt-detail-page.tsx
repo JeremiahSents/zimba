@@ -33,6 +33,7 @@ import {
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
+import { ReceiptFiles } from "@/components/expenses/receipt-files"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { DatePicker } from "@/components/shared/date-picker"
 import { ErrorNotice } from "@/components/shared/error-notice"
@@ -186,47 +187,7 @@ export function ReceiptDetailPage({
         </div>
       </div>
 
-      <section className="mt-6 rounded-2xl border bg-card p-5 print:hidden">
-        <h2 className="font-heading font-semibold">Receipt files</h2>
-        {payable?.attachments?.length ? (
-          <div className="mt-4 grid gap-4 sm:grid-cols-2">
-            {payable.attachments.map((file) =>
-              file.content_type.startsWith("image/") ? (
-                <a
-                  key={file.id}
-                  href={file.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="overflow-hidden rounded-xl border bg-muted/20"
-                >
-                  <img
-                    src={file.url}
-                    alt={file.filename}
-                    className="h-48 w-full object-cover"
-                  />
-                  <p className="truncate px-3 py-2 font-medium text-sm">
-                    {file.filename}
-                  </p>
-                </a>
-              ) : (
-                <a
-                  key={file.id}
-                  href={file.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="rounded-xl border p-4 font-medium text-primary hover:underline"
-                >
-                  Open {file.filename}
-                </a>
-              )
-            )}
-          </div>
-        ) : (
-          <p className="mt-2 text-muted-foreground text-sm">
-            No receipt images or documents are attached.
-          </p>
-        )}
-      </section>
+      <ReceiptFiles files={payable?.attachments ?? []} />
 
       <div className="mx-auto grid max-w-6xl items-start gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
         {/* Receipt Paper Card */}

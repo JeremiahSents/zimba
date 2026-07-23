@@ -1,10 +1,16 @@
 import "server-only"
+import {
+  createAllocationUseCase,
+  createProjectWithAllocationsUseCase,
+  updateAllocationUseCase,
+} from "@workspace/api"
+import type { WorkspaceRole } from "@workspace/contracts"
+import { db } from "@workspace/db"
 import type {
   AllocationUpdate,
   ProjectCreate,
   ProjectUpdate,
 } from "@/lib/types"
-import * as allocationRepo from "../allocations/repository"
 import { recordAudit } from "../audit/service"
 import { requireRole } from "../auth/permissions"
 import { requireSession } from "../auth/service"
@@ -13,74 +19,45 @@ import { badRequest } from "../shared/errors"
 import * as projectRepo from "./repository"
 
 export async function createProject(data: ProjectCreate) {
-  const { organization } = await requireSession()
-
-  const project = await projectRepo.createProject({
-    organizationId: organization.organizationId,
-    name: data.name,
-    location: data.location,
-    clientName: data.client_name,
-    buildingType: data.building_type,
-    landSize: data.land_size,
-    plotSize: data.land_size,
-    startDate: data.start_date ? new Date(data.start_date) : null,
-    targetEndDate: data.target_end_date ? new Date(data.target_end_date) : null,
-  })
-  if (!project) throw new Error("Project insert failed")
-
-  if (data.allocations && data.allocations.length > 0) {
-    for (const alloc of data.allocations) {
-      await allocationRepo.createAllocation({
-        organizationId: organization.organizationId,
-        projectId: project.id,
-        name: alloc.name,
-        budgetCents: Math.round(alloc.budget * 100),
-      })
-    }
-  }
-  for (const fileId of data.attachment_ids ?? []) {
-    const file = await fileRepo.getCompletedFile(
-      organization.organizationId,
-      fileId,
-      "project_attachment"
-    )
-    if (!file)
-      badRequest("An attachment is invalid or belongs to another workspace.")
-    const attachmentProject = await projectRepo.getProject(
-      organization.organizationId,
-      project.id
-    )
-    if (!attachmentProject) badRequest("Project not found.")
-    await fileRepo.createProjectAttachment({
+  const { user, organization } = await requireSession()
+  return createProjectWithAllocationsUseCase(
+    {
+      userId: user.id,
       organizationId: organization.organizationId,
-      projectId: project.id,
-      fileId,
-    })
-  }
-
-  return project
+      role: organization.role as WorkspaceRole,
+    },
+    { executor: db, transaction: (callback) => db.transaction(callback) },
+    {
+      organizationId: organization.organizationId,
+      name: data.name,
+      location: data.location,
+      currency: "UGX",
+      landSize: data.land_size,
+      buildingType: data.building_type,
+      clientName: data.client_name,
+      startDate: data.start_date,
+      targetEndDate: data.target_end_date,
+      allocations: data.allocations,
+      attachmentIds: data.attachment_ids ?? [],
+    }
+  )
 }
 
 export async function createAllocation(
   projectId: string,
   data: { name: string; budget: number }
 ) {
-  const { organization } = await requireSession()
-
-  const project = await projectRepo.getProject(
-    organization.organizationId,
-    projectId
-  )
-  if (!project) badRequest("Project not found.")
-
-  const allocation = await allocationRepo.createAllocation({
-    organizationId: organization.organizationId,
+  const { user, organization } = await requireSession()
+  return createAllocationUseCase(
+    {
+      userId: user.id,
+      organizationId: organization.organizationId,
+      role: organization.role as WorkspaceRole,
+    },
+    { executor: db },
     projectId,
-    name: data.name,
-    budgetCents: Math.round(data.budget * 100),
-  })
-
-  return allocation
+    data
+  )
 }
 
 export async function updateProject(projectId: string, data: ProjectUpdate) {
@@ -141,20 +118,18 @@ export async function updateAllocation(
   allocationId: string,
   data: AllocationUpdate
 ) {
-  const { organization } = await requireSession()
-  requireRole(organization.role, ["owner", "site_manager"])
-
-  const allocation = await allocationRepo.updateAllocation(
-    organization.organizationId,
+  const { user, organization } = await requireSession()
+  return updateAllocationUseCase(
+    {
+      userId: user.id,
+      organizationId: organization.organizationId,
+      role: organization.role as WorkspaceRole,
+    },
+    { executor: db },
     projectId,
     allocationId,
-    {
-      name: data.name ?? undefined,
-      budgetCents: data.budget ? Math.round(data.budget * 100) : undefined,
-    }
+    { name: data.name ?? undefined, budget: data.budget ?? undefined }
   )
-
-  return allocation
 }
 
 export async function archiveProject(projectId: string) {

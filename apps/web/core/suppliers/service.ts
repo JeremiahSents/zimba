@@ -1,9 +1,14 @@
 import "server-only"
+import {
+  createSupplierCategoryUseCase,
+  createSupplierUseCase,
+  updateSupplierUseCase,
+} from "@workspace/api"
+import type { WorkspaceRole } from "@workspace/contracts"
+import { db } from "@workspace/db"
 import type { SupplierCreate, SupplierResponse } from "@/lib/types"
 import { recordAudit } from "../audit/service"
-import { requireRole } from "../auth/permissions"
 import { requireSession } from "../auth/service"
-import { badRequest, conflict } from "../shared/errors"
 import * as supplierRepo from "./repository"
 
 export async function getSuppliersList(): Promise<SupplierResponse[]> {
@@ -34,20 +39,19 @@ export async function getSuppliersList(): Promise<SupplierResponse[]> {
 }
 
 export async function createSupplier(data: SupplierCreate) {
-  const { organization } = await requireSession()
-
-  const supplier = await supplierRepo.createSupplier({
-    organizationId: organization.organizationId,
-    name: data.name,
-    category: data.category,
-    phone: data.phone,
-    email: data.email,
-    notes: data.notes,
-    companyContact: data.companyContact,
-    contactName: data.contactName,
-  })
-
-  return supplier
+  const { user, organization } = await requireSession()
+  return createSupplierUseCase(
+    {
+      userId: user.id,
+      organizationId: organization.organizationId,
+      role: organization.role as WorkspaceRole,
+    },
+    { executor: db },
+    {
+      organizationId: organization.organizationId,
+      ...data,
+    }
+  )
 }
 
 export async function updateSupplier(
@@ -55,26 +59,16 @@ export async function updateSupplier(
   data: SupplierCreate & { status?: string | null }
 ) {
   const { user, organization } = await requireSession()
-  requireRole(organization.role, ["owner", "site_manager", "accountant"])
-  const email = data.email?.trim() || null
-  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
-    badRequest("Enter a valid email address.")
-  if (!data.name.trim()) badRequest("Add a supplier name.")
-  const supplier = await supplierRepo.updateSupplier(
-    organization.organizationId,
-    supplierId,
+  const supplier = await updateSupplierUseCase(
     {
-      name: data.name.trim(),
-      category: data.category,
-      phone: data.phone?.trim() || null,
-      email,
-      notes: data.notes?.trim() || null,
-      companyContact: data.companyContact?.trim() || null,
-      contactName: data.contactName?.trim() || null,
-      status: data.status ?? undefined,
-    }
+      userId: user.id,
+      organizationId: organization.organizationId,
+      role: organization.role as WorkspaceRole,
+    },
+    { executor: db },
+    supplierId,
+    data
   )
-  if (!supplier) badRequest("Supplier not found.")
   await recordAudit({
     organizationId: organization.organizationId,
     actorId: user.id,
@@ -92,28 +86,14 @@ export async function getSupplierCategories() {
 }
 
 export async function createSupplierCategory(name: string) {
-  const { organization } = await requireSession()
-  const displayName = name.trim().replace(/\s+/g, " ")
-  if (!displayName) badRequest("Enter a category name.")
-  const slug = displayName
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "")
-  if (!slug) badRequest("Enter a category name containing letters or numbers.")
-  if (["materials", "labour", "equipment", "services"].includes(slug))
-    conflict("That category already exists in this organization.")
-  if (
-    await supplierRepo.getSupplierCategoryBySlug(
-      organization.organizationId,
-      slug
-    )
+  const { user, organization } = await requireSession()
+  return createSupplierCategoryUseCase(
+    {
+      userId: user.id,
+      organizationId: organization.organizationId,
+      role: organization.role as WorkspaceRole,
+    },
+    { executor: db },
+    name
   )
-    conflict("That category already exists in this organization.")
-  const category = await supplierRepo.createSupplierCategory({
-    organizationId: organization.organizationId,
-    name: displayName,
-    slug,
-  })
-  if (!category) throw new Error("Supplier category insert failed")
-  return category
 }

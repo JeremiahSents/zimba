@@ -15,13 +15,6 @@ import {
   type SortingState,
   useReactTable,
 } from "@tanstack/react-table"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@workspace/ui/components/dialog"
 import { Input } from "@workspace/ui/components/input"
 import {
   Table,
@@ -33,6 +26,8 @@ import {
 } from "@workspace/ui/components/table"
 import { useMemo, useState } from "react"
 import { useWorkspaceSlug } from "@/components/shared/use-workspace-slug"
+import { SupplierReceiptMobileList } from "@/components/suppliers/supplier-receipt-mobile-list"
+import { SupplierSummaryDialog } from "@/components/suppliers/supplier-summary-dialog"
 import { formatCurrency, formatShortDate } from "@/lib/format"
 import type {
   SupplierListItem,
@@ -201,7 +196,11 @@ export function SupplierTable({
         </div>
       </div>
       <div className="md:hidden">
-        <div className="flex flex-col gap-4">
+        <SupplierReceiptMobileList
+          receipts={rows.map((row) => row.original)}
+          slug={slug}
+        />
+        {/*
           {rows.length ? (
             rows.map((row) => (
               <button
@@ -275,7 +274,7 @@ export function SupplierTable({
               </p>
             </div>
           )}
-        </div>
+        */}
       </div>
       <div className="hidden overflow-x-auto rounded-2xl border md:block">
         <Table>
@@ -345,66 +344,11 @@ export function SupplierTable({
           </TableBody>
         </Table>
       </div>
-      <Dialog
+      <SupplierSummaryDialog
+        supplier={selectedSupplier}
         open={Boolean(selectedSupplier)}
         onOpenChange={(open) => !open && setSelectedSupplier(undefined)}
-      >
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>{selectedSupplier?.name}</DialogTitle>
-            <DialogDescription>Supplier account summary</DialogDescription>
-          </DialogHeader>
-          {selectedSupplier && (
-            <div className="grid grid-cols-3 gap-3 rounded-xl border bg-muted/25 p-4">
-              <Metric
-                label="Receipt total"
-                value={formatCurrency(selectedSupplier.amount)}
-              />
-              <Metric
-                label="Paid"
-                value={formatCurrency(selectedSupplier.paid)}
-              />
-              <Metric
-                label="Balance"
-                value={formatCurrency(selectedSupplier.remaining)}
-              />
-            </div>
-          )}
-          {selectedSupplier && (
-            <dl className="grid gap-3 text-sm">
-              <Contact label="Phone" value={selectedSupplier.phone} />
-              <Contact label="Email" value={selectedSupplier.email} />
-              <Contact
-                label="Contact"
-                value={
-                  selectedSupplier.contactName ??
-                  selectedSupplier.companyContact
-                }
-              />
-            </dl>
-          )}
-        </DialogContent>
-      </Dialog>
-    </div>
-  )
-}
-
-function Metric({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <dt className="text-[10px] text-muted-foreground uppercase tracking-wider">
-        {label}
-      </dt>
-      <dd className="mt-1 font-semibold text-sm tabular-nums">{value}</dd>
-    </div>
-  )
-}
-
-function Contact({ label, value }: { label: string; value?: string | null }) {
-  return (
-    <div className="flex items-center justify-between gap-4">
-      <dt className="text-muted-foreground">{label}</dt>
-      <dd className="truncate font-medium">{value || "Not provided"}</dd>
+      />
     </div>
   )
 }

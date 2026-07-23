@@ -9,12 +9,7 @@ import {
   expectedActionFailure,
 } from "@/core/shared/action-result"
 import { handleActionError } from "@/core/shared/handle-action-error"
-import {
-  removePlatformUser,
-  updatePlatformUserRole,
-} from "@/core/users/service"
-
-const inputSchema = platformRoleUpdateSchema
+import { removePlatformUser, updatePlatformUserRole } from "./service"
 
 export async function updatePlatformUserRoleAction(
   userId: string,
@@ -24,24 +19,21 @@ export async function updatePlatformUserRoleAction(
     "super_admin",
   ])
   if (authFailure) return authFailure
-  const parsed = inputSchema.safeParse({ userId, role })
+  const parsed = platformRoleUpdateSchema.safeParse({ userId, role })
   if (!parsed.success)
     return expectedActionFailure(
       "VALIDATION_FAILED",
       "Invalid platform role or user."
     )
-
   try {
     const actor = await requirePlatformRole(["super_admin"])
-    if (role === "none") {
-      await removePlatformUser(actor.user.id, userId)
-    } else {
+    if (role === "none") await removePlatformUser(actor.user.id, userId)
+    else
       await updatePlatformUserRole(
         actor.user.id,
         userId,
         role as "support" | "super_admin"
       )
-    }
     revalidatePath("/users")
     revalidatePath(`/users/${userId}`)
     return { success: true, data: undefined }
@@ -57,7 +49,6 @@ export async function removePlatformUserAction(
     "super_admin",
   ])
   if (authFailure) return authFailure
-
   try {
     const actor = await requirePlatformRole(["super_admin"])
     await removePlatformUser(actor.user.id, userId)

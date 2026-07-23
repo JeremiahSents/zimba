@@ -1,4 +1,10 @@
 import "server-only"
+import {
+  createUpcomingPaymentUseCase,
+  deleteUpcomingPaymentUseCase,
+  updateUpcomingPaymentUseCase,
+} from "@workspace/api"
+import { db } from "@workspace/db"
 import type { UpcomingPaymentCreate, UpcomingPaymentUpdate } from "@/lib/types"
 import { recordAudit } from "../audit/service"
 import { requireSession } from "../auth/service"
@@ -10,49 +16,60 @@ export async function createUpcomingPayment(
   projectId: string,
   data: UpcomingPaymentCreate
 ) {
-  const { organization } = await requireSession()
-
-  const paymentId = crypto.randomUUID()
-  const payable = await paymentRepo.createPayable({
-    id: paymentId,
-    organizationId: organization.organizationId,
-    projectId: projectId,
-    title: data.title,
-    description: data.description,
-    amountCents: Math.round(data.amount * 100),
-    currency: data.currency,
-    dueDate: new Date(data.due_date),
-    status: "pending",
-  })
-
-  return payable
+  const { user, organization } = await requireSession()
+  return createUpcomingPaymentUseCase(
+    {
+      userId: user.id,
+      organizationId: organization.organizationId,
+      role: organization.role as never,
+    },
+    { executor: db },
+    {
+      projectId,
+      title: data.title,
+      description: data.description,
+      amount: data.amount,
+      currency: data.currency,
+      dueDate: data.due_date,
+    }
+  )
 }
 
 export async function updateUpcomingPayment(
   paymentId: string,
   data: UpcomingPaymentUpdate
 ) {
-  const { organization } = await requireSession()
-  const payable = await paymentRepo.updatePayable(
-    organization.organizationId,
+  const { user, organization } = await requireSession()
+  return updateUpcomingPaymentUseCase(
+    {
+      userId: user.id,
+      organizationId: organization.organizationId,
+      role: organization.role as never,
+    },
+    { executor: db },
     paymentId,
     {
       title: data.title,
       description: data.description,
-      amountCents:
-        data.amount === undefined ? undefined : Math.round(data.amount * 100),
+      amount: data.amount,
       currency: data.currency,
-      dueDate: data.due_date ? new Date(data.due_date) : undefined,
-      status: data.status ?? undefined,
+      dueDate: data.due_date,
+      status: data.status,
     }
   )
-
-  return payable
 }
 
 export async function deleteUpcomingPayment(paymentId: string) {
-  const { organization } = await requireSession()
-  await paymentRepo.deletePayable(organization.organizationId, paymentId)
+  const { user, organization } = await requireSession()
+  await deleteUpcomingPaymentUseCase(
+    {
+      userId: user.id,
+      organizationId: organization.organizationId,
+      role: organization.role as never,
+    },
+    { executor: db },
+    paymentId
+  )
 }
 
 export async function createLedgerPayment(data: {

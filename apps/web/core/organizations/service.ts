@@ -1,10 +1,7 @@
 import "server-only"
 
+import { getOrganizationMembershipUseCase } from "@workspace/api"
 import { db } from "@workspace/db"
-import {
-  findUserOrganizationMembership,
-  findUserOrganizationMembershipBySlug,
-} from "@workspace/db/repositories"
 
 export type OrganizationMembership = {
   organizationId: string
@@ -17,8 +14,9 @@ export async function getOrganizationMembership(
   userId: string,
   workspaceSlug?: string | null
 ): Promise<OrganizationMembership | null> {
-  const [membership] = workspaceSlug
-    ? await findUserOrganizationMembershipBySlug(db, userId, workspaceSlug)
-    : await findUserOrganizationMembership(db, userId)
-  return membership ?? null
+  return getOrganizationMembershipUseCase(
+    { executor: db },
+    userId,
+    workspaceSlug
+  )
 }

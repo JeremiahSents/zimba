@@ -13,7 +13,8 @@
       "!**/dist",
       "!**/.turbo",
       "!**/pnpm-lock.yaml",
-      "!apps/web/app/icon0.svg"
+      "!apps/web/app/icon0.svg",
+      "!apps/admin/app/icon0.svg"
     ]
   },
   "formatter": {

@@ -1,9 +1,4 @@
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@workspace/ui/components/card"
+import { Card } from "@workspace/ui/components/card"
 import { cn } from "@workspace/ui/lib/utils"
 import type { ReactNode } from "react"
 

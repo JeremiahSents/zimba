@@ -1,21 +1,6 @@
 "use client"
 
 import { Button } from "@workspace/ui/components/button"
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@workspace/ui/components/card"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@workspace/ui/components/dialog"
-import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
 import {
   Select,
@@ -27,6 +12,8 @@ import {
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useEffect, useMemo, useRef, useState } from "react"
+import { CreateCategoryDialog } from "@/components/expenses/create-category-dialog"
+import { PaymentPanel } from "@/components/expenses/payment-panel"
 import {
   type ReceiptFormLine,
   ReceiptLineItems,
@@ -68,11 +55,6 @@ const makeLine = (id: number, allocationId?: string): ReceiptFormLine => ({
 })
 
 const CREATE_CATEGORY_VALUE = "__create_new_category__"
-function formatNumericInput(value: string) {
-  if (!value) return ""
-  return Number(value).toLocaleString("en-US")
-}
-
 export function ProjectExpenseCreatePage({ project, vendors }: Props) {
   const router = useRouter()
   const workspace = useWorkspace()
@@ -603,114 +585,24 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
             onCategoryChange={handleCategoryChange}
             onPaidInFullChange={togglePaidInFull}
           />
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Payment</CardTitle>
-            </CardHeader>
-            <CardContent className="grid gap-4 sm:grid-cols-2">
-              <div className="sm:col-span-2">
-                <button
-                  type="button"
-                  className="flex w-full items-center justify-between rounded-lg border bg-muted/20 px-3 py-2.5 text-left text-sm"
-                  onClick={() => setCustomPaymentOpen((open) => !open)}
-                  aria-expanded={customPaymentOpen}
-                >
-                  <span className="font-medium">Custom amount paid</span>
-                  <span className="text-muted-foreground">
-                    {customPaymentOpen ? "Hide" : "Add"}
-                  </span>
-                </button>
-                {customPaymentOpen && (
-                  <label className="mt-3 grid gap-2">
-                    <Label>Amount paid</Label>
-                    <Input
-                      inputMode="numeric"
-                      value={formatNumericInput(amountPaid)}
-                      onChange={(event) => {
-                        setPaidInFull(false)
-                        setAmountPaid(event.target.value.replace(/\D/g, ""))
-                      }}
-                      placeholder="0"
-                    />
-                  </label>
-                )}
-              </div>
-              <div className="grid gap-2">
-                <Label>Status</Label>
-                <div className="flex h-10 items-center rounded-[10px] border bg-muted/20 px-3">
-                  <span
-                    className={`inline-flex rounded-full border px-2.5 py-1 font-semibold text-xs ${paymentStatusClass}`}
-                  >
-                    {paymentStatus}
-                  </span>
-                </div>
-              </div>
-              {paid > 0 && (
-                <>
-                  <label className="grid gap-2">
-                    <Label>Payment date</Label>
-                    <DatePicker value={paymentDate} onChange={setPaymentDate} />
-                  </label>
-                  <label className="grid gap-2">
-                    <Label>Payment method</Label>
-                    <Select
-                      value={paymentMethod}
-                      onValueChange={(value) =>
-                        setPaymentMethod(value ?? "cash")
-                      }
-                    >
-                      <SelectTrigger className="h-11 w-full px-3 text-sm md:h-11 md:text-sm">
-                        <SelectValue>
-                          {{
-                            cash: "Cash",
-                            bank_transfer: "Bank transfer",
-                            mobile_money: "Mobile money",
-                            cheque: "Cheque",
-                          }[paymentMethod] ?? paymentMethod}
-                        </SelectValue>
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem
-                          value="cash"
-                          className="min-h-11 px-3 py-2 text-sm md:min-h-10 md:px-3 md:py-2 md:text-sm"
-                        >
-                          Cash
-                        </SelectItem>
-                        <SelectItem
-                          value="bank_transfer"
-                          className="min-h-11 px-3 py-2 text-sm md:min-h-10 md:px-3 md:py-2 md:text-sm"
-                        >
-                          Bank transfer
-                        </SelectItem>
-                        <SelectItem
-                          value="mobile_money"
-                          className="min-h-11 px-3 py-2 text-sm md:min-h-10 md:px-3 md:py-2 md:text-sm"
-                        >
-                          Mobile money
-                        </SelectItem>
-                        <SelectItem
-                          value="cheque"
-                          className="min-h-11 px-3 py-2 text-sm md:min-h-10 md:px-3 md:py-2 md:text-sm"
-                        >
-                          Cheque
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </label>
-                  <label className="grid gap-2 sm:col-span-2">
-                    <Label>Payment reference</Label>
-                    <Input
-                      value={paymentReference}
-                      onChange={(event) =>
-                        setPaymentReference(event.target.value)
-                      }
-                      placeholder="Optional"
-                    />
-                  </label>
-                </>
-              )}
-            </CardContent>
-          </Card>
+          <PaymentPanel
+            customPaymentOpen={customPaymentOpen}
+            amountPaid={amountPaid}
+            paid={paid}
+            paymentDate={paymentDate}
+            paymentMethod={paymentMethod}
+            paymentReference={paymentReference}
+            paymentStatus={paymentStatus}
+            paymentStatusClass={paymentStatusClass}
+            onToggleCustomPayment={() => setCustomPaymentOpen((open) => !open)}
+            onAmountPaidChange={(value) => {
+              setPaidInFull(false)
+              setAmountPaid(value)
+            }}
+            onPaymentDateChange={setPaymentDate}
+            onPaymentMethodChange={setPaymentMethod}
+            onPaymentReferenceChange={setPaymentReference}
+          />
         </div>
 
         <ReceiptPreview
@@ -728,63 +620,17 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
         />
       </div>
 
-      <Dialog open={categoryOpen} onOpenChange={setCategoryOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Create category</DialogTitle>
-            <DialogDescription>
-              Add a project category with its own budget. This increases the
-              overall project budget.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-2">
-            <label className="grid gap-2">
-              <Label htmlFor="new-receipt-category">Category name</Label>
-              <Input
-                id="new-receipt-category"
-                value={categoryName}
-                onChange={(event) => setCategoryName(event.target.value)}
-                placeholder="e.g. Transport"
-                autoFocus
-              />
-            </label>
-            <label className="grid gap-2">
-              <Label htmlFor="new-receipt-category-budget">Budget</Label>
-              <Input
-                id="new-receipt-category-budget"
-                inputMode="numeric"
-                value={formatNumericInput(categoryBudget)}
-                onChange={(event) =>
-                  setCategoryBudget(event.target.value.replace(/\D/g, ""))
-                }
-                placeholder="0"
-              />
-            </label>
-            {categoryError && <ErrorNotice error={categoryError} />}
-          </div>
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => setCategoryOpen(false)}
-              disabled={categoryPending}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="button"
-              disabled={
-                categoryPending ||
-                !categoryName.trim() ||
-                !categoryBudget.trim()
-              }
-              onClick={createCategory}
-            >
-              {categoryPending ? "Creating..." : "Create category"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <CreateCategoryDialog
+        open={categoryOpen}
+        name={categoryName}
+        budget={categoryBudget}
+        error={categoryError}
+        pending={categoryPending}
+        onOpenChange={setCategoryOpen}
+        onNameChange={setCategoryName}
+        onBudgetChange={setCategoryBudget}
+        onSubmit={createCategory}
+      />
 
       <div className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-2 gap-2 border-t bg-background/95 px-3 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur md:hidden">
         {mobileStep === "entry" ? (

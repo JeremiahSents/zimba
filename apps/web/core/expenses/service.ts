@@ -1,11 +1,15 @@
 import "server-only"
 
+import {
+  deleteReceiptUseCase,
+  updateReceiptStatusUseCase,
+} from "@workspace/api"
+import type { WorkspaceRole } from "@workspace/contracts"
 import { db } from "@workspace/db"
 import {
   findActiveProjectForOrganization,
   findAllocationForProject,
   findCompletedFile,
-  findExpenseForOrganization,
   findSupplierForOrganization,
   insertReceipt,
   insertReceiptLine,
@@ -194,53 +198,17 @@ export async function updateExpenseStatus(
   expenseId: string,
   status: ExpenseStatus
 ) {
-  const { organization } = await requireSession()
-  if (status !== "Full") {
-    const expense = await expenseRepo.updateExpense(
-      organization.organizationId,
-      expenseId,
-      { paymentStatus: status === "Partial" ? "partial" : "unpaid" }
-    )
-    if (!expense) notFound("Expense not found.")
-    return expense
-  }
-
-  return db.transaction(async (tx) => {
-    const detail = await findExpenseForOrganization(
-      tx,
-      organization.organizationId,
-      expenseId
-    )
-    if (!detail) notFound("Expense not found.")
-    const expense = detail.expense
-    const lines = detail.lines.map(({ line }) => line)
-    const payments = detail.payments
-    const totalCents = lines.reduce((sum, line) => sum + line.amountCents, 0)
-    const paidCents = payments.reduce(
-      (sum, payment) => sum + payment.amountCents,
-      0
-    )
-    const outstandingCents = totalCents - paidCents
-    if (outstandingCents > 0) {
-      await insertReceiptPayment(tx, {
-        organizationId: organization.organizationId,
-        expenseId,
-        supplierId: expense.supplierId,
-        amountCents: outstandingCents,
-        currency: "UGX",
-        paymentDate: new Date(),
-        method: "full_payment",
-      })
-    }
-    const updated = await updateReceiptPaymentStatus(
-      tx,
-      organization.organizationId,
-      expenseId,
-      "paid"
-    )
-    if (!updated) notFound("Expense not found.")
-    return updated
-  })
+  const { user, organization } = await requireSession()
+  return updateReceiptStatusUseCase(
+    {
+      userId: user.id,
+      organizationId: organization.organizationId,
+      role: organization.role as WorkspaceRole,
+    },
+    { executor: db, transaction: (callback) => db.transaction(callback) },
+    expenseId,
+    status
+  )
 }
 
 export async function getPayableExpense(
@@ -440,16 +408,15 @@ export async function correctReceiptCategory(
 
 export async function deleteReceipt(receiptId: string) {
   const { user, organization } = await requireSession()
-  requireRole(organization.role, ["owner", "site_manager", "accountant"])
-  const deletedExpense = await expenseRepo.deleteExpense(
-    organization.organizationId,
+  const deleted = await deleteReceiptUseCase(
+    {
+      userId: user.id,
+      organizationId: organization.organizationId,
+      role: organization.role as WorkspaceRole,
+    },
+    { executor: db, transaction: (callback) => db.transaction(callback) },
     receiptId
   )
-  const deletedPayable = await expenseRepo.deletePayable(
-    organization.organizationId,
-    receiptId
-  )
-  if (!deletedExpense && !deletedPayable) notFound("Receipt not found.")
   await recordAudit({
     organizationId: organization.organizationId,
     actorId: user.id,
@@ -457,6 +424,7 @@ export async function deleteReceipt(receiptId: string) {
     entityType: "receipt",
     entityId: receiptId,
   })
+  return deleted
 }
 
 /** Read-only operational report used before any historical data repair. */

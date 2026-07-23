@@ -5,7 +5,7 @@ import { useTransition } from "react"
 import {
   removePlatformUserAction,
   updatePlatformUserRoleAction,
-} from "@/app/(dashboard)/users/actions"
+} from "@/core/users/actions"
 
 const ROLE_OPTIONS = ["none", "support", "super_admin"] as const
 
