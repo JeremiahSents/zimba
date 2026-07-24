@@ -3,6 +3,7 @@
 import {
   approveOnboardingApplicationUseCase,
   getOnboardingApplicationDetailUseCase,
+  recordPlatformAuditUseCase,
   rejectOnboardingApplicationUseCase,
 } from "@workspace/api"
 import { apiDatabase } from "@workspace/api-runtime"
@@ -46,6 +47,19 @@ export async function approveApplication(formData: FormData) {
     })
   }
 
+  await recordPlatformAuditUseCase(apiDatabase, {
+    actorId: session.user.id,
+    targetUserId: application?.userId ?? null,
+    operation: "onboarding_application_approved",
+    metadata: {
+      applicationId,
+      companyName: application?.companyName ?? null,
+      slug: result.slug,
+    },
+  }).catch((error: unknown) => {
+    console.error("Audit log failed", error)
+  })
+
   revalidatePath("/applications")
   revalidatePath(`/applications/${applicationId}`)
   revalidatePath("/overview")
@@ -78,6 +92,19 @@ export async function rejectApplication(formData: FormData) {
       console.error("Application rejection email failed", error)
     })
   }
+
+  await recordPlatformAuditUseCase(apiDatabase, {
+    actorId: session.user.id,
+    targetUserId: application?.userId ?? null,
+    operation: "onboarding_application_rejected",
+    metadata: {
+      applicationId,
+      companyName: application?.companyName ?? null,
+      rejectionReason: rejectionReason || null,
+    },
+  }).catch((error: unknown) => {
+    console.error("Audit log failed", error)
+  })
 
   revalidatePath("/applications")
   revalidatePath(`/applications/${applicationId}`)

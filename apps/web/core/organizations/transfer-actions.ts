@@ -1,6 +1,9 @@
 "use server"
 
-import { requestOwnershipTransferUseCase } from "@workspace/api"
+import {
+  recordPlatformAuditUseCase,
+  requestOwnershipTransferUseCase,
+} from "@workspace/api"
 import { apiDatabase } from "@workspace/api-runtime"
 import { revalidatePath } from "next/cache"
 import { requireSession } from "@/core/auth/service"
@@ -22,6 +25,18 @@ export async function requestOwnershipTransfer(formData: FormData) {
         reason: reason || undefined,
       }
     )
+    await recordPlatformAuditUseCase(apiDatabase, {
+      actorId: session.user.id,
+      targetUserId: toUserId,
+      operation: "ownership_transfer_requested",
+      metadata: {
+        organizationId: session.organization.organizationId,
+        toUserId,
+        reason: reason || null,
+      },
+    }).catch((error: unknown) => {
+      console.error("Audit log failed", error)
+    })
   } catch (error) {
     return {
       error:

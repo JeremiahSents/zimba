@@ -7,6 +7,8 @@
     "dev": "turbo dev",
     "web": "pnpm --filter web dev",
     "admin": "pnpm --filter admin dev",
+    "generate": "pnpm --filter @workspace/db db:generate",
+    "migrate": "pnpm --filter @workspace/db db:migrate",
     "lint": "turbo lint",
     "test": "turbo test",
     "format": "turbo format",

@@ -1,6 +1,9 @@
 "use server"
 
-import { submitOnboardingApplicationUseCase } from "@workspace/api"
+import {
+  recordPlatformAuditUseCase,
+  submitOnboardingApplicationUseCase,
+} from "@workspace/api"
 import { apiDatabase } from "@workspace/api-runtime"
 import { sendApplicationSubmittedEmail } from "@workspace/transactional"
 import { headers } from "next/headers"
@@ -57,6 +60,14 @@ export async function completeOnboarding(
       companyName,
     }).catch((error) => {
       console.error("Onboarding welcome email failed", error)
+    })
+    await recordPlatformAuditUseCase(apiDatabase, {
+      actorId: session.user.id,
+      targetUserId: session.user.id,
+      operation: "onboarding_application_submitted",
+      metadata: { companyName, email: session.user.email },
+    }).catch((error: unknown) => {
+      console.error("Audit log failed", error)
     })
   } catch (error) {
     console.error("Onboarding application failed", error)

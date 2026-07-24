@@ -12,7 +12,12 @@ export const metadata: Metadata = {
   description: "Create your Zimba company workspace.",
 }
 
-export default async function OnboardingPage() {
+export default async function OnboardingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ reapply?: string }>
+}) {
+  const { reapply } = await searchParams
   const session = await auth.api.getSession({ headers: await headers() })
   if (!session) redirect("/login")
 
@@ -24,6 +29,8 @@ export default async function OnboardingPage() {
     session.user.id
   )
   if (application && application.status === "pending")
+    redirect("/pending-approval")
+  if (application && application.status === "rejected" && reapply !== "1")
     redirect("/pending-approval")
 
   return (

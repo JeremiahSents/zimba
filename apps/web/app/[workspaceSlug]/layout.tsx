@@ -1,5 +1,7 @@
 import "server-only"
 
+import { getOnboardingApplicationForUserUseCase } from "@workspace/api"
+import { apiExecutor } from "@workspace/api-runtime"
 import type { ResolvedWorkspaceContext } from "@workspace/contracts"
 import { SidebarProvider } from "@workspace/ui/components/sidebar"
 import { cookies } from "next/headers"
@@ -23,7 +25,19 @@ export default async function WorkspaceLayout({
 
   const session = await getSessionWithOrganization()
   if (!session) redirect("/login")
-  if (!session.organization) redirect("/onboarding")
+
+  if (!session.organization) {
+    const application = await getOnboardingApplicationForUserUseCase(
+      apiExecutor,
+      session.user.id
+    )
+    if (
+      application &&
+      (application.status === "pending" || application.status === "rejected")
+    )
+      redirect("/pending-approval")
+    redirect("/onboarding")
+  }
 
   let workspace: ResolvedWorkspaceContext
   try {

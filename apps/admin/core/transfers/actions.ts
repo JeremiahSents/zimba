@@ -3,6 +3,7 @@
 import {
   approveOwnershipTransferUseCase,
   listOwnershipTransferRequestsUseCase,
+  recordPlatformAuditUseCase,
   rejectOwnershipTransferUseCase,
 } from "@workspace/api"
 import { apiDatabase } from "@workspace/api-runtime"
@@ -49,6 +50,20 @@ export async function approveTransfer(formData: FormData) {
     })
   }
 
+  await recordPlatformAuditUseCase(apiDatabase, {
+    actorId: session.user.id,
+    targetUserId: transfer?.toUserId ?? null,
+    operation: "ownership_transfer_approved",
+    metadata: {
+      transferId,
+      organizationName: transfer?.organizationName ?? null,
+      fromUserId: transfer?.fromUserId ?? null,
+      toUserId: transfer?.toUserId ?? null,
+    },
+  }).catch((error: unknown) => {
+    console.error("Audit log failed", error)
+  })
+
   revalidatePath("/transfers")
   revalidatePath("/overview")
 }
@@ -89,6 +104,21 @@ export async function rejectTransfer(formData: FormData) {
       })
     })
   }
+
+  await recordPlatformAuditUseCase(apiDatabase, {
+    actorId: session.user.id,
+    targetUserId: transfer?.toUserId ?? null,
+    operation: "ownership_transfer_rejected",
+    metadata: {
+      transferId,
+      organizationName: transfer?.organizationName ?? null,
+      fromUserId: transfer?.fromUserId ?? null,
+      toUserId: transfer?.toUserId ?? null,
+      rejectionReason: rejectionReason || null,
+    },
+  }).catch((error: unknown) => {
+    console.error("Audit log failed", error)
+  })
 
   revalidatePath("/transfers")
   revalidatePath("/overview")

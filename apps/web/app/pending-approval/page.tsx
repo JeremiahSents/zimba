@@ -141,7 +141,7 @@ export default async function PendingApprovalPage({
               <div className="flex flex-col gap-2">
                 <Button
                   variant="outline"
-                  render={<Link href="/onboarding" />}
+                  render={<Link href="/onboarding?reapply=1" />}
                   className="w-full"
                 >
                   Submit a new application

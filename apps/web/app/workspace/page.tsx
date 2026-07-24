@@ -18,7 +18,10 @@ export default async function WorkspaceEntryPage() {
     apiExecutor,
     session.user.id
   )
-  if (application && application.status === "pending")
+  if (
+    application &&
+    (application.status === "pending" || application.status === "rejected")
+  )
     redirect("/pending-approval")
 
   redirect("/onboarding")
