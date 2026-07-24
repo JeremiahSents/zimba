@@ -16,36 +16,23 @@ import { Card } from "@workspace/ui/components/card"
 import { AdminDashboardShell } from "@/components/dashboard-shell"
 import { StatCard } from "@/components/stat-card"
 import { getRecentActivity } from "@/core/audit/activity"
-import { getPlatformSession } from "@/core/auth/service"
 import { getPlatformStats } from "@/core/platform/service"
 import { getSystemHealth } from "@/core/system/service"
-
-function getGreeting() {
-  const hour = new Date().getHours()
-  if (hour < 12) return "Good morning"
-  if (hour < 17) return "Good afternoon"
-  return "Good evening"
-}
 
 export default async function OverviewPage() {
   const [
     stats,
-    session,
     recentActivity,
     healthChecks,
     pendingApps,
     pendingTransfers,
   ] = await Promise.all([
     getPlatformStats(),
-    getPlatformSession(),
     getRecentActivity(5),
     getSystemHealth(),
     getPendingApplicationCountUseCase(apiExecutor),
     getPendingTransferCountUseCase(apiExecutor),
   ])
-
-  const userName = session?.user.name ?? "Admin"
-  const userImage = session?.user.image ?? null
 
   const statItems = [
     {
@@ -77,12 +64,7 @@ export default async function OverviewPage() {
   ]
 
   return (
-    <AdminDashboardShell
-      title="Overview"
-      headerGreeting={getGreeting()}
-      userName={userName}
-      userImage={userImage}
-    >
+    <AdminDashboardShell>
       <section className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
         <h2 className="font-heading font-semibold text-base text-foreground tracking-tight">
           Overview
