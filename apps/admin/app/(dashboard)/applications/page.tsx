@@ -1,81 +1,189 @@
-import { listOnboardingApplicationsUseCase } from "@workspace/api"
+import {
+  BanknoteIcon,
+  CheckmarkCircle02Icon,
+  Clock01Icon,
+  FileCheckIcon,
+} from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
+import {
+  getPendingApplicationCountUseCase,
+  getPendingTransferCountUseCase,
+  listOnboardingApplicationsUseCase,
+  listOwnershipTransferRequestsUseCase,
+} from "@workspace/api"
 import { apiExecutor } from "@workspace/api-runtime"
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@workspace/ui/components/tabs"
 import type { Metadata } from "next"
 import {
-  AdminTable,
-  type AdminTableColumn,
-  type AdminTableRow,
-} from "@/components/admin-table"
-import { PageHeader } from "@/components/page-header"
-import { StatusBadge } from "@/components/status-badge"
+  ApplicationItem,
+  ApplicationsTable,
+} from "@/components/applications-table"
+import { AdminDashboardShell } from "@/components/dashboard-shell"
+import { StatCard } from "@/components/stat-card"
+import { TransferItem, TransfersTable } from "@/components/transfers-table"
 import { requirePlatformSession } from "@/core/auth/service"
 
 export const metadata: Metadata = {
-  title: "Applications | Zimba Admin",
-  description: "Review customer onboarding applications.",
+  title: "Applications & Transfers | Zimba Admin",
+  description: "Review customer onboarding applications and ownership transfer requests.",
 }
 
 export const dynamic = "force-dynamic"
 
-type AppRow = {
-  id: string
-  fullName: string
-  email: string
-  companyName: string
-  industry: string | null
-  country: string | null
-  status: string
-  createdAt: Date
-}
-
-export default async function ApplicationsPage() {
+export default async function ApplicationsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tab?: string }>
+}) {
   await requirePlatformSession()
-  const applications = await listOnboardingApplicationsUseCase(apiExecutor)
+  const { tab } = await searchParams
 
-  const columns: AdminTableColumn[] = [
-    { key: "company", label: "Company" },
-    { key: "applicant", label: "Applicant" },
-    { key: "industry", label: "Industry" },
-    { key: "country", label: "Country" },
-    { key: "status", label: "Status" },
-    { key: "submitted", label: "Submitted" },
-  ]
+  const [applications, transfers, pendingApps, pendingTransfers] =
+    await Promise.all([
+      listOnboardingApplicationsUseCase(apiExecutor),
+      listOwnershipTransferRequestsUseCase(apiExecutor),
+      getPendingApplicationCountUseCase(apiExecutor),
+      getPendingTransferCountUseCase(apiExecutor),
+    ])
 
-  const rows: AdminTableRow[] = (applications as AppRow[]).map((r) => ({
+  const appData: ApplicationItem[] = (applications as ApplicationItem[]).map(
+    (r) => ({
+      id: r.id,
+      fullName: r.fullName,
+      email: r.email,
+      companyName: r.companyName,
+      industry: r.industry,
+      country: r.country,
+      status: r.status,
+      createdAt: r.createdAt,
+    })
+  )
+
+  const transferData: TransferItem[] = (transfers as TransferItem[]).map((r) => ({
     id: r.id,
-    href: `/applications/${r.id}`,
-    searchText: `${r.companyName} ${r.fullName} ${r.email}`,
+    organizationId: r.organizationId,
+    organizationName: r.organizationName,
+    fromUserName: r.fromUserName,
+    fromUserEmail: r.fromUserEmail,
+    toUserName: r.toUserName,
+    toUserEmail: r.toUserEmail,
     status: r.status,
-    cells: {
-      company: <span className="font-medium">{r.companyName}</span>,
-      applicant: (
-        <div className="flex flex-col">
-          <span className="font-medium">{r.fullName}</span>
-          <span className="text-muted-foreground text-xs">{r.email}</span>
-        </div>
-      ),
-      industry: r.industry ?? "—",
-      country: r.country ?? "—",
-      status: <StatusBadge status={r.status} />,
-      submitted: new Date(r.createdAt).toLocaleDateString(),
-    },
+    reason: r.reason,
+    rejectionReason: r.rejectionReason,
+    createdAt: r.createdAt,
   }))
 
+  const approvedApps = applications.filter((a) => a.status === "approved").length
+  const approvedTransfers = transfers.filter((t) => t.status === "approved").length
+
   return (
-    <div className="flex flex-col gap-6 p-6">
-      <PageHeader
-        title="Onboarding Applications"
-        description="Review and approve customer onboarding requests."
-      />
-      <AdminTable
-        columns={columns}
-        rows={rows}
-        searchPlaceholder="Search applications…"
-        statusFilter={{
-          options: ["pending", "approved", "rejected"],
-        }}
-        emptyMessage="No applications yet."
-      />
-    </div>
+    <AdminDashboardShell>
+      {/* ── Subtitle header ── */}
+      <div className="flex items-center justify-between">
+        <p className="text-muted-foreground text-sm">
+          Review onboarding applications and manage organization ownership transfer requests.
+        </p>
+      </div>
+
+      {/* ── Top Stats Cards Row for Applications & Transfers ── */}
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <StatCard
+          title="Total Applications"
+          value={applications.length}
+          accent="blue"
+          trend={{
+            value: 12,
+            label: "vs last month",
+            isPositive: true,
+          }}
+          icon={
+            <HugeiconsIcon
+              icon={FileCheckIcon}
+              strokeWidth={1.7}
+              className="size-4"
+            />
+          }
+        />
+        <StatCard
+          title="Pending Applications"
+          value={pendingApps}
+          accent={pendingApps > 0 ? "amber" : "emerald"}
+          trend={{
+            value: pendingApps,
+            label: "awaiting review",
+            isPositive: pendingApps === 0,
+          }}
+          icon={
+            <HugeiconsIcon
+              icon={Clock01Icon}
+              strokeWidth={1.7}
+              className="size-4"
+            />
+          }
+          description={pendingApps > 0 ? "Requires admin action" : "All clear"}
+        />
+        <StatCard
+          title="Ownership Transfers"
+          value={transfers.length}
+          accent="default"
+          trend={{
+            value: pendingTransfers,
+            label: "pending approval",
+            isPositive: pendingTransfers === 0,
+          }}
+          icon={
+            <HugeiconsIcon
+              icon={BanknoteIcon}
+              strokeWidth={1.7}
+              className="size-4"
+            />
+          }
+          description={`${pendingTransfers} pending requests`}
+        />
+        <StatCard
+          title="Total Approved"
+          value={approvedApps + approvedTransfers}
+          accent="emerald"
+          trend={{
+            value: approvedApps + approvedTransfers,
+            label: "completed requests",
+            isPositive: true,
+          }}
+          icon={
+            <HugeiconsIcon
+              icon={CheckmarkCircle02Icon}
+              strokeWidth={1.7}
+              className="size-4"
+            />
+          }
+          description="Successful onboarding & transfers"
+        />
+      </div>
+
+      {/* ── Unified Tabbed Tables ── */}
+      <Tabs defaultValue={tab === "transfers" ? "transfers" : "applications"} className="w-full">
+        <TabsList className="w-full justify-start rounded-xl bg-muted/50 p-1">
+          <TabsTrigger value="applications" className="rounded-lg text-xs font-semibold">
+            Onboarding Applications ({applications.length})
+          </TabsTrigger>
+          <TabsTrigger value="transfers" className="rounded-lg text-xs font-semibold">
+            Ownership Transfers ({transfers.length})
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="applications" className="mt-4">
+          <ApplicationsTable data={appData} />
+        </TabsContent>
+
+        <TabsContent value="transfers" className="mt-4">
+          <TransfersTable data={transferData} />
+        </TabsContent>
+      </Tabs>
+    </AdminDashboardShell>
   )
 }

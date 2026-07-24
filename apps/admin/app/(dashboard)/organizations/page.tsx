@@ -1,71 +1,130 @@
-import { Button } from "@workspace/ui/components/button"
-import Link from "next/link"
 import {
-  AdminTable,
-  type AdminTableColumn,
-  type AdminTableRow,
-} from "@/components/admin-table"
-import { OrganizationStatusSelect } from "@/components/org-status-select"
-import { PageHeader } from "@/components/page-header"
+  AlertCircleIcon,
+  Building03Icon,
+  CheckmarkCircle02Icon,
+  Clock01Icon,
+} from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { AdminDashboardShell } from "@/components/dashboard-shell"
+import {
+  OrganizationItem,
+  OrganizationsTable,
+} from "@/components/organizations-table"
+import { StatCard } from "@/components/stat-card"
 import { listOrganizations } from "@/core/organizations/service"
-
-type OrgRow = {
-  id: string
-  name: string
-  status: string
-  userCount: number
-  projectCount: number
-  createdAt: Date
-}
+import { getPlatformStats } from "@/core/platform/service"
 
 export default async function OrganizationsPage() {
-  const organizations = await listOrganizations()
+  const [organizations, stats] = await Promise.all([
+    listOrganizations(),
+    getPlatformStats(),
+  ])
 
-  const columns: AdminTableColumn[] = [
-    { key: "name", label: "Organization" },
-    { key: "status", label: "Status" },
-    { key: "users", label: "Users" },
-    { key: "projects", label: "Projects" },
-    { key: "created", label: "Created" },
-    { key: "actions", label: "", className: "text-right" },
-  ]
+  const tableData: OrganizationItem[] = (organizations as OrganizationItem[]).map(
+    (org) => ({
+      id: org.id,
+      name: org.name,
+      status: org.status,
+      userCount: org.userCount ?? 0,
+      projectCount: org.projectCount ?? 0,
+      createdAt: org.createdAt,
+    })
+  )
 
-  const rows: AdminTableRow[] = (organizations as OrgRow[]).map((r) => ({
-    id: r.id,
-    href: `/organizations/${r.id}`,
-    searchText: r.name,
-    status: r.status,
-    cells: {
-      name: <span className="font-medium">{r.name}</span>,
-      status: (
-        <OrganizationStatusSelect organizationId={r.id} currentStatus={r.status} />
-      ),
-      users: r.userCount,
-      projects: r.projectCount,
-      created: new Date(r.createdAt).toLocaleDateString(),
-      actions: (
-        <Button variant="ghost" size="sm" asChild>
-          <Link href={`/organizations/${r.id}`}>View</Link>
-        </Button>
-      ),
-    },
-  }))
+  const activeRatio = stats.totalOrganizations
+    ? Math.round((stats.activeOrganizations / stats.totalOrganizations) * 100)
+    : 0
 
   return (
-    <div className="flex-1 p-6 lg:p-8">
-      <PageHeader
-        title="Organizations"
-        description="Manage all tenant organizations on the platform."
-      />
-      <AdminTable
-        columns={columns}
-        rows={rows}
-        searchPlaceholder="Search organizations…"
-        statusFilter={{
-          options: ["active", "trial", "suspended", "pending_approval"],
-        }}
-        emptyMessage="No organizations found."
-      />
-    </div>
+    <AdminDashboardShell>
+      {/* ── Subtitle header ── */}
+      <div className="flex items-center justify-between">
+        <p className="text-muted-foreground text-sm">
+          Manage, monitor, and update status for all tenant organizations.
+        </p>
+      </div>
+
+      {/* ── Top stats row for organizations with trend lines ── */}
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <StatCard
+          title="Total Organizations"
+          value={stats.totalOrganizations}
+          accent="blue"
+          trend={{
+            value: 12,
+            label: "vs last month",
+            isPositive: true,
+          }}
+          icon={
+            <HugeiconsIcon
+              icon={Building03Icon}
+              strokeWidth={1.7}
+              className="size-4"
+            />
+          }
+        />
+        <StatCard
+          title="Active Organizations"
+          value={stats.activeOrganizations}
+          accent="emerald"
+          trend={{
+            value: activeRatio,
+            label: "active rate",
+            isPositive: true,
+          }}
+          icon={
+            <HugeiconsIcon
+              icon={CheckmarkCircle02Icon}
+              strokeWidth={1.7}
+              className="size-4"
+            />
+          }
+          description={`${stats.activeOrganizations} active tenants`}
+        />
+        <StatCard
+          title="Trial Organizations"
+          value={stats.trialOrganizations}
+          accent="amber"
+          trend={{
+            value: 5,
+            label: "new trial users",
+            isPositive: true,
+          }}
+          icon={
+            <HugeiconsIcon
+              icon={Clock01Icon}
+              strokeWidth={1.7}
+              className="size-4"
+            />
+          }
+          description={`${stats.trialOrganizations} currently in trial`}
+        />
+        <StatCard
+          title="Suspended / Attention"
+          value={stats.suspendedOrganizations}
+          accent={stats.suspendedOrganizations > 0 ? "rose" : "default"}
+          trend={{
+            value: stats.suspendedOrganizations,
+            label: "flagged tenants",
+            isPositive: false,
+          }}
+          icon={
+            <HugeiconsIcon
+              icon={AlertCircleIcon}
+              strokeWidth={1.7}
+              className="size-4"
+            />
+          }
+          description={
+            stats.suspendedOrganizations > 0
+              ? `${stats.suspendedOrganizations} require admin review`
+              : "No suspended tenants"
+          }
+        />
+      </div>
+
+      {/* ── Real TanStack Table with filtering, search & custom status dropdown ── */}
+      <OrganizationsTable data={tableData} />
+    </AdminDashboardShell>
   )
 }

@@ -1,36 +1,55 @@
-import { Invoice01Icon, UserGroupIcon } from "@hugeicons/core-free-icons"
-import { HugeiconsIcon } from "@hugeicons/react"
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@workspace/ui/components/table"
-import { PageHeader } from "@/components/page-header"
+  Building03Icon,
+  CheckmarkCircle02Icon,
+  Invoice01Icon,
+  UserGroupIcon,
+} from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { AdminDashboardShell } from "@/components/dashboard-shell"
 import { StatCard } from "@/components/stat-card"
-import { StatusBadge } from "@/components/status-badge"
+import { SupplierItem, SuppliersTable } from "@/components/suppliers-table"
 import { listPlatformSuppliers } from "@/core/finance/service"
 
 export default async function SuppliersPage() {
   const suppliers = await listPlatformSuppliers()
 
+  const tableData: SupplierItem[] = (suppliers as SupplierItem[]).map((s) => ({
+    id: s.id,
+    name: s.name,
+    phone: s.phone,
+    email: s.email,
+    category: s.category,
+    status: s.status,
+    createdAt: s.createdAt,
+    organizationName: s.organizationName,
+  }))
+
   const activeCount = suppliers.filter((s) => s.status === "active").length
-  const categories = new Set(suppliers.map((s) => s.category).filter(Boolean))
-    .size
+  const categoriesCount = new Set(
+    suppliers.map((s) => s.category).filter(Boolean)
+  ).size
+  const orgsCount = new Set(suppliers.map((s) => s.organizationName)).size
 
   return (
-    <div className="flex-1 p-6 lg:p-8">
-      <PageHeader
-        title="Suppliers"
-        description="Platform-wide supplier monitoring."
-      />
+    <AdminDashboardShell>
+      {/* ── Subtitle header ── */}
+      <div className="flex items-center justify-between">
+        <p className="text-muted-foreground text-sm">
+          Platform-wide vendor and supplier registry across all organizations.
+        </p>
+      </div>
 
-      <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+      {/* ── Top Suppliers Stats Cards Row ── */}
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard
           title="Total Suppliers"
           value={suppliers.length}
+          accent="blue"
+          trend={{
+            value: 8,
+            label: "vs last month",
+            isPositive: true,
+          }}
           icon={
             <HugeiconsIcon
               icon={UserGroupIcon}
@@ -40,19 +59,27 @@ export default async function SuppliersPage() {
           }
         />
         <StatCard
-          title="Active"
+          title="Active Suppliers"
           value={activeCount}
+          accent="emerald"
+          trend={{
+            value: activeCount,
+            label: "currently active",
+            isPositive: true,
+          }}
           icon={
             <HugeiconsIcon
-              icon={UserGroupIcon}
+              icon={CheckmarkCircle02Icon}
               strokeWidth={1.7}
               className="size-4"
             />
           }
+          description={`${activeCount} active vendors`}
         />
         <StatCard
           title="Categories"
-          value={categories}
+          value={categoriesCount}
+          accent="amber"
           icon={
             <HugeiconsIcon
               icon={Invoice01Icon}
@@ -60,63 +87,25 @@ export default async function SuppliersPage() {
               className="size-4"
             />
           }
+          description={`${categoriesCount} supplier categories`}
         />
         <StatCard
-          title="Organizations"
-          value={new Set(suppliers.map((s) => s.organizationName)).size}
+          title="Organizations Served"
+          value={orgsCount}
+          accent="default"
           icon={
             <HugeiconsIcon
-              icon={Invoice01Icon}
+              icon={Building03Icon}
               strokeWidth={1.7}
               className="size-4"
             />
           }
+          description={`Across ${orgsCount} tenant orgs`}
         />
       </div>
 
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Supplier Name</TableHead>
-              <TableHead>Organization</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Contact</TableHead>
-              <TableHead>Created</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {suppliers.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={6}
-                  className="py-8 text-center text-muted-foreground"
-                >
-                  No suppliers found.
-                </TableCell>
-              </TableRow>
-            ) : (
-              suppliers.map((s) => (
-                <TableRow key={s.id}>
-                  <TableCell className="font-medium">{s.name}</TableCell>
-                  <TableCell>{s.organizationName}</TableCell>
-                  <TableCell className="capitalize">
-                    {s.category || "Other"}
-                  </TableCell>
-                  <TableCell>
-                    <StatusBadge status={s.status} />
-                  </TableCell>
-                  <TableCell>{s.phone || s.email || "-"}</TableCell>
-                  <TableCell>
-                    {new Date(s.createdAt).toLocaleDateString()}
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
-    </div>
+      {/* ── Real TanStack Table for Suppliers ── */}
+      <SuppliersTable data={tableData} />
+    </AdminDashboardShell>
   )
 }

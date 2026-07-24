@@ -36,8 +36,7 @@ const mainNav = [
   { name: "Overview", href: "/overview", icon: DashboardSquare02Icon },
   { name: "Organizations", href: "/organizations", icon: Building03Icon },
   { name: "Users", href: "/users", icon: UserGroupIcon },
-  { name: "Applications", href: "/applications", icon: FileCheckIcon },
-  { name: "Transfers", href: "/transfers", icon: BanknoteIcon },
+  { name: "Applications & Transfers", href: "/applications", icon: FileCheckIcon },
 ]
 
 const operationsNav = [

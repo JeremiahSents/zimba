@@ -15,7 +15,7 @@ import {
 import { Button } from "@workspace/ui/components/button"
 import { useSidebar } from "@workspace/ui/components/sidebar"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { authClient } from "@/lib/auth-client"
 
 function getInitials(name: string) {
@@ -28,6 +28,48 @@ function getInitials(name: string) {
     .toUpperCase()
 }
 
+function getPageTitle(pathname: string): string {
+  const segments = pathname.split("/").filter(Boolean)
+  if (segments.length === 0 || segments[0] === "overview") {
+    return "Overview"
+  }
+
+  const root = segments[0]
+  const isDetail = segments.length > 1
+
+  switch (root) {
+    case "organizations":
+      return isDetail ? "Organization Details" : "Organizations"
+    case "users":
+      return isDetail ? "User Details" : "Users"
+    case "applications":
+      return isDetail ? "Application Details" : "Applications & Transfers"
+    case "transfers":
+      return "Applications & Transfers"
+    case "suppliers":
+      return "Suppliers"
+    case "projects":
+      return "Projects"
+    case "receipts":
+      return "Receipts"
+    case "payments":
+      return "Payments"
+    case "activity":
+      return "Activity Log"
+    case "system":
+      return "System Health"
+    case "settings":
+      return "Settings"
+    case "billing":
+      return "Billing"
+    case "support":
+      return "Support"
+    default: {
+      return root.charAt(0).toUpperCase() + root.slice(1).replace(/-/g, " ")
+    }
+  }
+}
+
 type DashboardTopbarProps = {
   userName: string
   userImage?: string | null
@@ -36,6 +78,8 @@ type DashboardTopbarProps = {
 export function DashboardTopbar({ userName, userImage }: DashboardTopbarProps) {
   const { toggleSidebar } = useSidebar()
   const router = useRouter()
+  const pathname = usePathname()
+  const title = getPageTitle(pathname)
   const initials = getInitials(userName)
 
   async function handleSignOut() {
@@ -59,7 +103,7 @@ export function DashboardTopbar({ userName, userImage }: DashboardTopbarProps) {
             <HugeiconsIcon icon={LayoutAlignRightIcon} strokeWidth={2} />
           </Button>
           <h1 className="font-heading font-medium text-foreground text-lg leading-6 tracking-tight">
-            Zimba Admin
+            {title}
           </h1>
         </div>
       </div>
