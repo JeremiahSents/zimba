@@ -1,7 +1,9 @@
 "use client"
 
+import { Menu } from "@base-ui/react/menu"
 import {
   LayoutAlignRightIcon,
+  Logout03Icon,
   Settings02Icon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
@@ -13,7 +15,9 @@ import {
 import { Button } from "@workspace/ui/components/button"
 import { useSidebar } from "@workspace/ui/components/sidebar"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import type { ReactNode } from "react"
+import { authClient } from "@/lib/auth-client"
 
 type AdminDashboardShellProps = {
   title: ReactNode
@@ -63,7 +67,14 @@ function DashboardTopbar({
   userImage,
 }: Omit<AdminDashboardShellProps, "children" | "subtitle">) {
   const { toggleSidebar } = useSidebar()
+  const router = useRouter()
   const initials = getInitials(userName)
+
+  async function handleSignOut() {
+    await authClient.signOut()
+    router.push("/login")
+    router.refresh()
+  }
 
   return (
     <header className="flex min-h-14 shrink-0 flex-wrap items-center justify-between gap-3 bg-background px-4 py-2.5 sm:min-h-16 sm:px-7 sm:py-3 md:border-b lg:px-10">
@@ -110,12 +121,48 @@ function DashboardTopbar({
             className="size-4"
           />
         </Button>
-        <Avatar className="size-8">
-          {userImage ? <AvatarImage src={userImage} alt={userName} /> : null}
-          <AvatarFallback className="bg-primary font-medium text-primary-foreground text-xs">
-            {initials}
-          </AvatarFallback>
-        </Avatar>
+        <Menu.Root>
+          <Menu.Trigger
+            aria-label={`Open account menu for ${userName}`}
+            className="rounded-full outline-none ring-offset-background transition-shadow focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          >
+            <Avatar className="size-8">
+              {userImage ? <AvatarImage src={userImage} alt={userName} /> : null}
+              <AvatarFallback className="bg-primary font-medium text-primary-foreground text-xs">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+          </Menu.Trigger>
+          <Menu.Portal>
+            <Menu.Positioner
+              align="end"
+              side="bottom"
+              sideOffset={8}
+              className="isolate z-50 outline-none"
+            >
+              <Menu.Popup className="min-w-44 origin-(--transform-origin) rounded-lg border bg-popover p-1 text-popover-foreground shadow-md outline-none transition data-ending-style:scale-95 data-starting-style:scale-95 data-ending-style:opacity-0 data-starting-style:opacity-0">
+                <div className="border-b px-2.5 py-2">
+                  <p className="font-medium text-xs">{userName}</p>
+                  <p className="mt-0.5 text-[10px] text-muted-foreground">
+                    Admin Dashboard
+                  </p>
+                </div>
+                <Menu.Item
+                  closeOnClick
+                  onClick={handleSignOut}
+                  className="mt-1 flex cursor-default items-center gap-2 rounded-md px-2.5 py-2 font-medium text-xs outline-none transition-colors data-highlighted:bg-accent data-highlighted:text-accent-foreground"
+                >
+                  <HugeiconsIcon
+                    icon={Logout03Icon}
+                    strokeWidth={1.8}
+                    className="size-4"
+                  />
+                  Sign out
+                </Menu.Item>
+              </Menu.Popup>
+            </Menu.Positioner>
+          </Menu.Portal>
+        </Menu.Root>
       </div>
     </header>
   )
