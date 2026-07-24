@@ -1,6 +1,6 @@
 import "server-only"
+import { recordAuditUseCase } from "@workspace/api"
 import { db } from "@workspace/db"
-import { appendAuditEvent } from "@workspace/db/repositories"
 
 export async function recordAudit(input: {
   organizationId: string
@@ -10,5 +10,14 @@ export async function recordAudit(input: {
   entityId: string
   changes?: Record<string, unknown>
 }) {
-  await appendAuditEvent(db, input)
+  await recordAuditUseCase(
+    { organizationId: input.organizationId, userId: input.actorId },
+    { executor: db },
+    {
+      action: input.action,
+      entityType: input.entityType,
+      entityId: input.entityId,
+      changes: input.changes,
+    }
+  )
 }

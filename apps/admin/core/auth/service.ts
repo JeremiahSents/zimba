@@ -1,7 +1,7 @@
 import "server-only"
 
+import { getPlatformAccessForUserUseCase } from "@workspace/api"
 import { db } from "@workspace/db"
-import { findPlatformUserForUser } from "@workspace/db/repositories"
 import { headers } from "next/headers"
 import { cache } from "react"
 import { forbidden, unauthorized } from "../shared/errors"
@@ -27,26 +27,15 @@ export const getPlatformSession = cache(
       return null
     }
 
-    const [platformUser] = await findPlatformUserForUser(
-      db,
+    const platformRole = await getPlatformAccessForUserUseCase(
+      { executor: db },
       authSession.user.id
     )
-
-    if (!platformUser) {
-      return {
-        user: authSession.user,
-        session: authSession.session,
-        platformRole: null,
-      }
-    }
 
     return {
       user: authSession.user,
       session: authSession.session,
-      platformRole:
-        platformUser.role === "super_admin" || platformUser.role === "support"
-          ? platformUser.role
-          : null,
+      platformRole,
     }
   }
 )

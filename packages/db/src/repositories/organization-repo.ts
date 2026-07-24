@@ -275,11 +275,28 @@ export function deleteInvitation(
   return executor.delete(invitation).where(eq(invitation.id, invitationId))
 }
 
-export function createInvitationRecord(
+export function deleteInvitationForOrganization(
+  executor: DatabaseExecutor,
+  organizationId: string,
+  invitationId: string
+) {
+  return executor
+    .delete(invitation)
+    .where(
+      and(
+        eq(invitation.id, invitationId),
+        eq(invitation.organizationId, organizationId)
+      )
+    )
+    .returning()
+}
+
+export async function createInvitationRecord(
   executor: DatabaseExecutor,
   data: typeof invitation.$inferInsert
 ) {
-  return executor.insert(invitation).values(data)
+  const [created] = await executor.insert(invitation).values(data).returning()
+  return created
 }
 
 export function findInvitationByTokenHash(

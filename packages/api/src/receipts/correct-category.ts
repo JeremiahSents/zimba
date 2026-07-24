@@ -3,6 +3,7 @@ import type {
   TransactionRunner,
 } from "@workspace/db/repositories"
 import {
+  appendAuditEvent,
   findAllocationForProject,
   findExpenseForOrganization,
   findPayableForOrganization,
@@ -67,6 +68,14 @@ export async function correctReceiptCategoryUseCase(
         amountCents: payable.payable.amountCents,
       })
     }
+    await appendAuditEvent(tx, {
+      organizationId: ctx.organizationId,
+      actorId: ctx.userId,
+      action: "receipt.category.correct",
+      entityType: "receipt",
+      entityId: receiptId,
+      changes: { allocationId },
+    })
     return { receiptId, allocationId }
   })
 }

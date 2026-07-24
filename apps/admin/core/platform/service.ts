@@ -1,14 +1,8 @@
 import "server-only"
 
+import { getPlatformStatsUseCase } from "@workspace/api"
 import { db } from "@workspace/db"
-import { readPlatformStats } from "@workspace/db/repositories"
 
 export async function getPlatformStats() {
-  const stats = await readPlatformStats(db)
-
-  return {
-    ...stats,
-    organizationsNeedingAttention:
-      stats.suspendedOrganizations + stats.trialOrganizations,
-  }
+  return getPlatformStatsUseCase({ executor: db })
 }

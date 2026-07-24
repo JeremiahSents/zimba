@@ -1,16 +1,14 @@
 import "server-only"
+import {
+  listPlatformActivityEventsUseCase,
+  listRecentActivityUseCase,
+} from "@workspace/api"
 import { db } from "@workspace/db"
-import { listRecentActivityEvents } from "@workspace/db/repositories"
 
 export async function getRecentActivity(limit = 10) {
-  const rows = await listRecentActivityEvents(db, limit)
-
-  return rows.map((r) => ({
-    ...r,
-    actorName: r.actorName ?? "System",
-  }))
+  return listRecentActivityUseCase({ executor: db }, limit)
 }
 
 export async function listPlatformActivityEvents() {
-  return getRecentActivity(100)
+  return listPlatformActivityEventsUseCase({ executor: db })
 }

@@ -5,21 +5,18 @@ vi.mock("@workspace/api", () => ({
   createUpcomingPaymentUseCase: vi.fn(),
   updateUpcomingPaymentUseCase: vi.fn(),
   deleteUpcomingPaymentUseCase: vi.fn(),
+  recordReceiptPaymentUseCase: vi.fn(),
 }))
 
 import * as api from "@workspace/api"
 import * as authService from "../auth/service"
-import * as expenseRepo from "../expenses/repository"
-import * as paymentRepo from "./repository"
 import {
   createLedgerPayment,
   createUpcomingPayment,
   updateUpcomingPayment,
 } from "./service"
 
-vi.mock("./repository")
 vi.mock("../auth/service")
-vi.mock("../expenses/repository")
 
 describe("Payments Service", () => {
   beforeEach(() => {
@@ -30,6 +27,9 @@ describe("Payments Service", () => {
     vi.mocked(api.updateUpcomingPaymentUseCase).mockResolvedValue({
       id: "pay-2",
       status: "paid",
+    } as never)
+    vi.mocked(api.recordReceiptPaymentUseCase).mockResolvedValue({
+      id: "ledger-1",
     } as never)
     vi.mocked(authService.requireSession).mockResolvedValue({
       user: {
@@ -93,15 +93,6 @@ describe("Payments Service", () => {
   })
 
   it("should create ledger payment", async () => {
-    vi.mocked(expenseRepo.getExpense).mockResolvedValue({
-      expense: { id: "exp-1" },
-      lines: [],
-      payments: [],
-    } as never)
-    vi.mocked(paymentRepo.createLedgerPayment).mockResolvedValue({
-      id: "ledger-1",
-    } as never)
-
     await createLedgerPayment({
       supplier_id: "sup-1",
       amount: 50,
@@ -111,28 +102,19 @@ describe("Payments Service", () => {
       allocations: [{ expense_id: "exp-1", amount: 50 }],
     })
 
-    expect(paymentRepo.createLedgerPayment).toHaveBeenCalledWith(
+    expect(api.recordReceiptPaymentUseCase).toHaveBeenCalledWith(
+      expect.objectContaining({ organizationId: "org-1" }),
+      expect.anything(),
       expect.objectContaining({
-        organizationId: "org-1",
         supplierId: "sup-1",
+        receiptId: "exp-1",
         amountCents: 5000,
         currency: "USD",
-        expenseId: "exp-1",
-        payableId: undefined,
       })
     )
   })
 
   it("links a payable payment to payableId so its table status can be derived", async () => {
-    vi.mocked(expenseRepo.getExpense).mockResolvedValue(null)
-    vi.mocked(expenseRepo.getPayable).mockResolvedValue({
-      payable: { id: "payable-1" },
-      payments: [],
-    } as never)
-    vi.mocked(paymentRepo.createLedgerPayment).mockResolvedValue({
-      id: "ledger-2",
-    } as never)
-
     await createLedgerPayment({
       supplier_id: "sup-1",
       amount: 500,
@@ -142,12 +124,13 @@ describe("Payments Service", () => {
       allocations: [{ expense_id: "payable-1", amount: 500 }],
     })
 
-    expect(paymentRepo.createLedgerPayment).toHaveBeenCalledWith(
+    expect(api.recordReceiptPaymentUseCase).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
       expect.objectContaining({
-        expenseId: undefined,
-        payableId: "payable-1",
+        receiptId: "payable-1",
+        amountCents: 50_000,
       })
     )
-    expect(paymentRepo.syncExpensePaymentStatus).not.toHaveBeenCalled()
   })
 })

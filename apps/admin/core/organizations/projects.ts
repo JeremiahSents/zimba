@@ -1,7 +1,7 @@
 import "server-only"
+import { listPlatformProjectsUseCase } from "@workspace/api"
 import { db } from "@workspace/db"
-import { listPlatformProjects as readPlatformProjects } from "@workspace/db/repositories"
 
 export async function listPlatformProjects() {
-  return readPlatformProjects(db)
+  return listPlatformProjectsUseCase({ executor: db })
 }

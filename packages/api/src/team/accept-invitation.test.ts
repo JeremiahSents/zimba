@@ -1,8 +1,8 @@
-import { beforeEach, describe, expect, it, vi } from "vitest"
 import type {
   DatabaseTransaction,
   TransactionRunner,
 } from "@workspace/db/repositories"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 
 const repo = vi.hoisted(() => ({
   findInvitationByTokenHash: vi.fn(),

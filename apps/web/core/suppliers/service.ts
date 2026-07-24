@@ -2,19 +2,25 @@ import "server-only"
 import {
   createSupplierCategoryUseCase,
   createSupplierUseCase,
+  listSupplierCategoriesUseCase,
+  listSupplierSummariesUseCase,
   updateSupplierUseCase,
 } from "@workspace/api"
 import type { WorkspaceRole } from "@workspace/contracts"
 import { db } from "@workspace/db"
 import type { SupplierCreate, SupplierResponse } from "@/lib/types"
-import { recordAudit } from "../audit/service"
+import { normalizeRole } from "../auth/permissions"
 import { requireSession } from "../auth/service"
-import * as supplierRepo from "./repository"
 
 export async function getSuppliersList(): Promise<SupplierResponse[]> {
-  const { organization } = await requireSession()
-  const suppliers = await supplierRepo.listSupplierSummaries(
-    organization.organizationId
+  const { user, organization } = await requireSession()
+  const suppliers = await listSupplierSummariesUseCase(
+    {
+      userId: user.id,
+      organizationId: organization.organizationId,
+      role: normalizeRole(organization.role) as WorkspaceRole,
+    },
+    { executor: db }
   )
   return suppliers.map((s) => {
     const { receiptCount = 0, incurredCents = 0, paidCents = 0 } = s
@@ -44,7 +50,7 @@ export async function createSupplier(data: SupplierCreate) {
     {
       userId: user.id,
       organizationId: organization.organizationId,
-      role: organization.role as WorkspaceRole,
+      role: normalizeRole(organization.role) as WorkspaceRole,
     },
     { executor: db },
     {
@@ -59,30 +65,28 @@ export async function updateSupplier(
   data: SupplierCreate & { status?: string | null }
 ) {
   const { user, organization } = await requireSession()
-  const supplier = await updateSupplierUseCase(
+  return updateSupplierUseCase(
     {
       userId: user.id,
       organizationId: organization.organizationId,
-      role: organization.role as WorkspaceRole,
+      role: normalizeRole(organization.role) as WorkspaceRole,
     },
-    { executor: db },
+    { transaction: (callback) => db.transaction(callback) },
     supplierId,
     data
   )
-  await recordAudit({
-    organizationId: organization.organizationId,
-    actorId: user.id,
-    action: "supplier.update",
-    entityType: "supplier",
-    entityId: supplierId,
-    changes: data,
-  })
-  return supplier
 }
 
 export async function getSupplierCategories() {
-  const { organization } = await requireSession()
-  return supplierRepo.listSupplierCategories(organization.organizationId)
+  const { user, organization } = await requireSession()
+  return listSupplierCategoriesUseCase(
+    {
+      userId: user.id,
+      organizationId: organization.organizationId,
+      role: normalizeRole(organization.role) as WorkspaceRole,
+    },
+    { executor: db }
+  )
 }
 
 export async function createSupplierCategory(name: string) {
@@ -91,7 +95,7 @@ export async function createSupplierCategory(name: string) {
     {
       userId: user.id,
       organizationId: organization.organizationId,
-      role: organization.role as WorkspaceRole,
+      role: normalizeRole(organization.role) as WorkspaceRole,
     },
     { executor: db },
     name

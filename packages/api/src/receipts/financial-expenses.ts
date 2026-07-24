@@ -1,17 +1,11 @@
-import "server-only"
-
-import { db, type schema } from "@workspace/db"
+import type { DatabaseExecutor } from "@workspace/db/repositories"
 import {
-  deletePayableForOrganization,
-  deleteReceiptForOrganization,
   findExpenseForOrganization,
   findPayableForOrganization,
   listExpensesForOrganization,
   listPayablesForOrganization,
-  listReceiptLinesWithAllocation,
-  updateReceiptForOrganization,
-  updateReceiptLinesAllocation,
 } from "@workspace/db/repositories"
+import type { WorkspaceContext } from "../shared/workspace-context"
 
 export type FinancialExpenseRow = {
   id: string
@@ -33,21 +27,29 @@ export type FinancialExpenseRow = {
   categoryState: "assigned" | "uncategorized"
 }
 
-export async function listExpenses(organizationId: string, projectId?: string) {
-  return listExpensesForOrganization(db, organizationId, projectId)
-}
-
-export async function listFinancialExpenseRows(
-  organizationId: string,
+export async function listFinancialExpenseRowsUseCase(
+  ctx: Pick<WorkspaceContext, "organizationId">,
+  deps: { executor: DatabaseExecutor },
   projectId?: string
 ): Promise<FinancialExpenseRow[]> {
-  const rows = await listExpenses(organizationId, projectId)
-  const payables = await listPayables(organizationId)
+  const rows = await listExpensesForOrganization(
+    deps.executor,
+    ctx.organizationId,
+    projectId
+  )
+  const payables = await listPayablesForOrganization(
+    deps.executor,
+    ctx.organizationId
+  )
   const currentExpenseIds = new Set(rows.map(({ expense }) => expense.id))
 
   const expenseRows = await Promise.all(
     rows.map(async ({ expense, projectName, supplierName }) => {
-      const detail = await getExpense(organizationId, expense.id)
+      const detail = await findExpenseForOrganization(
+        deps.executor,
+        ctx.organizationId,
+        expense.id
+      )
       const lines = detail?.lines ?? []
       const payments = detail?.payments ?? []
       const receiptTotalCents = lines.reduce(
@@ -59,8 +61,6 @@ export async function listFinancialExpenseRows(
         0
       )
 
-      // Each line owns its proportional share of payments. This preserves the
-      // receipt total while making project/task cash spend add up exactly.
       let distributedPaidCents = 0
       return lines.map(({ line, allocationName }, index) => {
         const isLastLine = index === lines.length - 1
@@ -101,7 +101,11 @@ export async function listFinancialExpenseRows(
     payables
       .filter(({ payable }) => !currentExpenseIds.has(payable.id))
       .map(async ({ payable, projectName, supplierName }) => {
-        const detail = await getPayable(organizationId, payable.id)
+        const detail = await findPayableForOrganization(
+          deps.executor,
+          ctx.organizationId,
+          payable.id
+        )
         const paidCents = (detail?.payments ?? []).reduce(
           (sum, payment) => sum + payment.amountCents,
           0
@@ -134,54 +138,26 @@ export async function listFinancialExpenseRows(
   )
 }
 
-export async function listPayables(organizationId: string) {
-  return listPayablesForOrganization(db, organizationId)
-}
-
-export async function getPayable(organizationId: string, payableId: string) {
-  return findPayableForOrganization(db, organizationId, payableId)
-}
-
-export async function getExpense(organizationId: string, expenseId: string) {
-  return findExpenseForOrganization(db, organizationId, expenseId)
-}
-
-export async function updateExpenseLinesAllocation(
-  organizationId: string,
-  expenseId: string,
-  allocationId: string
-) {
-  return updateReceiptLinesAllocation(
-    db,
-    organizationId,
-    expenseId,
-    allocationId
-  )
-}
-
-export async function deleteExpense(organizationId: string, expenseId: string) {
-  return deleteReceiptForOrganization(db, organizationId, expenseId).then(
-    ([deleted]) => deleted ?? null
-  )
-}
-
-export async function deletePayable(organizationId: string, payableId: string) {
-  return deletePayableForOrganization(db, organizationId, payableId).then(
-    (deleted) => deleted ?? null
-  )
-}
-
-export async function getExpenseLines(
-  organizationId: string,
+export function getExpenseDetailUseCase(
+  ctx: Pick<WorkspaceContext, "organizationId">,
+  deps: { executor: DatabaseExecutor },
   expenseId: string
 ) {
-  return listReceiptLinesWithAllocation(db, organizationId, expenseId)
+  return findExpenseForOrganization(
+    deps.executor,
+    ctx.organizationId,
+    expenseId
+  )
 }
 
-export async function updateExpense(
-  organizationId: string,
-  id: string,
-  data: Partial<typeof schema.expense.$inferInsert>
+export function getPayableDetailUseCase(
+  ctx: Pick<WorkspaceContext, "organizationId">,
+  deps: { executor: DatabaseExecutor },
+  payableId: string
 ) {
-  return updateReceiptForOrganization(db, organizationId, id, data)
+  return findPayableForOrganization(
+    deps.executor,
+    ctx.organizationId,
+    payableId
+  )
 }

@@ -1,29 +1,30 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 vi.mock("server-only", () => ({}))
-vi.mock("@workspace/api", () => ({ listProjectAllocationsUseCase: vi.fn() }))
+vi.mock("@workspace/api", () => ({
+  getProjectSummaryUseCase: vi.fn(),
+  listArchivedProjectSummariesUseCase: vi.fn(),
+  listFinancialExpenseRowsUseCase: vi.fn(),
+  listProjectAllocationsUseCase: vi.fn(),
+  listProjectAttachmentsUseCase: vi.fn(),
+  listProjectSummariesUseCase: vi.fn(),
+}))
 
 import * as api from "@workspace/api"
 import * as authService from "../auth/service"
-import * as expenseRepo from "../expenses/repository"
-import * as fileRepo from "../files/repository"
-import * as paymentRepo from "../payments/repository"
-import * as projectRepo from "./repository"
 import { getProjectDetail, getProjectsList } from "./service"
 
-vi.mock("./repository")
-vi.mock("../expenses/repository")
-vi.mock("../files/repository")
-vi.mock("../payments/repository")
 vi.mock("../auth/service")
 
 describe("Projects Service", () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    vi.mocked(expenseRepo.listFinancialExpenseRows).mockResolvedValue([])
-    vi.mocked(fileRepo.listProjectAttachments).mockResolvedValue([])
-    vi.mocked(paymentRepo.listProjectPayables).mockResolvedValue([])
+    vi.mocked(api.getProjectSummaryUseCase).mockResolvedValue(null)
+    vi.mocked(api.listFinancialExpenseRowsUseCase).mockResolvedValue([])
+    vi.mocked(api.listProjectSummariesUseCase).mockResolvedValue([])
+    vi.mocked(api.listArchivedProjectSummariesUseCase).mockResolvedValue([])
     vi.mocked(api.listProjectAllocationsUseCase).mockResolvedValue([])
+    vi.mocked(api.listProjectAttachmentsUseCase).mockResolvedValue([])
     vi.mocked(authService.requireSession).mockResolvedValue({
       user: {
         id: "user-1",
@@ -53,7 +54,7 @@ describe("Projects Service", () => {
   })
 
   it("should list projects and map them correctly", async () => {
-    vi.mocked(projectRepo.listProjects).mockResolvedValue([
+    vi.mocked(api.listProjectSummariesUseCase).mockResolvedValue([
       {
         id: "1",
         organizationId: "org-1",
@@ -88,7 +89,7 @@ describe("Projects Service", () => {
   })
 
   it("should get project details and tasks", async () => {
-    vi.mocked(projectRepo.getProject).mockResolvedValue({
+    vi.mocked(api.getProjectSummaryUseCase).mockResolvedValue({
       id: "1",
       organizationId: "org-1",
       name: "Test Project",
@@ -117,8 +118,9 @@ describe("Projects Service", () => {
 
     const detail = await getProjectDetail("1")
 
-    expect(expenseRepo.listFinancialExpenseRows).toHaveBeenCalledWith(
-      "org-1",
+    expect(api.listFinancialExpenseRowsUseCase).toHaveBeenCalledWith(
+      { organizationId: "org-1" },
+      expect.anything(),
       "1"
     )
     expect(detail?.name).toBe("Test Project")

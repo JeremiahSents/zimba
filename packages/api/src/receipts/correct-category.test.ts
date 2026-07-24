@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 const repo = vi.hoisted(() => ({
+  appendAuditEvent: vi.fn(),
   findAllocationForProject: vi.fn(),
   findExpenseForOrganization: vi.fn(),
   findPayableForOrganization: vi.fn(),
@@ -47,6 +48,16 @@ describe("correctReceiptCategoryUseCase", () => {
       "receipt-1",
       "allocation-1"
     )
+    expect(repo.appendAuditEvent).toHaveBeenCalledWith(
+      {},
+      expect.objectContaining({
+        organizationId: "org-1",
+        actorId: "user-1",
+        action: "receipt.category.correct",
+        entityId: "receipt-1",
+        changes: { allocationId: "allocation-1" },
+      })
+    )
   })
 
   it("converts a payable into a categorized receipt", async () => {
@@ -79,5 +90,6 @@ describe("correctReceiptCategoryUseCase", () => {
         amountCents: 5000,
       })
     )
+    expect(repo.appendAuditEvent).toHaveBeenCalledOnce()
   })
 })

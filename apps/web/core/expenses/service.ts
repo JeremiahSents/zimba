@@ -3,6 +3,9 @@ import "server-only"
 import {
   correctReceiptCategoryUseCase,
   deleteReceiptUseCase,
+  getExpenseDetailUseCase,
+  getPayableDetailUseCase,
+  listFinancialExpenseRowsUseCase,
   updateReceiptStatusUseCase,
 } from "@workspace/api"
 import type { WorkspaceRole } from "@workspace/contracts"
@@ -12,15 +15,14 @@ import type {
   ExpenseTableRow,
   PayableExpenseResponse,
 } from "@/lib/types"
-import { recordAudit } from "../audit/service"
 import { requireSession } from "../auth/service"
 import { notFound } from "../shared/errors"
-import * as expenseRepo from "./repository"
 
 export async function listExpenseRows(): Promise<ExpenseTableRow[]> {
   const { organization } = await requireSession()
-  const rows = await expenseRepo.listFinancialExpenseRows(
-    organization.organizationId
+  const rows = await listFinancialExpenseRowsUseCase(
+    { organizationId: organization.organizationId },
+    { executor: db }
   )
   return rows.map((row) => ({
     id: row.id,
@@ -76,13 +78,15 @@ export async function getPayableExpense(
   expenseId: string
 ): Promise<PayableExpenseResponse> {
   const { organization } = await requireSession()
-  const result = await expenseRepo.getExpense(
-    organization.organizationId,
+  const result = await getExpenseDetailUseCase(
+    { organizationId: organization.organizationId },
+    { executor: db },
     expenseId
   )
   if (!result) {
-    const payable = await expenseRepo.getPayable(
-      organization.organizationId,
+    const payable = await getPayableDetailUseCase(
+      { organizationId: organization.organizationId },
+      { executor: db },
       expenseId
     )
     if (!payable) notFound("Receipt not found.")
@@ -219,20 +223,12 @@ export async function correctReceiptCategory(
     receiptId,
     allocationId
   )
-  await recordAudit({
-    organizationId: organization.organizationId,
-    actorId: user.id,
-    action: "receipt.category.correct",
-    entityType: "receipt",
-    entityId: receiptId,
-    changes: { allocationId },
-  })
   return result
 }
 
 export async function deleteReceipt(receiptId: string) {
   const { user, organization } = await requireSession()
-  const deleted = await deleteReceiptUseCase(
+  return deleteReceiptUseCase(
     {
       userId: user.id,
       organizationId: organization.organizationId,
@@ -241,21 +237,14 @@ export async function deleteReceipt(receiptId: string) {
     { executor: db, transaction: (callback) => db.transaction(callback) },
     receiptId
   )
-  await recordAudit({
-    organizationId: organization.organizationId,
-    actorId: user.id,
-    action: "receipt.delete",
-    entityType: "receipt",
-    entityId: receiptId,
-  })
-  return deleted
 }
 
 /** Read-only operational report used before any historical data repair. */
 export async function getReceiptCategoryAudit() {
   const { organization } = await requireSession()
-  const rows = await expenseRepo.listFinancialExpenseRows(
-    organization.organizationId
+  const rows = await listFinancialExpenseRowsUseCase(
+    { organizationId: organization.organizationId },
+    { executor: db }
   )
   return {
     assigned: rows.filter((row) => row.categoryState === "assigned").length,

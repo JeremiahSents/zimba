@@ -1,5 +1,6 @@
 import "server-only"
-import * as fileRepo from "./repository"
+import { recordUploadedFileUseCase } from "@workspace/api"
+import { db } from "@workspace/db"
 
 export async function recordUploadedFile(data: {
   organizationId: string
@@ -11,17 +12,20 @@ export async function recordUploadedFile(data: {
   sizeBytes: number
   purpose: string
 }) {
-  const file = await fileRepo.createUploadedFile({
-    organizationId: data.organizationId,
-    uploaderId: data.uploaderId,
-    key: data.key,
-    url: data.url,
-    filename: data.filename,
-    contentType: data.contentType,
-    sizeBytes: data.sizeBytes,
-    purpose: data.purpose,
-    status: "completed",
-  })
-
-  return file
+  return recordUploadedFileUseCase(
+    {
+      organizationId: data.organizationId,
+      userId: data.uploaderId,
+      role: "viewer",
+    },
+    { executor: db },
+    {
+      key: data.key,
+      url: data.url,
+      filename: data.filename,
+      contentType: data.contentType,
+      sizeBytes: data.sizeBytes,
+      purpose: data.purpose,
+    }
+  )
 }

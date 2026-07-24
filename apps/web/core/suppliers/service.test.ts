@@ -4,24 +4,23 @@ vi.mock("server-only", () => ({}))
 vi.mock("@workspace/api", () => ({
   createSupplierUseCase: vi.fn(),
   createSupplierCategoryUseCase: vi.fn(),
+  listSupplierSummariesUseCase: vi.fn(),
 }))
 
 import * as api from "@workspace/api"
 import * as authService from "../auth/service"
-import * as supplierRepo from "./repository"
 import {
   createSupplier,
   createSupplierCategory,
   getSuppliersList,
 } from "./service"
 
-vi.mock("./repository")
 vi.mock("../auth/service")
 
 describe("Suppliers Service", () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    vi.mocked(supplierRepo.listSupplierSummaries).mockResolvedValue([])
+    vi.mocked(api.listSupplierSummariesUseCase).mockResolvedValue([])
     vi.mocked(api.createSupplierUseCase).mockResolvedValue({
       id: "sup-2",
       organizationId: "org-1",
@@ -67,7 +66,7 @@ describe("Suppliers Service", () => {
   })
 
   it("should list suppliers", async () => {
-    vi.mocked(supplierRepo.listSupplierSummaries).mockResolvedValue([
+    vi.mocked(api.listSupplierSummariesUseCase).mockResolvedValue([
       {
         id: "sup-1",
         organizationId: "org-1",
@@ -94,6 +93,10 @@ describe("Suppliers Service", () => {
       phone: "123456",
       status: "active",
     })
+    expect(api.listSupplierSummariesUseCase).toHaveBeenCalledWith(
+      expect.objectContaining({ organizationId: "org-1", role: "owner" }),
+      expect.anything()
+    )
   })
 
   it("should create supplier", async () => {

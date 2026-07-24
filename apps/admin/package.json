@@ -16,10 +16,10 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@better-auth/drizzle-adapter": "^1.6.23",
     "@hugeicons/core-free-icons": "^4.2.2",
     "@hugeicons/react": "^1.1.9",
     "@tanstack/react-table": "^8.21.3",
+    "@workspace/auth": "workspace:*",
     "@workspace/db": "workspace:*",
     "@workspace/api": "workspace:*",
     "@workspace/contracts": "workspace:*",

@@ -3,6 +3,7 @@ import type {
   TransactionRunner,
 } from "@workspace/db/repositories"
 import {
+  appendAuditEvent,
   deletePayableForOrganization,
   deleteReceiptForOrganization,
 } from "@workspace/db/repositories"
@@ -28,6 +29,13 @@ export async function deleteReceiptUseCase(
       receiptId
     )
     if (!expense && !payable) notFoundError("Receipt not found.")
+    await appendAuditEvent(tx, {
+      organizationId: ctx.organizationId,
+      actorId: ctx.userId,
+      action: "receipt.delete",
+      entityType: "receipt",
+      entityId: receiptId,
+    })
     return expense ?? payable
   })
 }
