@@ -1,6 +1,6 @@
 import "server-only"
 
-import { db } from "@workspace/db"
+import { checkDatabaseHealth, db } from "@workspace/db"
 
 export const apiExecutor = { executor: db }
 export const apiTransaction = {
@@ -11,4 +11,8 @@ export const apiTransaction = {
 export const apiDatabase = {
   ...apiExecutor,
   ...apiTransaction,
+}
+
+export function checkApiDatabaseHealth() {
+  return checkDatabaseHealth()
 }

@@ -7,8 +7,9 @@ const transaction = vi.fn(
     callback({})
 )
 
-vi.mock("@workspace/db", () => ({
-  db: { transaction },
+vi.mock("@workspace/api-runtime", () => ({
+  apiExecutor: { executor: {} },
+  apiTransaction: { transaction },
 }))
 
 vi.mock("@workspace/api", () => ({

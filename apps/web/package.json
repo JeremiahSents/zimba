@@ -4,7 +4,6 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "auth:generate": "auth generate --config core/auth/auth.ts --output core/auth/schema.ts --yes",
     "db:generate": "pnpm --filter @workspace/db db:generate",
     "db:migrate": "pnpm --filter @workspace/db db:migrate",
     "db:seed": "pnpm --filter @workspace/db db:seed",
@@ -27,9 +26,8 @@
     "@tanstack/react-table": "^8.21.3",
     "@uploadthing/react": "^7.3.3",
     "@workspace/auth": "workspace:*",
-    "@workspace/api-runtime": "workspace:*",
-    "@workspace/db": "workspace:*",
     "@workspace/api": "workspace:*",
+    "@workspace/api-runtime": "workspace:*",
     "@workspace/contracts": "workspace:*",
     "@workspace/transactional": "workspace:*",
     "@workspace/ui": "workspace:*",

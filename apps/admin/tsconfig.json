@@ -5,8 +5,6 @@
     "declarationMap": false,
     "paths": {
       "@/*": ["./*"],
-      "@workspace/db": ["../../packages/db/src/index.ts"],
-      "@workspace/db/*": ["../../packages/db/src/*"],
       "@workspace/transactional": ["../../packages/transactional/index.ts"],
       "@workspace/transactional/*": ["../../packages/transactional/*"],
       "@workspace/ui/*": ["../../packages/ui/src/*"]

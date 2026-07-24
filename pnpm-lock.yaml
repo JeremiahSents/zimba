@@ -44,9 +44,6 @@ importers:
       '@workspace/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
-      '@workspace/db':
-        specifier: workspace:*
-        version: link:../../packages/db
       '@workspace/transactional':
         specifier: workspace:*
         version: link:../../packages/transactional
@@ -132,9 +129,6 @@ importers:
       '@workspace/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
-      '@workspace/db':
-        specifier: workspace:*
-        version: link:../../packages/db
       '@workspace/transactional':
         specifier: workspace:*
         version: link:../../packages/transactional

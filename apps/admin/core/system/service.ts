@@ -1,5 +1,6 @@
 import "server-only"
-import { checkDatabaseHealth } from "@workspace/db"
+
+import { checkApiDatabaseHealth } from "@workspace/api-runtime"
 
 export type ServiceStatus = "operational" | "degraded" | "down"
 
@@ -13,7 +14,7 @@ export async function getSystemHealth(): Promise<HealthCheck[]> {
   const checks: HealthCheck[] = []
 
   try {
-    await checkDatabaseHealth()
+    await checkApiDatabaseHealth()
     checks.push({ label: "Database (PostgreSQL)", status: "operational" })
   } catch {
     checks.push({
