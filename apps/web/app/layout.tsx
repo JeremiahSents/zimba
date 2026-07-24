@@ -43,7 +43,7 @@ export default function RootLayout({
       <head>
         <meta name="apple-mobile-web-app-title" content="Zimba" />
       </head>
-      <body>
+      <body suppressHydrationWarning>
         <TooltipProvider>{children}</TooltipProvider>
       </body>
     </html>

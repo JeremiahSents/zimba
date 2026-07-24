@@ -157,6 +157,7 @@ function UserProfileCard() {
     return (
       <Menu.Root>
         <Menu.Trigger
+          suppressHydrationWarning
           aria-label={`User account menu for ${user.name}`}
           className="mx-auto grid size-10 place-items-center rounded-full outline-none transition-transform hover:scale-105 focus-visible:ring-2 focus-visible:ring-sidebar-ring cursor-pointer"
         >
@@ -204,6 +205,7 @@ function UserProfileCard() {
   return (
     <Menu.Root>
       <Menu.Trigger
+        suppressHydrationWarning
         aria-label={`User account menu for ${user.name}`}
         className="flex w-full items-center gap-3 rounded-xl border border-sidebar-border bg-sidebar-accent/50 p-2.5 shadow-2xs transition-colors hover:bg-sidebar-accent/80 text-left cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
       >
