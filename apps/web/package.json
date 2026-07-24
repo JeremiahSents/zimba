@@ -27,6 +27,7 @@
     "@tanstack/react-table": "^8.21.3",
     "@uploadthing/react": "^7.3.3",
     "@workspace/auth": "workspace:*",
+    "@workspace/api-runtime": "workspace:*",
     "@workspace/db": "workspace:*",
     "@workspace/api": "workspace:*",
     "@workspace/contracts": "workspace:*",

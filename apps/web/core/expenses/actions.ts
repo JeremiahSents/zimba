@@ -1,12 +1,12 @@
 "use server"
 
 import { createReceipt as createReceiptUseCase } from "@workspace/api"
+import { apiTransaction } from "@workspace/api-runtime"
 import {
   expenseLinkSchema,
   idSchema,
   receiptStatusInputSchema,
 } from "@workspace/contracts"
-import { db } from "@workspace/db"
 import { revalidatePath } from "next/cache"
 import { ensureActionSession } from "@/core/auth/action-session"
 import { getWorkspaceContext } from "@/core/auth/workspace-context"
@@ -56,7 +56,7 @@ export async function createPayableExpenseAction(
     const ctx = await getWorkspaceContext(workspaceSlug)
     const created = await createReceiptUseCase(
       ctx,
-      { runInTransaction: (callback) => db.transaction(callback) },
+      { runInTransaction: apiTransaction.transaction },
       {
         projectId: String(expense.project_id),
         supplierId: String(expense.supplier_id),

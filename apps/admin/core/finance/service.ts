@@ -4,16 +4,16 @@ import {
   listPlatformReceiptsUseCase,
   listPlatformSuppliersUseCase,
 } from "@workspace/api"
-import { db } from "@workspace/db"
+import { apiExecutor } from "@workspace/api-runtime"
 
 export async function listPlatformSuppliers() {
-  return listPlatformSuppliersUseCase({ executor: db })
+  return listPlatformSuppliersUseCase(apiExecutor)
 }
 
 export async function listPlatformReceipts() {
-  return listPlatformReceiptsUseCase({ executor: db })
+  return listPlatformReceiptsUseCase(apiExecutor)
 }
 
 export async function listPlatformPayments() {
-  return listPlatformPaymentsUseCase({ executor: db })
+  return listPlatformPaymentsUseCase(apiExecutor)
 }

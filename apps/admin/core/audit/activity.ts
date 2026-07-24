@@ -3,12 +3,12 @@ import {
   listPlatformActivityEventsUseCase,
   listRecentActivityUseCase,
 } from "@workspace/api"
-import { db } from "@workspace/db"
+import { apiExecutor } from "@workspace/api-runtime"
 
 export async function getRecentActivity(limit = 10) {
-  return listRecentActivityUseCase({ executor: db }, limit)
+  return listRecentActivityUseCase(apiExecutor, limit)
 }
 
 export async function listPlatformActivityEvents() {
-  return listPlatformActivityEventsUseCase({ executor: db })
+  return listPlatformActivityEventsUseCase(apiExecutor)
 }

@@ -1,7 +1,7 @@
 import "server-only"
 
 import { getOrganizationMembershipUseCase } from "@workspace/api"
-import { db } from "@workspace/db"
+import { apiExecutor } from "@workspace/api-runtime"
 
 export type OrganizationMembership = {
   organizationId: string
@@ -14,9 +14,5 @@ export async function getOrganizationMembership(
   userId: string,
   workspaceSlug?: string | null
 ): Promise<OrganizationMembership | null> {
-  return getOrganizationMembershipUseCase(
-    { executor: db },
-    userId,
-    workspaceSlug
-  )
+  return getOrganizationMembershipUseCase(apiExecutor, userId, workspaceSlug)
 }

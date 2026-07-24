@@ -1,7 +1,7 @@
 import "server-only"
 import { listPlatformAuditLogsUseCase } from "@workspace/api"
-import { db } from "@workspace/db"
+import { apiExecutor } from "@workspace/api-runtime"
 
 export async function listPlatformAuditLogs() {
-  return listPlatformAuditLogsUseCase({ executor: db })
+  return listPlatformAuditLogsUseCase(apiExecutor)
 }

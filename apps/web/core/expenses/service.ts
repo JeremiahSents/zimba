@@ -8,8 +8,8 @@ import {
   listFinancialExpenseRowsUseCase,
   updateReceiptStatusUseCase,
 } from "@workspace/api"
+import { apiDatabase, apiExecutor } from "@workspace/api-runtime"
 import type { WorkspaceRole } from "@workspace/contracts"
-import { db } from "@workspace/db"
 import type {
   ExpenseStatus,
   ExpenseTableRow,
@@ -22,7 +22,7 @@ export async function listExpenseRows(): Promise<ExpenseTableRow[]> {
   const { organization } = await requireSession()
   const rows = await listFinancialExpenseRowsUseCase(
     { organizationId: organization.organizationId },
-    { executor: db }
+    apiExecutor
   )
   return rows.map((row) => ({
     id: row.id,
@@ -68,7 +68,7 @@ export async function updateExpenseStatus(
       organizationId: organization.organizationId,
       role: organization.role as WorkspaceRole,
     },
-    { executor: db, transaction: (callback) => db.transaction(callback) },
+    apiDatabase,
     expenseId,
     status
   )
@@ -80,13 +80,13 @@ export async function getPayableExpense(
   const { organization } = await requireSession()
   const result = await getExpenseDetailUseCase(
     { organizationId: organization.organizationId },
-    { executor: db },
+    apiExecutor,
     expenseId
   )
   if (!result) {
     const payable = await getPayableDetailUseCase(
       { organizationId: organization.organizationId },
-      { executor: db },
+      apiExecutor,
       expenseId
     )
     if (!payable) notFound("Receipt not found.")
@@ -219,7 +219,7 @@ export async function correctReceiptCategory(
       organizationId: organization.organizationId,
       role: organization.role as WorkspaceRole,
     },
-    { executor: db, transaction: (callback) => db.transaction(callback) },
+    apiDatabase,
     receiptId,
     allocationId
   )
@@ -234,7 +234,7 @@ export async function deleteReceipt(receiptId: string) {
       organizationId: organization.organizationId,
       role: organization.role as WorkspaceRole,
     },
-    { executor: db, transaction: (callback) => db.transaction(callback) },
+    apiDatabase,
     receiptId
   )
 }
@@ -244,7 +244,7 @@ export async function getReceiptCategoryAudit() {
   const { organization } = await requireSession()
   const rows = await listFinancialExpenseRowsUseCase(
     { organizationId: organization.organizationId },
-    { executor: db }
+    apiExecutor
   )
   return {
     assigned: rows.filter((row) => row.categoryState === "assigned").length,

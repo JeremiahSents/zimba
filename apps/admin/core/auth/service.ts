@@ -1,7 +1,7 @@
 import "server-only"
 
 import { getPlatformAccessForUserUseCase } from "@workspace/api"
-import { db } from "@workspace/db"
+import { apiExecutor } from "@workspace/api-runtime"
 import { headers } from "next/headers"
 import { cache } from "react"
 import { forbidden, unauthorized } from "../shared/errors"
@@ -28,7 +28,7 @@ export const getPlatformSession = cache(
     }
 
     const platformRole = await getPlatformAccessForUserUseCase(
-      { executor: db },
+      apiExecutor,
       authSession.user.id
     )
 

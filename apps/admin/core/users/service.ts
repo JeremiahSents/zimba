@@ -6,11 +6,11 @@ import {
   removePlatformUserUseCase,
   updatePlatformUserRoleUseCase,
 } from "@workspace/api"
+import { apiExecutor, apiTransaction } from "@workspace/api-runtime"
 import type {
   PlatformUserDetailDto,
   PlatformUserListDto,
 } from "@workspace/contracts"
-import { db } from "@workspace/db"
 import type { PlatformRole } from "../auth/service"
 
 export type {
@@ -19,12 +19,12 @@ export type {
 } from "@workspace/contracts"
 
 export async function listPlatformUsers(): Promise<PlatformUserListDto[]> {
-  return listPlatformUsersUseCase({ executor: db })
+  return listPlatformUsersUseCase(apiExecutor)
 }
 export async function getPlatformUserDetail(
   id: string
 ): Promise<PlatformUserDetailDto | null> {
-  return getPlatformUserDetailUseCase({ executor: db }, id)
+  return getPlatformUserDetailUseCase(apiExecutor, id)
 }
 
 export async function updatePlatformUserRole(
@@ -32,18 +32,9 @@ export async function updatePlatformUserRole(
   targetId: string,
   role: PlatformRole
 ) {
-  return updatePlatformUserRoleUseCase(
-    { transaction: (callback) => db.transaction(callback) },
-    actorId,
-    targetId,
-    role
-  )
+  return updatePlatformUserRoleUseCase(apiTransaction, actorId, targetId, role)
 }
 
 export async function removePlatformUser(actorId: string, targetId: string) {
-  return removePlatformUserUseCase(
-    { transaction: (callback) => db.transaction(callback) },
-    actorId,
-    targetId
-  )
+  return removePlatformUserUseCase(apiTransaction, actorId, targetId)
 }

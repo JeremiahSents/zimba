@@ -6,8 +6,8 @@ import {
   listSupplierSummariesUseCase,
   updateSupplierUseCase,
 } from "@workspace/api"
+import { apiExecutor, apiTransaction } from "@workspace/api-runtime"
 import type { WorkspaceRole } from "@workspace/contracts"
-import { db } from "@workspace/db"
 import type { SupplierCreate, SupplierResponse } from "@/lib/types"
 import { normalizeRole } from "../auth/permissions"
 import { requireSession } from "../auth/service"
@@ -20,7 +20,7 @@ export async function getSuppliersList(): Promise<SupplierResponse[]> {
       organizationId: organization.organizationId,
       role: normalizeRole(organization.role) as WorkspaceRole,
     },
-    { executor: db }
+    apiExecutor
   )
   return suppliers.map((s) => {
     const { receiptCount = 0, incurredCents = 0, paidCents = 0 } = s
@@ -52,7 +52,7 @@ export async function createSupplier(data: SupplierCreate) {
       organizationId: organization.organizationId,
       role: normalizeRole(organization.role) as WorkspaceRole,
     },
-    { executor: db },
+    apiExecutor,
     {
       organizationId: organization.organizationId,
       ...data,
@@ -71,7 +71,7 @@ export async function updateSupplier(
       organizationId: organization.organizationId,
       role: normalizeRole(organization.role) as WorkspaceRole,
     },
-    { transaction: (callback) => db.transaction(callback) },
+    apiTransaction,
     supplierId,
     data
   )
@@ -85,7 +85,7 @@ export async function getSupplierCategories() {
       organizationId: organization.organizationId,
       role: normalizeRole(organization.role) as WorkspaceRole,
     },
-    { executor: db }
+    apiExecutor
   )
 }
 
@@ -97,7 +97,7 @@ export async function createSupplierCategory(name: string) {
       organizationId: organization.organizationId,
       role: normalizeRole(organization.role) as WorkspaceRole,
     },
-    { executor: db },
+    apiExecutor,
     name
   )
 }

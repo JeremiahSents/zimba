@@ -7,8 +7,12 @@ import {
   getInvitationPreviewUseCase,
   listTeamUseCase,
 } from "@workspace/api"
+import {
+  apiDatabase,
+  apiExecutor,
+  apiTransaction,
+} from "@workspace/api-runtime"
 import type { WorkspaceRole } from "@workspace/contracts"
-import { db } from "@workspace/db"
 import { sendMemberInviteEmail } from "@workspace/transactional"
 import { normalizeRole } from "../auth/permissions"
 import { requireSession } from "../auth/service"
@@ -18,7 +22,7 @@ export async function listTeam() {
   const { organization } = await requireSession()
   const team = await listTeamUseCase(
     { organizationId: organization.organizationId },
-    { executor: db }
+    apiExecutor
   )
   return {
     members: team.members,
@@ -40,7 +44,7 @@ export async function createInvitation(input: {
       organizationId: organization.organizationId,
       role: normalizeRole(organization.role),
     },
-    { transaction: (callback) => db.transaction(callback) },
+    apiTransaction,
     input
   )
   const inviteUrl = buildInviteUrl(created.token)
@@ -55,7 +59,7 @@ export async function createInvitation(input: {
   } catch (error) {
     await deleteInvitationUseCase(
       { organizationId: organization.organizationId },
-      { executor: db },
+      apiExecutor,
       created.invitationId
     )
     throw error
@@ -67,12 +71,12 @@ export async function acceptInvitation(token: string) {
   const { user } = await requireSession()
   const result = await acceptInvitationUseCase(
     { userId: user.id, email: user.email },
-    { executor: db, transaction: (callback) => db.transaction(callback) },
+    apiDatabase,
     token
   )
   return result.workspaceSlug
 }
 
 export async function getInvitationPreview(token: string) {
-  return getInvitationPreviewUseCase({ executor: db }, token)
+  return getInvitationPreviewUseCase(apiExecutor, token)
 }

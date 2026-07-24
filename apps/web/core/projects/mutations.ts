@@ -8,8 +8,12 @@ import {
   updateAllocationUseCase,
   updateProjectUseCase,
 } from "@workspace/api"
+import {
+  apiDatabase,
+  apiExecutor,
+  apiTransaction,
+} from "@workspace/api-runtime"
 import type { WorkspaceRole } from "@workspace/contracts"
-import { db } from "@workspace/db"
 import type {
   AllocationUpdate,
   ProjectCreate,
@@ -25,7 +29,7 @@ export async function createProject(data: ProjectCreate) {
       organizationId: organization.organizationId,
       role: organization.role as WorkspaceRole,
     },
-    { executor: db, transaction: (callback) => db.transaction(callback) },
+    apiDatabase,
     {
       organizationId: organization.organizationId,
       name: data.name,
@@ -53,7 +57,7 @@ export async function createAllocation(
       organizationId: organization.organizationId,
       role: organization.role as WorkspaceRole,
     },
-    { executor: db },
+    apiExecutor,
     projectId,
     data
   )
@@ -67,7 +71,7 @@ export async function updateProject(projectId: string, data: ProjectUpdate) {
       organizationId: organization.organizationId,
       role: organization.role as WorkspaceRole,
     },
-    { transaction: (callback) => db.transaction(callback) },
+    apiTransaction,
     projectId,
     {
       name: data.name ?? undefined,
@@ -95,7 +99,7 @@ export async function updateAllocation(
       organizationId: organization.organizationId,
       role: organization.role as WorkspaceRole,
     },
-    { executor: db },
+    apiExecutor,
     projectId,
     allocationId,
     { name: data.name ?? undefined, budget: data.budget ?? undefined }
@@ -110,7 +114,7 @@ export async function archiveProject(projectId: string) {
       organizationId: organization.organizationId,
       role: organization.role as WorkspaceRole,
     },
-    { transaction: (callback) => db.transaction(callback) },
+    apiTransaction,
     projectId
   )
 }
@@ -123,7 +127,7 @@ export async function restoreProject(projectId: string) {
       organizationId: organization.organizationId,
       role: organization.role as WorkspaceRole,
     },
-    { transaction: (callback) => db.transaction(callback) },
+    apiTransaction,
     projectId
   )
 }
@@ -136,7 +140,7 @@ export async function deleteProject(projectId: string) {
       organizationId: organization.organizationId,
       role: organization.role as WorkspaceRole,
     },
-    { transaction: (callback) => db.transaction(callback) },
+    apiTransaction,
     projectId
   )
 }

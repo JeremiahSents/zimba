@@ -1,7 +1,7 @@
 "use server"
 
 import { completeOnboardingUseCase } from "@workspace/api"
-import { db } from "@workspace/db"
+import { apiDatabase } from "@workspace/api-runtime"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { auth } from "@/core/auth/auth"
@@ -29,11 +29,10 @@ export async function completeOnboarding(
   const existing = await getOrganizationMembership(session.user.id)
   if (existing) redirect(`/${existing.slug}/home`)
   try {
-    await completeOnboardingUseCase(
-      { userId: session.user.id },
-      { executor: db, transaction: (callback) => db.transaction(callback) },
-      { fullName, companyName }
-    )
+    await completeOnboardingUseCase({ userId: session.user.id }, apiDatabase, {
+      fullName,
+      companyName,
+    })
   } catch (error) {
     console.error("Organization onboarding failed", error)
     return {

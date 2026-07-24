@@ -1,6 +1,6 @@
 import "server-only"
 import { recordUploadedFileUseCase } from "@workspace/api"
-import { db } from "@workspace/db"
+import { apiExecutor } from "@workspace/api-runtime"
 
 export async function recordUploadedFile(data: {
   organizationId: string
@@ -18,7 +18,7 @@ export async function recordUploadedFile(data: {
       userId: data.uploaderId,
       role: "viewer",
     },
-    { executor: db },
+    apiExecutor,
     {
       key: data.key,
       url: data.url,

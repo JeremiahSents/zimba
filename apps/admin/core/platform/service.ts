@@ -1,8 +1,8 @@
 import "server-only"
 
 import { getPlatformStatsUseCase } from "@workspace/api"
-import { db } from "@workspace/db"
+import { apiExecutor } from "@workspace/api-runtime"
 
 export async function getPlatformStats() {
-  return getPlatformStatsUseCase({ executor: db })
+  return getPlatformStatsUseCase(apiExecutor)
 }

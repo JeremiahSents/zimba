@@ -1,7 +1,7 @@
 import "server-only"
 
 import { validateSuperAdminInviteUseCase } from "@workspace/api"
-import { db } from "@workspace/db"
+import { apiExecutor } from "@workspace/api-runtime"
 import { sendSuperAdminInviteEmail } from "@workspace/transactional"
 import { requirePlatformRole } from "../auth/service"
 
@@ -18,7 +18,7 @@ export async function sendSuperAdminInvite(input: {
   name: string
 }): Promise<void> {
   const session = await requirePlatformRole(["super_admin"])
-  const invite = await validateSuperAdminInviteUseCase({ executor: db }, input)
+  const invite = await validateSuperAdminInviteUseCase(apiExecutor, input)
 
   const inviteToken = `${invite.existingUserId ?? "new"}:${Buffer.from(
     invite.normalizedEmail
