@@ -75,9 +75,6 @@ export const invitation = pgTable(
     tokenHash: varchar("token_hash").notNull().unique(),
     status: varchar("status").notNull().default("pending"),
     expiresAt: timestamp("expires_at", { mode: "date" }).notNull(),
-    acceptedBy: text("accepted_by").references(() => user.id, {
-      onDelete: "set null",
-    }),
     acceptedAt: timestamp("accepted_at", { mode: "date" }),
     createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
   },

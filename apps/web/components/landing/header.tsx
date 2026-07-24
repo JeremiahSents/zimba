@@ -20,6 +20,7 @@ export function Header() {
             alt="Zimba logo"
             width={28}
             height={28}
+            style={{ width: "auto", height: "auto" }}
             className="size-7"
           />
           <span className="font-heading font-normal text-base uppercase tracking-[0.14em]">

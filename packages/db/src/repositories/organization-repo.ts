@@ -240,7 +240,20 @@ export function listPendingInvitations(
   organizationId: string
 ) {
   return executor
-    .select()
+    .select({
+      id: invitation.id,
+      organizationId: invitation.organizationId,
+      invitedBy: invitation.invitedBy,
+      name: invitation.name,
+      email: invitation.email,
+      role: invitation.role,
+      responsibility: invitation.responsibility,
+      tokenHash: invitation.tokenHash,
+      status: invitation.status,
+      expiresAt: invitation.expiresAt,
+      acceptedAt: invitation.acceptedAt,
+      createdAt: invitation.createdAt,
+    })
     .from(invitation)
     .where(
       and(
@@ -300,12 +313,49 @@ export async function createInvitationRecord(
   return created
 }
 
+export function findPendingInvitationByTokenHash(
+  executor: DatabaseExecutor,
+  tokenHash: string
+) {
+  return executor
+    .select({
+      id: invitation.id,
+      organizationId: invitation.organizationId,
+      invitedBy: invitation.invitedBy,
+      name: invitation.name,
+      email: invitation.email,
+      role: invitation.role,
+      responsibility: invitation.responsibility,
+      tokenHash: invitation.tokenHash,
+      status: invitation.status,
+      expiresAt: invitation.expiresAt,
+      acceptedAt: invitation.acceptedAt,
+      createdAt: invitation.createdAt,
+    })
+    .from(invitation)
+    .where(eq(invitation.tokenHash, tokenHash))
+    .limit(1)
+}
+
 export function findInvitationByTokenHash(
   executor: DatabaseExecutor,
   tokenHash: string
 ) {
   return executor
-    .select()
+    .select({
+      id: invitation.id,
+      organizationId: invitation.organizationId,
+      invitedBy: invitation.invitedBy,
+      name: invitation.name,
+      email: invitation.email,
+      role: invitation.role,
+      responsibility: invitation.responsibility,
+      tokenHash: invitation.tokenHash,
+      status: invitation.status,
+      expiresAt: invitation.expiresAt,
+      acceptedAt: invitation.acceptedAt,
+      createdAt: invitation.createdAt,
+    })
     .from(invitation)
     .where(eq(invitation.tokenHash, tokenHash))
     .limit(1)
@@ -339,7 +389,7 @@ export async function claimInvitationAndUpsertMember(
   const now = new Date()
   const claimed = await executor
     .update(invitation)
-    .set({ status: "accepted", acceptedBy: userId, acceptedAt: now })
+    .set({ status: "accepted", acceptedAt: now })
     .where(
       and(
         eq(invitation.id, invitationId),

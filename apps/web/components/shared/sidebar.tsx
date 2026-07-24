@@ -1,11 +1,17 @@
 "use client"
 
+import { Menu } from "@base-ui/react/menu"
 import {
-  Building01Icon,
   LayoutAlignLeftIcon,
   LayoutAlignRightIcon,
+  Logout03Icon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@workspace/ui/components/avatar"
 import { Button } from "@workspace/ui/components/button"
 import {
   Sidebar,
@@ -20,11 +26,6 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@workspace/ui/components/sidebar"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@workspace/ui/components/tooltip"
 import Image from "next/image"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
@@ -35,7 +36,11 @@ import {
   getWorkspaceSlug,
   isDashboardRouteActive,
 } from "@/components/shared/dashboard-navigation"
-import { formatRole, useWorkspace } from "@/components/shared/workspace-context"
+import {
+  formatRole,
+  getInitials,
+  useWorkspace,
+} from "@/components/shared/workspace-context"
 import { authClient } from "@/lib/auth-client"
 
 export function DashboardSidebar() {
@@ -83,7 +88,7 @@ export function DashboardSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="p-3 pt-2 group-data-[collapsible=icon]:px-0">
-        <TenantCard />
+        <UserProfileCard />
       </SidebarFooter>
     </Sidebar>
   )
@@ -99,8 +104,9 @@ function SidebarBrand() {
         <Image
           src="/logo-landing.png"
           alt="Zimba logo"
-          width={24}
-          height={24}
+          width={20}
+          height={20}
+          style={{ width: "auto", height: "auto" }}
           className="size-5 object-contain"
         />
       </div>
@@ -116,6 +122,7 @@ function SidebarBrand() {
             alt="Zimba logo"
             width={24}
             height={24}
+            style={{ width: "auto", height: "auto" }}
             className="size-6"
           />
         </span>
@@ -129,65 +136,123 @@ function SidebarBrand() {
   )
 }
 
-function TenantCard() {
+function UserProfileCard() {
   const { state } = useSidebar()
   const router = useRouter()
   const user = useWorkspace()
   const role = formatRole(user.role)
+  const initials = getInitials(user.name)
 
   async function handleSignOut() {
-    await authClient.signOut()
+    try {
+      await authClient.signOut()
+    } catch (err) {
+      console.error("Sign out error:", err)
+    }
     router.push("/login")
     router.refresh()
   }
 
   if (state === "collapsed") {
     return (
-      <Tooltip>
-        <TooltipTrigger
-          aria-label={`Current account: ${user.organizationName}, ${role}`}
-          className="mx-auto grid size-10 place-items-center rounded-md border border-sidebar-border bg-sidebar-accent/60 text-sidebar-foreground outline-none transition-colors hover:bg-sidebar-accent focus-visible:ring-2 focus-visible:ring-sidebar-ring"
+      <Menu.Root>
+        <Menu.Trigger
+          aria-label={`User account menu for ${user.name}`}
+          className="mx-auto grid size-10 place-items-center rounded-full outline-none transition-transform hover:scale-105 focus-visible:ring-2 focus-visible:ring-sidebar-ring cursor-pointer"
         >
-          <HugeiconsIcon
-            icon={Building01Icon}
-            strokeWidth={1.8}
-            className="size-4"
-          />
-        </TooltipTrigger>
-        <TooltipContent side="right" sideOffset={8}>
-          {user.organizationName} · {role}
-        </TooltipContent>
-      </Tooltip>
+          <Avatar className="size-9 border border-sidebar-border">
+            {user.image ? <AvatarImage src={user.image} alt={user.name} /> : null}
+            <AvatarFallback className="bg-primary font-semibold text-primary-foreground text-xs">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+        </Menu.Trigger>
+        <Menu.Portal>
+          <Menu.Positioner
+            align="start"
+            side="right"
+            sideOffset={8}
+            className="isolate z-50 outline-none"
+          >
+            <Menu.Popup className="w-56 origin-(--transform-origin) rounded-xl border bg-popover p-1 text-popover-foreground shadow-lg outline-none transition data-ending-style:scale-95 data-starting-style:scale-95 data-ending-style:opacity-0 data-starting-style:opacity-0">
+              <div className="border-b px-3 py-2">
+                <p className="font-medium text-xs text-foreground truncate">
+                  {user.name}
+                </p>
+                <p className="mt-0.5 text-[10px] text-muted-foreground truncate">
+                  {role} · {user.organizationName}
+                </p>
+              </div>
+              <Menu.Item
+                onClick={handleSignOut}
+                className="mt-1 flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-2 font-medium text-xs text-destructive outline-none transition-colors hover:bg-destructive/10 data-highlighted:bg-destructive/10"
+              >
+                <HugeiconsIcon
+                  icon={Logout03Icon}
+                  strokeWidth={1.8}
+                  className="size-4"
+                />
+                Sign out
+              </Menu.Item>
+            </Menu.Popup>
+          </Menu.Positioner>
+        </Menu.Portal>
+      </Menu.Root>
     )
   }
 
   return (
-    <div className="flex items-center gap-2.5 rounded-md border border-sidebar-border bg-sidebar-accent/45 px-3 py-2.5">
-      <span className="grid size-8 shrink-0 place-items-center rounded-md bg-primary/10 text-primary">
-        <HugeiconsIcon
-          icon={Building01Icon}
-          strokeWidth={1.8}
-          className="size-4"
-        />
-      </span>
-      <span className="min-w-0">
-        <span className="block truncate font-medium text-sidebar-foreground text-xs">
-          {user.organizationName}
-        </span>
-        <span className="mt-0.5 block text-[10px] text-sidebar-foreground/55">
-          {role}
-        </span>
-      </span>
-      <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        className="ml-auto h-7 px-2 text-[10px]"
-        onClick={handleSignOut}
+    <Menu.Root>
+      <Menu.Trigger
+        aria-label={`User account menu for ${user.name}`}
+        className="flex w-full items-center gap-3 rounded-xl border border-sidebar-border bg-sidebar-accent/50 p-2.5 shadow-2xs transition-colors hover:bg-sidebar-accent/80 text-left cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
       >
-        Sign out
-      </Button>
-    </div>
+        <Avatar className="size-9 shrink-0 border border-sidebar-border">
+          {user.image ? <AvatarImage src={user.image} alt={user.name} /> : null}
+          <AvatarFallback className="bg-primary font-semibold text-primary-foreground text-xs">
+            {initials}
+          </AvatarFallback>
+        </Avatar>
+        <div className="min-w-0 flex-1">
+          <span className="block truncate font-medium text-sidebar-foreground text-xs leading-tight">
+            {user.name}
+          </span>
+          <span className="mt-0.5 block truncate text-[10px] text-sidebar-foreground/55 leading-tight">
+            {role} · {user.organizationName}
+          </span>
+        </div>
+      </Menu.Trigger>
+      <Menu.Portal>
+        <Menu.Positioner
+          align="start"
+          side="top"
+          sideOffset={8}
+          className="isolate z-50 outline-none"
+        >
+          <Menu.Popup className="w-56 origin-(--transform-origin) rounded-xl border bg-popover p-1 text-popover-foreground shadow-lg outline-none transition data-ending-style:scale-95 data-starting-style:scale-95 data-ending-style:opacity-0 data-starting-style:opacity-0">
+            <div className="border-b px-3 py-2">
+              <p className="font-medium text-xs text-foreground truncate">
+                {user.name}
+              </p>
+              <p className="mt-0.5 text-[10px] text-muted-foreground truncate">
+                {role} · {user.organizationName}
+              </p>
+            </div>
+            <Menu.Item
+              onClick={handleSignOut}
+              className="mt-1 flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-2 font-medium text-xs text-destructive outline-none transition-colors hover:bg-destructive/10 data-highlighted:bg-destructive/10"
+            >
+              <HugeiconsIcon
+                icon={Logout03Icon}
+                strokeWidth={1.8}
+                className="size-4"
+              />
+              Sign out
+            </Menu.Item>
+          </Menu.Popup>
+        </Menu.Positioner>
+      </Menu.Portal>
+    </Menu.Root>
   )
 }
 

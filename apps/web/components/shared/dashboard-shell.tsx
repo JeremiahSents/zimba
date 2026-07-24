@@ -1,18 +1,7 @@
 "use client"
 
-import { Menu } from "@base-ui/react/menu"
-import {
-  BellIcon,
-  Logout03Icon,
-  Settings02Icon,
-} from "@hugeicons/core-free-icons"
+import { BellIcon, Settings02Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@workspace/ui/components/avatar"
-
 import { Button } from "@workspace/ui/components/button"
 import {
   Sheet,
@@ -36,11 +25,7 @@ import {
   DashboardSidebar,
   DashboardSidebarToggle,
 } from "@/components/shared/sidebar"
-import {
-  formatRole,
-  getInitials,
-  useWorkspace,
-} from "@/components/shared/workspace-context"
+import { useWorkspace } from "@/components/shared/workspace-context"
 import { formatCurrency, formatShortDate } from "@/lib/format"
 
 type DashboardShellProps = {
@@ -108,7 +93,6 @@ function DashboardTopbar({
   const user = useWorkspace()
   const pathname = usePathname()
   const slug = getWorkspaceSlug(pathname) ?? ""
-  const initials = getInitials(user.name)
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const isMobile = useIsMobile()
 
@@ -233,50 +217,6 @@ function DashboardTopbar({
             className="size-4"
           />
         </Button>
-        <Menu.Root>
-          <Menu.Trigger
-            aria-label={`Open account menu for ${user.name}`}
-            className="rounded-full outline-none ring-offset-background transition-shadow focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-          >
-            <Avatar className="size-8">
-              {user.image ? (
-                <AvatarImage src={user.image} alt={user.name} />
-              ) : null}
-              <AvatarFallback className="bg-primary font-medium text-primary-foreground text-xs">
-                {initials}
-              </AvatarFallback>
-            </Avatar>
-          </Menu.Trigger>
-          <Menu.Portal>
-            <Menu.Positioner
-              align="end"
-              side="bottom"
-              sideOffset={8}
-              className="isolate z-50 outline-none"
-            >
-              <Menu.Popup className="min-w-44 origin-(--transform-origin) rounded-lg border bg-popover p-1 text-popover-foreground shadow-md outline-none transition data-ending-style:scale-95 data-starting-style:scale-95 data-ending-style:opacity-0 data-starting-style:opacity-0">
-                <div className="border-b px-2.5 py-2">
-                  <p className="font-medium text-xs">{user.name}</p>
-                  <p className="mt-0.5 text-[10px] text-muted-foreground">
-                    {formatRole(user.role)} · {user.organizationName}
-                  </p>
-                </div>
-                <Menu.LinkItem
-                  closeOnClick
-                  render={<Link href="/login" />}
-                  className="mt-1 flex cursor-default items-center gap-2 rounded-md px-2.5 py-2 font-medium text-xs outline-none transition-colors data-highlighted:bg-accent data-highlighted:text-accent-foreground"
-                >
-                  <HugeiconsIcon
-                    icon={Logout03Icon}
-                    strokeWidth={1.8}
-                    className="size-4"
-                  />
-                  Sign out
-                </Menu.LinkItem>
-              </Menu.Popup>
-            </Menu.Positioner>
-          </Menu.Portal>
-        </Menu.Root>
       </div>
     </header>
   )
