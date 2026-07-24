@@ -34,7 +34,7 @@ function getPageTitle(pathname: string): string {
     return "Overview"
   }
 
-  const root = segments[0]
+  const root = segments[0] ?? "overview"
   const isDetail = segments.length > 1
 
   switch (root) {
