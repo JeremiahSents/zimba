@@ -1,6 +1,8 @@
 import { relations } from "drizzle-orm"
 import { account, session, user } from "./auth-schema"
+import { onboardingApplication } from "./onboarding-schema"
 import { organization, organizationMember } from "./organization-schema"
+import { ownershipTransferRequest } from "./ownership-transfer-schema"
 import { budgetItem, project } from "./project-schema"
 import { expense, expenseLine, payment } from "./receipt-schema"
 import { supplier } from "./supplier-schema"
@@ -70,3 +72,47 @@ export const expenseRelations = relations(expense, ({ many, one }) => ({
   lines: many(expenseLine),
   payments: many(payment),
 }))
+
+export const onboardingApplicationRelations = relations(
+  onboardingApplication,
+  ({ one }) => ({
+    user: one(user, {
+      fields: [onboardingApplication.userId],
+      references: [user.id],
+    }),
+    organization: one(organization, {
+      fields: [onboardingApplication.organizationId],
+      references: [organization.id],
+    }),
+    reviewer: one(user, {
+      fields: [onboardingApplication.reviewedBy],
+      references: [user.id],
+      relationName: "reviewer",
+    }),
+  })
+)
+
+export const ownershipTransferRequestRelations = relations(
+  ownershipTransferRequest,
+  ({ one }) => ({
+    organization: one(organization, {
+      fields: [ownershipTransferRequest.organizationId],
+      references: [organization.id],
+    }),
+    fromUser: one(user, {
+      fields: [ownershipTransferRequest.fromUserId],
+      references: [user.id],
+      relationName: "transferFrom",
+    }),
+    toUser: one(user, {
+      fields: [ownershipTransferRequest.toUserId],
+      references: [user.id],
+      relationName: "transferTo",
+    }),
+    reviewer: one(user, {
+      fields: [ownershipTransferRequest.reviewedBy],
+      references: [user.id],
+      relationName: "transferReviewer",
+    }),
+  })
+)

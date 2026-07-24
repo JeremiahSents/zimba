@@ -1,7 +1,8 @@
 "use server"
 
-import { completeOnboardingUseCase } from "@workspace/api"
+import { submitOnboardingApplicationUseCase } from "@workspace/api"
 import { apiDatabase } from "@workspace/api-runtime"
+import { sendApplicationSubmittedEmail } from "@workspace/transactional"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { auth } from "@/core/auth/auth"
@@ -20,6 +21,12 @@ export async function completeOnboarding(
   if (!session) redirect("/login")
   const fullName = String(formData.get("fullName") ?? "").trim()
   const companyName = String(formData.get("companyName") ?? "").trim()
+  const companyWebsite = String(formData.get("companyWebsite") ?? "").trim()
+  const industry = String(formData.get("industry") ?? "").trim()
+  const country = String(formData.get("country") ?? "").trim()
+  const phone = String(formData.get("phone") ?? "").trim()
+  const teamSize = String(formData.get("teamSize") ?? "").trim()
+  const useCase = String(formData.get("useCase") ?? "").trim()
   const fieldErrors: OnboardingState["fieldErrors"] = {}
   if (fullName.length < 2 || fullName.length > 100)
     fieldErrors.fullName = "Enter your full name."
@@ -29,16 +36,36 @@ export async function completeOnboarding(
   const existing = await getOrganizationMembership(session.user.id)
   if (existing) redirect(`/${existing.slug}/home`)
   try {
-    await completeOnboardingUseCase({ userId: session.user.id }, apiDatabase, {
+    await submitOnboardingApplicationUseCase(
+      { userId: session.user.id },
+      apiDatabase,
+      {
+        fullName,
+        email: session.user.email,
+        companyName,
+        companyWebsite: companyWebsite || undefined,
+        industry: industry || undefined,
+        country: country || undefined,
+        phone: phone || undefined,
+        teamSize: teamSize || undefined,
+        useCase: useCase || undefined,
+      }
+    )
+    await sendApplicationSubmittedEmail({
+      to: session.user.email,
       fullName,
       companyName,
+    }).catch((error) => {
+      console.error("Onboarding welcome email failed", error)
     })
   } catch (error) {
-    console.error("Organization onboarding failed", error)
+    console.error("Onboarding application failed", error)
     return {
-      error: "We could not create your company workspace. Please try again.",
+      error:
+        error instanceof Error
+          ? error.message
+          : "We could not submit your application. Please try again.",
     }
   }
-  const membership = await getOrganizationMembership(session.user.id)
-  redirect(`/${membership?.slug ?? "workspace"}/home`)
+  redirect("/pending-approval?submitted=1")
 }

@@ -29,6 +29,7 @@ export function createWorkspaceAuth(options: WorkspaceAuthOptions) {
       },
     },
     plugins: [nextCookies(), ...(options.plugins ?? [])],
+    emailAndPassword: { enabled: true },
     trustedOrigins: options.trustedOrigins ?? [],
   })
 }

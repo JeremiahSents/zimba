@@ -1,3 +1,5 @@
+import { getOnboardingApplicationForUserUseCase } from "@workspace/api"
+import { apiExecutor } from "@workspace/api-runtime"
 import type { Metadata } from "next"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
@@ -16,6 +18,13 @@ export default async function OnboardingPage() {
 
   const membership = await getOrganizationMembership(session.user.id)
   if (membership) redirect(`/${membership.slug}/home`)
+
+  const application = await getOnboardingApplicationForUserUseCase(
+    apiExecutor,
+    session.user.id
+  )
+  if (application && application.status === "pending")
+    redirect("/pending-approval")
 
   return (
     <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-background p-6 md:p-10">

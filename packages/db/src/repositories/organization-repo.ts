@@ -224,6 +224,7 @@ export function listTeamMembers(
   return executor
     .select({
       id: member.id,
+      userId: member.userId,
       name: user.name,
       email: user.email,
       role: member.role,
@@ -434,4 +435,17 @@ export async function findUserMemberships(
       eq(organization.id, organizationMember.organizationId)
     )
     .where(eq(organizationMember.userId, userId))
+}
+
+export async function updateMemberRole(
+  executor: DatabaseExecutor,
+  memberId: string,
+  role: string
+) {
+  const [updated] = await executor
+    .update(organizationMember)
+    .set({ role, updatedAt: new Date() })
+    .where(eq(organizationMember.id, memberId))
+    .returning()
+  return updated ?? null
 }

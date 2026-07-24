@@ -1,3 +1,5 @@
+import { getOnboardingApplicationForUserUseCase } from "@workspace/api"
+import { apiExecutor } from "@workspace/api-runtime"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { auth } from "@/core/auth/auth"
@@ -10,7 +12,14 @@ export default async function WorkspaceEntryPage() {
   if (!session) redirect("/login?callbackUrl=/workspace")
 
   const membership = await getOrganizationMembership(session.user.id)
-  if (!membership) redirect("/onboarding")
+  if (membership) redirect(`/${membership.slug}/home`)
 
-  redirect(`/${membership.slug}/home`)
+  const application = await getOnboardingApplicationForUserUseCase(
+    apiExecutor,
+    session.user.id
+  )
+  if (application && application.status === "pending")
+    redirect("/pending-approval")
+
+  redirect("/onboarding")
 }

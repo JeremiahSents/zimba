@@ -32,6 +32,10 @@ export function LoginForm({
   const [isPending, setIsPending] = useState(false)
   const [magicLinkSent, setMagicLinkSent] = useState(false)
   const [magicLinkEmail, setMagicLinkEmail] = useState("")
+  const [mode, setMode] = useState<"signin" | "signup">("signin")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [name, setName] = useState("")
 
   async function continueWithGoogle() {
     setError(null)
@@ -54,15 +58,15 @@ export function LoginForm({
     event.preventDefault()
     setError(null)
 
-    const email = magicLinkEmail.trim()
-    if (!email.includes("@")) {
+    const magicEmail = magicLinkEmail.trim()
+    if (!magicEmail.includes("@")) {
       setError("Enter a valid email address.")
       return
     }
 
     setIsPending(true)
     const result = await authClient.signIn.magicLink({
-      email,
+      email: magicEmail,
       callbackURL: callbackUrl,
       newUserCallbackURL: "/onboarding",
     })
@@ -77,6 +81,54 @@ export function LoginForm({
     }
 
     setMagicLinkSent(true)
+  }
+
+  async function continueWithPassword(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setError(null)
+
+    if (!email.includes("@")) {
+      setError("Enter a valid email address.")
+      return
+    }
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters.")
+      return
+    }
+
+    setIsPending(true)
+
+    if (mode === "signup") {
+      if (name.trim().length < 2) {
+        setError("Enter your name.")
+        setIsPending(false)
+        return
+      }
+      const result = await authClient.signUp.email({
+        email,
+        password,
+        name: name.trim(),
+        callbackURL: "/onboarding",
+      })
+      setIsPending(false)
+      if (result?.error) {
+        setError(
+          result.error.message || "Could not create account. Please try again."
+        )
+        return
+      }
+    } else {
+      const result = await authClient.signIn.email({
+        email,
+        password,
+        callbackURL: callbackUrl,
+      })
+      setIsPending(false)
+      if (result?.error) {
+        setError(result.error.message || "Could not sign in. Please try again.")
+        return
+      }
+    }
   }
 
   return (
@@ -98,9 +150,13 @@ export function LoginForm({
             </div>
             <span className="sr-only">Zimba</span>
           </Link>
-          <h1 className="font-bold text-xl">Welcome to Zimba</h1>
+          <h1 className="font-bold text-xl">
+            {mode === "signin" ? "Welcome to Zimba" : "Create your account"}
+          </h1>
           <FieldDescription>
-            Sign in with your email or continue with Google.
+            {mode === "signin"
+              ? "Sign in with email and password, magic link, or Google."
+              : "Sign up with email and password, or continue with Google."}
           </FieldDescription>
         </div>
 
@@ -125,17 +181,44 @@ export function LoginForm({
           </div>
         ) : (
           <>
-            <form onSubmit={continueWithEmail} className="flex flex-col gap-3">
+            <form
+              onSubmit={continueWithPassword}
+              className="flex flex-col gap-3"
+            >
+              {mode === "signup" ? (
+                <Field>
+                  <Label htmlFor="signup-name">Name</Label>
+                  <Input
+                    id="signup-name"
+                    type="text"
+                    placeholder="Jane Doe"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    disabled={isPending}
+                    required
+                  />
+                </Field>
+              ) : null}
               <Field>
-                <Label htmlFor="magic-link-email" className="sr-only">
-                  Email
-                </Label>
+                <Label htmlFor="auth-email">Email</Label>
                 <Input
-                  id="magic-link-email"
+                  id="auth-email"
                   type="email"
                   placeholder="you@example.com"
-                  value={magicLinkEmail}
-                  onChange={(e) => setMagicLinkEmail(e.target.value)}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={isPending}
+                  required
+                />
+              </Field>
+              <Field>
+                <Label htmlFor="auth-password">Password</Label>
+                <Input
+                  id="auth-password"
+                  type="password"
+                  placeholder="At least 8 characters"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   disabled={isPending}
                   required
                 />
@@ -146,7 +229,62 @@ export function LoginForm({
                 className="h-11 w-full"
                 disabled={isPending}
               >
-                {isPending ? "Sending link…" : "Continue with email"}
+                {isPending
+                  ? mode === "signin"
+                    ? "Signing in…"
+                    : "Creating account…"
+                  : mode === "signin"
+                    ? "Sign in"
+                    : "Create account"}
+              </Button>
+            </form>
+
+            <button
+              type="button"
+              className="text-center text-muted-foreground text-xs hover:text-foreground"
+              onClick={() => {
+                setMode(mode === "signin" ? "signup" : "signin")
+                setError(null)
+              }}
+            >
+              {mode === "signin"
+                ? "Don't have an account? Sign up"
+                : "Already have an account? Sign in"}
+            </button>
+
+            <div className="relative my-1">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">
+                  or
+                </span>
+              </div>
+            </div>
+
+            <form onSubmit={continueWithEmail} className="flex flex-col gap-3">
+              <Field>
+                <Label htmlFor="magic-link-email" className="sr-only">
+                  Send magic link
+                </Label>
+                <Input
+                  id="magic-link-email"
+                  type="email"
+                  placeholder="Send me a sign-in link instead"
+                  value={magicLinkEmail}
+                  onChange={(e) => setMagicLinkEmail(e.target.value)}
+                  disabled={isPending}
+                />
+              </Field>
+              <Button
+                type="submit"
+                variant="outline"
+                size="lg"
+                className="h-11 w-full"
+                disabled={isPending}
+              >
+                {isPending ? "Sending link…" : "Send magic link"}
               </Button>
             </form>
 

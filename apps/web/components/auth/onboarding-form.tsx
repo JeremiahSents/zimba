@@ -8,6 +8,13 @@ import {
   FieldLabel,
 } from "@workspace/ui/components/field"
 import { Input } from "@workspace/ui/components/input"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@workspace/ui/components/select"
 import Image from "next/image"
 import Link from "next/link"
 import { useActionState } from "react"
@@ -17,6 +24,17 @@ import {
 } from "@/app/onboarding/actions"
 
 const initialState: OnboardingState = {}
+
+const industries = [
+  "Construction",
+  "Real Estate",
+  "Engineering",
+  "Architecture",
+  "Project Management",
+  "Other",
+]
+
+const teamSizes = ["1-5", "6-20", "21-50", "51-200", "200+"]
 
 export function OnboardingForm({
   defaultName,
@@ -52,7 +70,8 @@ export function OnboardingForm({
             </Link>
             <h1 className="font-bold text-xl">Set up your workspace</h1>
             <FieldDescription>
-              Signed in as {email}. Tell us about you and your company.
+              Signed in as {email}. Tell us about you and your company to get
+              started.
             </FieldDescription>
           </div>
 
@@ -90,6 +109,76 @@ export function OnboardingForm({
             ) : null}
           </Field>
 
+          <Field>
+            <FieldLabel htmlFor="company-website">Company website</FieldLabel>
+            <Input
+              id="company-website"
+              name="companyWebsite"
+              type="url"
+              placeholder="https://example.com"
+            />
+          </Field>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field>
+              <FieldLabel htmlFor="industry">Industry</FieldLabel>
+              <Select name="industry">
+                <SelectTrigger id="industry" className="w-full">
+                  <SelectValue placeholder="Select industry" />
+                </SelectTrigger>
+                <SelectContent>
+                  {industries.map((ind) => (
+                    <SelectItem key={ind} value={ind}>
+                      {ind}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+
+            <Field>
+              <FieldLabel htmlFor="country">Country</FieldLabel>
+              <Input id="country" name="country" placeholder="Uganda" />
+            </Field>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field>
+              <FieldLabel htmlFor="phone">Phone number</FieldLabel>
+              <Input
+                id="phone"
+                name="phone"
+                type="tel"
+                placeholder="+256 700 000 000"
+              />
+            </Field>
+
+            <Field>
+              <FieldLabel htmlFor="team-size">Team size</FieldLabel>
+              <Select name="teamSize">
+                <SelectTrigger id="team-size" className="w-full">
+                  <SelectValue placeholder="Select team size" />
+                </SelectTrigger>
+                <SelectContent>
+                  {teamSizes.map((size) => (
+                    <SelectItem key={size} value={size}>
+                      {size}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+          </div>
+
+          <Field>
+            <FieldLabel htmlFor="use-case">How will you use Zimba?</FieldLabel>
+            <Input
+              id="use-case"
+              name="useCase"
+              placeholder="Track project expenses, manage supplier payments..."
+            />
+          </Field>
+
           {state.error ? (
             <p role="alert" className="text-center text-destructive text-sm">
               {state.error}
@@ -98,14 +187,15 @@ export function OnboardingForm({
 
           <Field>
             <Button type="submit" disabled={isPending}>
-              {isPending ? "Creating workspace…" : "Create workspace"}
+              {isPending ? "Submitting application…" : "Submit application"}
             </Button>
           </Field>
         </FieldGroup>
       </form>
 
       <FieldDescription className="px-6 text-center">
-        You&apos;ll be added as the company owner.
+        Your application will be reviewed by our team. You&apos;ll receive an
+        email once approved.
       </FieldDescription>
     </div>
   )

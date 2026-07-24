@@ -2,10 +2,16 @@ import {
   BanknoteIcon,
   Building03Icon,
   FactoryIcon,
+  FileCheckIcon,
   Invoice01Icon,
   UserGroupIcon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
+import {
+  getPendingApplicationCountUseCase,
+  getPendingTransferCountUseCase,
+} from "@workspace/api"
+import { apiExecutor } from "@workspace/api-runtime"
 import { Card } from "@workspace/ui/components/card"
 import { AdminDashboardShell } from "@/components/dashboard-shell"
 import { StatCard } from "@/components/stat-card"
@@ -22,11 +28,20 @@ function getGreeting() {
 }
 
 export default async function OverviewPage() {
-  const [stats, session, recentActivity, healthChecks] = await Promise.all([
+  const [
+    stats,
+    session,
+    recentActivity,
+    healthChecks,
+    pendingApps,
+    pendingTransfers,
+  ] = await Promise.all([
     getPlatformStats(),
     getPlatformSession(),
     getRecentActivity(5),
     getSystemHealth(),
+    getPendingApplicationCountUseCase(apiExecutor),
+    getPendingTransferCountUseCase(apiExecutor),
   ])
 
   const userName = session?.user.name ?? "Admin"
@@ -47,6 +62,18 @@ export default async function OverviewPage() {
     },
     { label: "Total Projects", value: stats.totalProjects, icon: FactoryIcon },
     { label: "Total Payments", value: stats.totalPayments, icon: BanknoteIcon },
+    {
+      label: "Pending Applications",
+      value: pendingApps,
+      icon: FileCheckIcon,
+      description: pendingApps > 0 ? "Awaiting review" : undefined,
+    },
+    {
+      label: "Pending Transfers",
+      value: pendingTransfers,
+      icon: UserGroupIcon,
+      description: pendingTransfers > 0 ? "Needs approval" : undefined,
+    },
   ]
 
   return (

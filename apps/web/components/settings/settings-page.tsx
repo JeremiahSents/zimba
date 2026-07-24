@@ -5,6 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components/card"
+import { OwnershipTransferDialog } from "@/components/settings/ownership-transfer-dialog"
 import { ActivityRow } from "@/components/shared/activity-row"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { SettingField } from "@/components/shared/setting-field"
@@ -12,9 +13,18 @@ import { SettingField } from "@/components/shared/setting-field"
 export function SettingsPage({
   company,
   role,
+  isOwner = false,
+  teamMembers = [],
 }: {
   company: string
   role: string
+  isOwner?: boolean
+  teamMembers?: Array<{
+    id: string
+    name: string
+    email: string
+    role: string
+  }>
 }) {
   return (
     <DashboardShell
@@ -78,6 +88,18 @@ export function SettingsPage({
                   Your current workspace role.
                 </p>
               </div>
+              {isOwner && (
+                <div className="border-t pt-4">
+                  <p className="font-medium text-sm">Ownership transfer</p>
+                  <p className="mt-1 text-muted-foreground text-sm">
+                    Transfer workspace ownership to another team member.
+                    Requires admin approval.
+                  </p>
+                  <div className="mt-3">
+                    <OwnershipTransferDialog members={teamMembers} />
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </aside>

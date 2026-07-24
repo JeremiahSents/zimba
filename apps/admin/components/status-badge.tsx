@@ -7,6 +7,9 @@ export type StatusType =
   | "trial"
   | "suspended"
   | "pending"
+  | "pending_approval"
+  | "approved"
+  | "rejected"
   | "resolved"
   | "failed"
 
@@ -27,6 +30,9 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
     suspended: "destructive",
     inactive: "outline",
     pending: "secondary",
+    pending_approval: "secondary",
+    approved: "default",
+    rejected: "destructive",
     resolved: "default",
     failed: "destructive",
   }
@@ -42,6 +48,12 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
       "bg-red-500/15 text-red-700 hover:bg-red-500/25 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 border-red-500/20",
     pending:
       "bg-amber-500/15 text-amber-700 hover:bg-amber-500/25 dark:bg-amber-500/10 dark:text-amber-400 dark:hover:bg-amber-500/20 border-amber-500/20",
+    pending_approval:
+      "bg-amber-500/15 text-amber-700 hover:bg-amber-500/25 dark:bg-amber-500/10 dark:text-amber-400 dark:hover:bg-amber-500/20 border-amber-500/20",
+    approved:
+      "bg-emerald-500/15 text-emerald-700 hover:bg-emerald-500/25 dark:bg-emerald-500/10 dark:text-emerald-400 dark:hover:bg-emerald-500/20 border-emerald-500/20",
+    rejected:
+      "bg-red-500/15 text-red-700 hover:bg-red-500/25 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20 border-red-500/20",
     resolved:
       "bg-emerald-500/15 text-emerald-700 hover:bg-emerald-500/25 dark:bg-emerald-500/10 dark:text-emerald-400 dark:hover:bg-emerald-500/20 border-emerald-500/20",
   }

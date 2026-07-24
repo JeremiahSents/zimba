@@ -1,19 +1,65 @@
 import { Button } from "@workspace/ui/components/button"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@workspace/ui/components/table"
 import Link from "next/link"
+import { AdminTable, type AdminTableColumn } from "@/components/admin-table"
 import { OrganizationStatusSelect } from "@/components/org-status-select"
 import { PageHeader } from "@/components/page-header"
 import { listOrganizations } from "@/core/organizations/service"
 
+type OrgRow = {
+  id: string
+  name: string
+  status: string
+  userCount: number
+  projectCount: number
+  createdAt: Date
+}
+
 export default async function OrganizationsPage() {
   const organizations = await listOrganizations()
+
+  const columns: AdminTableColumn<OrgRow>[] = [
+    {
+      key: "name",
+      label: "Organization",
+      searchableText: (r) => r.name,
+      render: (r) => <span className="font-medium">{r.name}</span>,
+    },
+    {
+      key: "status",
+      label: "Status",
+      render: (r) => (
+        <OrganizationStatusSelect
+          organizationId={r.id}
+          currentStatus={r.status}
+        />
+      ),
+    },
+    {
+      key: "users",
+      label: "Users",
+      render: (r) => r.userCount,
+    },
+    {
+      key: "projects",
+      label: "Projects",
+      render: (r) => r.projectCount,
+    },
+    {
+      key: "created",
+      label: "Created",
+      render: (r) => new Date(r.createdAt).toLocaleDateString(),
+    },
+    {
+      key: "actions",
+      label: "",
+      className: "text-right",
+      render: (r) => (
+        <Button variant="ghost" size="sm" asChild>
+          <Link href={`/organizations/${r.id}`}>View</Link>
+        </Button>
+      ),
+    },
+  ]
 
   return (
     <div className="flex-1 p-6 lg:p-8">
@@ -21,55 +67,17 @@ export default async function OrganizationsPage() {
         title="Organizations"
         description="Manage all tenant organizations on the platform."
       />
-
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Organization</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Users</TableHead>
-              <TableHead>Projects</TableHead>
-              <TableHead>Created</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {organizations.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={6}
-                  className="py-8 text-center text-muted-foreground"
-                >
-                  No organizations found.
-                </TableCell>
-              </TableRow>
-            ) : (
-              organizations.map((org) => (
-                <TableRow key={org.id}>
-                  <TableCell className="font-medium">{org.name}</TableCell>
-                  <TableCell>
-                    <OrganizationStatusSelect
-                      organizationId={org.id}
-                      currentStatus={org.status}
-                    />
-                  </TableCell>
-                  <TableCell>{org.userCount}</TableCell>
-                  <TableCell>{org.projectCount}</TableCell>
-                  <TableCell>
-                    {new Date(org.createdAt).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="ghost" size="sm" asChild>
-                      <Link href={`/organizations/${org.id}`}>View</Link>
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+      <AdminTable
+        columns={columns}
+        rows={organizations as OrgRow[]}
+        searchPlaceholder="Search organizations…"
+        statusFilter={{
+          options: ["active", "trial", "suspended", "pending_approval"],
+          getValue: (r) => (r as OrgRow).status,
+        }}
+        getRowHref={(r) => `/organizations/${r.id}`}
+        emptyMessage="No organizations found."
+      />
     </div>
   )
 }

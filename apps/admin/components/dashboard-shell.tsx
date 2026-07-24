@@ -127,7 +127,9 @@ function DashboardTopbar({
             className="rounded-full outline-none ring-offset-background transition-shadow focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             <Avatar className="size-8">
-              {userImage ? <AvatarImage src={userImage} alt={userName} /> : null}
+              {userImage ? (
+                <AvatarImage src={userImage} alt={userName} />
+              ) : null}
               <AvatarFallback className="bg-primary font-medium text-primary-foreground text-xs">
                 {initials}
               </AvatarFallback>

@@ -106,3 +106,117 @@ export async function sendMagicLinkEmail(
     html,
   })
 }
+
+export interface SendApplicationSubmittedEmailProps {
+  to: string
+  companyName: string
+  fullName: string
+}
+
+export async function sendApplicationSubmittedEmail(
+  props: SendApplicationSubmittedEmailProps
+): Promise<SendEmailResult> {
+  const { default: ApplicationSubmittedEmail } = await import(
+    "./emails/application-submitted"
+  )
+  const html = await render(
+    createElement(ApplicationSubmittedEmail, {
+      companyName: props.companyName,
+      fullName: props.fullName,
+    })
+  )
+  return sendEmail({
+    to: props.to,
+    subject: "Welcome to Zimba",
+    html,
+  })
+}
+
+export interface SendApplicationApprovedEmailProps {
+  to: string
+  companyName: string
+  fullName: string
+  loginUrl: string
+}
+
+export async function sendApplicationApprovedEmail(
+  props: SendApplicationApprovedEmailProps
+): Promise<SendEmailResult> {
+  const { default: ApplicationApprovedEmail } = await import(
+    "./emails/application-approved"
+  )
+  const html = await render(
+    createElement(ApplicationApprovedEmail, {
+      companyName: props.companyName,
+      fullName: props.fullName,
+      loginUrl: props.loginUrl,
+    })
+  )
+  return sendEmail({
+    to: props.to,
+    subject: `Your Zimba workspace for ${props.companyName} is ready`,
+    html,
+  })
+}
+
+export interface SendApplicationRejectedEmailProps {
+  to: string
+  companyName: string
+  fullName: string
+  rejectionReason?: string
+  onboardingUrl: string
+}
+
+export async function sendApplicationRejectedEmail(
+  props: SendApplicationRejectedEmailProps
+): Promise<SendEmailResult> {
+  const { default: ApplicationRejectedEmail } = await import(
+    "./emails/application-rejected"
+  )
+  const html = await render(
+    createElement(ApplicationRejectedEmail, {
+      companyName: props.companyName,
+      fullName: props.fullName,
+      rejectionReason: props.rejectionReason,
+      onboardingUrl: props.onboardingUrl,
+    })
+  )
+  return sendEmail({
+    to: props.to,
+    subject: `Update on your Zimba application for ${props.companyName}`,
+    html,
+  })
+}
+
+export interface SendOwnershipTransferEmailProps {
+  to: string
+  organizationName: string
+  fromUserName: string
+  toUserName: string
+  status: "approved" | "rejected"
+  reason?: string
+  rejectionReason?: string
+}
+
+export async function sendOwnershipTransferEmail(
+  props: SendOwnershipTransferEmailProps
+): Promise<SendEmailResult> {
+  const { default: OwnershipTransferEmail } = await import(
+    "./emails/ownership-transfer"
+  )
+  const html = await render(
+    createElement(OwnershipTransferEmail, {
+      organizationName: props.organizationName,
+      fromUserName: props.fromUserName,
+      toUserName: props.toUserName,
+      status: props.status,
+      reason: props.reason,
+      rejectionReason: props.rejectionReason,
+    })
+  )
+  return sendEmail({
+    to: props.to,
+    subject: `Ownership transfer for ${props.organizationName} — ${props.status}`,
+    html,
+  })
+}
