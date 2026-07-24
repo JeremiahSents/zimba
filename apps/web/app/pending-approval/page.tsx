@@ -1,5 +1,3 @@
-import { getOnboardingApplicationForUserUseCase } from "@workspace/api"
-import { apiExecutor } from "@workspace/api-runtime"
 import { Badge } from "@workspace/ui/components/badge"
 import { Button } from "@workspace/ui/components/button"
 import {
@@ -15,6 +13,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { redirect } from "next/navigation"
 import { auth } from "@/core/auth/auth"
+import { getOnboardingApplicationForUser } from "@/core/organizations/onboarding-application"
 import { getOrganizationMembership } from "@/core/organizations/service"
 
 export const metadata: Metadata = {
@@ -36,10 +35,7 @@ export default async function PendingApprovalPage({
   const membership = await getOrganizationMembership(session.user.id)
   if (membership) redirect(`/${membership.slug}/home`)
 
-  const application = await getOnboardingApplicationForUserUseCase(
-    apiExecutor,
-    session.user.id
-  )
+  const application = await getOnboardingApplicationForUser(session.user.id)
 
   if (!application) redirect("/onboarding")
 

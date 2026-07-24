@@ -1,7 +1,5 @@
 import "server-only"
 
-import { getOnboardingApplicationForUserUseCase } from "@workspace/api"
-import { apiExecutor } from "@workspace/api-runtime"
 import type { ResolvedWorkspaceContext } from "@workspace/contracts"
 import { SidebarProvider } from "@workspace/ui/components/sidebar"
 import { cookies } from "next/headers"
@@ -9,6 +7,7 @@ import { notFound, redirect } from "next/navigation"
 import { WorkspaceProvider } from "@/components/shared/workspace-provider"
 import { getSessionWithOrganization } from "@/core/auth/service"
 import { getWorkspaceContext } from "@/core/auth/workspace-context"
+import { getOnboardingApplicationForUser } from "@/core/organizations/onboarding-application"
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 
@@ -27,10 +26,7 @@ export default async function WorkspaceLayout({
   if (!session) redirect("/login")
 
   if (!session.organization) {
-    const application = await getOnboardingApplicationForUserUseCase(
-      apiExecutor,
-      session.user.id
-    )
+    const application = await getOnboardingApplicationForUser(session.user.id)
     if (
       application &&
       (application.status === "pending" || application.status === "rejected")
