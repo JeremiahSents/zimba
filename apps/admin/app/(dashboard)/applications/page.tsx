@@ -1,7 +1,11 @@
 import { listOnboardingApplicationsUseCase } from "@workspace/api"
 import { apiExecutor } from "@workspace/api-runtime"
 import type { Metadata } from "next"
-import { AdminTable, type AdminTableColumn } from "@/components/admin-table"
+import {
+  AdminTable,
+  type AdminTableColumn,
+  type AdminTableRow,
+} from "@/components/admin-table"
 import { PageHeader } from "@/components/page-header"
 import { StatusBadge } from "@/components/status-badge"
 import { requirePlatformSession } from "@/core/auth/service"
@@ -28,45 +32,34 @@ export default async function ApplicationsPage() {
   await requirePlatformSession()
   const applications = await listOnboardingApplicationsUseCase(apiExecutor)
 
-  const columns: AdminTableColumn<AppRow>[] = [
-    {
-      key: "company",
-      label: "Company",
-      searchableText: (r) => r.companyName,
-      render: (r) => <span className="font-medium">{r.companyName}</span>,
-    },
-    {
-      key: "applicant",
-      label: "Applicant",
-      searchableText: (r) => `${r.fullName} ${r.email}`,
-      render: (r) => (
+  const columns: AdminTableColumn[] = [
+    { key: "company", label: "Company" },
+    { key: "applicant", label: "Applicant" },
+    { key: "industry", label: "Industry" },
+    { key: "country", label: "Country" },
+    { key: "status", label: "Status" },
+    { key: "submitted", label: "Submitted" },
+  ]
+
+  const rows: AdminTableRow[] = (applications as AppRow[]).map((r) => ({
+    id: r.id,
+    href: `/applications/${r.id}`,
+    searchText: `${r.companyName} ${r.fullName} ${r.email}`,
+    status: r.status,
+    cells: {
+      company: <span className="font-medium">{r.companyName}</span>,
+      applicant: (
         <div className="flex flex-col">
           <span className="font-medium">{r.fullName}</span>
           <span className="text-muted-foreground text-xs">{r.email}</span>
         </div>
       ),
+      industry: r.industry ?? "—",
+      country: r.country ?? "—",
+      status: <StatusBadge status={r.status} />,
+      submitted: new Date(r.createdAt).toLocaleDateString(),
     },
-    {
-      key: "industry",
-      label: "Industry",
-      render: (r) => r.industry ?? "—",
-    },
-    {
-      key: "country",
-      label: "Country",
-      render: (r) => r.country ?? "—",
-    },
-    {
-      key: "status",
-      label: "Status",
-      render: (r) => <StatusBadge status={r.status} />,
-    },
-    {
-      key: "submitted",
-      label: "Submitted",
-      render: (r) => new Date(r.createdAt).toLocaleDateString(),
-    },
-  ]
+  }))
 
   return (
     <div className="flex flex-col gap-6 p-6">
@@ -76,13 +69,11 @@ export default async function ApplicationsPage() {
       />
       <AdminTable
         columns={columns}
-        rows={applications as AppRow[]}
+        rows={rows}
         searchPlaceholder="Search applications…"
         statusFilter={{
           options: ["pending", "approved", "rejected"],
-          getValue: (r) => (r as AppRow).status,
         }}
-        getRowHref={(r) => `/applications/${r.id}`}
         emptyMessage="No applications yet."
       />
     </div>

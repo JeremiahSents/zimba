@@ -1,7 +1,11 @@
 import { listOwnershipTransferRequestsUseCase } from "@workspace/api"
 import { apiExecutor } from "@workspace/api-runtime"
 import type { Metadata } from "next"
-import { AdminTable, type AdminTableColumn } from "@/components/admin-table"
+import {
+  AdminTable,
+  type AdminTableColumn,
+  type AdminTableRow,
+} from "@/components/admin-table"
 import { PageHeader } from "@/components/page-header"
 import { StatusBadge } from "@/components/status-badge"
 import { TransferActions } from "@/components/transfer-actions"
@@ -32,69 +36,49 @@ export default async function TransfersPage() {
   await requirePlatformSession()
   const transfers = await listOwnershipTransferRequestsUseCase(apiExecutor)
 
-  const columns: AdminTableColumn<TransferRow>[] = [
-    {
-      key: "org",
-      label: "Organization",
-      searchableText: (r) => r.organizationName,
-      render: (r) => <span className="font-medium">{r.organizationName}</span>,
-    },
-    {
-      key: "from",
-      label: "From",
-      searchableText: (r) => `${r.fromUserName} ${r.fromUserEmail}`,
-      render: (r) => (
+  const columns: AdminTableColumn[] = [
+    { key: "org", label: "Organization" },
+    { key: "from", label: "From" },
+    { key: "to", label: "To" },
+    { key: "status", label: "Status" },
+    { key: "reason", label: "Reason" },
+    { key: "created", label: "Requested" },
+    { key: "actions", label: "", className: "text-right" },
+  ]
+
+  const rows: AdminTableRow[] = (transfers as TransferRow[]).map((r) => ({
+    id: r.id,
+    searchText: `${r.organizationName} ${r.fromUserName} ${r.fromUserEmail} ${r.toUserName} ${r.toUserEmail}`,
+    status: r.status,
+    cells: {
+      org: <span className="font-medium">{r.organizationName}</span>,
+      from: (
         <div className="flex flex-col">
           <span className="font-medium">{r.fromUserName}</span>
-          <span className="text-muted-foreground text-xs">
-            {r.fromUserEmail}
-          </span>
+          <span className="text-muted-foreground text-xs">{r.fromUserEmail}</span>
         </div>
       ),
-    },
-    {
-      key: "to",
-      label: "To",
-      searchableText: (r) => `${r.toUserName} ${r.toUserEmail}`,
-      render: (r) => (
+      to: (
         <div className="flex flex-col">
           <span className="font-medium">{r.toUserName}</span>
           <span className="text-muted-foreground text-xs">{r.toUserEmail}</span>
         </div>
       ),
-    },
-    {
-      key: "status",
-      label: "Status",
-      render: (r) => <StatusBadge status={r.status} />,
-    },
-    {
-      key: "reason",
-      label: "Reason",
-      render: (r) =>
-        r.reason ? (
-          <span className="text-muted-foreground text-sm">{r.reason}</span>
-        ) : (
-          "—"
-        ),
-    },
-    {
-      key: "created",
-      label: "Requested",
-      render: (r) => new Date(r.createdAt).toLocaleDateString(),
-    },
-    {
-      key: "actions",
-      label: "",
-      className: "text-right",
-      render: (r) =>
+      status: <StatusBadge status={r.status} />,
+      reason: r.reason ? (
+        <span className="text-muted-foreground text-sm">{r.reason}</span>
+      ) : (
+        "—"
+      ),
+      created: new Date(r.createdAt).toLocaleDateString(),
+      actions:
         r.status === "pending" ? (
           <TransferActions transferId={r.id} />
         ) : (
           <span className="text-muted-foreground text-xs">Reviewed</span>
         ),
     },
-  ]
+  }))
 
   return (
     <div className="flex flex-col gap-6 p-6">
@@ -104,11 +88,10 @@ export default async function TransfersPage() {
       />
       <AdminTable
         columns={columns}
-        rows={transfers as TransferRow[]}
+        rows={rows}
         searchPlaceholder="Search transfers…"
         statusFilter={{
           options: ["pending", "approved", "rejected"],
-          getValue: (r) => (r as TransferRow).status,
         }}
         emptyMessage="No transfer requests."
       />

@@ -19,38 +19,41 @@ import { cn } from "@workspace/ui/lib/utils"
 import { useMemo, useState } from "react"
 import { AdminSearchInput } from "@/components/admin-search-input"
 
-export type AdminTableColumn<T> = {
+export type AdminTableColumn = {
   key: string
   label: string
   className?: string
-  render: (row: T) => React.ReactNode
-  searchableText?: (row: T) => string
+}
+
+export type AdminTableRow = {
+  id: string
+  href?: string
+  searchText?: string
+  status?: string
+  cells: Record<string, React.ReactNode>
 }
 
 export type AdminTableStatusFilter = {
   options: string[]
-  getValue: (row: unknown) => string
 }
 
-interface AdminTableProps<T extends { id: string }> {
-  columns: AdminTableColumn<T>[]
-  rows: T[]
+interface AdminTableProps {
+  columns: AdminTableColumn[]
+  rows: AdminTableRow[]
   searchPlaceholder?: string
   statusFilter?: AdminTableStatusFilter
-  getRowHref?: (row: T) => string
   emptyMessage?: string
   className?: string
 }
 
-export function AdminTable<T extends { id: string }>({
+export function AdminTable({
   columns,
   rows,
   searchPlaceholder = "Search…",
   statusFilter,
-  getRowHref,
   emptyMessage = "No results found.",
   className,
-}: AdminTableProps<T>) {
+}: AdminTableProps) {
   const [search, setSearch] = useState("")
   const [status, setStatus] = useState<string>("all")
 
@@ -58,25 +61,22 @@ export function AdminTable<T extends { id: string }>({
     let result = rows
     if (search) {
       const q = search.toLowerCase()
-      result = result.filter((row) =>
-        columns.some((col) =>
-          col.searchableText?.(row).toLowerCase().includes(q)
-        )
-      )
+      result = result.filter((row) => row.searchText?.toLowerCase().includes(q))
     }
     if (statusFilter && status !== "all") {
-      result = result.filter((row) => statusFilter.getValue(row) === status)
+      result = result.filter((row) => row.status === status)
     }
     return result
-  }, [rows, search, status, columns, statusFilter])
+  }, [rows, search, status, statusFilter])
 
-  const showFilters = columns.some((c) => c.searchableText) || statusFilter
+  const hasSearch = rows.some((row) => row.searchText)
+  const showFilters = hasSearch || statusFilter
 
   return (
     <div className={cn("space-y-4", className)}>
       {showFilters && (
         <div className="flex flex-wrap items-center gap-3">
-          {columns.some((c) => c.searchableText) && (
+          {hasSearch && (
             <AdminSearchInput
               value={search}
               onChange={setSearch}
@@ -129,18 +129,17 @@ export function AdminTable<T extends { id: string }>({
               </TableRow>
             ) : (
               filtered.map((row) => {
-                const href = getRowHref?.(row)
                 return (
                   <TableRow
                     key={row.id}
-                    className={href ? "cursor-pointer" : undefined}
+                    className={row.href ? "cursor-pointer" : undefined}
                     onClick={
-                      href ? () => (window.location.href = href) : undefined
+                      row.href ? () => (window.location.href = row.href as string) : undefined
                     }
                   >
                     {columns.map((col) => (
                       <TableCell key={col.key} className={col.className}>
-                        {col.render(row)}
+                        {row.cells[col.key] ?? null}
                       </TableCell>
                     ))}
                   </TableRow>
