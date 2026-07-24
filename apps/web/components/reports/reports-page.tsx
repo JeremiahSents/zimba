@@ -1,6 +1,9 @@
-import { Download01Icon } from "@hugeicons/core-free-icons"
+import {
+  BarChartIcon,
+  CheckmarkCircle02Icon,
+  FileCheckIcon,
+} from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Button } from "@workspace/ui/components/button"
 import {
   Card,
   CardContent,
@@ -20,48 +23,71 @@ export function ReportsPage({ data }: { data: DashboardOverviewData }) {
           data.projects.length
       )
     : 0
-  const stats = [
-    ["Budget utilization", formatPercent(average), "Average across projects"],
-    [
-      "Projects on track",
-      `${data.projects.filter((project) => project.pct < 80).length} of ${data.projects.length}`,
-      "Below risk threshold",
-    ],
-    ["Reports ready", String(data.projects.length), "Available to export"],
-  ]
+
+  const onTrackCount = data.projects.filter((project) => project.pct < 80).length
+
   return (
     <DashboardShell
       title="Reports"
-      subtitle="Summarize budget performance and export project updates."
+      subtitle="Summarize budget performance and export individual project reports."
     >
-      <Card className="gap-0 py-0">
-        <div className="grid grid-cols-2 md:grid-cols-3 [&>*:first-child]:col-span-2 md:[&>*:first-child]:col-span-1">
-          {stats.map(([label, value, detail]) => (
-            <div
-              key={label}
-              className="border-t p-4 first:border-t-0 even:border-l md:border-t-0 md:border-l md:p-5 md:first:border-l-0"
-            >
-              <p className="font-medium text-foreground text-xs">{label}</p>
-              <p className="mt-5 font-heading font-semibold text-base text-foreground">
-                {value}
-              </p>
-              <p className="mt-1 text-[10px] text-muted-foreground">{detail}</p>
-            </div>
-          ))}
-        </div>
-      </Card>
-      <Card>
-        <CardHeader className="flex flex-col items-stretch justify-between gap-4 sm:flex-row sm:items-start">
-          <div>
-            <CardTitle>Project reports</CardTitle>
-            <CardDescription>
-              Budget performance and delivery status by project.
-            </CardDescription>
+      {/* ── Top Summary Stats Grid ── */}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div className="rounded-xl border border-border bg-card p-5 shadow-xs transition-colors">
+          <div className="flex items-center justify-between">
+            <span className="font-semibold text-muted-foreground text-xs uppercase tracking-wider">
+              Budget Utilization
+            </span>
+            <span className="grid size-8 place-items-center rounded-lg bg-emerald-500/10 text-emerald-600">
+              <HugeiconsIcon icon={BarChartIcon} strokeWidth={1.8} className="size-4" />
+            </span>
           </div>
-          <Button size="sm">
-            <HugeiconsIcon icon={Download01Icon} strokeWidth={1.5} />
-            Export report
-          </Button>
+          <p className="mt-3 font-heading font-semibold text-2xl text-foreground tabular-nums">
+            {formatPercent(average)}
+          </p>
+          <p className="mt-1 text-muted-foreground text-xs">Average across projects</p>
+        </div>
+
+        <div className="rounded-xl border border-border bg-card p-5 shadow-xs transition-colors">
+          <div className="flex items-center justify-between">
+            <span className="font-semibold text-muted-foreground text-xs uppercase tracking-wider">
+              Projects On Track
+            </span>
+            <span className="grid size-8 place-items-center rounded-lg bg-blue-500/10 text-blue-600">
+              <HugeiconsIcon icon={CheckmarkCircle02Icon} strokeWidth={1.8} className="size-4" />
+            </span>
+          </div>
+          <p className="mt-3 font-heading font-semibold text-2xl text-foreground tabular-nums">
+            {onTrackCount} of {data.projects.length}
+          </p>
+          <p className="mt-1 text-muted-foreground text-xs">Below risk threshold</p>
+        </div>
+
+        <div className="rounded-xl border border-border bg-card p-5 shadow-xs transition-colors">
+          <div className="flex items-center justify-between">
+            <span className="font-semibold text-muted-foreground text-xs uppercase tracking-wider">
+              Reports Ready
+            </span>
+            <span className="grid size-8 place-items-center rounded-lg bg-primary/10 text-primary">
+              <HugeiconsIcon icon={FileCheckIcon} strokeWidth={1.8} className="size-4" />
+            </span>
+          </div>
+          <p className="mt-3 font-heading font-semibold text-2xl text-foreground tabular-nums">
+            {data.projects.length}
+          </p>
+          <p className="mt-1 text-muted-foreground text-xs">Available for PDF export</p>
+        </div>
+      </div>
+
+      {/* ── Project Reports Table Card ── */}
+      <Card className="rounded-xl border bg-card shadow-xs">
+        <CardHeader className="pb-3">
+          <CardTitle className="font-heading font-semibold text-lg tracking-tight">
+            Project Reports
+          </CardTitle>
+          <CardDescription className="text-muted-foreground text-xs">
+            Budget performance and delivery status by project. Export individual PDF reports per project below.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <ReportsTable projects={data.projects} />

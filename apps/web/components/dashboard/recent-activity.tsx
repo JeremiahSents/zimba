@@ -6,6 +6,7 @@ import {
   MobileDataCard,
   MobileDataMeta,
 } from "@/components/shared/mobile-data-card"
+import { useWorkspaceSlug } from "@/components/shared/use-workspace-slug"
 import { formatCurrency, formatShortDate } from "@/lib/format"
 import type { DashboardOverviewData } from "@/lib/types"
 
@@ -27,6 +28,7 @@ export function RecentActivity({
 }: {
   expenses: DashboardOverviewData["expenses"]
 }) {
+  const slug = useWorkspaceSlug()
   return (
     <section>
       <div className="mb-4 flex items-center justify-between gap-3">
@@ -34,7 +36,7 @@ export function RecentActivity({
           Recent expenses
         </h2>
         <Link
-          href="/admin/projects"
+          href={`/${slug}/projects`}
           className="font-semibold text-primary text-xs transition-colors hover:text-primary/75"
         >
           View expenses
@@ -143,7 +145,7 @@ export function RecentActivity({
       )}
       <div className="mt-4 flex justify-center">
         <Link
-          href="/admin/projects"
+          href={`/${slug}/projects`}
           className="inline-flex min-h-11 items-center rounded-md border border-border px-4 font-semibold text-foreground text-xs transition-colors hover:bg-muted md:min-h-0 md:py-1.5"
         >
           View more

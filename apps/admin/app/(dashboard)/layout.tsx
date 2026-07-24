@@ -1,5 +1,6 @@
 import { SidebarInset, SidebarProvider } from "@workspace/ui/components/sidebar"
 import { redirect } from "next/navigation"
+import { DashboardTopbar } from "@/components/dashboard-topbar"
 import { SuperAdminSidebar } from "@/components/sidebar"
 import { getPlatformSession } from "@/core/auth/service"
 
@@ -23,6 +24,10 @@ export default async function DashboardLayout({
       <SidebarProvider>
         <SuperAdminSidebar />
         <SidebarInset className="flex w-full min-w-0 flex-col bg-background">
+          <DashboardTopbar
+            userName={session.user.name ?? "Admin"}
+            userImage={session.user.image ?? null}
+          />
           {children}
         </SidebarInset>
       </SidebarProvider>

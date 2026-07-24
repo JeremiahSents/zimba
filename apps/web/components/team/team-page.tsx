@@ -20,11 +20,11 @@ import {
   SelectValue,
 } from "@workspace/ui/components/select"
 import { useState } from "react"
-import { inviteMemberAction } from "@/app/admin/team/actions"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { ErrorNotice } from "@/components/shared/error-notice"
 import { TeamTable } from "@/components/team/team-table"
 import type { PublicError } from "@/core/shared/errors"
+import { inviteMemberAction } from "@/core/team/actions"
 import type { TeamMember } from "@/lib/types"
 
 const inviteRoles = [

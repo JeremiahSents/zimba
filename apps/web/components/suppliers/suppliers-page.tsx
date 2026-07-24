@@ -12,6 +12,7 @@ import Link from "next/link"
 import { useMemo } from "react"
 
 import { DashboardShell } from "@/components/shared/dashboard-shell"
+import { useWorkspaceSlug } from "@/components/shared/use-workspace-slug"
 import { formatCurrency } from "@/lib/format"
 import {
   getSupplierListItems,
@@ -20,6 +21,7 @@ import {
 import type { DashboardOverviewData } from "@/lib/types"
 
 export function SuppliersPage({ data }: { data: DashboardOverviewData }) {
+  const slug = useWorkspaceSlug()
   const suppliers = useMemo<SupplierListItem[]>(
     () => getSupplierListItems(data.suppliers, data.expenses),
     [data.suppliers, data.expenses]
@@ -86,7 +88,7 @@ export function SuppliersPage({ data }: { data: DashboardOverviewData }) {
           <Button
             size="sm"
             nativeButton={false}
-            render={<Link href="/admin/suppliers/new" />}
+            render={<Link href={`/${slug}/suppliers/new`} />}
           >
             + Create supplier
           </Button>
@@ -94,12 +96,48 @@ export function SuppliersPage({ data }: { data: DashboardOverviewData }) {
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {suppliers.map((supplier) => {
             const id = supplier.id ?? supplier.supplier_id
-            const latest = data.expenses.filter((expense) => expense.supplier_id === id).sort((a, b) => b.date.localeCompare(a.date))[0]
-            return <Link key={id ?? supplier.name} href={`/admin/suppliers/${id ?? supplier.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`} className="rounded-2xl border bg-card p-5 shadow-sm transition hover:border-primary/35 hover:shadow-md">
-              <div className="flex items-start justify-between gap-3"><div className="min-w-0"><h2 className="truncate font-heading font-semibold text-base">{supplier.name}</h2><p className="mt-1 truncate text-muted-foreground text-xs">{supplier.contactName ?? supplier.phone ?? "No contact details"}</p></div><span className="rounded-full bg-primary/10 px-2 py-1 text-[10px] font-semibold text-primary">{supplier.payments} receipts</span></div>
-              <dl className="mt-5 grid grid-cols-3 gap-2 border-y py-4"><Metric label="Incurred" value={formatCurrency(supplier.amount)} /><Metric label="Paid" value={formatCurrency(supplier.paid)} /><Metric label="Balance" value={formatCurrency(supplier.remaining)} /></dl>
-              <p className="mt-4 text-muted-foreground text-xs">{latest ? `Latest receipt ${new Intl.DateTimeFormat("en-UG", { dateStyle: "medium" }).format(new Date(latest.date))}` : "No receipts yet"}</p>
-            </Link>
+            const latest = data.expenses
+              .filter((expense) => expense.supplier_id === id)
+              .sort((a, b) => b.date.localeCompare(a.date))[0]
+            return (
+              <Link
+                key={id ?? supplier.name}
+                href={`/${slug}/suppliers/${id ?? supplier.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
+                className="rounded-2xl border bg-card p-5 shadow-sm transition hover:border-primary/35 hover:shadow-md"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <h2 className="truncate font-heading font-semibold text-base">
+                      {supplier.name}
+                    </h2>
+                    <p className="mt-1 truncate text-muted-foreground text-xs">
+                      {supplier.contactName ??
+                        supplier.phone ??
+                        "No contact details"}
+                    </p>
+                  </div>
+                  <span className="rounded-full bg-primary/10 px-2 py-1 font-semibold text-[10px] text-primary">
+                    {supplier.payments} receipts
+                  </span>
+                </div>
+                <dl className="mt-5 grid grid-cols-3 gap-2 border-y py-4">
+                  <Metric
+                    label="Incurred"
+                    value={formatCurrency(supplier.amount)}
+                  />
+                  <Metric label="Paid" value={formatCurrency(supplier.paid)} />
+                  <Metric
+                    label="Balance"
+                    value={formatCurrency(supplier.remaining)}
+                  />
+                </dl>
+                <p className="mt-4 text-muted-foreground text-xs">
+                  {latest
+                    ? `Latest receipt ${new Intl.DateTimeFormat("en-UG", { dateStyle: "medium" }).format(new Date(latest.date))}`
+                    : "No receipts yet"}
+                </p>
+              </Link>
+            )
           })}
         </div>
       </section>
@@ -107,4 +145,15 @@ export function SuppliersPage({ data }: { data: DashboardOverviewData }) {
   )
 }
 
-function Metric({ label, value }: { label: string; value: string }) { return <div className="min-w-0"><dt className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</dt><dd className="mt-1 truncate font-semibold text-xs tabular-nums">{value}</dd></div> }
+function Metric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="min-w-0">
+      <dt className="text-[10px] text-muted-foreground uppercase tracking-wide">
+        {label}
+      </dt>
+      <dd className="mt-1 truncate font-semibold text-xs tabular-nums">
+        {value}
+      </dd>
+    </div>
+  )
+}

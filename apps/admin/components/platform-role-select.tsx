@@ -1,11 +1,18 @@
 "use client"
 
-import { Button } from "@workspace/ui/components/button"
 import { useTransition } from "react"
+import { Button } from "@workspace/ui/components/button"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@workspace/ui/components/select"
 import {
   removePlatformUserAction,
   updatePlatformUserRoleAction,
-} from "@/app/(dashboard)/users/actions"
+} from "@/core/users/actions"
 
 const ROLE_OPTIONS = ["none", "support", "super_admin"] as const
 
@@ -19,22 +26,27 @@ export function PlatformRoleSelect({
   const [isPending, startTransition] = useTransition()
 
   return (
-    <select
-      defaultValue={currentRole}
+    <Select
+      value={currentRole}
       disabled={isPending}
-      onChange={(e) => {
+      onValueChange={(val) => {
+        if (!val) return
         startTransition(async () => {
-          await updatePlatformUserRoleAction(userId, e.target.value)
+          await updatePlatformUserRoleAction(userId, val)
         })
       }}
-      className="h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm capitalize shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
     >
-      {ROLE_OPTIONS.map((role) => (
-        <option key={role} value={role} className="capitalize">
-          {role === "none" ? "No platform access" : role.replace("_", " ")}
-        </option>
-      ))}
-    </select>
+      <SelectTrigger size="sm" className="h-9 w-44 rounded-xl capitalize">
+        <SelectValue placeholder={currentRole} />
+      </SelectTrigger>
+      <SelectContent>
+        {ROLE_OPTIONS.map((role) => (
+          <SelectItem key={role} value={role} className="capitalize">
+            {role === "none" ? "No platform access" : role.replace("_", " ")}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   )
 }
 
@@ -51,6 +63,7 @@ export function RemovePlatformAccessButton({ userId }: { userId: string }) {
           await removePlatformUserAction(userId)
         })
       }}
+      className="rounded-xl"
     >
       {isPending ? "Removing..." : "Remove Platform Access"}
     </Button>

@@ -5,7 +5,7 @@ import { useTransition } from "react"
 import {
   activateOrganizationAction,
   suspendOrganizationAction,
-} from "@/app/(dashboard)/organizations/[id]/actions"
+} from "@/core/organizations/actions"
 
 export function OrganizationStatusButtons({
   organizationId,

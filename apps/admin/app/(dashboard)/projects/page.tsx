@@ -1,66 +1,118 @@
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@workspace/ui/components/table"
-import { PageHeader } from "@/components/page-header"
-import { StatusBadge } from "@/components/status-badge"
-import { listPlatformProjects } from "@/core/services/projects"
+  FactoryIcon,
+  Invoice01Icon,
+  Money01Icon,
+} from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { AdminDashboardShell } from "@/components/dashboard-shell"
+import { ProjectItem, ProjectsTable } from "@/components/projects-table"
+import { StatCard } from "@/components/stat-card"
+import { listPlatformProjects } from "@/core/organizations/projects"
+import { formatCompactCurrency } from "@/lib/format-currency"
 
 export default async function ProjectsPage() {
   const projects = await listPlatformProjects()
 
-  return (
-    <div className="flex-1 p-6 lg:p-8">
-      <PageHeader
-        title="Projects"
-        description="Platform-wide project monitoring."
-      />
+  const tableData: ProjectItem[] = (projects as ProjectItem[]).map((p) => ({
+    id: p.id,
+    organizationId: p.organizationId,
+    organizationName: p.organizationName,
+    name: p.name,
+    location: p.location,
+    buildingType: p.buildingType,
+    clientName: p.clientName,
+    status: p.status,
+    currency: p.currency,
+    receiptCount: p.receiptCount,
+    totalSpendCents: p.totalSpendCents,
+    createdAt: p.createdAt,
+  }))
 
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Project Name</TableHead>
-              <TableHead>Organization</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Location</TableHead>
-              <TableHead>Receipts</TableHead>
-              <TableHead>Created</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {projects.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={6}
-                  className="py-8 text-center text-muted-foreground"
-                >
-                  No projects found.
-                </TableCell>
-              </TableRow>
-            ) : (
-              projects.map((p) => (
-                <TableRow key={p.id}>
-                  <TableCell className="font-medium">{p.name}</TableCell>
-                  <TableCell>{p.organizationName}</TableCell>
-                  <TableCell>
-                    <StatusBadge status={p.status} />
-                  </TableCell>
-                  <TableCell>{p.location}</TableCell>
-                  <TableCell>{p.receiptCount}</TableCell>
-                  <TableCell>
-                    {new Date(p.createdAt).toLocaleDateString()}
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+  const activeCount = projects.filter((p) => p.status === "active").length
+  const totalReceipts = projects.reduce((sum, p) => sum + p.receiptCount, 0)
+  const totalSpendCents = projects.reduce(
+    (sum, p) => sum + Number(p.totalSpendCents ?? 0),
+    0
+  )
+
+  const primaryCurrency = projects[0]?.currency || "UGX"
+
+  return (
+    <AdminDashboardShell>
+      {/* ── Subtitle header ── */}
+      <div className="flex items-center justify-between">
+        <p className="text-muted-foreground text-sm">
+          Platform-wide project monitoring, financials, and location tracking.
+        </p>
       </div>
-    </div>
+
+      {/* ── Top Projects Stats Cards Row ── */}
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <StatCard
+          title="Total Projects"
+          value={projects.length}
+          accent="blue"
+          trend={{
+            value: 10,
+            label: "vs last month",
+            isPositive: true,
+          }}
+          icon={
+            <HugeiconsIcon
+              icon={FactoryIcon}
+              strokeWidth={1.7}
+              className="size-4"
+            />
+          }
+        />
+        <StatCard
+          title="Active Projects"
+          value={activeCount}
+          accent="emerald"
+          trend={{
+            value: activeCount,
+            label: "currently active",
+            isPositive: true,
+          }}
+          icon={
+            <HugeiconsIcon
+              icon={FactoryIcon}
+              strokeWidth={1.7}
+              className="size-4"
+            />
+          }
+          description={`${activeCount} of ${projects.length} active`}
+        />
+        <StatCard
+          title="Total Receipts"
+          value={totalReceipts}
+          accent="default"
+          icon={
+            <HugeiconsIcon
+              icon={Invoice01Icon}
+              strokeWidth={1.7}
+              className="size-4"
+            />
+          }
+          description="Logged expense receipts"
+        />
+        <StatCard
+          title="Total Spend"
+          value={formatCompactCurrency(totalSpendCents, primaryCurrency)}
+          accent="emerald"
+          icon={
+            <HugeiconsIcon
+              icon={Money01Icon}
+              strokeWidth={1.7}
+              className="size-4"
+            />
+          }
+          description="Across all platform projects"
+        />
+      </div>
+
+      {/* ── Real TanStack Table for Projects ── */}
+      <ProjectsTable data={tableData} />
+    </AdminDashboardShell>
   )
 }

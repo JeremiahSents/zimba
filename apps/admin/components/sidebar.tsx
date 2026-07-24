@@ -1,6 +1,21 @@
 "use client"
 
 import {
+  Activity01Icon,
+  Alert01Icon,
+  BanknoteIcon,
+  Building03Icon,
+  CreditCardIcon,
+  DashboardSquare02Icon,
+  FactoryIcon,
+  FileCheckIcon,
+  HeadphonesIcon,
+  Invoice01Icon,
+  Settings02Icon,
+  UserGroupIcon,
+} from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
+import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
@@ -13,20 +28,6 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@workspace/ui/components/sidebar"
-import {
-  Activity01Icon,
-  Alert01Icon,
-  BanknoteIcon,
-  Building03Icon,
-  CreditCardIcon,
-  DashboardSquare02Icon,
-  FactoryIcon,
-  HeadphonesIcon,
-  Invoice01Icon,
-  Settings02Icon,
-  UserGroupIcon,
-} from "@hugeicons/core-free-icons"
-import { HugeiconsIcon } from "@hugeicons/react"
 import Image from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -35,6 +36,7 @@ const mainNav = [
   { name: "Overview", href: "/overview", icon: DashboardSquare02Icon },
   { name: "Organizations", href: "/organizations", icon: Building03Icon },
   { name: "Users", href: "/users", icon: UserGroupIcon },
+  { name: "Applications & Transfers", href: "/applications", icon: FileCheckIcon },
 ]
 
 const operationsNav = [

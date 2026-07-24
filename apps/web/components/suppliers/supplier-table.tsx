@@ -17,13 +17,6 @@ import {
 } from "@tanstack/react-table"
 import { Input } from "@workspace/ui/components/input"
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@workspace/ui/components/dialog"
-import {
   Table,
   TableBody,
   TableCell,
@@ -32,6 +25,9 @@ import {
   TableRow,
 } from "@workspace/ui/components/table"
 import { useMemo, useState } from "react"
+import { useWorkspaceSlug } from "@/components/shared/use-workspace-slug"
+import { SupplierReceiptMobileList } from "@/components/suppliers/supplier-receipt-mobile-list"
+import { SupplierSummaryDialog } from "@/components/suppliers/supplier-summary-dialog"
 import { formatCurrency, formatShortDate } from "@/lib/format"
 import type {
   SupplierListItem,
@@ -53,6 +49,7 @@ export function SupplierTable({
   receipts: SupplierReceiptRow[]
   suppliers: SupplierListItem[]
 }) {
+  const slug = useWorkspaceSlug()
   const [globalFilter, setGlobalFilter] = useState("")
   const [statusFilter, setStatusFilter] = useState<
     SupplierReceiptStatus | "all"
@@ -77,7 +74,7 @@ export function SupplierTable({
           <div>
             <button
               type="button"
-              className="font-medium text-left hover:text-primary hover:underline"
+              className="text-left font-medium hover:text-primary hover:underline"
               onClick={(event) => {
                 event.stopPropagation()
                 setSelectedSupplier(
@@ -199,65 +196,10 @@ export function SupplierTable({
         </div>
       </div>
       <div className="md:hidden">
-        <div className="flex flex-col gap-4">
-          {rows.length ? (
-            rows.map((row) => (
-              <button
-                key={row.id}
-                type="button"
-                className="grid gap-4 rounded-xl border bg-card p-5 text-left shadow-sm transition-colors hover:bg-muted/35"
-                onClick={() => {
-                  window.location.href = `/admin/expenses/receipts/${row.original.id}`
-                }}
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <p className="truncate font-semibold text-sm text-foreground">
-                      {row.original.supplierName}
-                    </p>
-                    <p className="mt-1 truncate text-muted-foreground text-xs">
-                      {row.original.item} · {row.original.project}
-                    </p>
-                  </div>
-                  <span
-                    className={`inline-flex shrink-0 rounded-full border px-2.5 py-0.5 font-medium text-[10px] ${statusStyles[row.original.status]}`}
-                  >
-                    {row.original.status}
-                  </span>
-                </div>
-                <div className="grid grid-cols-3 gap-2 border-t pt-4">
-                  <div>
-                    <p className="text-muted-foreground text-[10px] uppercase tracking-wider">Receipt</p>
-                    <p className="mt-1 font-medium text-xs text-foreground">{formatCurrency(row.original.value)}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground text-[10px] uppercase tracking-wider">Paid</p>
-                    <p className="mt-1 font-medium text-xs text-foreground">{formatCurrency(row.original.paid)}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground text-[10px] uppercase tracking-wider">Balance</p>
-                    <p className="mt-1 font-medium text-xs text-foreground">{formatCurrency(row.original.remaining)}</p>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between border-t pt-3 text-[10px]">
-                  <div className="text-muted-foreground">
-                    Date & time
-                  </div>
-                  <div className="font-medium text-muted-foreground">
-                    {formatShortDate(row.original.date)} · {new Date(row.original.createdAt).toLocaleTimeString("en-UG", { hour: "numeric", minute: "2-digit" })}
-                  </div>
-                </div>
-              </button>
-            ))
-          ) : (
-            <div className="rounded-xl border border-dashed p-8 text-center">
-              <p className="font-medium text-sm text-foreground">No receipts found</p>
-              <p className="mt-1 text-muted-foreground text-xs">
-                No receipts match your search.
-              </p>
-            </div>
-          )}
-        </div>
+        <SupplierReceiptMobileList
+          receipts={rows.map((row) => row.original)}
+          slug={slug}
+        />
       </div>
       <div className="hidden overflow-x-auto rounded-2xl border md:block">
         <Table>
@@ -296,12 +238,12 @@ export function SupplierTable({
                   key={row.id}
                   className="group cursor-pointer hover:bg-muted/40"
                   onClick={() => {
-                    window.location.href = `/admin/expenses/receipts/${row.original.id}`
+                    window.location.href = `/${slug}/expenses/receipts/${row.original.id}`
                   }}
                   tabIndex={0}
                   onKeyDown={(event) => {
                     if (event.key === "Enter" || event.key === " ")
-                      window.location.href = `/admin/expenses/receipts/${row.original.id}`
+                      window.location.href = `/${slug}/expenses/receipts/${row.original.id}`
                   }}
                 >
                   {row.getVisibleCells().map((cell) => (
@@ -327,41 +269,11 @@ export function SupplierTable({
           </TableBody>
         </Table>
       </div>
-      <Dialog
+      <SupplierSummaryDialog
+        supplier={selectedSupplier}
         open={Boolean(selectedSupplier)}
         onOpenChange={(open) => !open && setSelectedSupplier(undefined)}
-      >
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>{selectedSupplier?.name}</DialogTitle>
-            <DialogDescription>
-              Supplier account summary
-            </DialogDescription>
-          </DialogHeader>
-          {selectedSupplier && (
-            <div className="grid grid-cols-3 gap-3 rounded-xl border bg-muted/25 p-4">
-              <Metric label="Receipt total" value={formatCurrency(selectedSupplier.amount)} />
-              <Metric label="Paid" value={formatCurrency(selectedSupplier.paid)} />
-              <Metric label="Balance" value={formatCurrency(selectedSupplier.remaining)} />
-            </div>
-          )}
-          {selectedSupplier && (
-            <dl className="grid gap-3 text-sm">
-              <Contact label="Phone" value={selectedSupplier.phone} />
-              <Contact label="Email" value={selectedSupplier.email} />
-              <Contact label="Contact" value={selectedSupplier.contactName ?? selectedSupplier.companyContact} />
-            </dl>
-          )}
-        </DialogContent>
-      </Dialog>
+      />
     </div>
   )
-}
-
-function Metric({ label, value }: { label: string; value: string }) {
-  return <div><dt className="text-muted-foreground text-[10px] uppercase tracking-wider">{label}</dt><dd className="mt-1 font-semibold text-sm tabular-nums">{value}</dd></div>
-}
-
-function Contact({ label, value }: { label: string; value?: string | null }) {
-  return <div className="flex items-center justify-between gap-4"><dt className="text-muted-foreground">{label}</dt><dd className="truncate font-medium">{value || "Not provided"}</dd></div>
 }

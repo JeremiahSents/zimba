@@ -12,36 +12,39 @@ export default function TermsPage() {
   return (
     <main className="min-h-svh bg-background text-foreground">
       <article className="mx-auto max-w-2xl px-6 py-20">
-        <h1 className="font-heading text-3xl font-medium tracking-tight">
+        <h1 className="font-heading font-medium text-3xl tracking-tight">
           Terms of Service
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
+        <p className="mt-2 text-muted-foreground text-sm">
           Last updated: {new Date().getFullYear()}
         </p>
 
-        <div className="mt-10 space-y-8 text-sm leading-relaxed text-muted-foreground">
+        <div className="mt-10 space-y-8 text-muted-foreground text-sm leading-relaxed">
           <section>
-            <h2 className="font-medium text-foreground">1. Acceptance of Terms</h2>
+            <h2 className="font-medium text-foreground">
+              1. Acceptance of Terms
+            </h2>
             <p className="mt-2">
-              By creating an account or using Zimba (&quot;the Service&quot;), you agree
-              to these Terms of Service. If you do not agree, do not use the Service.
+              By creating an account or using Zimba (&quot;the Service&quot;),
+              you agree to these Terms of Service. If you do not agree, do not
+              use the Service.
             </p>
           </section>
 
           <section>
             <h2 className="font-medium text-foreground">2. Eligibility</h2>
             <p className="mt-2">
-              You must be at least 18 years old and have the authority to bind your
-              organization to these terms.
+              You must be at least 18 years old and have the authority to bind
+              your organization to these terms.
             </p>
           </section>
 
           <section>
             <h2 className="font-medium text-foreground">3. Your Account</h2>
             <p className="mt-2">
-              You are responsible for maintaining the security of your account and for
-              all activities that occur under your account. You agree to notify us
-              immediately of any unauthorized use.
+              You are responsible for maintaining the security of your account
+              and for all activities that occur under your account. You agree to
+              notify us immediately of any unauthorized use.
             </p>
           </section>
 
@@ -50,32 +53,37 @@ export default function TermsPage() {
             <p className="mt-2">
               You agree not to misuse the Service, including but not limited to
               uploading malicious content, attempting to access data you are not
-              authorized to view, or interfering with the Service&apos;s operation.
+              authorized to view, or interfering with the Service&apos;s
+              operation.
             </p>
           </section>
 
           <section>
-            <h2 className="font-medium text-foreground">5. Intellectual Property</h2>
+            <h2 className="font-medium text-foreground">
+              5. Intellectual Property
+            </h2>
             <p className="mt-2">
-              The Service, including its design, software, and content, is owned by
-              Zimba and protected by intellectual property laws. You retain ownership
-              of the data you submit.
+              The Service, including its design, software, and content, is owned
+              by Zimba and protected by intellectual property laws. You retain
+              ownership of the data you submit.
             </p>
           </section>
 
           <section>
             <h2 className="font-medium text-foreground">6. Termination</h2>
             <p className="mt-2">
-              We may suspend or terminate your access to the Service at any time for
-              violation of these terms. You may close your account at any time.
+              We may suspend or terminate your access to the Service at any time
+              for violation of these terms. You may close your account at any
+              time.
             </p>
           </section>
 
           <section>
             <h2 className="font-medium text-foreground">7. Disclaimer</h2>
             <p className="mt-2">
-              The Service is provided &quot;as is&quot; without warranties of any kind.
-              We do not guarantee the Service will be uninterrupted or error-free.
+              The Service is provided &quot;as is&quot; without warranties of
+              any kind. We do not guarantee the Service will be uninterrupted or
+              error-free.
             </p>
           </section>
 
@@ -97,7 +105,7 @@ export default function TermsPage() {
         <div className="mt-12">
           <Link
             href="/"
-            className="text-sm text-primary underline underline-offset-4"
+            className="text-primary text-sm underline underline-offset-4"
           >
             &larr; Back to home
           </Link>

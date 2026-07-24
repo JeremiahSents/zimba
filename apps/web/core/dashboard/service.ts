@@ -16,7 +16,17 @@ export async function getDashboardOverviewData(): Promise<DashboardOverviewData>
     projects,
     expenses,
     suppliers,
-    spendChart: projects.slice(0, 6).reverse().map((project) => ({ month: project.name, spent: project.spent, budget: project.budget })),
-    utilizationChart: projects.slice(0, 6).reverse().map((project) => ({ month: project.name, utilization: project.pct })),
+    spendChart: projects
+      .slice(0, 6)
+      .reverse()
+      .map((project) => ({
+        month: project.name,
+        spent: project.spent,
+        budget: project.budget,
+      })),
+    utilizationChart: projects
+      .slice(0, 6)
+      .reverse()
+      .map((project) => ({ month: project.name, utilization: project.pct })),
   }
 }

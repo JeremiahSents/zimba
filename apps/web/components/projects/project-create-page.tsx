@@ -18,6 +18,7 @@ import {
 import { ProjectPreviewCard } from "@/components/projects/project-preview-card"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { ErrorNotice } from "@/components/shared/error-notice"
+import { useWorkspaceSlug } from "@/components/shared/use-workspace-slug"
 import { ApplicationError, type PublicError } from "@/core/shared/errors"
 import {
   clearProjectCreateDraft,
@@ -37,6 +38,7 @@ const emptyDetails: ProjectDetails = {
 
 export function ProjectCreatePage() {
   const router = useRouter()
+  const slug = useWorkspaceSlug()
   const [details, setDetails] = useState<ProjectDetails>(emptyDetails)
   const [files, setFiles] = useState<File[]>([])
   const [draftBudget, setDraftBudget] = useState(0)
@@ -97,17 +99,18 @@ export function ProjectCreatePage() {
         ? existingDraft.allocations
         : defaultInitialAllocations,
     })
-    router.push("/admin/projects/new/allocation")
+    router.push(`/${slug}/projects/new/allocation`)
   }
 
   return (
     <DashboardShell title="New project" subtitle="" focusedTask>
       <form onSubmit={goToAllocation} className="grid gap-6">
         <PageHeader
+          slug={slug}
           pending={uploading}
           onCancel={() => {
             clearProjectCreateDraft()
-            router.push("/admin/projects")
+            router.push(`/${slug}/projects`)
           }}
         />
         {error && <ErrorNotice error={error} />}
@@ -162,9 +165,11 @@ export function ProjectCreatePage() {
 }
 
 function PageHeader({
+  slug,
   onCancel,
   pending,
 }: {
+  slug: string
   onCancel: () => void
   pending: boolean
 }) {
@@ -174,7 +179,9 @@ function PageHeader({
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink href="/admin/projects">Projects</BreadcrumbLink>
+              <BreadcrumbLink href={`/${slug}/projects`}>
+                Projects
+              </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>

@@ -6,6 +6,8 @@
   "scripts": {
     "lint": "biome lint .",
     "format": "biome format --write .",
+    "format:check": "biome format .",
+    "check:ci": "biome check .",
     "check": "biome check --write .",
     "typecheck": "tsc --noEmit"
   },

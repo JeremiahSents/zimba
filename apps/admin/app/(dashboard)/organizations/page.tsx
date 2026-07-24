@@ -1,75 +1,130 @@
-import { Button } from "@workspace/ui/components/button"
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@workspace/ui/components/table"
-import Link from "next/link"
-import { OrganizationStatusSelect } from "@/components/org-status-select"
-import { PageHeader } from "@/components/page-header"
-import { listOrganizations } from "@/core/services/organizations"
+  AlertCircleIcon,
+  Building03Icon,
+  CheckmarkCircle02Icon,
+  Clock01Icon,
+} from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { AdminDashboardShell } from "@/components/dashboard-shell"
+import {
+  OrganizationItem,
+  OrganizationsTable,
+} from "@/components/organizations-table"
+import { StatCard } from "@/components/stat-card"
+import { listOrganizations } from "@/core/organizations/service"
+import { getPlatformStats } from "@/core/platform/service"
 
 export default async function OrganizationsPage() {
-  const organizations = await listOrganizations()
+  const [organizations, stats] = await Promise.all([
+    listOrganizations(),
+    getPlatformStats(),
+  ])
+
+  const tableData: OrganizationItem[] = (organizations as OrganizationItem[]).map(
+    (org) => ({
+      id: org.id,
+      name: org.name,
+      status: org.status,
+      userCount: org.userCount ?? 0,
+      projectCount: org.projectCount ?? 0,
+      createdAt: org.createdAt,
+    })
+  )
+
+  const activeRatio = stats.totalOrganizations
+    ? Math.round((stats.activeOrganizations / stats.totalOrganizations) * 100)
+    : 0
 
   return (
-    <div className="flex-1 p-6 lg:p-8">
-      <PageHeader
-        title="Organizations"
-        description="Manage all tenant organizations on the platform."
-      />
-
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Organization</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Users</TableHead>
-              <TableHead>Projects</TableHead>
-              <TableHead>Created</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {organizations.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={6}
-                  className="py-8 text-center text-muted-foreground"
-                >
-                  No organizations found.
-                </TableCell>
-              </TableRow>
-            ) : (
-              organizations.map((org) => (
-                <TableRow key={org.id}>
-                  <TableCell className="font-medium">{org.name}</TableCell>
-                  <TableCell>
-                    <OrganizationStatusSelect
-                      organizationId={org.id}
-                      currentStatus={org.status}
-                    />
-                  </TableCell>
-                  <TableCell>{org.userCount}</TableCell>
-                  <TableCell>{org.projectCount}</TableCell>
-                  <TableCell>
-                    {new Date(org.createdAt).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="ghost" size="sm" asChild>
-                      <Link href={`/organizations/${org.id}`}>View</Link>
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+    <AdminDashboardShell>
+      {/* ── Subtitle header ── */}
+      <div className="flex items-center justify-between">
+        <p className="text-muted-foreground text-sm">
+          Manage, monitor, and update status for all tenant organizations.
+        </p>
       </div>
-    </div>
+
+      {/* ── Top stats row for organizations with trend lines ── */}
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <StatCard
+          title="Total Organizations"
+          value={stats.totalOrganizations}
+          accent="blue"
+          trend={{
+            value: 12,
+            label: "vs last month",
+            isPositive: true,
+          }}
+          icon={
+            <HugeiconsIcon
+              icon={Building03Icon}
+              strokeWidth={1.7}
+              className="size-4"
+            />
+          }
+        />
+        <StatCard
+          title="Active Organizations"
+          value={stats.activeOrganizations}
+          accent="emerald"
+          trend={{
+            value: activeRatio,
+            label: "active rate",
+            isPositive: true,
+          }}
+          icon={
+            <HugeiconsIcon
+              icon={CheckmarkCircle02Icon}
+              strokeWidth={1.7}
+              className="size-4"
+            />
+          }
+          description={`${stats.activeOrganizations} active tenants`}
+        />
+        <StatCard
+          title="Trial Organizations"
+          value={stats.trialOrganizations}
+          accent="amber"
+          trend={{
+            value: 5,
+            label: "new trial users",
+            isPositive: true,
+          }}
+          icon={
+            <HugeiconsIcon
+              icon={Clock01Icon}
+              strokeWidth={1.7}
+              className="size-4"
+            />
+          }
+          description={`${stats.trialOrganizations} currently in trial`}
+        />
+        <StatCard
+          title="Suspended / Attention"
+          value={stats.suspendedOrganizations}
+          accent={stats.suspendedOrganizations > 0 ? "rose" : "default"}
+          trend={{
+            value: stats.suspendedOrganizations,
+            label: "flagged tenants",
+            isPositive: false,
+          }}
+          icon={
+            <HugeiconsIcon
+              icon={AlertCircleIcon}
+              strokeWidth={1.7}
+              className="size-4"
+            />
+          }
+          description={
+            stats.suspendedOrganizations > 0
+              ? `${stats.suspendedOrganizations} require admin review`
+              : "No suspended tenants"
+          }
+        />
+      </div>
+
+      {/* ── Real TanStack Table with filtering, search & custom status dropdown ── */}
+      <OrganizationsTable data={tableData} />
+    </AdminDashboardShell>
   )
 }

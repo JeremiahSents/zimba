@@ -56,9 +56,24 @@
 }
 
 @media print {
-  body * { visibility: hidden !important; }
-  .receipt-print-area, .receipt-print-area * { visibility: visible !important; }
-  .receipt-print-area { position: absolute; inset: 0; width: 100%; border: 0 !important; box-shadow: none !important; }
+  body * {
+    /* biome-ignore lint/complexity/noImportantStyles: print visibility must override component styles. */
+    visibility: hidden !important;
+  }
+  .receipt-print-area,
+  .receipt-print-area * {
+    /* biome-ignore lint/complexity/noImportantStyles: print output must remain visible. */
+    visibility: visible !important;
+  }
+  .receipt-print-area {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    /* biome-ignore lint/complexity/noImportantStyles: normalize print output. */
+    border: 0 !important;
+    /* biome-ignore lint/complexity/noImportantStyles: normalize print output. */
+    box-shadow: none !important;
+  }
 }
 
 @theme inline {
@@ -113,6 +128,7 @@
 }
 
 @layer base {
+  /* biome-ignore lint/style/noDescendingSpecificity: print selectors intentionally override base reset. */
   * {
     @apply border-border outline-ring/50;
   }

@@ -1,75 +1,122 @@
-import { Badge } from "@workspace/ui/components/badge"
-import { Button } from "@workspace/ui/components/button"
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@workspace/ui/components/table"
-import Link from "next/link"
-import { PageHeader } from "@/components/page-header"
-import { listPlatformUsers } from "@/core/services/users"
+  CheckmarkCircle02Icon,
+  ShieldKeyIcon,
+  UserGroupIcon,
+  UserIcon,
+} from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { AdminDashboardShell } from "@/components/dashboard-shell"
+import { StatCard } from "@/components/stat-card"
+import { UserItem, UsersTable } from "@/components/users-table"
+import { listPlatformUsers } from "@/core/users/service"
 
 export default async function UsersPage() {
   const users = await listPlatformUsers()
 
-  return (
-    <div className="flex-1 p-6 lg:p-8">
-      <PageHeader title="Users" description="Platform-wide user management." />
+  const tableData: UserItem[] = (users as UserItem[]).map((u) => ({
+    id: u.id,
+    name: u.name,
+    email: u.email,
+    emailVerified: u.emailVerified,
+    image: u.image,
+    platformRole: u.platformRole,
+    primaryOrganization: u.primaryOrganization,
+    organizationName: u.organizationName,
+    createdAt: u.createdAt,
+  }))
 
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>User</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Platform Role</TableHead>
-              <TableHead>Primary Org</TableHead>
-              <TableHead>Created</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {users.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={6}
-                  className="py-8 text-center text-muted-foreground"
-                >
-                  No users found.
-                </TableCell>
-              </TableRow>
-            ) : (
-              users.map((u) => (
-                <TableRow key={u.id}>
-                  <TableCell className="font-medium">{u.name}</TableCell>
-                  <TableCell>{u.email}</TableCell>
-                  <TableCell>
-                    {u.platformRole !== "none" ? (
-                      <Badge variant="secondary">{u.platformRole}</Badge>
-                    ) : (
-                      <span className="text-muted-foreground text-sm">
-                        User
-                      </span>
-                    )}
-                  </TableCell>
-                  <TableCell>{u.primaryOrganization}</TableCell>
-                  <TableCell>
-                    {new Date(u.createdAt).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="ghost" size="sm" asChild>
-                      <Link href={`/users/${u.id}`}>View</Link>
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+  const superAdminsCount = users.filter(
+    (u) => u.platformRole === "super_admin"
+  ).length
+  const supportCount = users.filter((u) => u.platformRole === "support").length
+  const standardUsersCount = users.filter((u) => !u.platformRole).length
+
+  return (
+    <AdminDashboardShell>
+      {/* ── Subtitle header ── */}
+      <div className="flex items-center justify-between">
+        <p className="text-muted-foreground text-sm">
+          Platform-wide user management, roles, and organization assignments.
+        </p>
       </div>
-    </div>
+
+      {/* ── Top user stats cards row with trend lines ── */}
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <StatCard
+          title="Total Users"
+          value={users.length}
+          accent="blue"
+          trend={{
+            value: 15,
+            label: "vs last month",
+            isPositive: true,
+          }}
+          icon={
+            <HugeiconsIcon
+              icon={UserGroupIcon}
+              strokeWidth={1.7}
+              className="size-4"
+            />
+          }
+        />
+        <StatCard
+          title="Super Admins"
+          value={superAdminsCount}
+          accent="emerald"
+          trend={{
+            value: superAdminsCount,
+            label: "platform admins",
+            isPositive: true,
+          }}
+          icon={
+            <HugeiconsIcon
+              icon={ShieldKeyIcon}
+              strokeWidth={1.7}
+              className="size-4"
+            />
+          }
+          description="Full system control"
+        />
+        <StatCard
+          title="Support Staff"
+          value={supportCount}
+          accent="amber"
+          trend={{
+            value: supportCount,
+            label: "active support",
+            isPositive: true,
+          }}
+          icon={
+            <HugeiconsIcon
+              icon={UserIcon}
+              strokeWidth={1.7}
+              className="size-4"
+            />
+          }
+          description="Support access role"
+        />
+        <StatCard
+          title="Standard Users"
+          value={standardUsersCount}
+          accent="default"
+          trend={{
+            value: standardUsersCount,
+            label: "tenant members",
+            isPositive: true,
+          }}
+          icon={
+            <HugeiconsIcon
+              icon={CheckmarkCircle02Icon}
+              strokeWidth={1.7}
+              className="size-4"
+            />
+          }
+          description="Tenant organization members"
+        />
+      </div>
+
+      {/* ── Real TanStack Table for Users ── */}
+      <UsersTable data={tableData} />
+    </AdminDashboardShell>
   )
 }

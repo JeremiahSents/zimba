@@ -1,5 +1,5 @@
 {
-  "name": "next-monorepo",
+  "name": "zimba",
   "version": "0.0.1",
   "private": true,
   "scripts": {
@@ -7,8 +7,14 @@
     "dev": "turbo dev",
     "web": "pnpm --filter web dev",
     "admin": "pnpm --filter admin dev",
+    "generate": "pnpm --filter @workspace/db db:generate",
+    "migrate": "pnpm --filter @workspace/db db:migrate",
     "lint": "turbo lint",
+    "test": "turbo test",
     "format": "turbo format",
+    "format:check": "turbo format:check",
+    "check": "pnpm check:boundaries && turbo check:ci",
+    "check:boundaries": "node scripts/check-boundaries.mjs",
     "typecheck": "turbo typecheck"
   },
   "devDependencies": {

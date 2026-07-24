@@ -16,12 +16,7 @@ export default async function SettingsPage() {
   const isSuperAdmin = session?.platformRole === "super_admin"
 
   return (
-    <AdminDashboardShell
-      title="Settings"
-      headerGreeting="Settings"
-      userName={session?.user.name ?? "Admin"}
-      userImage={session?.user.image ?? null}
-    >
+    <AdminDashboardShell>
       <section className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
         <h2 className="font-heading font-semibold text-base text-foreground tracking-tight">
           Admin Settings

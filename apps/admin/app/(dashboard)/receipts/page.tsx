@@ -1,68 +1,115 @@
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@workspace/ui/components/table"
-import { PageHeader } from "@/components/page-header"
-import { StatusBadge } from "@/components/status-badge"
-import { listPlatformReceipts } from "@/core/services/financials"
+  Building03Icon,
+  CheckmarkCircle02Icon,
+  Clock01Icon,
+  Invoice01Icon,
+} from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { AdminDashboardShell } from "@/components/dashboard-shell"
+import { ReceiptItem, ReceiptsTable } from "@/components/receipts-table"
+import { StatCard } from "@/components/stat-card"
+import { listPlatformReceipts } from "@/core/finance/service"
 
 export default async function ReceiptsPage() {
   const receipts = await listPlatformReceipts()
 
-  return (
-    <div className="flex-1 p-6 lg:p-8">
-      <PageHeader
-        title="Receipts"
-        description="Platform-wide receipt monitoring."
-      />
+  const tableData: ReceiptItem[] = (receipts as ReceiptItem[]).map((r) => ({
+    id: r.id,
+    paymentStatus: r.paymentStatus,
+    expenseDate: r.expenseDate,
+    createdAt: r.createdAt,
+    organizationName: r.organizationName,
+    projectName: r.projectName,
+    supplierName: r.supplierName,
+  }))
 
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Organization</TableHead>
-              <TableHead>Project</TableHead>
-              <TableHead>Supplier</TableHead>
-              <TableHead>Payment Status</TableHead>
-              <TableHead>Date</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {receipts.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={5}
-                  className="py-8 text-center text-muted-foreground"
-                >
-                  No receipts found.
-                </TableCell>
-              </TableRow>
-            ) : (
-              receipts.map((r) => (
-                <TableRow key={r.id}>
-                  <TableCell className="font-medium">
-                    {r.organizationName}
-                  </TableCell>
-                  <TableCell>{r.projectName}</TableCell>
-                  <TableCell>{r.supplierName}</TableCell>
-                  <TableCell>
-                    <StatusBadge status={r.paymentStatus} />
-                  </TableCell>
-                  <TableCell>
-                    {r.expenseDate
-                      ? new Date(r.expenseDate).toLocaleDateString()
-                      : "-"}
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+  const paidCount = receipts.filter((r) => r.paymentStatus === "paid").length
+  const pendingCount = receipts.filter(
+    (r) => r.paymentStatus === "pending" || r.paymentStatus === "unpaid"
+  ).length
+  const orgsCount = new Set(receipts.map((r) => r.organizationName)).size
+
+  return (
+    <AdminDashboardShell>
+      {/* ── Subtitle header ── */}
+      <div className="flex items-center justify-between">
+        <p className="text-muted-foreground text-sm">
+          Platform-wide receipt and expense log monitoring.
+        </p>
       </div>
-    </div>
+
+      {/* ── Top Receipts Stats Cards Row ── */}
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <StatCard
+          title="Total Receipts"
+          value={receipts.length}
+          accent="blue"
+          trend={{
+            value: 12,
+            label: "vs last month",
+            isPositive: true,
+          }}
+          icon={
+            <HugeiconsIcon
+              icon={Invoice01Icon}
+              strokeWidth={1.7}
+              className="size-4"
+            />
+          }
+        />
+        <StatCard
+          title="Paid Receipts"
+          value={paidCount}
+          accent="emerald"
+          trend={{
+            value: paidCount,
+            label: "settled receipts",
+            isPositive: true,
+          }}
+          icon={
+            <HugeiconsIcon
+              icon={CheckmarkCircle02Icon}
+              strokeWidth={1.7}
+              className="size-4"
+            />
+          }
+          description={`${paidCount} fully paid`}
+        />
+        <StatCard
+          title="Pending / Unpaid"
+          value={pendingCount}
+          accent={pendingCount > 0 ? "amber" : "default"}
+          trend={{
+            value: pendingCount,
+            label: "unsettled receipts",
+            isPositive: pendingCount === 0,
+          }}
+          icon={
+            <HugeiconsIcon
+              icon={Clock01Icon}
+              strokeWidth={1.7}
+              className="size-4"
+            />
+          }
+          description={pendingCount > 0 ? `${pendingCount} unpaid receipts` : "All paid"}
+        />
+        <StatCard
+          title="Organizations"
+          value={orgsCount}
+          accent="default"
+          icon={
+            <HugeiconsIcon
+              icon={Building03Icon}
+              strokeWidth={1.7}
+              className="size-4"
+            />
+          }
+          description={`Across ${orgsCount} tenant orgs`}
+        />
+      </div>
+
+      {/* ── Real TanStack Table for Receipts ── */}
+      <ReceiptsTable data={tableData} />
+    </AdminDashboardShell>
   )
 }

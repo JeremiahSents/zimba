@@ -1,13 +1,15 @@
-import { Geist, Inter, Roboto, Public_Sans } from "next/font/google"
+import { Geist, Inter, Public_Sans, Roboto } from "next/font/google"
 
 import "@workspace/ui/globals.css"
 import { TooltipProvider } from "@workspace/ui/components/tooltip"
 import { cn } from "@workspace/ui/lib/utils"
-import { PointerCaptureGuard } from "@/components/shared/pointer-capture-guard"
 
-const publicSansHeading = Public_Sans({subsets:['latin'],variable:'--font-heading'});
+const publicSansHeading = Public_Sans({
+  subsets: ["latin"],
+  variable: "--font-heading",
+})
 
-const roboto = Roboto({subsets:['latin'],variable:'--font-sans'});
+const roboto = Roboto({ subsets: ["latin"], variable: "--font-sans" })
 
 const geist = Geist({
   subsets: ["latin"],
@@ -29,17 +31,19 @@ export default function RootLayout({
       lang="en"
       suppressHydrationWarning
       className={cn(
-              "light font-sans antialiased",
-              geist.variable,
-              inter.variable
-            , "font-sans", roboto.variable, publicSansHeading.variable)}
+        "light font-sans antialiased",
+        geist.variable,
+        inter.variable,
+        "font-sans",
+        roboto.variable,
+        publicSansHeading.variable
+      )}
       style={{ colorScheme: "light" }}
     >
       <head>
         <meta name="apple-mobile-web-app-title" content="Zimba" />
       </head>
-      <body>
-        <PointerCaptureGuard />
+      <body suppressHydrationWarning>
         <TooltipProvider>{children}</TooltipProvider>
       </body>
     </html>

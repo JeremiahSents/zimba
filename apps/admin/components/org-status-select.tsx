@@ -1,7 +1,14 @@
 "use client"
 
 import { useTransition } from "react"
-import { updateOrganizationStatusAction } from "@/app/(dashboard)/organizations/actions"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@workspace/ui/components/select"
+import { updateOrganizationStatusAction } from "@/core/organizations/actions"
 
 const STATUS_OPTIONS = ["active", "trial", "suspended"] as const
 
@@ -15,21 +22,26 @@ export function OrganizationStatusSelect({
   const [isPending, startTransition] = useTransition()
 
   return (
-    <select
-      defaultValue={currentStatus}
+    <Select
+      value={currentStatus}
       disabled={isPending}
-      onChange={(e) => {
+      onValueChange={(val) => {
+        if (!val) return
         startTransition(async () => {
-          await updateOrganizationStatusAction(organizationId, e.target.value)
+          await updateOrganizationStatusAction(organizationId, val)
         })
       }}
-      className="h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm capitalize shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
     >
-      {STATUS_OPTIONS.map((status) => (
-        <option key={status} value={status} className="capitalize">
-          {status}
-        </option>
-      ))}
-    </select>
+      <SelectTrigger size="sm" className="h-8 w-32 capitalize">
+        <SelectValue placeholder={currentStatus} />
+      </SelectTrigger>
+      <SelectContent>
+        {STATUS_OPTIONS.map((status) => (
+          <SelectItem key={status} value={status} className="capitalize">
+            {status}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   )
 }

@@ -1,45 +1,32 @@
 import "server-only"
 
-import { createHash, randomBytes } from "node:crypto"
-import { db, schema } from "@workspace/db"
-import { sendMemberInviteEmail } from "@workspace/transactional"
-import { and, desc, eq } from "drizzle-orm"
 import {
-  canGrantRole,
-  normalizeRole,
-  requireRole,
-  type WorkspaceRole,
-} from "../auth/permissions"
+  acceptInvitationUseCase,
+  createInvitationUseCase,
+  deleteInvitationUseCase,
+  getInvitationPreviewUseCase,
+  listTeamUseCase,
+} from "@workspace/api"
+import {
+  apiDatabase,
+  apiExecutor,
+  apiTransaction,
+} from "@workspace/api-runtime"
+import type { WorkspaceRole } from "@workspace/contracts"
+import { sendMemberInviteEmail } from "@workspace/transactional"
+import { normalizeRole } from "../auth/permissions"
 import { requireSession } from "../auth/service"
-import { badRequest, forbidden, notFound } from "../shared/errors"
 import { buildInviteUrl } from "./invite-url"
 
 export async function listTeam() {
   const { organization } = await requireSession()
-  const members = await db
-    .select({
-      id: schema.member.id,
-      name: schema.user.name,
-      email: schema.user.email,
-      role: schema.member.role,
-      responsibility: schema.member.responsibility,
-    })
-    .from(schema.member)
-    .innerJoin(schema.user, eq(schema.user.id, schema.member.userId))
-    .where(eq(schema.member.organizationId, organization.organizationId))
-  const invitations = await db
-    .select()
-    .from(schema.invitation)
-    .where(
-      and(
-        eq(schema.invitation.organizationId, organization.organizationId),
-        eq(schema.invitation.status, "pending")
-      )
-    )
-    .orderBy(desc(schema.invitation.createdAt))
+  const team = await listTeamUseCase(
+    { organizationId: organization.organizationId },
+    apiExecutor
+  )
   return {
-    members,
-    invitations,
+    members: team.members,
+    invitations: team.invitations,
     canInvite: ["owner", "site_manager"].includes(
       normalizeRole(organization.role)
     ),
@@ -51,109 +38,45 @@ export async function createInvitation(input: {
   role: WorkspaceRole
 }) {
   const { user, organization } = await requireSession()
-  requireRole(organization.role, ["owner", "site_manager"])
-  if (!canGrantRole(organization.role, input.role))
-    forbidden("Only an owner can invite another owner.")
-
-  const normalizedEmail = input.email.trim().toLowerCase()
-  if (!normalizedEmail.includes("@")) badRequest("Enter a valid email address.")
-
-  const [existing] = await db
-    .select({ id: schema.invitation.id })
-    .from(schema.invitation)
-    .where(
-      and(
-        eq(schema.invitation.organizationId, organization.organizationId),
-        eq(schema.invitation.email, normalizedEmail),
-        eq(schema.invitation.status, "pending")
-      )
-    )
-    .limit(1)
-  // A previous delivery may have failed after its row was created. Replace
-  // pending invitations so the inviter can safely retry delivery.
-  if (existing) {
-    await db
-      .delete(schema.invitation)
-      .where(eq(schema.invitation.id, existing.id))
-  }
-
-  const token = randomBytes(32).toString("base64url")
-  const tokenHash = createHash("sha256").update(token).digest("hex")
-  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-
-  const inviteUrl = buildInviteUrl(token)
-
-  await db.insert(schema.invitation).values({
-    organizationId: organization.organizationId,
-    invitedBy: user.id,
-    name: normalizedEmail,
-    email: normalizedEmail,
-    role: input.role,
-    tokenHash,
-    expiresAt,
-  })
-
+  const created = await createInvitationUseCase(
+    {
+      userId: user.id,
+      organizationId: organization.organizationId,
+      role: normalizeRole(organization.role),
+    },
+    apiTransaction,
+    input
+  )
+  const inviteUrl = buildInviteUrl(created.token)
   try {
     await sendMemberInviteEmail({
-      to: normalizedEmail,
+      to: created.email,
       invitedByName: user.name,
       organizationName: organization.organizationName,
-      role: input.role,
+      role: created.role,
       inviteUrl,
     })
   } catch (error) {
-    await db
-      .delete(schema.invitation)
-      .where(eq(schema.invitation.tokenHash, tokenHash))
+    await deleteInvitationUseCase(
+      { organizationId: organization.organizationId },
+      apiExecutor,
+      created.invitationId
+    )
     throw error
   }
-
-  await db.insert(schema.auditEvent).values({
-    organizationId: organization.organizationId,
-    actorId: user.id,
-    action: "team.invite",
-    entityType: "invitation",
-    entityId: tokenHash,
-    changes: { email: normalizedEmail, role: input.role },
-  })
-
-  return token
+  return created.token
 }
 
 export async function acceptInvitation(token: string) {
   const { user } = await requireSession()
-  const tokenHash = createHash("sha256").update(token).digest("hex")
-  const [invite] = await db
-    .select()
-    .from(schema.invitation)
-    .where(
-      and(
-        eq(schema.invitation.tokenHash, tokenHash),
-        eq(schema.invitation.status, "pending")
-      )
-    )
-    .limit(1)
-  if (!invite || invite.expiresAt < new Date())
-    notFound("This invitation is invalid or expired.")
-  if (invite.email !== user.email.toLowerCase())
-    forbidden("Sign in with the email address that was invited.")
-  await db.transaction(async (tx) => {
-    await tx
-      .insert(schema.member)
-      .values({
-        id: crypto.randomUUID(),
-        organizationId: invite.organizationId,
-        userId: user.id,
-        role: invite.role,
-        responsibility: invite.responsibility,
-      })
-      .onConflictDoUpdate({
-        target: [schema.member.organizationId, schema.member.userId],
-        set: { role: invite.role, responsibility: invite.responsibility },
-      })
-    await tx
-      .update(schema.invitation)
-      .set({ status: "accepted", acceptedAt: new Date() })
-      .where(eq(schema.invitation.id, invite.id))
-  })
+  const result = await acceptInvitationUseCase(
+    { userId: user.id, email: user.email },
+    apiDatabase,
+    token
+  )
+  return result.workspaceSlug
+}
+
+export async function getInvitationPreview(token: string) {
+  return getInvitationPreviewUseCase(apiExecutor, token)
 }

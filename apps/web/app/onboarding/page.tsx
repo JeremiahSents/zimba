@@ -1,3 +1,5 @@
+import { getOnboardingApplicationForUserUseCase } from "@workspace/api"
+import { apiExecutor } from "@workspace/api-runtime"
 import type { Metadata } from "next"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
@@ -10,12 +12,26 @@ export const metadata: Metadata = {
   description: "Create your Zimba company workspace.",
 }
 
-export default async function OnboardingPage() {
+export default async function OnboardingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ reapply?: string }>
+}) {
+  const { reapply } = await searchParams
   const session = await auth.api.getSession({ headers: await headers() })
   if (!session) redirect("/login")
 
   const membership = await getOrganizationMembership(session.user.id)
-  if (membership) redirect("/admin/home")
+  if (membership) redirect(`/${membership.slug}/home`)
+
+  const application = await getOnboardingApplicationForUserUseCase(
+    apiExecutor,
+    session.user.id
+  )
+  if (application && application.status === "pending")
+    redirect("/pending-approval")
+  if (application && application.status === "rejected" && reapply !== "1")
+    redirect("/pending-approval")
 
   return (
     <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-background p-6 md:p-10">

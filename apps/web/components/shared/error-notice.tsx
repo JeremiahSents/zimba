@@ -24,7 +24,12 @@ export function ErrorNotice({ error, onRetry, className }: ErrorNoticeProps) {
   const message = typeof error === "string" ? error : error.message
 
   function recover() {
-    if (onRetry && (!detail || detail.recoveryAction === "RETRY" || detail.recoveryAction === "CHECK_CONNECTION")) {
+    if (
+      onRetry &&
+      (!detail ||
+        detail.recoveryAction === "RETRY" ||
+        detail.recoveryAction === "CHECK_CONNECTION")
+    ) {
       onRetry()
       return
     }
@@ -43,13 +48,18 @@ export function ErrorNotice({ error, onRetry, className }: ErrorNoticeProps) {
     }
   }
 
-  const showAction = Boolean(onRetry || (detail && detail.recoveryAction !== "CORRECT_INPUT"))
+  const showAction = Boolean(
+    onRetry || (detail && detail.recoveryAction !== "CORRECT_INPUT")
+  )
 
   return (
     <div
-      className={className ?? "flex flex-wrap items-center justify-between gap-3 rounded-lg border border-destructive/25 bg-destructive/5 px-4 py-3"}
-      role="alert"
-      aria-live="assertive"
+      className={
+        className ??
+        "flex flex-wrap items-center justify-between gap-3 rounded-lg border border-destructive/25 bg-destructive/5 px-4 py-3"
+      }
+      role="status"
+      aria-live="polite"
     >
       <div className="min-w-0">
         <p className="font-medium text-destructive text-sm">{message}</p>

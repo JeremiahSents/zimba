@@ -17,14 +17,22 @@ import {
 } from "@workspace/ui/components/card"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
-import { createSupplierAction } from "@/app/admin/suppliers/actions"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { ErrorNotice } from "@/components/shared/error-notice"
-import type { PublicError } from "@/core/shared/errors"
+import { useWorkspaceSlug } from "@/components/shared/use-workspace-slug"
 import { SupplierForm } from "@/components/suppliers/supplier-form"
+import type { PublicError } from "@/core/shared/errors"
+import { createSupplierAction } from "@/core/suppliers/actions"
 
-export function NewSupplierPage({ returnTo, categories }: { returnTo?: string; categories: { name: string; slug: string }[] }) {
+export function NewSupplierPage({
+  returnTo,
+  categories,
+}: {
+  returnTo?: string
+  categories: { name: string; slug: string }[]
+}) {
   const router = useRouter()
+  const slug = useWorkspaceSlug()
   const [error, setError] = useState<PublicError | string>("")
   const [submitting, setSubmitting] = useState(false)
   return (
@@ -35,7 +43,7 @@ export function NewSupplierPage({ returnTo, categories }: { returnTo?: string; c
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem>
-                  <BreadcrumbLink href="/admin/suppliers">
+                  <BreadcrumbLink href={`/${slug}/suppliers`}>
                     Suppliers
                   </BreadcrumbLink>
                 </BreadcrumbItem>
@@ -64,7 +72,10 @@ export function NewSupplierPage({ returnTo, categories }: { returnTo?: string; c
           </CardHeader>
           <CardContent>
             {error ? (
-              <ErrorNotice className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-destructive/25 bg-destructive/5 px-4 py-3" error={error} />
+              <ErrorNotice
+                className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-destructive/25 bg-destructive/5 px-4 py-3"
+                error={error}
+              />
             ) : null}
             <SupplierForm
               initialCategories={categories}
@@ -78,8 +89,8 @@ export function NewSupplierPage({ returnTo, categories }: { returnTo?: string; c
                   setSubmitting(false)
                   return
                 }
-                const fallback = "/admin/suppliers"
-                const destination = returnTo?.startsWith("/admin/")
+                const fallback = `/${slug}/suppliers`
+                const destination = returnTo?.startsWith(`/${slug}/`)
                   ? returnTo
                   : fallback
                 const separator = destination.includes("?") ? "&" : "?"
@@ -89,9 +100,9 @@ export function NewSupplierPage({ returnTo, categories }: { returnTo?: string; c
               }}
               onCancel={() =>
                 router.push(
-                  returnTo?.startsWith("/admin/")
+                  returnTo?.startsWith(`/${slug}/`)
                     ? returnTo
-                    : "/admin/suppliers"
+                    : `/${slug}/suppliers`
                 )
               }
             />

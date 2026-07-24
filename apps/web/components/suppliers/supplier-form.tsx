@@ -1,9 +1,16 @@
 "use client"
 
 import { Button } from "@workspace/ui/components/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@workspace/ui/components/dialog"
 import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@workspace/ui/components/dialog"
 import {
   Select,
   SelectContent,
@@ -12,10 +19,10 @@ import {
   SelectValue,
 } from "@workspace/ui/components/select"
 import { useState } from "react"
-import type { NewSupplierValues } from "@/lib/types"
-import { createSupplierCategoryAction } from "@/app/admin/suppliers/actions"
 import { ErrorNotice } from "@/components/shared/error-notice"
 import type { PublicError } from "@/core/shared/errors"
+import { createSupplierCategoryAction } from "@/core/suppliers/actions"
+import type { NewSupplierValues } from "@/lib/types"
 
 const builtInCategories = [
   { name: "Materials", slug: "materials" },
@@ -89,10 +96,23 @@ export function SupplierForm({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {[...builtInCategories, ...categories].map((category) => <SelectItem key={category.slug} value={category.slug}>{category.name}</SelectItem>)}
+              {[...builtInCategories, ...categories].map((category) => (
+                <SelectItem key={category.slug} value={category.slug}>
+                  {category.name}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
-          <button type="button" className="w-fit font-medium text-primary text-xs hover:underline" onClick={() => { setCategoryError(""); setCategoryOpen(true) }}>+ Create category</button>
+          <button
+            type="button"
+            className="w-fit font-medium text-primary text-xs hover:underline"
+            onClick={() => {
+              setCategoryError("")
+              setCategoryOpen(true)
+            }}
+          >
+            + Create category
+          </button>
         </div>
         <label className="grid gap-2 self-start">
           <Label>Company contact</Label>
@@ -154,16 +174,53 @@ export function SupplierForm({
       </div>
       <Dialog open={categoryOpen} onOpenChange={setCategoryOpen}>
         <DialogContent className="max-w-md">
-          <DialogHeader><DialogTitle>Create supplier category</DialogTitle><DialogDescription>This category will only be available inside your organization.</DialogDescription></DialogHeader>
-          <div className="grid gap-2"><Label htmlFor="new-category">Category name</Label><Input id="new-category" value={categoryName} onChange={(event) => setCategoryName(event.target.value)} placeholder="e.g. Transport" autoFocus />{categoryError && <ErrorNotice error={categoryError} />}</div>
-          <DialogFooter><Button type="button" variant="secondary" onClick={() => setCategoryOpen(false)}>Cancel</Button><Button type="button" disabled={categoryPending || !categoryName.trim()} onClick={async () => {
-            setCategoryPending(true); setCategoryError("")
-            const result = await createSupplierCategoryAction(categoryName)
-            setCategoryPending(false)
-            if (!result.success) return setCategoryError(result.error)
-            setCategories((current) => [...current, result.data].sort((a, b) => a.name.localeCompare(b.name)))
-            update("category", result.data.slug); setCategoryName(""); setCategoryOpen(false)
-          }}>{categoryPending ? "Creating…" : "Create category"}</Button></DialogFooter>
+          <DialogHeader>
+            <DialogTitle>Create supplier category</DialogTitle>
+            <DialogDescription>
+              This category will only be available inside your organization.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-2">
+            <Label htmlFor="new-category">Category name</Label>
+            <Input
+              id="new-category"
+              value={categoryName}
+              onChange={(event) => setCategoryName(event.target.value)}
+              placeholder="e.g. Transport"
+              autoFocus
+            />
+            {categoryError && <ErrorNotice error={categoryError} />}
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setCategoryOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              disabled={categoryPending || !categoryName.trim()}
+              onClick={async () => {
+                setCategoryPending(true)
+                setCategoryError("")
+                const result = await createSupplierCategoryAction(categoryName)
+                setCategoryPending(false)
+                if (!result.success) return setCategoryError(result.error)
+                setCategories((current) =>
+                  [...current, result.data].sort((a, b) =>
+                    a.name.localeCompare(b.name)
+                  )
+                )
+                update("category", result.data.slug)
+                setCategoryName("")
+                setCategoryOpen(false)
+              }}
+            >
+              {categoryPending ? "Creating…" : "Create category"}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
       <div className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-2 gap-2 border-t bg-background/96 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-18px_45px_-28px_rgba(15,23,42,0.45)] backdrop-blur-xl sm:static sm:flex sm:flex-row sm:justify-end sm:border-t sm:bg-transparent sm:p-0 sm:pt-4 sm:shadow-none sm:backdrop-blur-none">

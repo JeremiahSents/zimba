@@ -14,10 +14,8 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@workspace/ui/components/breadcrumb"
-import { Card, CardContent } from "@workspace/ui/components/card"
 import { Button } from "@workspace/ui/components/button"
-import { Input } from "@workspace/ui/components/input"
-import { Label } from "@workspace/ui/components/label"
+import { Card, CardContent } from "@workspace/ui/components/card"
 import {
   Dialog,
   DialogContent,
@@ -25,6 +23,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@workspace/ui/components/dialog"
+import { Input } from "@workspace/ui/components/input"
+import { Label } from "@workspace/ui/components/label"
 import {
   Select,
   SelectContent,
@@ -33,11 +33,16 @@ import {
   SelectValue,
 } from "@workspace/ui/components/select"
 import { useState } from "react"
-import { updateSupplierAction } from "@/app/admin/suppliers/actions"
-import { SupplierTable } from "@/components/suppliers/supplier-table"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
+import { useWorkspaceSlug } from "@/components/shared/use-workspace-slug"
+import { SupplierTable } from "@/components/suppliers/supplier-table"
+import { updateSupplierAction } from "@/core/suppliers/actions"
 import { formatCurrency } from "@/lib/format"
-import { getSupplierListItems, getSupplierProfile, getSupplierReceiptRows } from "@/lib/supplier-data"
+import {
+  getSupplierListItems,
+  getSupplierProfile,
+  getSupplierReceiptRows,
+} from "@/lib/supplier-data"
 import type { ExpenseTableRow, SupplierResponse } from "@/lib/types"
 
 export function SupplierDetailPage({
@@ -48,13 +53,16 @@ export function SupplierDetailPage({
   expenses: ExpenseTableRow[]
 }) {
   const [supplier] = getSupplierListItems([supplierRecord], expenses)
+  const slug = useWorkspaceSlug()
   const [editOpen, setEditOpen] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState("")
   const [status, setStatus] = useState(supplierRecord.status ?? "active")
   if (!supplier) return null
   const profile = getSupplierProfile(supplier.name, supplier)
-  const receipts = getSupplierReceiptRows([supplierRecord], expenses).filter((receipt) => receipt.supplierId === (supplier.id ?? supplier.supplier_id))
+  const receipts = getSupplierReceiptRows([supplierRecord], expenses).filter(
+    (receipt) => receipt.supplierId === (supplier.id ?? supplier.supplier_id)
+  )
   const initials = supplier.name
     .split(/\s|\//)
     .filter(Boolean)
@@ -72,7 +80,7 @@ export function SupplierDetailPage({
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
-                <BreadcrumbLink href="/admin/suppliers">
+                <BreadcrumbLink href={`/${slug}/suppliers`}>
                   Suppliers
                 </BreadcrumbLink>
               </BreadcrumbItem>
@@ -89,7 +97,9 @@ export function SupplierDetailPage({
             Contact information and current supplier balance.
           </p>
         </div>
-        <Button size="sm" variant="outline" onClick={() => setEditOpen(true)}>Edit supplier</Button>
+        <Button size="sm" variant="outline" onClick={() => setEditOpen(true)}>
+          Edit supplier
+        </Button>
       </div>
       <section className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
         <Card className="border-primary/15 bg-primary/[0.03]">
@@ -144,7 +154,17 @@ export function SupplierDetailPage({
           </CardContent>
         </Card>
       </section>
-      <section className="mt-6"><div className="mb-4"><h2 className="font-heading font-semibold text-lg">Receipt history</h2><p className="mt-1 text-muted-foreground text-xs">All receipts recorded for this supplier.</p></div><SupplierTable receipts={receipts} suppliers={[supplier]} /></section>
+      <section className="mt-6">
+        <div className="mb-4">
+          <h2 className="font-heading font-semibold text-lg">
+            Receipt history
+          </h2>
+          <p className="mt-1 text-muted-foreground text-xs">
+            All receipts recorded for this supplier.
+          </p>
+        </div>
+        <SupplierTable receipts={receipts} suppliers={[supplier]} />
+      </section>
       <Dialog
         open={editOpen}
         onOpenChange={(open) => {
@@ -164,33 +184,71 @@ export function SupplierDetailPage({
             action={async (formData) => {
               setSaving(true)
               setError("")
-              const result = await updateSupplierAction(supplier.id ?? supplier.supplier_id ?? "", {
-                name: String(formData.get("name")),
-                category: String(formData.get("category")),
-                contactName: String(formData.get("contactName")),
-                companyContact: String(formData.get("companyContact")),
-                phone: String(formData.get("phone")),
-                email: String(formData.get("email")),
-                notes: String(formData.get("notes")),
-                status: String(formData.get("status")),
-              })
+              const result = await updateSupplierAction(
+                supplier.id ?? supplier.supplier_id ?? "",
+                {
+                  name: String(formData.get("name")),
+                  category: String(formData.get("category")),
+                  contactName: String(formData.get("contactName")),
+                  companyContact: String(formData.get("companyContact")),
+                  phone: String(formData.get("phone")),
+                  email: String(formData.get("email")),
+                  notes: String(formData.get("notes")),
+                  status: String(formData.get("status")),
+                }
+              )
               setSaving(false)
               if (!result.success) return setError(result.error.message)
               setEditOpen(false)
               window.location.reload()
             }}
           >
-            <EditField name="name" label="Name" value={supplier.name} required />
-            <EditField name="category" label="Category" value={supplier.category} required />
-            <EditField name="contactName" label="Contact person" value={supplier.contactName ?? ""} />
-            <EditField name="companyContact" label="Company contact" value={supplier.companyContact ?? ""} />
-            <EditField name="phone" label="Phone" value={supplier.phone ?? ""} />
-            <EditField name="email" label="Email (optional)" value={supplier.email ?? ""} type="email" />
-            <EditField name="notes" label="Notes" value={supplier.notes ?? ""} className="sm:col-span-2" />
+            <EditField
+              name="name"
+              label="Name"
+              value={supplier.name}
+              required
+            />
+            <EditField
+              name="category"
+              label="Category"
+              value={supplier.category}
+              required
+            />
+            <EditField
+              name="contactName"
+              label="Contact person"
+              value={supplier.contactName ?? ""}
+            />
+            <EditField
+              name="companyContact"
+              label="Company contact"
+              value={supplier.companyContact ?? ""}
+            />
+            <EditField
+              name="phone"
+              label="Phone"
+              value={supplier.phone ?? ""}
+            />
+            <EditField
+              name="email"
+              label="Email (optional)"
+              value={supplier.email ?? ""}
+              type="email"
+            />
+            <EditField
+              name="notes"
+              label="Notes"
+              value={supplier.notes ?? ""}
+              className="sm:col-span-2"
+            />
             <label className="grid gap-2">
               <Label>Status</Label>
               <input type="hidden" name="status" value={status} />
-              <Select value={status} onValueChange={(value) => setStatus(value ?? "active")}>
+              <Select
+                value={status}
+                onValueChange={(value) => setStatus(value ?? "active")}
+              >
                 <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
@@ -200,12 +258,20 @@ export function SupplierDetailPage({
                 </SelectContent>
               </Select>
             </label>
-            {error && <p className="text-destructive text-sm sm:col-span-2">{error}</p>}
+            {error && (
+              <p className="text-destructive text-sm sm:col-span-2">{error}</p>
+            )}
             <DialogFooter className="sm:col-span-2">
-              <Button type="button" variant="secondary" onClick={() => setEditOpen(false)}>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setEditOpen(false)}
+              >
                 Cancel
               </Button>
-              <Button disabled={saving}>{saving ? "Saving..." : "Save changes"}</Button>
+              <Button disabled={saving}>
+                {saving ? "Saving..." : "Save changes"}
+              </Button>
             </DialogFooter>
           </form>
         </DialogContent>

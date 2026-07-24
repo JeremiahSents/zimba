@@ -8,8 +8,11 @@
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "tsx src/seed.ts",
     "db:reset": "pnpm db:migrate && pnpm db:seed",
+    "test": "vitest run --passWithNoTests",
     "lint": "biome lint .",
     "format": "biome format --write .",
+    "format:check": "biome format .",
+    "check:ci": "biome check .",
     "check": "biome check --write .",
     "typecheck": "tsc --noEmit"
   },
@@ -24,10 +27,15 @@
     "dotenv": "^17.4.2",
     "drizzle-kit": "^0.31.10",
     "tsx": "^4.21.0",
+    "vitest": "^3.2.4",
     "typescript": "^5"
   },
   "exports": {
     ".": "./src/index.ts",
-    "./schema": "./src/schema.ts"
+    "./schema": "./src/schemas/index.ts",
+    "./schemas": "./src/schemas/index.ts",
+    "./schemas/*": "./src/schemas/*.ts",
+    "./repositories": "./src/repositories/index.ts",
+    "./repositories/*": "./src/repositories/*.ts"
   }
 }

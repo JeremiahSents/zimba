@@ -15,6 +15,7 @@ import Link from "next/link"
 import { ProjectsSection } from "@/components/dashboard/projects-section"
 import { RecentActivity } from "@/components/dashboard/recent-activity"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
+import { useWorkspaceSlug } from "@/components/shared/use-workspace-slug"
 import { formatCurrency } from "@/lib/format"
 import type { DashboardOverviewData } from "@/lib/types"
 
@@ -26,12 +27,13 @@ function getGreeting() {
 }
 
 export function DashboardPage({ data }: { data: DashboardOverviewData }) {
+  const slug = useWorkspaceSlug()
   const projects = data.projects
 
   if (projects.length === 0) {
     return (
       <DashboardShell title="Home" headerGreeting={getGreeting()} subtitle="">
-        <FirstProjectEmptyState />
+        <FirstProjectEmptyState slug={slug} />
       </DashboardShell>
     )
   }
@@ -66,19 +68,11 @@ export function DashboardPage({ data }: { data: DashboardOverviewData }) {
           <Button
             size="sm"
             nativeButton={false}
-            render={<Link href="/admin/projects/new" />}
+            render={<Link href={`/${slug}/projects/new`} />}
           >
             <HugeiconsIcon icon={FolderKanbanIcon} strokeWidth={2} />
             New project
           </Button>
-          {/* <Button
-            size="sm"
-            nativeButton={false}
-            render={<Link href="/admin/projects" />}
-          >
-            <HugeiconsIcon icon={PlusSignIcon} strokeWidth={2} />
-            Add expense
-          </Button> */}
         </div>
       </section>
 
@@ -113,7 +107,7 @@ export function DashboardPage({ data }: { data: DashboardOverviewData }) {
   )
 }
 
-function FirstProjectEmptyState() {
+function FirstProjectEmptyState({ slug }: { slug: string }) {
   return (
     <section className="relative isolate flex min-h-[20rem] items-center justify-center overflow-hidden rounded-2xl px-6 py-12 text-center sm:min-h-[28rem] sm:px-10 sm:py-16">
       <div aria-hidden className="absolute inset-0 -z-20 opacity-45" />
@@ -135,7 +129,7 @@ function FirstProjectEmptyState() {
           className="min-w-40"
           size="lg"
           nativeButton={false}
-          render={<Link href="/admin/projects/new" />}
+          render={<Link href={`/${slug}/projects/new`} />}
         >
           <HugeiconsIcon icon={PlusSignIcon} strokeWidth={2} />
           Create project

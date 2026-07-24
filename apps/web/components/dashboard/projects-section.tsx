@@ -5,6 +5,7 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import { Button } from "@workspace/ui/components/button"
 import { Progress } from "@workspace/ui/components/progress"
 import Link from "next/link"
+import { useWorkspaceSlug } from "@/components/shared/use-workspace-slug"
 import { formatCurrency } from "@/lib/format"
 import type { ProjectDashboardResponse } from "@/lib/types"
 
@@ -13,6 +14,7 @@ export function ProjectsSection({
 }: {
   projects: ProjectDashboardResponse[]
 }) {
+  const slug = useWorkspaceSlug()
   return (
     <section>
       <div className="mb-4 flex flex-row items-center justify-between gap-3">
@@ -23,7 +25,7 @@ export function ProjectsSection({
           variant="ghost"
           size="sm"
           nativeButton={false}
-          render={<Link href="/admin/projects" />}
+          render={<Link href={`/${slug}/projects`} />}
         >
           View all
         </Button>
@@ -57,6 +59,7 @@ export function ProjectsList({
 }
 
 export function ProjectRow({ project }: { project: ProjectDashboardResponse }) {
+  const slug = useWorkspaceSlug()
   const budgetTone =
     project.pct >= 80 ? "critical" : project.pct >= 60 ? "warning" : "healthy"
   const utilizationPercent = Math.min(Math.max(project.pct, 0), 100)
@@ -92,7 +95,7 @@ export function ProjectRow({ project }: { project: ProjectDashboardResponse }) {
             className="size-4 shrink-0 text-primary"
           />
           <Link
-            href={`/admin/projects/${project.id}`}
+            href={`/${slug}/projects/${project.id}`}
             className="truncate font-semibold text-sm hover:text-primary"
           >
             {project.name}

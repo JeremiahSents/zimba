@@ -1,10 +1,13 @@
 import "server-only"
 
-import { cache } from "react"
 import { headers } from "next/headers"
+import { cache } from "react"
+import {
+  getOrganizationMembership,
+  type OrganizationMembership,
+} from "../organizations/service"
+import { forbidden, unauthorized } from "../shared/errors"
 import { auth } from "./auth"
-import { getOrganizationMembership, type OrganizationMembership } from "../organizations/service"
-import { unauthorized, forbidden } from "../shared/errors"
 
 export type SessionWithOrganization = {
   user: typeof auth.$Infer.Session.user
@@ -20,30 +23,34 @@ export type SessionLookupResult =
       organization: null
     }
 
-export const getSessionWithOrganization = cache(async (): Promise<SessionLookupResult | null> => {
-  const authSession = await auth.api.getSession({
-    headers: await headers(),
-  })
+export const getSessionWithOrganization = cache(
+  async (): Promise<SessionLookupResult | null> => {
+    const requestHeaders = await headers()
+    const authSession = await auth.api.getSession({ headers: requestHeaders })
 
-  if (!authSession?.session) {
-    return null
-  }
+    if (!authSession?.session) {
+      return null
+    }
 
-  const membership = await getOrganizationMembership(authSession.user.id)
-  if (!membership) {
+    const membership = await getOrganizationMembership(
+      authSession.user.id,
+      requestHeaders.get("x-workspace-slug")
+    )
+    if (!membership) {
+      return {
+        user: authSession.user,
+        session: authSession.session,
+        organization: null,
+      }
+    }
+
     return {
       user: authSession.user,
       session: authSession.session,
-      organization: null,
+      organization: membership,
     }
   }
-
-  return {
-    user: authSession.user,
-    session: authSession.session,
-    organization: membership,
-  }
-})
+)
 
 export async function requireSession(): Promise<SessionWithOrganization> {
   const authSession = await getSessionWithOrganization()

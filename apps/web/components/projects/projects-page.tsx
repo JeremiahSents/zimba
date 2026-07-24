@@ -18,13 +18,13 @@ import { Input } from "@workspace/ui/components/input"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState, useTransition } from "react"
-
+import { ProjectsList } from "@/components/dashboard/projects-section"
+import { DashboardShell } from "@/components/shared/dashboard-shell"
+import { useWorkspaceSlug } from "@/components/shared/use-workspace-slug"
 import {
   deleteProjectAction,
   restoreProjectAction,
-} from "@/app/admin/projects/actions"
-import { ProjectsList } from "@/components/dashboard/projects-section"
-import { DashboardShell } from "@/components/shared/dashboard-shell"
+} from "@/core/projects/actions"
 import { formatCurrency } from "@/lib/format"
 import type {
   DashboardOverviewData,
@@ -41,6 +41,7 @@ export function ProjectsPage({
   archivedProjects: ProjectDashboardResponse[]
 }) {
   const projects = data.projects
+  const slug = useWorkspaceSlug()
   const [search, setSearch] = useState("")
   const [pageIndex, setPageIndex] = useState(0)
 
@@ -96,7 +97,7 @@ export function ProjectsPage({
           variant="secondary"
           size="sm"
           nativeButton={false}
-          render={<Link href="/admin/projects/new" />}
+          render={<Link href={`/${slug}/projects/new`} />}
         >
           <HugeiconsIcon icon={PlusSignIcon} strokeWidth={2} />
           New project
@@ -209,6 +210,7 @@ function ArchivedProjectsSection({
 }: {
   projects: ProjectDashboardResponse[]
 }) {
+  const slug = useWorkspaceSlug()
   const router = useRouter()
   const [pendingId, setPendingId] = useState<string | null>(null)
   const [error, setError] = useState("")
@@ -276,7 +278,7 @@ function ArchivedProjectsSection({
             >
               <div className="min-w-0">
                 <Link
-                  href={`/admin/projects/${project.id}`}
+                  href={`/${slug}/projects/${project.id}`}
                   className="block truncate font-semibold text-sm hover:text-primary"
                 >
                   {project.name}

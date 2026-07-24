@@ -17,10 +17,11 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { Cell, Pie, PieChart } from "recharts"
-import { archiveProjectAction } from "@/app/admin/projects/actions"
 import { ProjectExpensesTable } from "@/components/projects/project-expenses-table"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { ErrorNotice } from "@/components/shared/error-notice"
+import { useWorkspaceSlug } from "@/components/shared/use-workspace-slug"
+import { archiveProjectAction } from "@/core/projects/actions"
 import type { PublicError } from "@/core/shared/errors"
 import { formatCurrency, formatPercent, formatShortDate } from "@/lib/format"
 import type { ProjectDetailResponse } from "@/lib/types"
@@ -50,6 +51,7 @@ export function ProjectDetailPage({
   project: ProjectDetailResponse
 }) {
   const router = useRouter()
+  const slug = useWorkspaceSlug()
   const [expenses, setExpenses] = useState(project.expenses)
   const [mutationError] = useState<PublicError | string>("")
 
@@ -75,7 +77,7 @@ export function ProjectDetailPage({
     <DashboardShell
       title={
         <Link
-          href="/admin/projects"
+          href={`/${slug}/projects`}
           aria-label="Back to projects"
           className="inline-flex items-center gap-1.5 text-primary text-sm hover:underline"
         >
@@ -94,19 +96,19 @@ export function ProjectDetailPage({
           </h2>
           <div className="hidden items-center gap-2 md:flex">
             <Link
-              href={`/admin/projects/${project.id}/edit`}
+              href={`/${slug}/projects/${project.id}/edit`}
               className="inline-flex h-9 items-center rounded-md border bg-background px-3 font-medium text-xs shadow-xs transition-colors hover:bg-accent"
             >
               Edit project
             </Link>
             <Link
-              href={`/admin/projects/${project.id}/expenses/new`}
+              href={`/${slug}/projects/${project.id}/expenses/new`}
               className="inline-flex h-9 items-center rounded-md bg-primary px-3 font-medium text-primary-foreground text-xs shadow-xs transition-colors hover:bg-primary/90"
             >
               New expense
             </Link>
             <Link
-              href={`/admin/projects/${project.id}/files`}
+              href={`/${slug}/projects/${project.id}/files`}
               className="inline-flex h-9 items-center rounded-md border bg-background px-3 font-medium text-xs shadow-xs transition-colors hover:bg-accent"
             >
               View files
@@ -120,7 +122,7 @@ export function ProjectDetailPage({
                   )
                 ) {
                   await archiveProjectAction(project.id)
-                  router.push("/admin/projects")
+                  router.push(`/${slug}/projects`)
                 }
               }}
               className="inline-flex h-9 items-center rounded-md border border-destructive/30 px-3 font-medium text-destructive text-xs transition-colors hover:bg-destructive/10"
@@ -130,7 +132,7 @@ export function ProjectDetailPage({
           </div>
           <div className="ml-auto flex shrink-0 items-center gap-1.5 md:hidden">
             <Link
-              href={`/admin/projects/${project.id}/expenses/new`}
+              href={`/${slug}/projects/${project.id}/expenses/new`}
               className="inline-flex h-9 items-center rounded-md bg-primary px-3 font-medium text-primary-foreground text-xs shadow-xs transition-colors hover:bg-primary/90"
             >
               New expense
@@ -157,7 +159,7 @@ export function ProjectDetailPage({
                     <Menu.LinkItem
                       closeOnClick
                       render={
-                        <Link href={`/admin/projects/${project.id}/edit`} />
+                        <Link href={`/${slug}/projects/${project.id}/edit`} />
                       }
                       className="flex cursor-default items-center rounded-md px-2.5 py-2 font-medium text-xs outline-none data-highlighted:bg-accent"
                     >
@@ -166,7 +168,7 @@ export function ProjectDetailPage({
                     <Menu.LinkItem
                       closeOnClick
                       render={
-                        <Link href={`/admin/projects/${project.id}/files`} />
+                        <Link href={`/${slug}/projects/${project.id}/files`} />
                       }
                       className="flex cursor-default items-center rounded-md px-2.5 py-2 font-medium text-xs outline-none data-highlighted:bg-accent"
                     >
@@ -180,7 +182,7 @@ export function ProjectDetailPage({
                           )
                         ) {
                           await archiveProjectAction(project.id)
-                          router.push("/admin/projects")
+                          router.push(`/${slug}/projects`)
                         }
                       }}
                       className="flex cursor-default items-center rounded-md px-2.5 py-2 font-medium text-destructive text-xs outline-none data-highlighted:bg-destructive/10"

@@ -1,25 +1,35 @@
 import "server-only"
+import {
+  getProjectSummaryUseCase,
+  listArchivedProjectSummariesUseCase,
+  listFinancialExpenseRowsUseCase,
+  listProjectAllocationsUseCase,
+  listProjectAttachmentsUseCase,
+  listProjectSummariesUseCase,
+} from "@workspace/api"
+import { apiExecutor } from "@workspace/api-runtime"
+import type { WorkspaceRole } from "@workspace/contracts"
 import type {
   ProjectDashboardResponse,
   ProjectDetailResponse,
 } from "@/lib/types"
-import * as allocationRepo from "../allocations/repository"
 import { requireSession } from "../auth/service"
-import * as expenseRepo from "../expenses/repository"
-import * as fileRepo from "../files/repository"
-import * as projectRepo from "./repository"
 
 export async function getProjectsList() {
   const { organization } = await requireSession()
-  const projects = await projectRepo.listProjects(organization.organizationId)
+  const projects = await listProjectSummariesUseCase(
+    { organizationId: organization.organizationId },
+    apiExecutor
+  )
 
   return projects.map(toProjectDashboardResponse)
 }
 
 export async function getArchivedProjectsList() {
   const { organization } = await requireSession()
-  const projects = await projectRepo.listArchivedProjects(
-    organization.organizationId
+  const projects = await listArchivedProjectSummariesUseCase(
+    { organizationId: organization.organizationId },
+    apiExecutor
   )
 
   return projects.map(toProjectDashboardResponse)
@@ -28,9 +38,10 @@ export async function getArchivedProjectsList() {
 export async function getProjectDetail(
   projectId: string
 ): Promise<ProjectDetailResponse | null> {
-  const { organization } = await requireSession()
-  const project = await projectRepo.getProject(
-    organization.organizationId,
+  const { user, organization } = await requireSession()
+  const project = await getProjectSummaryUseCase(
+    { organizationId: organization.organizationId },
+    apiExecutor,
     projectId
   )
 
@@ -38,17 +49,28 @@ export async function getProjectDetail(
     return null
   }
 
-  const allocations = await allocationRepo.listAllocations(
-    organization.organizationId,
+  const allocations = await listProjectAllocationsUseCase(
+    {
+      userId: user.id,
+      organizationId: organization.organizationId,
+      role: organization.role as WorkspaceRole,
+    },
+    apiExecutor,
     projectId
   )
   const [expenseRows, attachments] = await Promise.all([
-    expenseRepo.listFinancialExpenseRows(organization.organizationId),
-    fileRepo.listProjectAttachments(organization.organizationId, projectId),
+    listFinancialExpenseRowsUseCase(
+      { organizationId: organization.organizationId },
+      apiExecutor,
+      projectId
+    ),
+    listProjectAttachmentsUseCase(
+      { organizationId: organization.organizationId },
+      apiExecutor,
+      projectId
+    ),
   ])
-  const projectExpenseRows = expenseRows.filter(
-    (expense) => expense.projectId === projectId
-  )
+  const projectExpenseRows = expenseRows
   const flatExpenses = projectExpenseRows.map((expense) => ({
     id: expense.id,
     receipt_id: expense.receiptId,
@@ -164,7 +186,7 @@ function toProjectExpenseStatus(row: {
 }
 
 function toProjectDashboardResponse(
-  p: Awaited<ReturnType<typeof projectRepo.listProjects>>[number]
+  p: Awaited<ReturnType<typeof listProjectSummariesUseCase>>[number]
 ): ProjectDashboardResponse {
   return {
     id: p.id,

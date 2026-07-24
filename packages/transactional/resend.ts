@@ -17,7 +17,7 @@ export function getResend(): Resend {
 }
 
 export function getFromAddress(): string {
-  return process.env.RESEND_FROM ?? "Zimba <noreply@zimba.digital>"
+  return process.env.RESEND_FROM ?? "Zimba <onboarding@resend.dev>"
 }
 
 export type SendEmailResult = {

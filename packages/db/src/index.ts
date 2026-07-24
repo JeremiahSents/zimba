@@ -1,6 +1,6 @@
 import { drizzle } from "drizzle-orm/node-postgres"
 import { Pool } from "pg"
-import * as schema from "./schema"
+import * as schema from "./schemas/index"
 
 const globalForDatabase = globalThis as unknown as {
   zimbaPool?: Pool
@@ -13,7 +13,9 @@ function getDatabaseUrl() {
     throw new Error("DATABASE_URL is required.")
   }
 
-  const connectionUrl = new URL(databaseUrl.replace(/^postgresql\+psycopg:/, "postgresql:"))
+  const connectionUrl = new URL(
+    databaseUrl.replace(/^postgresql\+psycopg:/, "postgresql:")
+  )
 
   if (connectionUrl.searchParams.get("sslmode") === "require") {
     connectionUrl.searchParams.set("sslmode", "verify-full")
@@ -49,8 +51,9 @@ if (process.env.NODE_ENV !== "production") {
   globalForDatabase.zimbaPool = pool
 }
 
+export * from "./repositories/index"
+export * from "./schemas/index"
 export { schema }
-export * from "./schema"
 
 export const db = drizzle(pool, { schema })
 
