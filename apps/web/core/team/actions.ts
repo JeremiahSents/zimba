@@ -1,7 +1,6 @@
 "use server"
 
-import { teamInviteSchema } from "@workspace/contracts"
-import { fieldErrorsFromZod } from "@workspace/server-primitives"
+import { fieldErrorsFromZod, teamInviteSchema } from "@workspace/contracts"
 import { revalidatePath } from "next/cache"
 import { ensureActionSession } from "@/core/auth/action-session"
 import type { WorkspaceRole } from "@/core/auth/permissions"

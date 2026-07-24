@@ -3,9 +3,9 @@
 import {
   boundedNameSchema,
   idSchema as contractIdSchema,
+  fieldErrorsFromZod,
   supplierFormSchema,
 } from "@workspace/contracts"
-import { fieldErrorsFromZod } from "@workspace/server-primitives"
 import { revalidatePath } from "next/cache"
 import { ensureActionSession } from "@/core/auth/action-session"
 import { getWorkspaceSlug } from "@/core/auth/workspace-slug"

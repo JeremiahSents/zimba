@@ -9,7 +9,10 @@ const repo = vi.hoisted(() => ({
   listArchivedProjectsForOrganization: vi.fn(),
   listExpensesForOrganization: vi.fn(),
   listPayablesForOrganization: vi.fn(),
+  listPayablePaymentsForPayables: vi.fn(),
   listProjectsForOrganization: vi.fn(),
+  listReceiptLinesWithAllocationForExpenses: vi.fn(),
+  listReceiptPaymentsForExpenses: vi.fn(),
 }))
 
 vi.mock("@workspace/db/repositories", () => repo)
@@ -43,6 +46,9 @@ describe("project read use cases", () => {
     ])
     repo.listExpensesForOrganization.mockResolvedValue([])
     repo.listPayablesForOrganization.mockResolvedValue([])
+    repo.listPayablePaymentsForPayables.mockResolvedValue([])
+    repo.listReceiptLinesWithAllocationForExpenses.mockResolvedValue([])
+    repo.listReceiptPaymentsForExpenses.mockResolvedValue([])
   })
 
   it("lists active project summaries with computed financial totals", async () => {
@@ -61,20 +67,18 @@ describe("project read use cases", () => {
         supplierName: null,
       },
     ])
-    repo.findExpenseForOrganization.mockResolvedValue({
-      lines: [
-        {
-          line: {
-            id: "line-1",
-            allocationId: "allocation-1",
-            itemDescription: "Cement",
-            amountCents: 250,
-          },
-          allocationName: "Foundation",
+    repo.listReceiptLinesWithAllocationForExpenses.mockResolvedValue([
+      {
+        line: {
+          id: "line-1",
+          expenseId: "receipt-1",
+          allocationId: "allocation-1",
+          itemDescription: "Cement",
+          amountCents: 250,
         },
-      ],
-      payments: [],
-    })
+        allocationName: "Foundation",
+      },
+    ])
 
     await expect(listProjectSummariesUseCase(ctx, deps)).resolves.toEqual([
       expect.objectContaining({

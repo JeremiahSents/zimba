@@ -6,6 +6,9 @@ const repo = vi.hoisted(() => ({
   findPayableForOrganization: vi.fn(),
   listExpensesForOrganization: vi.fn(),
   listPayablesForOrganization: vi.fn(),
+  listPayablePaymentsForPayables: vi.fn(),
+  listReceiptLinesWithAllocationForExpenses: vi.fn(),
+  listReceiptPaymentsForExpenses: vi.fn(),
 }))
 
 vi.mock("@workspace/db/repositories", () => repo)
@@ -24,6 +27,9 @@ describe("financial expense read use cases", () => {
     vi.resetAllMocks()
     repo.listExpensesForOrganization.mockResolvedValue([])
     repo.listPayablesForOrganization.mockResolvedValue([])
+    repo.listPayablePaymentsForPayables.mockResolvedValue([])
+    repo.listReceiptLinesWithAllocationForExpenses.mockResolvedValue([])
+    repo.listReceiptPaymentsForExpenses.mockResolvedValue([])
   })
 
   it("splits receipt payments proportionally across lines", async () => {
@@ -39,29 +45,31 @@ describe("financial expense read use cases", () => {
     repo.listExpensesForOrganization.mockResolvedValue([
       { expense, projectName: "Project", supplierName: "Supplier" },
     ])
-    repo.findExpenseForOrganization.mockResolvedValue({
-      lines: [
-        {
-          line: {
-            id: "line-1",
-            allocationId: "allocation-1",
-            itemDescription: "Cement",
-            amountCents: 300,
-          },
-          allocationName: "Foundation",
+    repo.listReceiptLinesWithAllocationForExpenses.mockResolvedValue([
+      {
+        line: {
+          id: "line-1",
+          expenseId: "receipt-1",
+          allocationId: "allocation-1",
+          itemDescription: "Cement",
+          amountCents: 300,
         },
-        {
-          line: {
-            id: "line-2",
-            allocationId: "allocation-2",
-            itemDescription: "Steel",
-            amountCents: 700,
-          },
-          allocationName: "Frame",
+        allocationName: "Foundation",
+      },
+      {
+        line: {
+          id: "line-2",
+          expenseId: "receipt-1",
+          allocationId: "allocation-2",
+          itemDescription: "Steel",
+          amountCents: 700,
         },
-      ],
-      payments: [{ amountCents: 500 }],
-    })
+        allocationName: "Frame",
+      },
+    ])
+    repo.listReceiptPaymentsForExpenses.mockResolvedValue([
+      { expenseId: "receipt-1", payableId: null, amountCents: 500 },
+    ])
 
     await expect(listFinancialExpenseRowsUseCase(ctx, deps)).resolves.toEqual([
       expect.objectContaining({
@@ -75,6 +83,17 @@ describe("financial expense read use cases", () => {
         paidCents: 350,
       }),
     ])
+    expect(repo.listReceiptLinesWithAllocationForExpenses).toHaveBeenCalledWith(
+      deps.executor,
+      "org-1",
+      ["receipt-1"]
+    )
+    expect(repo.listReceiptPaymentsForExpenses).toHaveBeenCalledWith(
+      deps.executor,
+      "org-1",
+      ["receipt-1"]
+    )
+    expect(repo.findExpenseForOrganization).not.toHaveBeenCalled()
   })
 
   it("includes legacy payables that are not mirrored by current receipts", async () => {
@@ -97,9 +116,9 @@ describe("financial expense read use cases", () => {
         supplierName: null,
       },
     ])
-    repo.findPayableForOrganization.mockResolvedValue({
-      payments: [{ amountCents: 200 }],
-    })
+    repo.listPayablePaymentsForPayables.mockResolvedValue([
+      { payableId: "payable-1", amountCents: 200 },
+    ])
 
     await expect(listFinancialExpenseRowsUseCase(ctx, deps)).resolves.toEqual([
       expect.objectContaining({
@@ -109,6 +128,12 @@ describe("financial expense read use cases", () => {
         paidCents: 200,
       }),
     ])
+    expect(repo.listPayablePaymentsForPayables).toHaveBeenCalledWith(
+      deps.executor,
+      "org-1",
+      ["payable-1"]
+    )
+    expect(repo.findPayableForOrganization).not.toHaveBeenCalled()
   })
 
   it("delegates expense and payable detail lookups through workspace scope", async () => {

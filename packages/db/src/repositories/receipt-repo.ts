@@ -1,4 +1,4 @@
-import { and, desc, eq, sql } from "drizzle-orm"
+import { and, desc, eq, inArray, or, sql } from "drizzle-orm"
 import { uploadedFile } from "../schemas/file-schema"
 import { allocation, project } from "../schemas/project-schema"
 import {
@@ -241,6 +241,70 @@ export function listReceiptLinesWithAllocation(
       and(
         eq(expenseLine.expenseId, receiptId),
         eq(expenseLine.organizationId, organizationId)
+      )
+    )
+}
+
+export function listReceiptLinesWithAllocationForExpenses(
+  executor: DatabaseExecutor,
+  organizationId: string,
+  expenseIds: string[]
+) {
+  if (expenseIds.length === 0) return Promise.resolve([])
+
+  return executor
+    .select({ line: expenseLine, allocationName: allocation.name })
+    .from(expenseLine)
+    .leftJoin(
+      allocation,
+      and(
+        eq(allocation.id, expenseLine.allocationId),
+        eq(allocation.organizationId, expenseLine.organizationId)
+      )
+    )
+    .where(
+      and(
+        eq(expenseLine.organizationId, organizationId),
+        inArray(expenseLine.expenseId, expenseIds)
+      )
+    )
+}
+
+export function listReceiptPaymentsForExpenses(
+  executor: DatabaseExecutor,
+  organizationId: string,
+  expenseIds: string[]
+) {
+  if (expenseIds.length === 0) return Promise.resolve([])
+
+  return executor
+    .select()
+    .from(ledgerPayment)
+    .where(
+      and(
+        eq(ledgerPayment.organizationId, organizationId),
+        or(
+          inArray(ledgerPayment.expenseId, expenseIds),
+          inArray(ledgerPayment.payableId, expenseIds)
+        )
+      )
+    )
+}
+
+export function listPayablePaymentsForPayables(
+  executor: DatabaseExecutor,
+  organizationId: string,
+  payableIds: string[]
+) {
+  if (payableIds.length === 0) return Promise.resolve([])
+
+  return executor
+    .select()
+    .from(ledgerPayment)
+    .where(
+      and(
+        eq(ledgerPayment.organizationId, organizationId),
+        inArray(ledgerPayment.payableId, payableIds)
       )
     )
 }

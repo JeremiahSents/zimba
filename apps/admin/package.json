@@ -24,7 +24,6 @@
     "@workspace/db": "workspace:*",
     "@workspace/api": "workspace:*",
     "@workspace/contracts": "workspace:*",
-    "@workspace/server-primitives": "workspace:*",
     "@workspace/transactional": "workspace:*",
     "@workspace/ui": "workspace:*",
     "better-auth": "^1.6.23",

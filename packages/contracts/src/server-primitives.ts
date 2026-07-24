@@ -14,7 +14,9 @@ export const errorCodes = [
   "RATE_LIMITED",
   "INTERNAL_ERROR",
 ] as const
+
 export type ErrorCode = (typeof errorCodes)[number]
+
 export type RecoveryAction =
   | "RETRY"
   | "RELOAD"

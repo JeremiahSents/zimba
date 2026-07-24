@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { z } from "zod"
-import { fieldErrorsFromZod } from "./index.js"
+import { fieldErrorsFromZod } from "./server-primitives"
 
 describe("server primitives", () => {
   it("converts Zod issues into stable field errors", () => {
