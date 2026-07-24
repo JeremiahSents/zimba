@@ -20,20 +20,34 @@ import {
 } from "@workspace/ui/components/tabs"
 import type { Metadata } from "next"
 import {
-  ApplicationItem,
+  type ApplicationItem,
   ApplicationsTable,
 } from "@/components/applications-table"
 import { AdminDashboardShell } from "@/components/dashboard-shell"
 import { StatCard } from "@/components/stat-card"
-import { TransferItem, TransfersTable } from "@/components/transfers-table"
+import { type TransferItem, TransfersTable } from "@/components/transfers-table"
 import { requirePlatformSession } from "@/core/auth/service"
 
 export const metadata: Metadata = {
   title: "Applications & Transfers | Zimba Admin",
-  description: "Review customer onboarding applications and ownership transfer requests.",
+  description:
+    "Review customer onboarding applications and ownership transfer requests.",
 }
 
 export const dynamic = "force-dynamic"
+
+async function readWorkflowData<T>(
+  label: string,
+  readData: () => Promise<T>,
+  fallback: T
+) {
+  try {
+    return await readData()
+  } catch (error) {
+    console.error(`Could not load ${label}.`, error)
+    return fallback
+  }
+}
 
 export default async function ApplicationsPage({
   searchParams,
@@ -45,10 +59,26 @@ export default async function ApplicationsPage({
 
   const [applications, transfers, pendingApps, pendingTransfers] =
     await Promise.all([
-      listOnboardingApplicationsUseCase(apiExecutor),
-      listOwnershipTransferRequestsUseCase(apiExecutor),
-      getPendingApplicationCountUseCase(apiExecutor),
-      getPendingTransferCountUseCase(apiExecutor),
+      readWorkflowData(
+        "onboarding applications",
+        () => listOnboardingApplicationsUseCase(apiExecutor),
+        []
+      ),
+      readWorkflowData(
+        "ownership transfers",
+        () => listOwnershipTransferRequestsUseCase(apiExecutor),
+        []
+      ),
+      readWorkflowData(
+        "pending application count",
+        () => getPendingApplicationCountUseCase(apiExecutor),
+        0
+      ),
+      readWorkflowData(
+        "pending transfer count",
+        () => getPendingTransferCountUseCase(apiExecutor),
+        0
+      ),
     ])
 
   const appData: ApplicationItem[] = (applications as ApplicationItem[]).map(
@@ -64,29 +94,36 @@ export default async function ApplicationsPage({
     })
   )
 
-  const transferData: TransferItem[] = (transfers as TransferItem[]).map((r) => ({
-    id: r.id,
-    organizationId: r.organizationId,
-    organizationName: r.organizationName,
-    fromUserName: r.fromUserName,
-    fromUserEmail: r.fromUserEmail,
-    toUserName: r.toUserName,
-    toUserEmail: r.toUserEmail,
-    status: r.status,
-    reason: r.reason,
-    rejectionReason: r.rejectionReason,
-    createdAt: r.createdAt,
-  }))
+  const transferData: TransferItem[] = (transfers as TransferItem[]).map(
+    (r) => ({
+      id: r.id,
+      organizationId: r.organizationId,
+      organizationName: r.organizationName,
+      fromUserName: r.fromUserName,
+      fromUserEmail: r.fromUserEmail,
+      toUserName: r.toUserName,
+      toUserEmail: r.toUserEmail,
+      status: r.status,
+      reason: r.reason,
+      rejectionReason: r.rejectionReason,
+      createdAt: r.createdAt,
+    })
+  )
 
-  const approvedApps = applications.filter((a) => a.status === "approved").length
-  const approvedTransfers = transfers.filter((t) => t.status === "approved").length
+  const approvedApps = applications.filter(
+    (a) => a.status === "approved"
+  ).length
+  const approvedTransfers = transfers.filter(
+    (t) => t.status === "approved"
+  ).length
 
   return (
     <AdminDashboardShell>
       {/* ── Subtitle header ── */}
       <div className="flex items-center justify-between">
         <p className="text-muted-foreground text-sm">
-          Review onboarding applications and manage organization ownership transfer requests.
+          Review onboarding applications and manage organization ownership
+          transfer requests.
         </p>
       </div>
 
@@ -166,12 +203,21 @@ export default async function ApplicationsPage({
       </div>
 
       {/* ── Unified Tabbed Tables ── */}
-      <Tabs defaultValue={tab === "transfers" ? "transfers" : "applications"} className="w-full">
+      <Tabs
+        defaultValue={tab === "transfers" ? "transfers" : "applications"}
+        className="w-full"
+      >
         <TabsList className="w-full justify-start rounded-xl bg-muted/50 p-1">
-          <TabsTrigger value="applications" className="rounded-lg text-xs font-semibold">
+          <TabsTrigger
+            value="applications"
+            className="rounded-lg font-semibold text-xs"
+          >
             Onboarding Applications ({applications.length})
           </TabsTrigger>
-          <TabsTrigger value="transfers" className="rounded-lg text-xs font-semibold">
+          <TabsTrigger
+            value="transfers"
+            className="rounded-lg font-semibold text-xs"
+          >
             Ownership Transfers ({transfers.length})
           </TabsTrigger>
         </TabsList>
