@@ -34,6 +34,9 @@ export function LoginForm({
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [name, setName] = useState("")
+  const newUserCallbackUrl = callbackUrl.startsWith("/invite/")
+    ? callbackUrl
+    : "/onboarding"
 
   async function continueWithGoogle() {
     setError(null)
@@ -42,7 +45,7 @@ export function LoginForm({
     const result = await authClient.signIn.social({
       provider: "google",
       callbackURL: callbackUrl,
-      newUserCallbackURL: "/onboarding",
+      newUserCallbackURL: newUserCallbackUrl,
       errorCallbackURL: `/login?error=oauth&callbackUrl=${encodeURIComponent(callbackUrl)}`,
     })
 
@@ -77,7 +80,7 @@ export function LoginForm({
         email,
         password,
         name: name.trim(),
-        callbackURL: "/onboarding",
+        callbackURL: newUserCallbackUrl,
       })
       setIsPending(false)
       if (result?.error) {
@@ -130,10 +133,7 @@ export function LoginForm({
           </FieldDescription>
         </div>
 
-        <form
-          onSubmit={continueWithPassword}
-          className="flex flex-col gap-3"
-        >
+        <form onSubmit={continueWithPassword} className="flex flex-col gap-3">
           {mode === "signup" ? (
             <Field>
               <Label htmlFor="signup-name">Name</Label>
@@ -206,9 +206,7 @@ export function LoginForm({
             <span className="w-full border-t" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-background px-2 text-muted-foreground">
-              or
-            </span>
+            <span className="bg-background px-2 text-muted-foreground">or</span>
           </div>
         </div>
 

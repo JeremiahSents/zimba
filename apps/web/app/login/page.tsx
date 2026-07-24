@@ -24,6 +24,7 @@ export default async function LoginPage({
   const destination = callbackUrl?.startsWith("/") ? callbackUrl : "/workspace"
   const demoEnabled = isDemoMode()
   if (session) {
+    if (destination.startsWith("/invite/")) redirect(destination)
     const membership = await getOrganizationMembership(session.user.id)
     redirect(
       membership && destination === "/workspace"
