@@ -69,6 +69,8 @@ export default async function ProjectDetailPage({
     notFound()
   }
 
+  const totalSpendCents = Number(project.totalSpendCents || 0)
+
   return (
     <AdminDashboardShell>
       {/* ── Top Navigation Bar ── */}
@@ -131,10 +133,10 @@ export default async function ProjectDetailPage({
 
             <div className="flex flex-col text-right">
               <span className="font-semibold text-2xl text-foreground tabular-nums">
-                {formatCompactCurrency(project.totalSpendCents, project.currency)}
+                {formatCompactCurrency(totalSpendCents, project.currency)}
               </span>
               <span className="text-muted-foreground text-xs">
-                {formatFullCurrency(project.totalSpendCents, project.currency)} Total Spend
+                {formatFullCurrency(totalSpendCents, project.currency)} Total Spend
               </span>
             </div>
           </div>
@@ -145,7 +147,7 @@ export default async function ProjectDetailPage({
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard
           title="Total Spend"
-          value={formatCompactCurrency(project.totalSpendCents, project.currency)}
+          value={formatCompactCurrency(totalSpendCents, project.currency)}
           accent="emerald"
           icon={
             <HugeiconsIcon
@@ -154,7 +156,7 @@ export default async function ProjectDetailPage({
               className="size-4"
             />
           }
-          description={formatFullCurrency(project.totalSpendCents, project.currency)}
+          description={formatFullCurrency(totalSpendCents, project.currency)}
         />
         <StatCard
           title="Logged Receipts"
