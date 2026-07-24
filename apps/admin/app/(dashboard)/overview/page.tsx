@@ -241,7 +241,7 @@ export default async function OverviewPage() {
                 >
                   <div
                     className={cn(
-                      "mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full text-[10px] font-bold uppercase",
+                      "mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full font-bold text-[10px] uppercase",
                       getActionIcon(activity.action)
                     )}
                   >
@@ -261,7 +261,7 @@ export default async function OverviewPage() {
                       {activity.organizationName}
                     </p>
                   </div>
-                  <span className="shrink-0 text-muted-foreground/70 text-[11px] tabular-nums">
+                  <span className="shrink-0 text-[11px] text-muted-foreground/70 tabular-nums">
                     {formatTimeAgo(activity.createdAt)}
                   </span>
                 </div>
