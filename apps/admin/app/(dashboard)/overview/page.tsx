@@ -58,19 +58,33 @@ function getActionVerb(action: string) {
   return action.replace(/_/g, " ")
 }
 
+async function getOptionalWorkflowCount(
+  label: string,
+  readCount: () => Promise<number>
+) {
+  try {
+    return await readCount()
+  } catch (error) {
+    console.error(`Could not load ${label} count.`, error)
+    return 0
+  }
+}
+
 export default async function OverviewPage() {
   const [stats, recentActivity, healthChecks, pendingApps, pendingTransfers] =
     await Promise.all([
       getPlatformStats(),
       getRecentActivity(8),
       getSystemHealth(),
-      getPendingApplicationCountUseCase(apiExecutor),
-      getPendingTransferCountUseCase(apiExecutor),
+      getOptionalWorkflowCount("pending application", () =>
+        getPendingApplicationCountUseCase(apiExecutor)
+      ),
+      getOptionalWorkflowCount("pending transfer", () =>
+        getPendingTransferCountUseCase(apiExecutor)
+      ),
     ])
 
-  const allOperational = healthChecks.every(
-    (h) => h.status === "operational"
-  )
+  const allOperational = healthChecks.every((h) => h.status === "operational")
   const degradedCount = healthChecks.filter(
     (h) => h.status !== "operational"
   ).length
@@ -173,9 +187,7 @@ export default async function OverviewPage() {
               className="size-4"
             />
           }
-          description={
-            pendingTransfers > 0 ? "Needs approval" : "All clear"
-          }
+          description={pendingTransfers > 0 ? "Needs approval" : "All clear"}
         />
       </div>
 
@@ -237,9 +249,7 @@ export default async function OverviewPage() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-sm leading-snug">
-                      <span className="font-medium">
-                        {activity.actorName}
-                      </span>{" "}
+                      <span className="font-medium">{activity.actorName}</span>{" "}
                       <span className="text-muted-foreground">
                         {getActionVerb(activity.action)}
                       </span>{" "}
