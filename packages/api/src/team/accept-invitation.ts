@@ -36,7 +36,7 @@ export async function acceptInvitationUseCase(
     invite.organizationId
   )
   if (workspace?.status !== "active")
-    notFoundError("This invitation is no longer available.")
+    notFoundError("This invitation is invalid or expired.")
   if (invite.status !== "pending")
     conflictError("This invitation has already been used.")
   const claimed = await deps.transaction((tx) =>

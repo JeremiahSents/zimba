@@ -1,4 +1,4 @@
-import { readFile, readdir } from "node:fs/promises"
+import { access, readFile, readdir } from "node:fs/promises"
 import { join, relative, sep } from "node:path"
 
 const root = process.cwd()
@@ -20,16 +20,29 @@ function add(file, message) {
   violations.push(`${relative(root, file)}: ${message}`)
 }
 
+async function exists(path) {
+  try {
+    await access(path)
+    return true
+  } catch {
+    return false
+  }
+}
+
 const apiFiles = await walk(join(root, "packages", "api"))
 for (const file of apiFiles) {
   const source = await readFile(file, "utf8")
   if (/from ["'](?:next|react)(?:\/|["'])/.test(source))
     add(file, "packages/api must not import Next.js or React")
-  if (source.includes("@workspace/db/schema"))
-    add(file, "packages/api must not import Drizzle schemas")
+  if (source.includes("@workspace/db/schema") || /from ["']drizzle-orm/.test(source))
+    add(file, "packages/api must not import Drizzle schemas or Drizzle APIs")
+  if (source.includes("better-auth"))
+    add(file, "packages/api must not import Better Auth")
 }
 
 const webFiles = await walk(join(root, "apps", "web"))
+if (await exists(join(root, "apps", "web", "domains")))
+  add(join(root, "apps", "web", "domains"), "apps/web/domains is obsolete")
 for (const file of webFiles) {
   const source = await readFile(file, "utf8")
   if (source.includes("apps/web/domains") || source.includes("@/domains/"))

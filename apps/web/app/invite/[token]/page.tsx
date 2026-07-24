@@ -20,21 +20,53 @@ export default async function InvitePage({
   if (!session)
     redirect(`/login?callbackUrl=${encodeURIComponent(`/invite/${token}`)}`)
   const invite = await getInvitationPreview(token)
-  if (invite.state !== "pending")
+
+  if (invite.state === "invalid")
     return (
       <main>
-        <h1>Invitation unavailable</h1>
-        <p>This invitation is {invite.state}.</p>
+        <h1>Invitation not found</h1>
+        <p>
+          This invitation link is invalid or has expired. Ask your team owner to
+          send a new invitation.
+        </p>
       </main>
     )
+
+  if (invite.state === "expired")
+    return (
+      <main>
+        <h1>Invitation expired</h1>
+        <p>
+          This invitation expired on{" "}
+          {new Date(invite.expiresAt).toLocaleDateString()}. Ask your team owner
+          to send a new invitation.
+        </p>
+      </main>
+    )
+
+  if (invite.state === "used")
+    return (
+      <main>
+        <h1>Invitation already used</h1>
+        <p>
+          This invitation has already been accepted. If you believe this is an
+          error, ask your team owner to send a new invitation.
+        </p>
+      </main>
+    )
+
   if (session.user.email.toLowerCase() !== invite.email.toLowerCase()) {
     return (
       <main>
         <h1>Wrong account</h1>
-        <p>Sign in with {invite.email} to accept this invitation.</p>
+        <p>
+          This invitation is for <strong>{invite.email}</strong>. Sign out and
+          back in with that email address to accept it.
+        </p>
       </main>
     )
   }
+
   return (
     <main>
       <h1>Join {invite.organizationName}</h1>
