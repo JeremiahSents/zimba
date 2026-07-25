@@ -1,4 +1,4 @@
-import { and, count, desc, eq, gt, sql } from "drizzle-orm"
+import { and, count, desc, eq, gt, isNotNull, sql } from "drizzle-orm"
 import { user } from "../schemas/auth-schema"
 import {
   invitation,
@@ -135,7 +135,12 @@ export async function readOrganizationStats(
           totalPaidCents: sql<number>`coalesce(sum(${payment.amountCents}), 0)`,
         })
         .from(payment)
-        .where(eq(payment.organizationId, organizationId)),
+        .where(
+          and(
+            eq(payment.organizationId, organizationId),
+            isNotNull(payment.expenseId)
+          )
+        ),
       executor
         .select({ count: count() })
         .from(supplier)

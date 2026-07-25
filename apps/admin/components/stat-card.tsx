@@ -61,7 +61,7 @@ export function StatCard({
           <p className="truncate font-medium text-muted-foreground text-xs">
             {title}
           </p>
-          <p className="mt-2 font-heading font-semibold text-2xl tracking-tight tabular-nums">
+          <p className="mt-2 whitespace-nowrap font-heading font-semibold text-[clamp(1.375rem,2vw,1.875rem)] tabular-nums leading-tight tracking-tight">
             {typeof value === "number" ? value.toLocaleString() : value}
           </p>
         </div>
@@ -84,10 +84,7 @@ export function StatCard({
                 <svg
                   viewBox="0 0 12 12"
                   fill="none"
-                  className={cn(
-                    "size-3",
-                    !trend.isPositive && "rotate-180"
-                  )}
+                  className={cn("size-3", !trend.isPositive && "rotate-180")}
                 >
                   <path
                     d="M6 2.5V9.5M6 2.5L3 5.5M6 2.5L9 5.5"

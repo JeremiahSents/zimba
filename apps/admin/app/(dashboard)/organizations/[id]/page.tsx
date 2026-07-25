@@ -1,7 +1,6 @@
 import {
   ArrowLeft02Icon,
   BanknoteIcon,
-  Building03Icon,
   FactoryIcon,
   Invoice01Icon,
   Mail01Icon,
@@ -47,6 +46,7 @@ import {
   getOrganizationDetail,
   getOrganizationStats,
 } from "@/core/organizations/service"
+import { formatCompactCurrency } from "@/lib/format-currency"
 
 function getInitials(name: string) {
   return name
@@ -80,14 +80,6 @@ function formatDate(dateInput: Date | string) {
   return `${day}${getOrdinalSuffix(day)} ${month}, ${year}`
 }
 
-function formatCurrency(amountCents: number, currency = "UGX") {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: currency,
-    maximumFractionDigits: 0,
-  }).format(amountCents / 100)
-}
-
 export default async function OrganizationDetailPage({
   params,
 }: {
@@ -116,7 +108,12 @@ export default async function OrganizationDetailPage({
       {/* ── Top Bar / Navigation Back Link & Status Actions ── */}
       <div className="flex flex-wrap items-center justify-between gap-4 border-b pb-4">
         <div className="flex items-center gap-3">
-          <Button variant="outline" size="icon-sm" asChild className="rounded-xl">
+          <Button
+            variant="outline"
+            size="icon-sm"
+            asChild
+            className="rounded-xl"
+          >
             <Link href="/organizations" aria-label="Back to organizations">
               <HugeiconsIcon icon={ArrowLeft02Icon} className="size-4" />
             </Link>
@@ -147,10 +144,10 @@ export default async function OrganizationDetailPage({
         <Card className="overflow-hidden border bg-gradient-to-r from-card via-card to-muted/20">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="font-semibold text-xs uppercase tracking-wider text-muted-foreground">
+              <CardTitle className="font-semibold text-muted-foreground text-xs uppercase tracking-wider">
                 Organization Owner
               </CardTitle>
-              <Badge variant="secondary" className="capitalize text-xs">
+              <Badge variant="secondary" className="text-xs capitalize">
                 {ownerMember.role}
               </Badge>
             </div>
@@ -161,12 +158,12 @@ export default async function OrganizationDetailPage({
                 {ownerUser.image ? (
                   <AvatarImage src={ownerUser.image} alt={ownerUser.name} />
                 ) : null}
-                <AvatarFallback className="bg-primary text-primary-foreground font-semibold text-lg">
+                <AvatarFallback className="bg-primary font-semibold text-lg text-primary-foreground">
                   {getInitials(ownerUser.name)}
                 </AvatarFallback>
               </Avatar>
 
-              <div className="space-y-1 min-w-48 flex-1">
+              <div className="min-w-48 flex-1 space-y-1">
                 <h3 className="font-heading font-semibold text-lg leading-tight">
                   {ownerUser.name}
                 </h3>
@@ -184,7 +181,7 @@ export default async function OrganizationDetailPage({
                 </div>
               </div>
 
-              <div className="flex items-center gap-6 border-l pl-6 text-xs text-muted-foreground">
+              <div className="flex items-center gap-6 border-l pl-6 text-muted-foreground text-xs">
                 <div>
                   <span className="block font-medium text-foreground text-sm">
                     {formatDate(ownerMember.createdAt)}
@@ -201,7 +198,7 @@ export default async function OrganizationDetailPage({
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard
           title="Total Spend"
-          value={formatCurrency(stats.totalSpendCents, org.baseCurrency)}
+          value={formatCompactCurrency(stats.totalSpendCents, org.baseCurrency)}
           accent="emerald"
           icon={
             <HugeiconsIcon
@@ -214,7 +211,7 @@ export default async function OrganizationDetailPage({
         />
         <StatCard
           title="Total Paid"
-          value={formatCurrency(stats.totalPaidCents, org.baseCurrency)}
+          value={formatCompactCurrency(stats.totalPaidCents, org.baseCurrency)}
           accent="emerald"
           icon={
             <HugeiconsIcon
@@ -256,16 +253,28 @@ export default async function OrganizationDetailPage({
       {/* ── Profile Details Tabs (Members, Projects, Suppliers, Overview) ── */}
       <Tabs defaultValue="members" className="w-full">
         <TabsList className="w-full justify-start rounded-xl bg-muted/50 p-1">
-          <TabsTrigger value="members" className="rounded-lg text-xs font-semibold">
+          <TabsTrigger
+            value="members"
+            className="rounded-lg font-semibold text-xs"
+          >
             Team Members ({org.members.length})
           </TabsTrigger>
-          <TabsTrigger value="projects" className="rounded-lg text-xs font-semibold">
+          <TabsTrigger
+            value="projects"
+            className="rounded-lg font-semibold text-xs"
+          >
             Projects ({org.projects.length})
           </TabsTrigger>
-          <TabsTrigger value="suppliers" className="rounded-lg text-xs font-semibold">
+          <TabsTrigger
+            value="suppliers"
+            className="rounded-lg font-semibold text-xs"
+          >
             Suppliers ({org.suppliers.length})
           </TabsTrigger>
-          <TabsTrigger value="profile" className="rounded-lg text-xs font-semibold">
+          <TabsTrigger
+            value="profile"
+            className="rounded-lg font-semibold text-xs"
+          >
             Organization Profile
           </TabsTrigger>
         </TabsList>
@@ -274,7 +283,7 @@ export default async function OrganizationDetailPage({
         <TabsContent value="members" className="mt-4">
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-base font-semibold">
+              <CardTitle className="font-semibold text-base">
                 Organization Members
               </CardTitle>
               <CardDescription>
@@ -313,7 +322,7 @@ export default async function OrganizationDetailPage({
                                   alt={member.user.name}
                                 />
                               ) : null}
-                              <AvatarFallback className="bg-primary/10 text-primary font-medium text-xs">
+                              <AvatarFallback className="bg-primary/10 font-medium text-primary text-xs">
                                 {getInitials(member.user.name)}
                               </AvatarFallback>
                             </Avatar>
@@ -331,9 +340,10 @@ export default async function OrganizationDetailPage({
                           <Badge
                             variant="outline"
                             className={
-                              member.role.toLowerCase() === "owner" || member.role.toLowerCase() === "admin"
-                                ? "bg-emerald-500/15 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 border-emerald-500/20 capitalize font-semibold text-xs"
-                                : "bg-blue-500/15 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400 border-blue-500/20 capitalize font-medium text-xs"
+                              member.role.toLowerCase() === "owner" ||
+                              member.role.toLowerCase() === "admin"
+                                ? "border-emerald-500/20 bg-emerald-500/15 font-semibold text-emerald-700 text-xs capitalize dark:bg-emerald-500/10 dark:text-emerald-400"
+                                : "border-blue-500/20 bg-blue-500/15 font-medium text-blue-700 text-xs capitalize dark:bg-blue-500/10 dark:text-blue-400"
                             }
                           >
                             {member.role}
@@ -358,7 +368,7 @@ export default async function OrganizationDetailPage({
         <TabsContent value="projects" className="mt-4">
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-base font-semibold">
+              <CardTitle className="font-semibold text-base">
                 Organization Projects
               </CardTitle>
               <CardDescription>
@@ -417,7 +427,7 @@ export default async function OrganizationDetailPage({
         <TabsContent value="suppliers" className="mt-4">
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-base font-semibold">
+              <CardTitle className="font-semibold text-base">
                 Organization Suppliers
               </CardTitle>
               <CardDescription>
@@ -476,7 +486,7 @@ export default async function OrganizationDetailPage({
         <TabsContent value="profile" className="mt-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base font-semibold">
+              <CardTitle className="font-semibold text-base">
                 Profile Specifications
               </CardTitle>
               <CardDescription>

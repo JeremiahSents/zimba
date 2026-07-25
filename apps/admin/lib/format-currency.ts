@@ -5,22 +5,22 @@ export function formatCompactCurrency(
   const amount = amountCents / 100
   if (Math.abs(amount) >= 1_000_000_000) {
     const formatted = (amount / 1_000_000_000).toLocaleString("en-US", {
-      minimumFractionDigits: 0,
+      minimumFractionDigits: 3,
       maximumFractionDigits: 3,
     })
     return `${currency} ${formatted}B`
   }
   if (Math.abs(amount) >= 1_000_000) {
     const formatted = (amount / 1_000_000).toLocaleString("en-US", {
-      minimumFractionDigits: 0,
+      minimumFractionDigits: 3,
       maximumFractionDigits: 3,
     })
     return `${currency} ${formatted}M`
   }
   if (Math.abs(amount) >= 1_000) {
     const formatted = (amount / 1_000).toLocaleString("en-US", {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 2,
+      minimumFractionDigits: 3,
+      maximumFractionDigits: 3,
     })
     return `${currency} ${formatted}K`
   }
