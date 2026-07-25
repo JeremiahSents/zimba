@@ -35,7 +35,9 @@ export function LoginForm({
       : null
   )
   const [isPending, setIsPending] = useState(false)
-  const [mode, setMode] = useState<"signin" | "signup">("signin")
+  const [mode, setMode] = useState<"signin" | "signup">(
+    invitation ? "signup" : "signin"
+  )
   const [email, setEmail] = useState(invitation?.email ?? "")
   const [password, setPassword] = useState("")
   const [name, setName] = useState("")

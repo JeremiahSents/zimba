@@ -15,7 +15,11 @@ import {
 import type { WorkspaceRole } from "@workspace/contracts"
 import { sendMemberInviteEmail } from "@workspace/transactional"
 import { normalizeRole } from "../auth/permissions"
-import { requireSession } from "../auth/service"
+import {
+  getSessionWithOrganization,
+  requireSession,
+} from "../auth/service"
+import { unauthorized } from "../shared/errors"
 import { buildInviteUrl } from "./invite-url"
 
 export async function listTeam() {
@@ -68,9 +72,10 @@ export async function createInvitation(input: {
 }
 
 export async function acceptInvitation(token: string) {
-  const { user } = await requireSession()
+  const session = await getSessionWithOrganization()
+  if (!session) unauthorized("Sign in to accept your invitation.")
   const result = await acceptInvitationUseCase(
-    { userId: user.id, email: user.email },
+    { userId: session.user.id, email: session.user.email },
     apiDatabase,
     token
   )
