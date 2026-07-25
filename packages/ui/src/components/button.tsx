@@ -53,6 +53,7 @@ function Button({
   return (
     <ButtonPrimitive
       data-slot="button"
+      suppressHydrationWarning
       className={cn(buttonVariants({ variant, size, className }))}
       render={asChild && React.isValidElement(children) ? children : render}
       {...props}

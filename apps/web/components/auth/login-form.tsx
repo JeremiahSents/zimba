@@ -19,10 +19,15 @@ export function LoginForm({
   className,
   oauthError = false,
   callbackUrl = "/workspace",
+  invitation,
   ...props
 }: React.ComponentProps<"div"> & {
   oauthError?: boolean
   callbackUrl?: string
+  invitation?: {
+    organizationName: string
+    email: string
+  }
 }) {
   const [error, setError] = useState<string | null>(
     oauthError
@@ -31,7 +36,7 @@ export function LoginForm({
   )
   const [isPending, setIsPending] = useState(false)
   const [mode, setMode] = useState<"signin" | "signup">("signin")
-  const [email, setEmail] = useState("")
+  const [email, setEmail] = useState(invitation?.email ?? "")
   const [password, setPassword] = useState("")
   const [name, setName] = useState("")
   const newUserCallbackUrl = callbackUrl.startsWith("/invite/")
@@ -124,12 +129,18 @@ export function LoginForm({
             <span className="sr-only">Zimba</span>
           </Link>
           <h1 className="font-bold text-xl">
-            {mode === "signin" ? "Welcome to Zimba" : "Create your account"}
+            {invitation
+              ? `Join ${invitation.organizationName}`
+              : mode === "signin"
+                ? "Welcome to Zimba"
+                : "Create your account"}
           </h1>
           <FieldDescription>
-            {mode === "signin"
-              ? "Sign in with email and password or Google."
-              : "Sign up with email and password or Google."}
+            {invitation
+              ? `You've been invited to join ${invitation.organizationName} as ${invitation.email}. Sign in or create an account to accept.`
+              : mode === "signin"
+                ? "Sign in with email and password or Google."
+                : "Sign up with email and password or Google."}
           </FieldDescription>
         </div>
 

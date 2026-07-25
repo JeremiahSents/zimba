@@ -6,6 +6,7 @@ import { LoginForm } from "@/components/auth/login-form"
 import { auth } from "@/core/auth/auth"
 import { isDemoMode } from "@/core/demo/demo-data"
 import { getOrganizationMembership } from "@/core/organizations/service"
+import { getInvitationPreview } from "@/core/team/service"
 
 export const metadata: Metadata = {
   title: "Sign in | Zimba",
@@ -35,10 +36,27 @@ export default async function LoginPage({
     )
   }
 
+  let invitation: { organizationName: string; email: string } | undefined
+  if (destination.startsWith("/invite/")) {
+    const token = destination.slice("/invite/".length)
+    try {
+      const preview = await getInvitationPreview(token)
+      if (preview.state === "pending")
+        invitation = {
+          organizationName: preview.organizationName,
+          email: preview.email,
+        }
+    } catch {}
+  }
+
   return (
     <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-background p-6 md:p-10">
       <div className="w-full max-w-sm">
-        <LoginForm oauthError={error === "oauth"} callbackUrl={destination} />
+        <LoginForm
+          oauthError={error === "oauth"}
+          callbackUrl={destination}
+          invitation={invitation}
+        />
         {demoEnabled && (
           <p className="mt-4 text-center text-muted-foreground text-sm">
             Want to look around first?{" "}

@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 import { headers } from "next/headers"
-import { redirect } from "next/navigation"
+import { LoginForm } from "@/components/auth/login-form"
 import { auth } from "@/core/auth/auth"
 import { getInvitationPreview } from "@/core/team/service"
 import { acceptInvitationAction } from "./actions"
@@ -16,10 +16,22 @@ export default async function InvitePage({
   params: Promise<{ token: string }>
 }) {
   const { token } = await params
-  const session = await auth.api.getSession({ headers: await headers() })
-  if (!session)
-    redirect(`/login?callbackUrl=${encodeURIComponent(`/invite/${token}`)}`)
-  const invite = await getInvitationPreview(token)
+  const callbackUrl = `/invite/${token}`
+
+  let invite
+  try {
+    invite = await getInvitationPreview(token)
+  } catch {
+    return (
+      <main>
+        <h1>Invitation not found</h1>
+        <p>
+          This invitation link is invalid or has expired. Ask your team owner to
+          send a new invitation.
+        </p>
+      </main>
+    )
+  }
 
   if (invite.state === "invalid")
     return (
@@ -54,6 +66,24 @@ export default async function InvitePage({
         </p>
       </main>
     )
+
+  const session = await auth.api.getSession({ headers: await headers() })
+
+  if (!session) {
+    return (
+      <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-background p-6 md:p-10">
+        <div className="w-full max-w-sm">
+          <LoginForm
+            callbackUrl={callbackUrl}
+            invitation={{
+              organizationName: invite.organizationName,
+              email: invite.email,
+            }}
+          />
+        </div>
+      </div>
+    )
+  }
 
   if (session.user.email.toLowerCase() !== invite.email.toLowerCase()) {
     return (
