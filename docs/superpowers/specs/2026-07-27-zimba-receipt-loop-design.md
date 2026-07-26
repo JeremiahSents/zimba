@@ -9,12 +9,14 @@ complete workflow.
 
 ## Deliverable
 
-Create one new Figma file with two layers:
+Create one new Figma file and one working page with two fidelity levels:
 
 1. A low-fidelity workflow map showing the complete Crew-to-Manager handoff.
-2. Two polished key screens showing the intended visual direction.
+2. Two mid-fidelity web screens showing the intended interface direction.
 
-This is not a complete application mockup or a full clickable prototype.
+The low-fidelity and mid-fidelity work sit on the same page so each screen can
+be compared with the workflow decision it represents. This is not a complete
+application mockup or a full clickable prototype.
 
 ## Workflow Map
 
@@ -39,22 +41,22 @@ Use two horizontal lanes with a visible handoff between them.
 The map must make the ownership boundary explicit: Crew captures reality;
 Manager completes the financial record.
 
-## Polished Screens
+## Mid-Fidelity Web Screens
 
 ### Crew confirmation
 
-- Mobile frame.
+- Desktop web frame.
 - Receipt photo is the dominant element.
 - Last-used project is preselected and easy to change.
 - Two actions: **Add another** and **Done**.
 - No supplier, amount, date, budget line, payment state, notes, or OCR.
-- Large touch targets and high contrast for one-handed outdoor use.
+- Large targets and high contrast for use in difficult site conditions.
 - Offline state uses the copy: "Saved on your phone. It'll upload when you have
   signal."
 
 ### Manager filing
 
-- Desktop frame with a responsive structure that can stack on mobile.
+- Desktop web frame.
 - Large, zoomable receipt photo on the left.
 - Supplier, amount, budget line, and paid state on the right.
 - One primary action: **File**. One secondary action: **Skip**.
@@ -74,14 +76,19 @@ Manager completes the financial record.
 
 ## Figma Structure
 
-- Page 1: `01 Workflow`
-- Page 2: `02 Key Screens`
-- Page 3: `03 Components`
+- File: `Zimba Receipt Loop`
+- Page: `Receipt Loop`
 
-The workflow page contains the two role lanes and handoff. The key-screens page
-contains the polished mobile and desktop frames. The components page contains
-only reusable elements needed by those screens, such as buttons, fields,
-receipt preview, project picker, and paid-state control.
+The page is arranged left to right:
+
+1. Low-fidelity Crew and Manager workflow lanes.
+2. Mid-fidelity Crew confirmation web view.
+3. Mid-fidelity Manager filing web view.
+4. A compact component area beneath the screens for reusable buttons, fields,
+   receipt preview, project picker, and paid-state control.
+
+Section labels and generous canvas spacing separate the fidelity levels without
+splitting the work across pages.
 
 ## Success Criteria
 
@@ -89,7 +96,7 @@ receipt preview, project picker, and paid-state control.
 - Crew and Manager responsibilities cannot be confused.
 - The Crew path requires only the photo and project confirmation.
 - The Manager path has a visible finish line.
-- The two polished screens reinforce the workflow rather than introducing new
+- The two mid-fidelity screens reinforce the workflow rather than introducing new
   features.
 - The design remains within the no-go boundaries in `docs/zimba-v1.html`.
 
@@ -98,5 +105,5 @@ receipt preview, project picker, and paid-state control.
 - Full navigation design.
 - Signup, invitations, projects, suppliers, payments, files, and archive flows.
 - Production-ready design system.
-- Complete responsive variants.
+- Mobile and tablet views.
 - Clickable prototype across every step.
