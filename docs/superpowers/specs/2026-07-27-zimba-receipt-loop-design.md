@@ -1,49 +1,65 @@
-# Zimba Receipt Loop Design
+# Zimba v1 Workflow Design
 
 ## Purpose
 
-Design the central Zimba v1 workflow in Figma so the handoff between Crew and
-Manager can be judged before implementation. The work follows the product shape
-in `docs/zimba-v1.html` and the 37signals principle of building the smallest
-complete workflow.
+Map every Zimba v1 workflow in Figma so the whole product can be judged before
+implementation. Develop the three everyday money-recording workflows to
+mid-fidelity web views. The work follows the product shape in
+`docs/zimba-v1.html` and the 37signals principle of building the smallest
+complete product.
 
 ## Deliverable
 
 Create one new Figma file and one working page with two fidelity levels:
 
-1. A low-fidelity workflow map showing the complete Crew-to-Manager handoff.
-2. Two mid-fidelity web screens showing the intended interface direction.
+1. Low-fidelity maps for all 14 workflows in the HTML plan.
+2. Mid-fidelity web views for Snap, File, and Pay a receipt.
 
-The low-fidelity and mid-fidelity work sit on the same page so each screen can
-be compared with the workflow decision it represents. This is not a complete
+The low-fidelity and mid-fidelity work sit on the same page so the three core
+flows can be compared with their interface direction. This is not a complete
 application mockup or a full clickable prototype.
 
-## Workflow Map
+## Low-Fidelity Workflow Inventory
 
-Use two horizontal lanes with a visible handoff between them.
+Group the 14 workflows under the same five headings used in the HTML plan. Each
+flow shows its actor, entry point, key places, primary actions, finish state,
+and important handoffs.
 
-### Crew lane
+### Getting in
 
-1. Receipt arrives.
-2. Crew taps **Add receipt**.
-3. The camera opens directly.
-4. Crew confirms the preselected project.
-5. The receipt is saved immediately and uploads in the background.
+1. W1: Join Zimba.
+2. W2: Invite the crew.
 
-### Manager lane
+### Setting up
 
-1. Manager opens Zimba and lands in **Inbox**.
-2. Manager opens the oldest receipt.
-3. Manager enters supplier, amount, budget line, and paid state.
-4. Filing advances to the next receipt without returning to the list.
-5. The session ends at an empty inbox.
+1. W3: Start a project.
+2. W4: Change the budget.
 
-The map must make the ownership boundary explicit: Crew captures reality;
-Manager completes the financial record.
+### Every day
 
-## Mid-Fidelity Web Screens
+1. W5: Snap a receipt.
+2. W6: File a receipt.
+3. W7: Pay a receipt.
 
-### Crew confirmation
+### Knowing where you stand
+
+1. W8: Check a project.
+2. W9: Find a receipt again.
+3. W10: Check a supplier.
+
+### Keeping the record
+
+1. W11: Files.
+2. W12: Fix a mistake.
+3. W13: Close a project.
+4. W14: Come back tomorrow.
+
+The map must make role boundaries explicit and show how completed work changes
+what the next actor sees.
+
+## Mid-Fidelity Web Views
+
+### W5: Snap a receipt
 
 - Desktop web frame.
 - Receipt photo is the dominant element.
@@ -54,7 +70,7 @@ Manager completes the financial record.
 - Offline state uses the copy: "Saved on your phone. It'll upload when you have
   signal."
 
-### Manager filing
+### W6: File a receipt
 
 - Desktop web frame.
 - Large, zoomable receipt photo on the left.
@@ -63,6 +79,17 @@ Manager completes the financial record.
 - New suppliers and budget lines are created inline without leaving the queue.
 - Filing loads the next receipt in place and reduces the inbox count.
 - No approval step, bulk edit, tax fields, duplicate detection, or assignment.
+
+### W7: Pay a receipt
+
+- Desktop web receipt-detail frame.
+- Amount owed and payment history are visible together.
+- Payment method uses four direct choices: cash, mobile money, bank, and other.
+- Partial payment uses one amount field and an optional reference.
+- **Record payment** is the primary action.
+- A completed write appears immediately in the payment list and updates the
+  unpaid amount.
+- No bank integration, approval, scheduled payment, or confirmation dialog.
 
 ## Visual Direction
 
@@ -76,34 +103,35 @@ Manager completes the financial record.
 
 ## Figma Structure
 
-- File: `Zimba Receipt Loop`
-- Page: `Receipt Loop`
+- File: `Zimba v1 Workflows`
+- Page: `All Workflows`
 
-The page is arranged left to right:
+The page is arranged in two large horizontal zones:
 
-1. Low-fidelity Crew and Manager workflow lanes.
-2. Mid-fidelity Crew confirmation web view.
-3. Mid-fidelity Manager filing web view.
-4. A compact component area beneath the screens for reusable buttons, fields,
-   receipt preview, project picker, and paid-state control.
+1. Low-fidelity workflow groups for W1 through W14, arranged in plan order.
+2. Mid-fidelity web views for W5, W6, and W7, aligned beneath their low-fidelity
+   flows.
+3. A compact component area beneath the mid-fidelity views for reusable
+   buttons, fields, receipt preview, project picker, paid-state control, and
+   payment-method control.
 
 Section labels and generous canvas spacing separate the fidelity levels without
 splitting the work across pages.
 
 ## Success Criteria
 
-- A reviewer can understand the complete receipt loop without explanation.
+- A reviewer can find and understand every workflow from the HTML plan.
 - Crew and Manager responsibilities cannot be confused.
 - The Crew path requires only the photo and project confirmation.
 - The Manager path has a visible finish line.
-- The two mid-fidelity screens reinforce the workflow rather than introducing new
-  features.
+- The three mid-fidelity flows reinforce the workflow map without introducing
+  new features.
 - The design remains within the no-go boundaries in `docs/zimba-v1.html`.
 
 ## Deferred
 
 - Full navigation design.
-- Signup, invitations, projects, suppliers, payments, files, and archive flows.
+- Mid-fidelity views for W1-W4 and W8-W14.
 - Production-ready design system.
 - Mobile and tablet views.
 - Clickable prototype across every step.
