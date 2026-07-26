@@ -13,14 +13,7 @@ import {
 } from "@workspace/transactional"
 import { revalidatePath } from "next/cache"
 import { requirePlatformSession } from "@/core/auth/service"
-
-function getAppUrl() {
-  return (
-    process.env.APP_URL ??
-    process.env.BETTER_AUTH_URL ??
-    "http://localhost:3000"
-  )
-}
+import { getCustomerAppUrl } from "./customer-app-url"
 
 export async function approveApplication(formData: FormData) {
   const session = await requirePlatformSession()
@@ -41,7 +34,7 @@ export async function approveApplication(formData: FormData) {
       to: application.email,
       fullName: application.fullName,
       companyName: application.companyName,
-      loginUrl: `${getAppUrl()}/${result.slug}/home`,
+      loginUrl: `${getCustomerAppUrl()}/${result.slug}/home`,
     }).catch((error) => {
       console.error("Application approval email failed", error)
     })
@@ -87,7 +80,7 @@ export async function rejectApplication(formData: FormData) {
       fullName: application.fullName,
       companyName: application.companyName,
       rejectionReason: rejectionReason || undefined,
-      onboardingUrl: `${getAppUrl()}/onboarding`,
+      onboardingUrl: `${getCustomerAppUrl()}/onboarding`,
     }).catch((error) => {
       console.error("Application rejection email failed", error)
     })

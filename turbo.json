@@ -14,7 +14,8 @@
     "ZIMBA_DATA_MODE",
     "RESEND_API_KEY",
     "RESEND_FROM",
-    "APP_URL"
+    "APP_URL",
+    "CUSTOMER_APP_URL"
   ],
   "ui": "tui",
   "tasks": {
