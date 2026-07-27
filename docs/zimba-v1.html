@@ -1,0 +1,1445 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zimba v1 — Workflow Design</title>
+<style>
+  :root{
+    --ink:#14181d;
+    --ink-2:#4c545e;
+    --ink-3:#7b848f;
+    --line:#e2e5e9;
+    --line-2:#f0f2f4;
+    --bg:#fbfbfa;
+    --paper:#fff;
+    --accent:#1a6b4a;
+    --accent-soft:#eef5f1;
+    --warn:#8a5a00;
+    --warn-soft:#fdf6e7;
+    --stop:#98342c;
+    --stop-soft:#fbefee;
+    --mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:var(--sans); font-size:16.5px; line-height:1.62;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{display:grid; grid-template-columns:250px minmax(0,1fr); gap:0; max-width:1240px; margin:0 auto}
+  @media (max-width:1000px){ .wrap{grid-template-columns:1fr} }
+
+  /* ---- table of contents ---- */
+  nav.toc{
+    position:sticky; top:0; align-self:start; height:100vh; overflow-y:auto;
+    padding:44px 22px 60px 28px; border-right:1px solid var(--line);
+  }
+  @media (max-width:1000px){
+    nav.toc{position:static; height:auto; border-right:0; border-bottom:1px solid var(--line); padding:28px 22px}
+  }
+  nav.toc .brand{font-weight:640; letter-spacing:-.015em; font-size:15px; margin-bottom:2px}
+  nav.toc .brandsub{font-size:12.5px; color:var(--ink-3); margin-bottom:22px}
+  nav.toc ol{list-style:none; margin:0; padding:0}
+  nav.toc li{margin:0 0 1px}
+  nav.toc a{
+    display:block; padding:3px 8px 3px 10px; margin-left:-10px; border-radius:5px;
+    color:var(--ink-2); text-decoration:none; font-size:13.2px; line-height:1.45;
+  }
+  nav.toc a:hover{background:var(--line-2); color:var(--ink)}
+  nav.toc .grp{
+    font-size:11px; text-transform:uppercase; letter-spacing:.09em; color:var(--ink-3);
+    font-weight:620; margin:20px 0 7px;
+  }
+
+  /* ---- main ---- */
+  main{padding:46px 56px 140px; background:var(--paper); border-left:1px solid var(--line); min-width:0}
+  @media (max-width:1000px){ main{padding:32px 22px 80px; border-left:0} }
+  .measure{max-width:74ch}
+
+  h1{font-size:38px; line-height:1.14; letter-spacing:-.028em; font-weight:680; margin:0 0 14px}
+  h2{
+    font-size:12px; text-transform:uppercase; letter-spacing:.11em; color:var(--ink-3);
+    font-weight:660; margin:76px 0 18px; padding-bottom:9px; border-bottom:1px solid var(--line);
+  }
+  h3{font-size:23px; line-height:1.26; letter-spacing:-.019em; font-weight:660; margin:44px 0 10px}
+  h4{font-size:16px; font-weight:650; margin:26px 0 7px; letter-spacing:-.008em}
+  p{margin:0 0 14px}
+  a{color:var(--accent)}
+  strong{font-weight:640}
+  em{font-style:italic}
+  code{font-family:var(--mono); font-size:.855em; background:var(--line-2); padding:1.5px 5px; border-radius:4px}
+  hr{border:0; border-top:1px solid var(--line); margin:52px 0}
+
+  .lede{font-size:19.5px; line-height:1.55; color:var(--ink-2); letter-spacing:-.011em}
+  .meta{font-size:13px; color:var(--ink-3); margin:0 0 34px}
+
+  ul,ol.n{margin:0 0 16px; padding-left:21px}
+  li{margin:0 0 6px}
+
+  /* ---- tables ---- */
+  table{width:100%; border-collapse:collapse; margin:6px 0 22px; font-size:14.6px}
+  th{
+    text-align:left; font-weight:620; font-size:11.5px; text-transform:uppercase; letter-spacing:.07em;
+    color:var(--ink-3); border-bottom:1px solid var(--line); padding:0 12px 7px 0; vertical-align:bottom;
+  }
+  td{border-bottom:1px solid var(--line-2); padding:9px 12px 9px 0; vertical-align:top; line-height:1.5}
+  tr td:last-child, tr th:last-child{padding-right:0}
+  table.kill td:first-child{width:30%; font-weight:600}
+  table.voc td:first-child{width:26%}
+  table.voc td:nth-child(2){width:22%; font-weight:600; color:var(--accent)}
+
+  /* ---- blocks ---- */
+  .job{
+    border-left:2.5px solid var(--accent); background:var(--accent-soft);
+    padding:14px 18px; margin:0 0 18px; border-radius:0 6px 6px 0;
+  }
+  .job .lbl{font-size:11px; text-transform:uppercase; letter-spacing:.09em; color:var(--accent); font-weight:660; margin-bottom:4px}
+  .job p{margin:0; font-size:16.5px; line-height:1.5}
+
+  .baseline{
+    border:1px solid var(--line); border-radius:7px; padding:16px 19px; margin:0 0 20px;
+    background:#fcfcfb;
+  }
+  .baseline .lbl{font-size:11px; text-transform:uppercase; letter-spacing:.09em; color:var(--ink-3); font-weight:660; margin-bottom:6px}
+  .baseline p:last-child{margin-bottom:0}
+
+  pre.bb{
+    font-family:var(--mono); font-size:13px; line-height:1.62; white-space:pre;
+    overflow-x:auto; background:#fafafa; border:1px solid var(--line);
+    border-radius:7px; padding:17px 19px; margin:6px 0 22px; color:var(--ink);
+  }
+
+  .note{border-radius:7px; padding:13px 17px; margin:0 0 18px; font-size:14.6px; line-height:1.55}
+  .note .lbl{font-size:11px; text-transform:uppercase; letter-spacing:.09em; font-weight:660; margin-bottom:5px; display:block}
+  .note p:last-child, .note ul:last-child{margin-bottom:0}
+  .rabbit{background:var(--warn-soft); border:1px solid #f0e2bd}
+  .rabbit .lbl{color:var(--warn)}
+  .nogo{background:var(--stop-soft); border:1px solid #f2d6d3}
+  .nogo .lbl{color:var(--stop)}
+  .nogo ul{padding-left:19px}
+  .keep{background:var(--accent-soft); border:1px solid #cfe4d8}
+  .keep .lbl{color:var(--accent)}
+
+  .appetite{
+    display:inline-block; font-size:11.5px; font-weight:640; letter-spacing:.03em;
+    padding:3px 9px; border-radius:20px; background:var(--ink); color:#fff; vertical-align:2px; margin-left:9px;
+  }
+  .appetite.sm{background:var(--ink-3)}
+
+  /* ---- fat marker sketch ---- */
+  .sketch{
+    border:1px solid var(--line); border-radius:7px; padding:20px; margin:8px 0 10px;
+    background:#fdfdfd;
+  }
+  .sk{display:flex; flex-direction:column; gap:9px}
+  .sk .row{display:flex; gap:9px}
+  .blk{background:#e6e8ea; border-radius:4px; min-height:24px; display:flex; align-items:center; padding:0 10px;
+       font-size:11.5px; color:#5c646e; letter-spacing:.02em; font-weight:560}
+  .blk.dark{background:#3d444c; color:#fff}
+  .blk.mid{background:#c9cdd2; color:#3d444c}
+  .blk.ghost{background:transparent; border:1.5px dashed #ccd1d6; color:#98a0a8}
+  .blk.tall{min-height:96px; align-items:flex-start; padding-top:9px}
+  .blk.xtall{min-height:150px; align-items:flex-start; padding-top:9px}
+  .g1{flex:1} .g2{flex:2} .g3{flex:3}
+  .caption{font-size:12.5px; color:var(--ink-3); margin:0 0 24px; font-style:italic}
+
+  .copy-table td:first-child{width:34%; font-family:var(--mono); font-size:13px}
+
+  .wf-head{display:flex; align-items:baseline; gap:11px; flex-wrap:wrap; margin:52px 0 4px}
+  .wf-num{
+    font-family:var(--mono); font-size:12.5px; color:var(--accent); font-weight:600;
+    border:1px solid #cfe4d8; background:var(--accent-soft); border-radius:5px; padding:2px 7px;
+  }
+  .wf-head h3{margin:0}
+  .wf-role{font-size:13px; color:var(--ink-3)}
+
+  .score{display:flex; gap:14px; align-items:center; margin:0 0 20px; flex-wrap:wrap}
+  .score .n{font-size:44px; font-weight:680; letter-spacing:-.03em; line-height:1}
+  .score .n small{font-size:19px; color:var(--ink-3); font-weight:560}
+  .score .arrow{font-size:22px; color:var(--ink-3)}
+  .score .good .n{color:var(--accent)}
+
+  .cols{display:grid; grid-template-columns:1fr 1fr; gap:0 34px}
+  @media (max-width:760px){ .cols{grid-template-columns:1fr} }
+
+  footer{margin-top:90px; padding-top:24px; border-top:1px solid var(--line); font-size:13px; color:var(--ink-3)}
+
+  @media print{
+    body{background:#fff; font-size:11pt}
+    nav.toc{display:none}
+    .wrap{display:block; max-width:none}
+    main{border:0; padding:0}
+    h2{margin-top:34px}
+    h3{page-break-after:avoid}
+    pre.bb, .sketch, .note, table{page-break-inside:avoid}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<nav class="toc">
+  <div class="brand">Zimba v1</div>
+  <div class="brandsub">Workflow design</div>
+  <ol>
+    <li class="grp">Position</li>
+    <li><a href="#verdict">The verdict</a></li>
+    <li><a href="#who">Who it's for</a></li>
+    <li><a href="#kill">What we delete</a></li>
+    <li><a href="#words">The words</a></li>
+    <li><a href="#map">Four doors</a></li>
+
+    <li class="grp">Getting in</li>
+    <li><a href="#w1">1 · Join Zimba</a></li>
+    <li><a href="#w2">2 · Invite the crew</a></li>
+
+    <li class="grp">Setting up</li>
+    <li><a href="#w3">3 · Start a project</a></li>
+    <li><a href="#w4">4 · Set the budget</a></li>
+
+    <li class="grp">Every day</li>
+    <li><a href="#w5">5 · Snap a receipt</a></li>
+    <li><a href="#w6">6 · File a receipt</a></li>
+    <li><a href="#w7">7 · Pay a receipt</a></li>
+
+    <li class="grp">Knowing where you stand</li>
+    <li><a href="#w8">8 · Check a project</a></li>
+    <li><a href="#w9">9 · Find a receipt</a></li>
+    <li><a href="#w10">10 · Check a supplier</a></li>
+
+    <li class="grp">Keeping the record</li>
+    <li><a href="#w11">11 · Files</a></li>
+    <li><a href="#w12">12 · Fix a mistake</a></li>
+    <li><a href="#w13">13 · Close a project</a></li>
+    <li><a href="#w14">14 · Come back tomorrow</a></li>
+
+    <li class="grp">Shipping it</li>
+    <li><a href="#bets">The three bets</a></li>
+    <li><a href="#nogos">Master no-go list</a></li>
+    <li><a href="#open">Open questions</a></li>
+  </ol>
+</nav>
+
+<main>
+
+<div class="measure">
+<h1>Zimba v1</h1>
+<p class="lede">Every workflow the app will have, and nothing else. Written as job stories, actions, and breadboards — rough enough to leave room, solved enough to build, bounded enough to finish.</p>
+<p class="meta">Shaped against <em>Getting Real</em>, <em>Rework</em>, and <em>Shape Up</em>. Read time ~25 minutes.</p>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="verdict">The verdict on what exists today</h2>
+<div class="measure">
+
+<div class="score">
+  <div><div class="n">4<small>/10</small></div><div style="font-size:13px;color:var(--ink-3)">today</div></div>
+  <div class="arrow">→</div>
+  <div class="good"><div class="n">10<small>/10</small></div><div style="font-size:13px;color:var(--ink-3)">v1</div></div>
+</div>
+
+<p>Zimba today is not badly built. It's <em>over</em>-built. Nineteen workspace routes, eight navigation destinations, four status fields on a single expense, three separate file-upload implementations, three ways to create the same budget category, and a settings page whose every value is hardcoded.</p>
+
+<p>Why 4 and not lower: the domain modelling is real, the server actions are disciplined, error handling is typed, and there's a genuine insight buried in there — construction money is tracked per budget line, not per month. Why not higher: nothing has been said no to. Every idea that arrived got a route.</p>
+
+<h4>The four things holding the score down</h4>
+<table>
+  <tr><th>Symptom</th><th>Evidence</th></tr>
+  <tr><td>Features nobody asked to be asked</td><td>Expense creation sends <code>lifecycle_status</code>, <code>submit_for_approval</code>, and <code>record_as_receipt</code> — three flags no user has ever seen or chosen</td></tr>
+  <tr><td>Decoration in place of decisions</td><td>Four filter tabs on the expenses page with no handler. A settings page where "Currency: UGX" and "Budget risk: On" are literal strings</td></tr>
+  <tr><td>Doors that lead nowhere</td><td><code>/expenses</code> is in no navigation. <code>Budget</code> and <code>Settings</code> are in <code>mobileMoreNavigation</code> but the mobile bar renders only the first four items, so on a phone they cannot be reached at all</td></tr>
+  <tr><td>The core job is the hardest job</td><td>Recording one receipt: 20+ interactions across a 667-line component holding 26 pieces of state</td></tr>
+</table>
+
+<p>Getting to 10 is mostly subtraction. The plan below <strong>deletes 9 of 19 routes</strong> and adds two.</p>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="who">Who Zimba is for, and who it isn't</h2>
+<div class="measure">
+
+<p>Zimba is for a Ugandan construction company running <strong>2 to 15 sites</strong> where the director's real question is: <em>"Are we still inside budget on Kitala, and what have we actually paid Ssemwanga?"</em></p>
+
+<p>Two roles. Not four. The current four — <code>owner</code>, <code>site_manager</code>, <code>accountant</code>, <code>viewer</code> — are three roles more than any customer has asked to distinguish, and permissions complexity is the most reliable rabbit hole in software.</p>
+
+<table>
+  <tr><th>Role</th><th>Who</th><th>Can</th><th>Cannot</th></tr>
+  <tr>
+    <td><strong>Crew</strong></td>
+    <td>Foreman, site supervisor. Phone only, in the sun, one hand free.</td>
+    <td>Snap receipts. See the projects they're on.</td>
+    <td>See money totals. File. Pay. Delete anything.</td>
+  </tr>
+  <tr>
+    <td><strong>Manager</strong></td>
+    <td>Director, accountant, owner. Phone and desk.</td>
+    <td>Everything.</td>
+    <td>—</td>
+  </tr>
+</table>
+
+<div class="note keep">
+  <span class="lbl">Zimba is not for</span>
+  <p>Companies that need approval chains, multi-currency, purchase orders, payroll, or Quickbooks sync. We will say that on the marketing site, in those words. Turning away the wrong customer is cheaper than building for them.</p>
+</div>
+
+<h4>One currency, decided at signup, never a setting</h4>
+<p>UGX. Whole shillings, no decimals — nobody in this market prices cement to the cent. Thousands separators appear as you type. There is no currency preference screen because a construction company does not change currency, and every preference is a decision we failed to make.</p>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="kill">What we delete</h2>
+<div class="measure">
+<p>Before designing anything, the say-no list. Nine routes and every feature below leaves the product in v1.</p>
+
+<table class="kill">
+  <tr><th>Gone</th><th>Why</th></tr>
+  <tr><td><code>/reports</code></td><td>A page of previews of reports that don't exist. When a customer asks for a specific report we'll build that one report.</td></tr>
+  <tr><td><code>/analytics</code></td><td>Same data as the project page, second icon identical to Reports. Merged into the project page.</td></tr>
+  <tr><td><code>/budget</code></td><td>Budget belongs inside a project, not beside it. Unreachable on mobile anyway.</td></tr>
+  <tr><td><code>/settings</code></td><td>Every field is hardcoded. Company name moves to the account menu. Notification preferences are deleted, not relocated — we'll pick the notifications and send them.</td></tr>
+  <tr><td><code>/projects/new/allocation</code></td><td>Page two of a two-page wizard becomes a section of page one.</td></tr>
+  <tr><td><code>/projects/[id]/tasks/new</code></td><td>Third implementation of "add a budget line." Deleted in favour of inline.</td></tr>
+  <tr><td><code>/projects/[id]/files</code></td><td>Becomes a tab on the project, not a page you navigate away to.</td></tr>
+  <tr><td><code>/pending-approval</code></td><td>See <a href="#open">open questions</a>. If signup is self-serve, this screen has no reason to exist.</td></tr>
+  <tr><td><code>/demo</code></td><td>Marketing surface, not product. Out of scope for v1.</td></tr>
+  <tr><td>Approval workflow</td><td>Three of the four status fields exist to serve an approval flow with no UI. Delete the fields.</td></tr>
+  <tr><td>Expense filter tabs</td><td>Four tabs, zero handlers. Replaced by one search field that works.</td></tr>
+  <tr><td>Notification preferences</td><td>We choose. One email: a project crosses 90% of budget.</td></tr>
+  <tr><td>Ownership transfer dialog</td><td>Happens roughly never. When it happens, we do it by hand and it takes four minutes.</td></tr>
+  <tr><td>Multi-line receipts on capture</td><td>Splitting a receipt into items is a desk job, and a rare one. It stays, but only in the inbox on desktop.</td></tr>
+</table>
+
+<p><strong>Two routes are added:</strong> <code>/inbox</code> and <code>/inbox/[id]</code>.</p>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="words">The words</h2>
+<div class="measure">
+<p>The app currently uses four words for one thing and three words for another. Interface copy is the product; pick one word each and use it everywhere — code, UI, emails, support replies.</p>
+
+<table class="voc">
+  <tr><th>Today, all of these</th><th>Becomes</th><th>Because</th></tr>
+  <tr><td>task, category, allocation, cost line, line item</td><td>Budget line</td><td>It's a line of the budget. A foreman understands it without being taught.</td></tr>
+  <tr><td>expense, payable, receipt, payable expense</td><td>Receipt</td><td>It's the paper in his pocket. Everything else is bookkeeper language.</td></tr>
+  <tr><td>supplier, vendor</td><td>Supplier</td><td>Already the more common word in the codebase and on the ground.</td></tr>
+  <tr><td>approval_status, lifecycle_status, settlement_status, category_state</td><td>Filed / Not filed<br>Unpaid / Part&nbsp;paid / Paid</td><td>Two questions people actually ask, instead of four machine states.</td></tr>
+  <tr><td>project, site, job</td><td>Project</td><td>Keep it. It's already right.</td></tr>
+  <tr><td>attachment, file, image, document</td><td>File</td><td>One word. A photo is a file.</td></tr>
+</table>
+
+<h4>Two states, not four</h4>
+<pre class="bb">A receipt is:              A receipt is also:
+
+  Not filed                  Unpaid
+  Filed                      Part paid
+                             Paid
+
+That's it. Nothing else is stored on a receipt as status,
+and nothing internal leaks into the response types.</pre>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="map">Four doors</h2>
+<div class="measure">
+<p>Eight navigation destinations become four. Same four on desktop and phone, in the same order, so the app is one app.</p>
+
+<pre class="bb">  Inbox        receipts that still need filing        ← the new home
+  Projects     money per project, per budget line
+  Suppliers    who we owe, what we've paid
+  Team         who's in here
+
+  Account menu (bottom left / top right)
+    Company name · Your name · Sign out</pre>
+
+<p><strong>Crew see two doors</strong>, not four: a full-screen <em>Add receipt</em> button and <em>Projects</em>. No inbox, no totals. The interface tells them their whole job.</p>
+
+<h4>Why Inbox is home and not a dashboard</h4>
+<p>The current home shows three stat cards, a project list, and a recent-activity feed. It answers no question and prompts no action. A dashboard with widgets is something you look at; an inbox is something you empty. Zimba's home should be a to-do, and when it's empty it should say so and get out of the way.</p>
+
+<div class="sketch">
+  <div class="sk">
+    <div class="row"><div class="blk g1">Inbox &nbsp;·&nbsp; 7 receipts to file</div></div>
+    <div class="row"><div class="blk tall g1">receipt card — photo, project, who, when</div></div>
+    <div class="row"><div class="blk tall g1">receipt card</div></div>
+    <div class="row"><div class="blk tall g1">receipt card</div></div>
+  </div>
+</div>
+<p class="caption">Home for a manager. One column, one job, no widgets.</p>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="getting-in">Getting in</h2>
+
+<!-- W1 -->
+<div class="wf-head">
+  <span class="wf-num">W1</span>
+  <h3>Join Zimba<span class="appetite sm">Small batch · 1–2 weeks</span></h3>
+</div>
+<div class="wf-role" style="margin-bottom:16px">Manager · phone or desk · once</div>
+<div class="measure">
+
+<div class="job">
+  <div class="lbl">Job story</div>
+  <p>When I hear Zimba might fix my receipt problem, I want to be looking at my own project inside two minutes, so I can judge it on my site instead of on a sales call.</p>
+</div>
+
+<div class="baseline">
+  <div class="lbl">What happens today</div>
+  <p>Daniel registers. He's bounced to <code>/workspace</code>, then <code>/onboarding</code>, fills in a company form, and lands on <code>/pending-approval</code>. Now a human being has to open a second application and approve him. He doesn't know that. He waits. Nobody tells him how long because nobody knows. He closes the tab.</p>
+  <p><strong>Time to first value: unbounded.</strong> This is the single most expensive thing in the product.</p>
+</div>
+
+<h4>Actions</h4>
+<ul>
+  <li>Create an account with email and password</li>
+  <li>Name the company</li>
+  <li>Land inside, signed in, workspace ready</li>
+</ul>
+
+<h4>Interaction</h4>
+<pre class="bb">[Sign up]
+  Your name
+  Email
+  Password
+  "Create account"  ────────────────►  [Your company]
+
+[Your company]
+  Company name          ← the only question. Currency is UGX.
+                          Region, fiscal period, plot size: not asked.
+  "Start"  ─────────────────────────►  [Inbox — empty]
+
+[Inbox — empty]
+  "Nothing to file yet."
+  "Start a project"  ───────────────►  W3</pre>
+
+<p>Three fields, then one field, then you're in. The onboarding form's other questions were never used by any downstream screen.</p>
+
+<div class="note rabbit">
+  <span class="lbl">Rabbit hole</span>
+  <p><strong>Slug collisions.</strong> Two companies called "Zimba Consultants" both want <code>/zimba-consultants</code>. Append a short suffix silently and never show the user a slug field. Nobody has ever wanted to choose a URL slug for their construction company.</p>
+</div>
+
+<div class="note nogo">
+  <span class="lbl">No-gos</span>
+  <ul>
+    <li>No admin approval step. Signup is self-serve or this pitch is pointless.</li>
+    <li>No email verification gate before you can use the app — verify in the background, block nothing.</li>
+    <li>No Google or Apple sign-in in v1.</li>
+    <li>No plan selection, no trial countdown, no credit card.</li>
+    <li>No sample or demo data. Real emptiness with a clear next step beats fake projects you have to delete.</li>
+  </ul>
+</div>
+</div>
+
+<!-- W2 -->
+<div class="wf-head">
+  <span class="wf-num">W2</span>
+  <h3>Invite the crew<span class="appetite sm">Small batch · 1–2 weeks</span></h3>
+</div>
+<div class="wf-role" style="margin-bottom:16px">Manager · desk · occasionally</div>
+<div class="measure">
+
+<div class="job">
+  <div class="lbl">Job story</div>
+  <p>When a foreman starts on the Kitala site, I want him sending me receipts by this afternoon, so three weeks of paper doesn't pile up in his pocket while we do paperwork.</p>
+</div>
+
+<div class="baseline">
+  <div class="lbl">What happens today</div>
+  <p>Daniel opens Team, clicks <em>Invite member</em>, an inline form unfolds, and he's asked to choose between "Site manager", "Accountant", "Viewer", and "Owner" — four options where he only has two kinds of people. Then Zimba emails a link. Musa the foreman does not use email. He uses WhatsApp.</p>
+</div>
+
+<h4>Actions</h4>
+<ul>
+  <li>Add someone as Crew or Manager</li>
+  <li>Copy their invite link and send it however you already talk to them</li>
+  <li>See who hasn't accepted yet, and re-copy the link</li>
+  <li>Remove someone</li>
+</ul>
+
+<h4>Interaction</h4>
+<pre class="bb">[Team]
+  list of people — name, Crew or Manager
+  pending invites — "Musa · link not used yet"  ·  [Copy link]  ·  [Remove]
+  "Add someone"  ──────────────────►  [Add someone]
+
+[Add someone]
+  Name
+  Crew  ●───○  Manager        ← two choices, defaulting to Crew
+  "Create invite"  ────────────────►  [Invite ready]
+
+[Invite ready]
+  "Send this link to Musa."
+  zimba.app/i/8fk2m           [Copy link]   ← primary action
+  "Email it instead"           ← secondary, quiet
+  "Done"  ─────────────────────────►  [Team]</pre>
+
+<p>The primary action is <strong>copy a link</strong>, not send an email. This is deliberate underdoing: WhatsApp is the messaging infrastructure of this market and we don't have to build any of it. Email is the fallback, not the default.</p>
+
+<div class="note rabbit">
+  <span class="lbl">Rabbit hole</span>
+  <p><strong>Invite link security.</strong> A copyable link that anyone can forward needs a real expiry and single use. 14 days, one use, and the name is baked in so the wrong person accepting is visible immediately.</p>
+</div>
+
+<div class="note nogo">
+  <span class="lbl">No-gos</span>
+  <ul>
+    <li>No bulk invite, no CSV, no paste-a-list-of-emails.</li>
+    <li>No SMS sending in v1 — no gateway, no delivery reports, no per-message cost.</li>
+    <li>No per-project permissions. Crew see every project. If that's wrong, we'll hear about it.</li>
+    <li>No role changes after invite. Remove and re-add. It happens twice a year.</li>
+  </ul>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="setting-up">Setting up</h2>
+
+<!-- W3 -->
+<div class="wf-head">
+  <span class="wf-num">W3</span>
+  <h3>Start a project<span class="appetite sm">Small batch · 1–2 weeks</span></h3>
+</div>
+<div class="wf-role" style="margin-bottom:16px">Manager · desk · a few times a year</div>
+<div class="measure">
+
+<div class="job">
+  <div class="lbl">Job story</div>
+  <p>When we win the Kitala job, I want the project and its budget in Zimba in one sitting, so receipts have somewhere to land before the first delivery arrives.</p>
+</div>
+
+<div class="baseline">
+  <div class="lbl">What happens today</div>
+  <p>Sarah fills four fields, attaches the site plan, taps <em>Next</em>, and waits while every file uploads. Page two: budget rows. <em>Create project</em>. Next month she taps <em>New project</em> and <strong>the form is pre-filled with the Kitala details</strong> — because the server action redirects, which throws, so the client's <code>clearProjectCreateDraft()</code> never runs. She edits over stale data and creates a project named after the wrong site.</p>
+</div>
+
+<h4>Actions</h4>
+<ul>
+  <li>Name the project and where it is</li>
+  <li>Add budget lines with amounts, see the total add up</li>
+  <li>Create it, land on it</li>
+</ul>
+
+<h4>Interaction</h4>
+<pre class="bb">[New project]                     ← one page, one submit
+  Project name
+  Location
+
+  Budget
+    ┌──────────────────────────────────────┐
+    │ Foundation            12,000,000     │
+    │ Walling                8,500,000     │
+    │ + Add line                           │
+    ├──────────────────────────────────────┤
+    │ Total                 20,500,000     │  ← live, right-aligned
+    └──────────────────────────────────────┘
+
+  "Create project"  ───────────────►  [Project]</pre>
+
+<p>Land size, building type, client name, and file attachments all move to <em>Project → Edit</em>. None of them are needed to start tracking money, and asking for them at the moment of maximum impatience is how you get abandoned forms.</p>
+
+<div class="sketch">
+  <div class="sk">
+    <div class="row"><div class="blk g1">New project</div></div>
+    <div class="row"><div class="blk g1">name</div></div>
+    <div class="row"><div class="blk g1">location</div></div>
+    <div class="row"><div class="blk mid g2">budget line</div><div class="blk mid g1">amount</div></div>
+    <div class="row"><div class="blk mid g2">budget line</div><div class="blk mid g1">amount</div></div>
+    <div class="row"><div class="blk ghost g1">+ add line</div></div>
+    <div class="row"><div class="blk g2">&nbsp;</div><div class="blk g1" style="justify-content:flex-end">total</div></div>
+    <div class="row"><div class="blk g2">&nbsp;</div><div class="blk dark g1">Create project</div></div>
+  </div>
+</div>
+<p class="caption">One page. The total is the second-most prominent thing on screen after the name.</p>
+
+<div class="note rabbit">
+  <span class="lbl">Rabbit hole</span>
+  <p><strong>The draft machinery has to go, not be fixed.</strong> The two-page wizard needed <code>localStorage</code> to carry state across a navigation. One page needs no draft, no <code>readProjectCreateDraft</code>, no <code>clearProjectCreateDraft</code>, and the bug disappears by deletion rather than by patch. Do not port the draft code forward.</p>
+</div>
+
+<div class="note nogo">
+  <span class="lbl">No-gos</span>
+  <ul>
+    <li>No project templates and no "copy from previous project."</li>
+    <li>No file upload during creation.</li>
+    <li>No start and end dates. Zimba tracks money, not schedule. Adding dates invites Gantt charts.</li>
+    <li>No client records. A client name is a text field on the project, if we add it at all.</li>
+  </ul>
+</div>
+</div>
+
+<!-- W4 -->
+<div class="wf-head">
+  <span class="wf-num">W4</span>
+  <h3>Change the budget<span class="appetite sm">Small batch · 1–2 weeks</span></h3>
+</div>
+<div class="wf-role" style="margin-bottom:16px">Manager · desk · monthly</div>
+<div class="measure">
+
+<div class="job">
+  <div class="lbl">Job story</div>
+  <p>When the roofing quote comes back 40% over what I guessed, I want to move money between budget lines and add the line I forgot, so the numbers on screen match the job I'm actually running.</p>
+</div>
+
+<div class="baseline">
+  <div class="lbl">What happens today</div>
+  <p>Three separate ways to create the same thing: a whole page at <code>/projects/[id]/tasks/new</code>, a dialog triggered by a magic <code>__create_new_category__</code> value inside a dropdown during receipt entry, and the rows during project creation. All three call the same action. Each is worded differently — task, category, allocation.</p>
+</div>
+
+<h4>Actions</h4>
+<ul>
+  <li>Add a budget line, inline, wherever you notice it's missing</li>
+  <li>Change a line's amount or name in place</li>
+  <li>Delete a line that has no receipts against it</li>
+</ul>
+
+<h4>Interaction</h4>
+<pre class="bb">[Project ▸ Budget]
+  Foundation      12,000,000    spent 9,120,000    ▓▓▓▓▓▓▓░░░  76%
+  Walling          8,500,000    spent 1,200,000    ▓░░░░░░░░░  14%
+  + Add line                    ← inline row, appears in place, saves on blur
+
+  Tap any name or amount to edit it in place. No edit mode, no form.
+
+[Filing a receipt] ── budget line typeahead
+  Type "roof" ─► no match ─► "Create budget line 'Roofing'"  ← inline, stays put
+                                                                never leaves the queue</pre>
+
+<p>One concept, one word, two places it appears — and in both places it's created inline. Never a page, never a dialog you have to dismiss to get back to what you were doing.</p>
+
+<div class="note rabbit">
+  <span class="lbl">Rabbit hole</span>
+  <p><strong>Deleting a line with receipts on it.</strong> Don't build a re-assignment flow. If a line has receipts, the delete affordance isn't there, and the row explains: "3 receipts use this line." Move them first from the receipts themselves.</p>
+</div>
+
+<div class="note nogo">
+  <span class="lbl">No-gos</span>
+  <ul>
+    <li>No sub-lines, no nesting, no hierarchy. Flat list.</li>
+    <li>No budget revision history or approval of changes.</li>
+    <li>No standard chart of accounts. Every company names its own lines.</li>
+  </ul>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="every-day">Every day</h2>
+<div class="measure">
+<p>These three are the product. Everything above exists so these can happen, and everything below exists because these happened.</p>
+</div>
+
+<!-- W5 -->
+<div class="wf-head">
+  <span class="wf-num">W5</span>
+  <h3>Snap a receipt<span class="appetite">Large batch · 6 weeks</span></h3>
+</div>
+<div class="wf-role" style="margin-bottom:16px">Crew · phone · many times a day · <strong>the epicenter</strong></div>
+<div class="measure">
+
+<div class="job">
+  <div class="lbl">Job story</div>
+  <p>When a supplier hands me paper and a truck is waiting, I want it into Zimba before I put my phone away, so it can't end up creased in my pocket for three weeks.</p>
+</div>
+
+<div class="baseline">
+  <div class="lbl">What happens today</div>
+  <p>Musa is at Kitala. 11am, sun overhead, one hand on a delivery note. To record it he must: open the app, tap Projects, find Kitala in a paginated list, tap it, tap New expense, open the supplier dropdown, discover this supplier doesn't exist, leave the page to create one, fill six fields, come back, pick a purchase date, upload the photo, type a description, choose a category, type a quantity, type a unit rate, decide the payment status, and save.</p>
+  <p><strong>Twenty-plus interactions, two hands, in sunlight, with a truck waiting.</strong> He puts the paper in his pocket. It surfaces in three weeks and nobody remembers what it was for.</p>
+</div>
+
+<h4>Actions</h4>
+<ul>
+  <li>Open the camera from anywhere in one tap</li>
+  <li>Photograph the receipt</li>
+  <li>Confirm which project it belongs to</li>
+  <li>Done — and immediately be able to do it again</li>
+</ul>
+
+<h4>Interaction</h4>
+<pre class="bb">[Anywhere]
+  "Add receipt"  ← one large persistent button at thumb height,
+      │            on every screen a Crew member can reach
+      ▼
+[Camera]          ← opens straight to the viewfinder. Not a menu
+                    asking whether you'd like to use the camera.
+  ◉ Shutter  ────────────────────►  [Confirm]
+  Pick from photos  ─────────────►  [Confirm]
+
+[Confirm]
+  the photo, full width
+  Project:  Kitala Site  ▾        ← pre-filled with your last one.
+                                    One tap only if it's wrong.
+  "Add another"  ────────────────►  [Camera]
+  "Done"  ───────────────────────►  [Anywhere]
+                                    "Added to Kitala."</pre>
+
+<p><strong>Two taps.</strong> Shutter, Done. No supplier. No date. No amount. No budget line. No payment status. Not because those don't matter, but because Musa is the wrong person, this is the wrong moment, and a photo taken now is worth more than a perfect record taken never.</p>
+
+<div class="sketch">
+  <div class="sk">
+    <div class="row"><div class="blk xtall g1">the photo, big</div></div>
+    <div class="row"><div class="blk mid g1">Kitala Site ▾</div></div>
+    <div class="row"><div class="blk g1">Add another</div><div class="blk dark g1">Done</div></div>
+  </div>
+</div>
+<p class="caption">Confirm screen. The photo dominates; the project is one line; two buttons, both reachable with a thumb.</p>
+
+<h4>Copy</h4>
+<table class="copy-table">
+  <tr><th>Where</th><th>What it says</th></tr>
+  <tr><td>Primary button</td><td>Add receipt</td></tr>
+  <tr><td>After saving</td><td>Added to Kitala.</td></tr>
+  <tr><td>Saved with no signal</td><td>Saved on your phone. It'll upload when you have signal.</td></tr>
+  <tr><td>Upload later succeeded</td><td>&mdash; nothing. Silence is the correct message for a background success.</td></tr>
+  <tr><td>Camera permission refused</td><td>Zimba needs your camera to photograph receipts. Turn it on in Settings, or pick a photo you've already taken.</td></tr>
+  <tr><td>Crew home, nothing to do</td><td>Nothing to do here. Photograph a receipt when you get one.</td></tr>
+</table>
+
+<div class="note rabbit">
+  <span class="lbl">Rabbit holes</span>
+  <p><strong>Offline is not optional.</strong> Ugandan sites have bad signal and this is where the app lives. The photo writes to local storage immediately, the row appears immediately, and upload retries in the background forever. Musa never sees a spinner, a progress bar, or a retry button. The existing <code>receipt-draft</code> storage already persists <code>File</code> objects, so the primitive exists — but the current fake progress bar stepping 10→45→90→100 and the <code>window.location.reload()</code> after upload both have to go.</p>
+  <p><strong>Project defaulting.</strong> Last used, full stop. No geolocation, no guessing, no "we think you're at Kitala." Cheap, predictable, right nine times out of ten, and obviously wrong the one time it's wrong.</p>
+</div>
+
+<div class="note nogo">
+  <span class="lbl">No-gos</span>
+  <ul>
+    <li><strong>No OCR.</strong> The most tempting feature in this product and the biggest rabbit hole in it. Handwritten Ugandan delivery notes in bad light. Not in v1.</li>
+    <li>No amount field on capture. Not even optional — an optional field is still a decision to make while a truck waits.</li>
+    <li>No editing or deleting a receipt from the capture screen. Wrong photo? Take another.</li>
+    <li>No multi-photo receipts. One photo, one receipt. A two-page invoice is two receipts, filed together at the desk.</li>
+    <li>No notes or voice memo field.</li>
+    <li>No Crew visibility of any money total, anywhere.</li>
+  </ul>
+</div>
+</div>
+
+<!-- W6 -->
+<div class="wf-head">
+  <span class="wf-num">W6</span>
+  <h3>File a receipt<span class="appetite">Large batch · 6 weeks</span></h3>
+</div>
+<div class="wf-role" style="margin-bottom:16px">Manager · desk mostly · daily · <strong>ships with W5 or not at all</strong></div>
+<div class="measure">
+
+<div class="job">
+  <div class="lbl">Job story</div>
+  <p>When photos have piled up from three sites, I want to turn them into numbers fast and know when I'm finished, so bookkeeping is twenty minutes at the end of the day instead of a weekend in March.</p>
+</div>
+
+<div class="baseline">
+  <div class="lbl">What happens today</div>
+  <p>There is no queue. <code>/expenses</code> exists but appears in no navigation — not the sidebar, not the mobile bar — so the only ways to reach it are typing the URL or deleting a receipt, which redirects there. Its four filter tabs have no handlers. Nothing in the data model expresses "this one still needs work," so there is no way to know when you're done.</p>
+</div>
+
+<h4>Actions</h4>
+<ul>
+  <li>See everything waiting, oldest first, with a count</li>
+  <li>Open one and file it: supplier, amount, budget line, paid or not</li>
+  <li>Create a supplier or a budget line without leaving the queue</li>
+  <li>Move to the next one without navigating</li>
+  <li>Skip one you can't figure out</li>
+  <li>Split a receipt into several lines when it genuinely needs it</li>
+  <li>Reach the end and see an empty inbox</li>
+</ul>
+
+<h4>Interaction</h4>
+<pre class="bb">[Inbox]                                        ← manager's home
+  "7 receipts to file"
+  ┌────────────────────────────────────────────┐
+  │ [photo]  Kitala Site                       │
+  │          Musa · yesterday 11:04            │  ─► [File it]
+  └────────────────────────────────────────────┘
+  ┌────────────────────────────────────────────┐
+  │ [photo]  Bugolobi                          │
+  │          Sarah · yesterday 16:22           │  ─► [File it]
+  └────────────────────────────────────────────┘
+
+[File it]                                      ← full screen, keyboard-first
+  ┌─────────────────┬──────────────────────────┐
+  │                 │  Supplier    [        ]  │  typeahead. Typing a new
+  │   the photo     │                          │  name offers "Create
+  │   large,        │  Amount      [        ]  │  supplier 'Ssemwanga'"
+  │   zoomable      │                          │  inline — no navigation
+  │                 │  Budget line [        ]  │
+  │                 │                          │  same pattern
+  │                 │  Paid?   ○ Not yet       │
+  │                 │          ● Yes, in full  │
+  │                 │                          │
+  │                 │  Split into items →      │  rare path, desktop only
+  │                 │                          │
+  │                 │  [ File ]     Skip       │
+  └─────────────────┴──────────────────────────┘
+       │
+       └──► next receipt loads in place. The queue count drops.
+            No navigation, no page transition, no returning to a list.
+
+[Inbox — empty]
+  "Nothing to file. Nice."</pre>
+
+<p>Filing never leaves the screen. Enter files and advances. Everything is reachable from the keyboard, because the person doing this does it forty times in a row and a mouse is an insult to that.</p>
+
+<div class="sketch">
+  <div class="sk">
+    <div class="row">
+      <div class="blk xtall g1">photo</div>
+      <div style="flex:1; display:flex; flex-direction:column; gap:9px">
+        <div class="blk">supplier</div>
+        <div class="blk">amount</div>
+        <div class="blk">budget line</div>
+        <div class="blk mid">paid?</div>
+        <div class="row" style="margin-top:auto"><div class="blk dark g1">File</div><div class="blk ghost g1">Skip</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+<p class="caption">Photo left, four fields right, one primary action. The same screen stacks vertically on a phone.</p>
+
+<h4>Copy</h4>
+<table class="copy-table">
+  <tr><th>Where</th><th>What it says</th></tr>
+  <tr><td>Inbox heading, work waiting</td><td>7 receipts to file</td></tr>
+  <tr><td>Inbox heading, one left</td><td>1 receipt to file</td></tr>
+  <tr><td>Inbox empty</td><td>Nothing to file. Nice.</td></tr>
+  <tr><td>Inbox empty, first ever</td><td>Receipts your team photographs show up here. Start a project so they have somewhere to go.</td></tr>
+  <tr><td>New supplier offer</td><td>Create supplier "Ssemwanga Hardware"</td></tr>
+  <tr><td>New budget line offer</td><td>Create budget line "Roofing" in Kitala Site</td></tr>
+  <tr><td>Amount left blank</td><td>How much was it? We need the amount to file this.</td></tr>
+  <tr><td>Amount over remaining budget</td><td>This puts Foundation 1,200,000 over budget. File it anyway?</td></tr>
+  <tr><td>Save failed</td><td>We couldn't save that. Your typing is still here — try again.</td></tr>
+</table>
+
+<div class="note rabbit">
+  <span class="lbl">Rabbit holes</span>
+  <p><strong>Inline supplier creation is the whole workflow.</strong> If creating a supplier means leaving the queue, the queue never empties. The current <code>?supplier=</code> round-trip through <code>/suppliers/new</code> and back is exactly the pattern being deleted. A supplier created here has a name and nothing else; phone and email get filled in later, or never.</p>
+  <p><strong>Multi-line receipts.</strong> One amount per receipt covers the large majority. "Split into items" opens the existing line-item editor. It's a rare path, so it's allowed to look plainer than the rest of the app — but it must not shape the default.</p>
+  <p><strong>Over-budget filing.</strong> Never block it. The money was already spent; refusing to record reality is how shadow spreadsheets get born. Warn, record, and let the project page go red.</p>
+</div>
+
+<div class="note nogo">
+  <span class="lbl">No-gos</span>
+  <ul>
+    <li>No approval step. Filed is filed. Three of the four current status fields exist to serve an approval flow that has no interface.</li>
+    <li>No bulk edit, no multi-select, no "file all as Foundation."</li>
+    <li>No assigning a receipt to a person for follow-up.</li>
+    <li>No tax or VAT fields. When someone needs them we'll ask what they need.</li>
+    <li>No duplicate detection.</li>
+  </ul>
+</div>
+</div>
+
+<!-- W7 -->
+<div class="wf-head">
+  <span class="wf-num">W7</span>
+  <h3>Pay a receipt<span class="appetite">Large batch · 6 weeks</span></h3>
+</div>
+<div class="wf-role" style="margin-bottom:16px">Manager · desk · weekly</div>
+<div class="measure">
+
+<div class="job">
+  <div class="lbl">Job story</div>
+  <p>When Ssemwanga rings asking about his money, I want to see what we owe him and record what I just sent, so the next call starts from the same number we both agree on.</p>
+</div>
+
+<div class="baseline">
+  <div class="lbl">What happens today</div>
+  <p>Mostly right, actually. <em>Mark fully paid</em> is one click with no confirmation, and <em>Record partial payment</em> opens a dialog. But the payment method is a raw <code>&lt;select&gt;</code> — unstyled, unlike every other dropdown in the app — and the reference field is labelled "Optional" while asking for nothing in particular.</p>
+</div>
+
+<h4>Actions</h4>
+<ul>
+  <li>See what's still owed on a receipt</li>
+  <li>Record a payment: amount, date, how it was sent</li>
+  <li>Mark it settled in one action when you've paid it all</li>
+  <li>See every payment already made against it</li>
+</ul>
+
+<h4>Interaction</h4>
+<pre class="bb">[Receipt]
+  Ssemwanga Hardware · Kitala Site · Foundation
+  2,400,000                          Part paid
+  Paid 1,000,000 · Owed 1,400,000
+
+  "Record a payment"  ──────────────►  [Payment]
+  "Mark it paid off"                   ← fills the amount and files it,
+                                         one action, no dialog
+
+  Payments
+    12 Mar   Mobile money   600,000
+    28 Feb   Cash           400,000
+
+[Payment]
+  Amount     1,400,000        ← pre-filled with what's owed
+  Date       today            ← pre-filled
+  Sent by    Cash · Mobile money · Bank · Cheque    ← four buttons, not a dropdown
+  Reference  MTN txn or cheque no.                  ← the label says what to type
+  "Record payment"  ───────────────►  [Receipt]</pre>
+
+<p>Four payment methods as four visible buttons. A dropdown hides options to save space we have, and costs a tap we don't need to spend.</p>
+
+<div class="note rabbit">
+  <span class="lbl">Rabbit hole</span>
+  <p><strong>Double-submitting a payment.</strong> Payments are the one place in Zimba where a duplicate is a real accounting problem. The existing idempotency key on <code>markReceiptFullyPaidAction</code> is the right instinct — extend it to every payment write, keyed on the client.</p>
+</div>
+
+<div class="note nogo">
+  <span class="lbl">No-gos</span>
+  <ul>
+    <li>No paying several receipts at once.</li>
+    <li>No mobile money or bank integration. You type what you sent.</li>
+    <li>No payment reversal or void. Record a correcting payment, or delete and re-file.</li>
+    <li>No scheduled or promised future payments. No due dates, no ageing report.</li>
+    <li>No attaching proof-of-payment files to a payment.</li>
+  </ul>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="standing">Knowing where you stand</h2>
+
+<!-- W8 -->
+<div class="wf-head">
+  <span class="wf-num">W8</span>
+  <h3>Check a project<span class="appetite">Large batch · 6 weeks</span></h3>
+</div>
+<div class="wf-role" style="margin-bottom:16px">Manager · phone and desk · several times a week</div>
+<div class="measure">
+
+<div class="job">
+  <div class="lbl">Job story</div>
+  <p>When I'm driving to the Kitala site, I want to know in one glance whether we're still inside budget and which line is eating it, so I walk in already knowing what to ask about.</p>
+</div>
+
+<div class="baseline">
+  <div class="lbl">What happens today</div>
+  <p>The project page shows three metric cards with decorative SVG sparklines that represent no data, a donut chart, a legend, a budget-health card that repeats the same three numbers a third time, an accordion of budget lines, and then a paginated expenses table. The location is printed twice. The word "remaining" appears four times. It's a page that shows everything and answers nothing.</p>
+</div>
+
+<h4>Actions</h4>
+<ul>
+  <li>See budget, spent, and remaining — once</li>
+  <li>See which budget lines are in trouble, sorted by trouble</li>
+  <li>Open a budget line and see the receipts on it</li>
+  <li>Jump to files, edit, or archive</li>
+</ul>
+
+<h4>Interaction</h4>
+<pre class="bb">[Project]
+  Kitala Site · Namugongo Road
+
+  Spent 14,300,000 of 20,500,000          70%
+  ▓▓▓▓▓▓▓░░░                              Remaining 6,200,000
+
+  Budget lines                     ← sorted by % spent, worst first
+    Foundation    9,120,000 / 12,000,000   ▓▓▓▓▓▓▓░░░  76%   ▸
+    Walling       1,200,000 /  8,500,000   ▓░░░░░░░░░  14%   ▸
+                                                             │
+    ▸ expands in place to the receipts on that line ──────────┘
+
+  Receipts  ·  Files  ·  Edit                ← three quiet links
+                                               Archive lives under Edit</pre>
+
+<p><strong>Three numbers, stated once.</strong> The donut, the sparklines, the duplicate location line, and the separate budget-health card all go. A horizontal bar per budget line answers "which line is eating it" faster than any pie chart can, because bars sort and pies don't.</p>
+
+<div class="sketch">
+  <div class="sk">
+    <div class="row"><div class="blk g1">Kitala Site · Namugongo Road</div></div>
+    <div class="row"><div class="blk dark g3">Spent 14,300,000 of 20,500,000 · 70%</div><div class="blk g1">left</div></div>
+    <div class="row"><div class="blk mid g2">Foundation</div><div class="blk mid g2">▓▓▓▓▓▓▓░░ 76%</div></div>
+    <div class="row"><div class="blk mid g2">Walling</div><div class="blk mid g2">▓░░░░░░░░ 14%</div></div>
+    <div class="row"><div class="blk ghost g2">Roofing</div><div class="blk ghost g2">nothing spent</div></div>
+    <div class="row"><div class="blk g1">Receipts</div><div class="blk g1">Files</div><div class="blk g1">Edit</div></div>
+  </div>
+</div>
+<p class="caption">No chart library on this page. Bars are two divs.</p>
+
+<h4>Copy</h4>
+<table class="copy-table">
+  <tr><th>Where</th><th>What it says</th></tr>
+  <tr><td>Under budget</td><td>Remaining 6,200,000</td></tr>
+  <tr><td>Over budget</td><td>Over by 1,400,000</td></tr>
+  <tr><td>Budget line untouched</td><td>Nothing spent yet</td></tr>
+  <tr><td>No budget lines at all</td><td>Add budget lines so you can see where the money goes.</td></tr>
+  <tr><td>No receipts yet</td><td>No receipts on this project yet.</td></tr>
+</table>
+
+<div class="note rabbit">
+  <span class="lbl">Rabbit hole</span>
+  <p><strong>Receipts filed without a budget line.</strong> They exist — a manager can skip in the inbox. They group under a line called <em>Not assigned</em> which appears first, in amber, with a count. It's a to-do, not an error, and it must be visible or the totals silently lie.</p>
+</div>
+
+<div class="note nogo">
+  <span class="lbl">No-gos</span>
+  <ul>
+    <li>No charts. No pie, no donut, no area chart, no sparklines. Bars only. <code>recharts</code> comes off this page.</li>
+    <li>No forecasting, burn rate, or projected completion cost.</li>
+    <li>No date-range filter on the project page.</li>
+    <li>No comparison between projects.</li>
+    <li>No PDF export in v1.</li>
+  </ul>
+</div>
+</div>
+
+<!-- W9 -->
+<div class="wf-head">
+  <span class="wf-num">W9</span>
+  <h3>Find a receipt again<span class="appetite sm">Small batch · 1–2 weeks</span></h3>
+</div>
+<div class="wf-role" style="margin-bottom:16px">Manager · desk · weekly</div>
+<div class="measure">
+
+<div class="job">
+  <div class="lbl">Job story</div>
+  <p>When someone disputes a delivery from two months ago, I want to find that receipt in seconds and put the photo in front of them, so the argument ends.</p>
+</div>
+
+<div class="baseline">
+  <div class="lbl">What happens today</div>
+  <p>Two nearly identical TanStack tables — <code>expense-table.tsx</code> and <code>project-expenses-table.tsx</code> — both with their own search, sort, pagination, mobile card variant, and receipt-grouping helper. The receipt detail page is reachable from four places, two of which navigate with <code>window.location.href</code> and reload the whole app.</p>
+</div>
+
+<h4>Actions</h4>
+<ul>
+  <li>Search across every receipt by supplier, project, budget line, or amount</li>
+  <li>Open one and see the photo</li>
+  <li>Print or share it</li>
+</ul>
+
+<h4>Interaction</h4>
+<pre class="bb">[Projects]  or  [Suppliers]
+  Search  [ ssemwanga            ]        ← one field, searches everything
+                                            no tabs, no filter chips
+
+  12 Mar   Ssemwanga    Kitala · Foundation   2,400,000   Part paid
+  28 Feb   Ssemwanga    Kitala · Foundation     840,000   Paid
+      │
+      ▼
+[Receipt]
+  the photo, large
+  supplier · project · budget line · amount · paid state
+  payments list
+  Print   Share   Edit   Delete</pre>
+
+<p>One table component used in both places, not two. One search field that searches everything, not four tabs that search nothing.</p>
+
+<div class="note nogo">
+  <span class="lbl">No-gos</span>
+  <ul>
+    <li>No advanced filter builder, no saved searches, no date-range pickers.</li>
+    <li>No CSV or Excel export in v1. Print exists; it covers the dispute case, which is the real case.</li>
+    <li>No sorting by more than one column.</li>
+  </ul>
+</div>
+</div>
+
+<!-- W10 -->
+<div class="wf-head">
+  <span class="wf-num">W10</span>
+  <h3>Check a supplier<span class="appetite sm">Small batch · 1–2 weeks</span></h3>
+</div>
+<div class="wf-role" style="margin-bottom:16px">Manager · desk · weekly</div>
+<div class="measure">
+
+<div class="job">
+  <div class="lbl">Job story</div>
+  <p>When I sit down to pay people on Friday, I want one list of who's owed what, so I can work down it and stop guessing.</p>
+</div>
+
+<div class="baseline">
+  <div class="lbl">What happens today</div>
+  <p>A four-metric strip, then a card grid where each card carries three sub-metrics — twelve numbers before you've read a single supplier name. Rows navigate with <code>window.location.href</code>.</p>
+</div>
+
+<h4>Actions</h4>
+<ul>
+  <li>See every supplier ordered by what we owe, most owed first</li>
+  <li>Open one and see every receipt and payment</li>
+  <li>Add or correct their phone number</li>
+</ul>
+
+<h4>Interaction</h4>
+<pre class="bb">[Suppliers]
+  We owe 8,400,000 across 6 suppliers      ← one number, not four
+
+  Ssemwanga Hardware      owed 1,400,000    0772 123456   ▸
+  Kampala Steel           owed   900,000    —             ▸
+  Nsimbe Sand             paid up           0700 987654   ▸
+                              │
+                              ▼
+[Supplier]
+  Ssemwanga Hardware      0772 123456   [edit]
+  Owed 1,400,000 · Paid 3,200,000 across 9 receipts
+
+  receipts, newest first, each with paid state ──► [Receipt]</pre>
+
+<p>Sorted by what we owe, because the only reason to open this screen is to decide who gets paid next.</p>
+
+<div class="note nogo">
+  <span class="lbl">No-gos</span>
+  <ul>
+    <li>No supplier categories or tags. The current category system on suppliers goes.</li>
+    <li>No supplier ratings, notes, or contact history.</li>
+    <li>No statement email to suppliers.</li>
+    <li>No credit limits or payment terms.</li>
+  </ul>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="record">Keeping the record</h2>
+
+<!-- W11 -->
+<div class="wf-head">
+  <span class="wf-num">W11</span>
+  <h3>Files<span class="appetite sm">Small batch · 1–2 weeks</span></h3>
+</div>
+<div class="wf-role" style="margin-bottom:16px">Manager · desk · occasionally</div>
+<div class="measure">
+
+<div class="job">
+  <div class="lbl">Job story</div>
+  <p>When the engineer asks for the approved site plan, I want to get it out of Zimba and into an email in under a minute, so I don't go hunting through WhatsApp.</p>
+</div>
+
+<div class="baseline">
+  <div class="lbl">What happens today</div>
+  <p>Three separate upload implementations. The project-files page hides its input behind a button, shows a fake progress bar stepping 10→45→90→100, then calls <code>window.location.reload()</code>. Images have no click target and no lightbox. Files are titled "File 1 · sitename.pdf". <strong>There is no download button anywhere in the application</strong> — getting a file out means right-click, open in new tab, and use the browser.</p>
+</div>
+
+<h4>Actions</h4>
+<ul>
+  <li>Drag files onto a project, or pick them</li>
+  <li>See a photo full size</li>
+  <li>Download one</li>
+  <li>Delete one</li>
+</ul>
+
+<h4>Interaction</h4>
+<pre class="bb">[Project ▸ Files]
+  drop zone  ← the same UploadZone component as everywhere else.
+               Real progress or no progress. Never fake progress.
+
+  ┌────────┐ ┌────────┐ ┌────────┐
+  │ thumb  │ │ thumb  │ │  PDF   │      ← tap a photo ─► full screen
+  └────────┘ └────────┘ └────────┘         ← / → between photos, Esc out
+   site-plan  slab.jpg   quote.pdf         Download · Delete on every one
+   .pdf</pre>
+
+<p>Real filenames. One upload component. A download button. No page reload.</p>
+
+<div class="note rabbit">
+  <span class="lbl">Rabbit hole</span>
+  <p><strong>The hardcoded URL rewrite.</strong> The files page currently rewrites any URL containing <code>/api/v1/files/</code> into <code>https://utfs.io/f/{key}</code>. That's a storage provider's domain hardcoded in a React component, and it will break silently. Files serve through one route or the other, decided once, in one place.</p>
+</div>
+
+<div class="note nogo">
+  <span class="lbl">No-gos</span>
+  <ul>
+    <li>No folders, no renaming, no versioning, no tags.</li>
+    <li>No bulk download or zip.</li>
+    <li>No in-browser PDF preview — download it.</li>
+    <li>No file comments.</li>
+  </ul>
+</div>
+</div>
+
+<!-- W12 -->
+<div class="wf-head">
+  <span class="wf-num">W12</span>
+  <h3>Fix a mistake<span class="appetite sm">Small batch · 1–2 weeks</span></h3>
+</div>
+<div class="wf-role" style="margin-bottom:16px">Manager · desk · often</div>
+<div class="measure">
+
+<div class="job">
+  <div class="lbl">Job story</div>
+  <p>When I filed a receipt against the wrong budget line, I want to move it without thinking hard, so a small slip doesn't quietly poison a project's numbers.</p>
+</div>
+
+<div class="baseline">
+  <div class="lbl">What happens today</div>
+  <p>Re-categorising is a dedicated dialog behind a button whose label changes between "Categorize receipt" and "Change category". The button is disabled when there are no budget lines, with no explanation of why. Meanwhile archiving a project uses <code>window.confirm()</code>, deleting a receipt uses <code>window.confirm()</code>, and marking a receipt fully paid — which moves money — confirms nothing at all.</p>
+</div>
+
+<h4>Actions</h4>
+<ul>
+  <li>Change any field on a filed receipt, in place</li>
+  <li>Move a receipt to a different project or budget line</li>
+  <li>Delete a receipt</li>
+  <li>Put a receipt back in the inbox if you can't fix it now</li>
+</ul>
+
+<h4>Interaction</h4>
+<pre class="bb">[Receipt]
+  Every field is editable where it sits. Tap it, change it, it saves.
+  No edit mode. No "Change category" button. No dialog.
+
+  Move to…      ← project + budget line, one picker
+  Back to inbox ← unfiles it. It rejoins the queue.
+  Delete        ← the only confirmation in the app:
+                  "Delete this receipt? The photo goes too. Can't be undone."</pre>
+
+<h4>One confirmation rule</h4>
+<table>
+  <tr><th>Action</th><th>Confirm?</th></tr>
+  <tr><td>Delete a receipt</td><td><strong>Yes</strong> — irreversible, takes the photo with it</td></tr>
+  <tr><td>Delete a project</td><td><strong>Yes</strong> — type the project name</td></tr>
+  <tr><td>Archive a project</td><td>No — reversible in one click from Projects</td></tr>
+  <tr><td>Record a payment</td><td>No — visible in the payment list immediately, and correctable</td></tr>
+  <tr><td>Mark paid off</td><td>No</td></tr>
+  <tr><td>Change a budget line</td><td>No</td></tr>
+  <tr><td>Remove a team member</td><td>No — re-invite takes ten seconds</td></tr>
+</table>
+<p>And when we do confirm, it's our own dialog with real copy — never <code>window.confirm()</code>, which cannot be styled, cannot be tested well, and looks like a browser error.</p>
+
+<div class="note nogo">
+  <span class="lbl">No-gos</span>
+  <ul>
+    <li>No undo, no trash, no soft-delete for receipts. Confirm once, then it's gone.</li>
+    <li>No audit log or edit history in v1.</li>
+    <li>No locking a period against edits.</li>
+  </ul>
+</div>
+</div>
+
+<!-- W13 -->
+<div class="wf-head">
+  <span class="wf-num">W13</span>
+  <h3>Close a project<span class="appetite sm">Small batch · 1–2 weeks</span></h3>
+</div>
+<div class="wf-role" style="margin-bottom:16px">Manager · desk · a few times a year</div>
+<div class="measure">
+
+<div class="job">
+  <div class="lbl">Job story</div>
+  <p>When Kitala hands over, I want it out of my daily list without losing a single record, so next year's audit still has everything and my screen only shows live work.</p>
+</div>
+
+<div class="baseline">
+  <div class="lbl">What happens today</div>
+  <p>Close to right. Archive from the project page, and archived projects sit in a section at the bottom of <code>/projects</code> with restore and delete as two unlabelled icon buttons. Both destructive paths run through <code>window.confirm()</code>.</p>
+</div>
+
+<h4>Actions</h4>
+<ul>
+  <li>Archive a project — it leaves the list, keeps every record</li>
+  <li>Restore it</li>
+  <li>Delete it permanently, having typed its name</li>
+</ul>
+
+<h4>Interaction</h4>
+<pre class="bb">[Projects]
+  live projects…
+
+  Archived (3)  ▸           ← collapsed by default. Not a section
+      │                       competing for attention at all times.
+      ▼
+    Kitala Site   20,500,000 spent   Restore   Delete
+    ← text buttons, because an icon without a label is a guess</pre>
+
+<div class="note nogo">
+  <span class="lbl">No-gos</span>
+  <ul>
+    <li>No project close-out summary or final report.</li>
+    <li>No preventing archive while receipts are unpaid.</li>
+    <li>No auto-archive after inactivity.</li>
+  </ul>
+</div>
+</div>
+
+<!-- W14 -->
+<div class="wf-head">
+  <span class="wf-num">W14</span>
+  <h3>Come back tomorrow<span class="appetite sm">Small batch · 1–2 weeks</span></h3>
+</div>
+<div class="wf-role" style="margin-bottom:16px">Everyone · every day</div>
+<div class="measure">
+
+<div class="job">
+  <div class="lbl">Job story</div>
+  <p>When I open Zimba in the morning, I want to see what needs me today, so I don't have to decide where to look first.</p>
+</div>
+
+<div class="baseline">
+  <div class="lbl">What happens today</div>
+  <p>You land on a dashboard with three stat cards, a project list, and a truncated activity feed. Nothing on it requires an action, so it trains you to skim past it. The greeting says "Good morning" and is the only thing on the page that knows anything about you.</p>
+</div>
+
+<h4>Actions</h4>
+<ul>
+  <li>Sign in and land where the work is</li>
+  <li>Stay signed in on your phone for weeks</li>
+  <li>Get exactly one email that matters</li>
+</ul>
+
+<h4>Interaction</h4>
+<pre class="bb">Manager signs in  ──►  [Inbox]     — the count is the whole status report
+Crew signs in     ──►  [Add receipt] full-screen. That's their app.
+
+Sessions last 30 days on mobile. A foreman should never see a login
+screen twice in a month.
+
+The one email we send:
+  Subject:  Kitala Site is at 91% of budget
+  Body:     Spent 18,655,000 of 20,500,000. Foundation is the
+            biggest line. [Open Kitala Site]
+
+That's it. No daily digest. No weekly summary. No "5 receipts
+were filed yesterday." Notify only when something needs a decision.</pre>
+
+<div class="note nogo">
+  <span class="lbl">No-gos</span>
+  <ul>
+    <li>No notification preferences screen. We pick.</li>
+    <li>No in-app notification bell or badge counts anywhere except the inbox count.</li>
+    <li>No push notifications in v1.</li>
+    <li>No activity feed. It was the third-most prominent thing on the old home and it answered nothing.</li>
+  </ul>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="bets">The three bets</h2>
+<div class="measure">
+
+<p>Fourteen workflows, three six-week cycles, two-week cool-downs between. Each cycle is a fixed time box with variable scope: if week six arrives and a scope isn't done, it doesn't ship and it doesn't roll over. It gets re-shaped and re-bet, or dropped.</p>
+
+<h3>Bet 1 · The Loop <span class="appetite">6 weeks</span></h3>
+<p>Snap → inbox → filed, end to end, thin. This is the epicenter and it must be built as one vertical slice, because capture without an inbox is a folder of photos and an inbox without capture is empty.</p>
+<table>
+  <tr><th>Scope</th><th>Contains</th></tr>
+  <tr><td>Capture</td><td>W5. Camera, project default, offline queue.</td></tr>
+  <tr><td>Inbox</td><td>W6 queue. Count, cards, empty state.</td></tr>
+  <tr><td>File it</td><td>W6 form. Inline supplier and budget line creation.</td></tr>
+  <tr><td>Four doors</td><td>Nav collapse. Inbox becomes home. Crew see two doors.</td></tr>
+  <tr><td>Two states</td><td>Filed / not filed. Delete the other three status fields.</td></tr>
+</table>
+<p><strong>If we run out of time,</strong> the first things cut are: split-into-items, keyboard shortcuts, the photo zoom. The last things cut are the camera and the queue. Those two are the bet.</p>
+
+<h4>Cool-down · 2 weeks</h4>
+<p>Delete, don't build. Reports, Analytics, Budget, and Settings routes come out. The project-create draft bug disappears with the wizard. The dead expense filter tabs go. The hardcoded <code>utfs.io</code> rewrite gets fixed. No new features, and nobody is asked to plan the next cycle until the last week.</p>
+
+<h3>Bet 2 · The Money <span class="appetite">6 weeks</span></h3>
+<table>
+  <tr><th>Scope</th><th>Contains</th></tr>
+  <tr><td>Project money</td><td>W8. One number stated once, bars per budget line, no charts.</td></tr>
+  <tr><td>Budget lines</td><td>W4. Inline add and edit everywhere.</td></tr>
+  <tr><td>Payments</td><td>W7. Four method buttons, idempotent writes, payment list.</td></tr>
+  <tr><td>Suppliers</td><td>W10. Sorted by what we owe.</td></tr>
+  <tr><td>One project page</td><td>W3. Delete the wizard and its draft machinery.</td></tr>
+</table>
+
+<h4>Cool-down · 2 weeks</h4>
+
+<h3>Bet 3 · The Record <span class="appetite">6 weeks</span></h3>
+<table>
+  <tr><th>Scope</th><th>Contains</th></tr>
+  <tr><td>Find it</td><td>W9. One table component, one search field.</td></tr>
+  <tr><td>Files</td><td>W11. One uploader, lightbox, download.</td></tr>
+  <tr><td>Fix it</td><td>W12. Inline editing, one confirmation rule, our own dialog.</td></tr>
+  <tr><td>In and out</td><td>W1, W2, W13, W14. Self-serve signup, copyable invites, archive, the one email.</td></tr>
+</table>
+
+<p><strong>v1 ships at the end of Bet 3.</strong> Twenty-two weeks including cool-downs. Not a roadmap — Bet 2 and Bet 3 are sketched here so you can see the shape, but they get properly shaped and re-decided at the betting table before each cycle, because six weeks from now we'll know things we don't know today.</p>
+
+<div class="note keep">
+  <span class="lbl">The circuit breaker</span>
+  <p>If Bet 1 is 70% done at the end of week six, it does not ship and it does not continue into week seven. We re-shape and re-bet it. Extending a cycle once teaches everyone that deadlines are decorative, and after that no estimate in the company means anything.</p>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="nogos">Master no-go list</h2>
+<div class="measure">
+<p>Everything Zimba v1 will not do, in one place, so nobody has to go hunting to check. If a decision during a cycle would contradict this list, the answer is no without a meeting.</p>
+
+<div class="cols">
+<div>
+<h4>Won't build</h4>
+<ul>
+  <li>OCR or receipt data extraction</li>
+  <li>Approval workflows</li>
+  <li>Multi-currency</li>
+  <li>Purchase orders and quotations</li>
+  <li>Payroll or labour tracking</li>
+  <li>Schedules, dates, Gantt charts</li>
+  <li>Accounting software sync</li>
+  <li>Mobile money or bank integration</li>
+  <li>Push notifications</li>
+  <li>SMS sending</li>
+  <li>Undo, trash, or soft-delete</li>
+  <li>Audit log or edit history</li>
+  <li>Period locking</li>
+  <li>CSV or Excel export</li>
+  <li>PDF generation</li>
+  <li>Per-project permissions</li>
+  <li>Client or contact records</li>
+  <li>Supplier statements</li>
+  <li>Duplicate detection</li>
+  <li>Sample or demo data</li>
+</ul>
+</div>
+<div>
+<h4>Won't have on screen</h4>
+<ul>
+  <li>A settings page</li>
+  <li>Notification preferences</li>
+  <li>A dashboard of widgets</li>
+  <li>An activity feed</li>
+  <li>Pie, donut, or area charts</li>
+  <li>Decorative sparklines</li>
+  <li>Notification badges, except the inbox count</li>
+  <li>Tabs that don't filter</li>
+  <li>Fake progress bars</li>
+  <li><code>window.confirm()</code></li>
+  <li><code>window.location.href</code> for in-app navigation</li>
+  <li>Icon-only buttons for destructive actions</li>
+  <li>The same number printed twice on one page</li>
+  <li>Any preference the user is asked to set at signup beyond their company name</li>
+  <li>Money totals of any kind on a Crew screen</li>
+</ul>
+</div>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="open">Open questions</h2>
+<div class="measure">
+<p>Four things I can't shape without an answer from you. Each one changes the design, so they're worth answering before Bet 1 starts rather than during it.</p>
+
+<h4>1. Why does signup need manual approval?</h4>
+<p>Every workflow above assumes self-serve signup, and W1 falls apart if that's wrong. If the gate is there for fraud prevention, the answer is different than if it's sales qualification, and different again if it's just leftover scaffolding from an earlier idea. This is the highest-leverage question in the document.</p>
+
+<h4>2. Does the foreman actually have a phone that can do this?</h4>
+<p>The entire capture design assumes an Android phone with a working camera and intermittent data. If the reality is a shared feature phone, or a foreman who sends photos to the accountant on WhatsApp and never opens Zimba himself, then Bet 1 is the wrong bet and we should shape "import from WhatsApp" instead. <strong>One phone call to one real foreman settles this.</strong></p>
+
+<h4>3. Who files the receipts — one person or several?</h4>
+<p>The inbox is designed for one person emptying a queue. If three people file concurrently we need to think about two of them opening the same receipt. Not hard, but it's a decision, and it's cheaper to make now than in week four.</p>
+
+<h4>4. Is anyone using the four roles?</h4>
+<p>Collapsing to Crew and Manager is the single biggest simplification here. If a real customer is genuinely relying on <code>accountant</code> being distinct from <code>site_manager</code>, I want to know what they can't do that they'd need to.</p>
+
+<hr>
+
+<h4>Where the score lands</h4>
+<div class="score">
+  <div class="good"><div class="n">10<small>/10</small></div></div>
+  <div style="font-size:14.5px; color:var(--ink-2); max-width:52ch">
+    Fixed six-week cycles with cool-downs · every workflow shaped with problem, appetite, solution, rabbit holes, no-gos · no backlog · one currency, one confirmation rule, zero preference screens · nine routes deleted, two added · plain copy throughout.
+  </div>
+</div>
+<p>The plan earns a 10 because most of it is subtraction, and because the one thing being added — the capture-and-file loop — is bounded by a no-go list longer than the feature itself.</p>
+</div>
+
+<footer>
+Zimba v1 workflow design · shaped against <em>Getting Real</em>, <em>Rework</em>, and <em>Shape Up</em> · <code>docs/zimba-v1.html</code>
+</footer>
+
+</main>
+</div>
+</body>
+</html>
