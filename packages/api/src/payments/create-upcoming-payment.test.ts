@@ -7,6 +7,15 @@ const repo = vi.hoisted(() => ({
 
 vi.mock("@workspace/db/repositories", () => repo)
 
+const dbMock = vi.hoisted(() => ({
+  transaction: vi.fn(
+    async <Result>(callback: (tx: unknown) => Promise<Result>): Promise<Result> =>
+      callback({})
+  ),
+}))
+
+vi.mock("@workspace/db", () => ({ db: dbMock }))
+
 import { createUpcomingPaymentUseCase } from "./create-upcoming-payment"
 
 const context = {
@@ -14,7 +23,6 @@ const context = {
   organizationId: "org-1",
   role: "owner" as const,
 }
-const dependencies = { executor: {} as never }
 
 describe("createUpcomingPaymentUseCase", () => {
   beforeEach(() => {
@@ -27,7 +35,7 @@ describe("createUpcomingPaymentUseCase", () => {
   })
 
   it("creates a payment for a tenant-scoped project", async () => {
-    const result = await createUpcomingPaymentUseCase(context, dependencies, {
+    const result = await createUpcomingPaymentUseCase(context, {
       projectId: "project-1",
       title: "Materials",
       description: "Steel delivery",
@@ -37,7 +45,7 @@ describe("createUpcomingPaymentUseCase", () => {
     })
     expect(result.id).toBe("payable-1")
     expect(repo.createPayable).toHaveBeenCalledWith(
-      dependencies.executor,
+      dbMock,
       expect.objectContaining({
         organizationId: "org-1",
         projectId: "project-1",
@@ -48,7 +56,7 @@ describe("createUpcomingPaymentUseCase", () => {
 
   it("rejects invalid input", async () => {
     await expect(
-      createUpcomingPaymentUseCase(context, dependencies, {
+      createUpcomingPaymentUseCase(context, {
         projectId: "project-1",
         title: "",
         amount: -1,
@@ -61,7 +69,7 @@ describe("createUpcomingPaymentUseCase", () => {
   it("rejects a project outside the workspace", async () => {
     repo.findProjectForOrganization.mockResolvedValue([])
     await expect(
-      createUpcomingPaymentUseCase(context, dependencies, {
+      createUpcomingPaymentUseCase(context, {
         projectId: "other-project",
         title: "Materials",
         amount: 10,

@@ -6,13 +6,12 @@ import {
   recordPlatformAuditUseCase,
   rejectOwnershipTransferUseCase,
 } from "@workspace/api"
-import { apiDatabase } from "@workspace/api-runtime"
 import { sendOwnershipTransferEmail } from "@workspace/transactional"
 import { revalidatePath } from "next/cache"
 import { requirePlatformSession } from "@/core/auth/service"
 
 async function getTransfer(transferId: string) {
-  const transfers = await listOwnershipTransferRequestsUseCase(apiDatabase)
+  const transfers = await listOwnershipTransferRequestsUseCase()
   return transfers.find((transfer) => transfer.id === transferId) ?? null
 }
 
@@ -24,7 +23,6 @@ export async function approveTransfer(formData: FormData) {
   const transfer = await getTransfer(transferId)
   await approveOwnershipTransferUseCase(
     { reviewerId: session.user.id },
-    apiDatabase,
     transferId
   )
   if (transfer) {
@@ -50,7 +48,7 @@ export async function approveTransfer(formData: FormData) {
     })
   }
 
-  await recordPlatformAuditUseCase(apiDatabase, {
+  await recordPlatformAuditUseCase({
     actorId: session.user.id,
     targetUserId: transfer?.toUserId ?? null,
     operation: "ownership_transfer_approved",
@@ -77,7 +75,6 @@ export async function rejectTransfer(formData: FormData) {
   const transfer = await getTransfer(transferId)
   await rejectOwnershipTransferUseCase(
     { reviewerId: session.user.id },
-    apiDatabase,
     transferId,
     rejectionReason || undefined
   )
@@ -105,7 +102,7 @@ export async function rejectTransfer(formData: FormData) {
     })
   }
 
-  await recordPlatformAuditUseCase(apiDatabase, {
+  await recordPlatformAuditUseCase({
     actorId: session.user.id,
     targetUserId: transfer?.toUserId ?? null,
     operation: "ownership_transfer_rejected",

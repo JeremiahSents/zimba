@@ -1,4 +1,5 @@
-import type { DatabaseExecutor } from "@workspace/db/repositories"
+import { db } from "@workspace/db"
+
 import {
   createAllocation,
   findActiveProjectForOrganization,
@@ -16,7 +17,6 @@ const allocationSchema = z.object({
 
 export async function createAllocationUseCase(
   ctx: WorkspaceContext,
-  deps: { executor: DatabaseExecutor },
   projectId: string,
   rawInput: unknown
 ) {
@@ -24,12 +24,12 @@ export async function createAllocationUseCase(
   const input = allocationSchema.safeParse(rawInput)
   if (!input.success) validationError("Add a task name and an initial budget.")
   const [project] = await findActiveProjectForOrganization(
-    deps.executor,
+    db,
     ctx.organizationId,
     projectId
   )
   if (!project) notFoundError("Project not found.")
-  return createAllocation(deps.executor, {
+  return createAllocation(db, {
     organizationId: ctx.organizationId,
     projectId,
     name: input.data.name,
@@ -39,7 +39,6 @@ export async function createAllocationUseCase(
 
 export async function updateAllocationUseCase(
   ctx: WorkspaceContext,
-  deps: { executor: DatabaseExecutor },
   projectId: string,
   allocationId: string,
   rawInput: unknown
@@ -49,7 +48,7 @@ export async function updateAllocationUseCase(
   if (!input.success || (!input.data.name && input.data.budget === undefined))
     validationError("Provide an allocation name or budget.")
   const updated = await updateAllocation(
-    deps.executor,
+    db,
     ctx.organizationId,
     projectId,
     allocationId,

@@ -1,7 +1,4 @@
-import type {
-  DatabaseTransaction,
-  TransactionRunner,
-} from "@workspace/db/repositories"
+import type { DatabaseTransaction } from "@workspace/db/repositories"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 const repo = vi.hoisted(() => ({
@@ -13,6 +10,15 @@ const repo = vi.hoisted(() => ({
 
 vi.mock("@workspace/db/repositories", () => repo)
 
+const dbMock = vi.hoisted(() => ({
+  transaction: vi.fn(
+    async <Result>(callback: (tx: unknown) => Promise<Result>): Promise<Result> =>
+      callback({})
+  ),
+}))
+
+vi.mock("@workspace/db", () => ({ db: dbMock }))
+
 import { createInvitationUseCase } from "./create-invitation"
 
 const context = {
@@ -21,17 +27,10 @@ const context = {
   role: "site_manager" as const,
 }
 
-const transactionMock = vi.fn(
-  async <Result>(
-    callback: (tx: DatabaseTransaction) => Promise<Result>
-  ): Promise<Result> => callback({} as DatabaseTransaction)
-)
-const deps = { transaction: transactionMock as TransactionRunner }
-
 describe("createInvitationUseCase", () => {
   beforeEach(() => {
     vi.resetAllMocks()
-    transactionMock.mockImplementation(
+    dbMock.transaction.mockImplementation(
       async <Result>(
         callback: (tx: DatabaseTransaction) => Promise<Result>
       ): Promise<Result> => callback({} as DatabaseTransaction)
@@ -41,7 +40,7 @@ describe("createInvitationUseCase", () => {
   })
 
   it("creates an invitation and audits it in the transaction", async () => {
-    const result = await createInvitationUseCase(context, deps, {
+    const result = await createInvitationUseCase(context, {
       email: " Person@Example.COM ",
       role: "accountant",
     })
@@ -74,7 +73,7 @@ describe("createInvitationUseCase", () => {
   it("deletes an existing pending invitation before recreating it", async () => {
     repo.findPendingInvitation.mockResolvedValue([{ id: "old-invite" }])
 
-    await createInvitationUseCase(context, deps, {
+    await createInvitationUseCase(context, {
       email: "person@example.com",
       role: "viewer",
     })
@@ -87,38 +86,37 @@ describe("createInvitationUseCase", () => {
 
   it("rejects invalid email input", async () => {
     await expect(
-      createInvitationUseCase(context, deps, {
+      createInvitationUseCase(context, {
         email: "not-an-email",
         role: "viewer",
       })
     ).rejects.toMatchObject({ code: "VALIDATION_FAILED" })
-    expect(transactionMock).not.toHaveBeenCalled()
+    expect(dbMock.transaction).not.toHaveBeenCalled()
   })
 
   it("rejects unsupported actors", async () => {
     await expect(
-      createInvitationUseCase({ ...context, role: "accountant" }, deps, {
+      createInvitationUseCase({ ...context, role: "accountant" }, {
         email: "person@example.com",
         role: "viewer",
       })
     ).rejects.toMatchObject({ code: "FORBIDDEN" })
-    expect(transactionMock).not.toHaveBeenCalled()
+    expect(dbMock.transaction).not.toHaveBeenCalled()
   })
 
   it("prevents site managers from inviting owners", async () => {
     await expect(
-      createInvitationUseCase(context, deps, {
+      createInvitationUseCase(context, {
         email: "owner@example.com",
         role: "owner",
       })
     ).rejects.toMatchObject({ code: "FORBIDDEN" })
-    expect(transactionMock).not.toHaveBeenCalled()
+    expect(dbMock.transaction).not.toHaveBeenCalled()
   })
 
   it("allows owners to invite owners", async () => {
     const result = await createInvitationUseCase(
       { ...context, role: "owner" },
-      deps,
       { email: "owner@example.com", role: "owner" }
     )
 

@@ -1,4 +1,3 @@
-import type { DatabaseExecutor } from "@workspace/db/repositories"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 const repo = vi.hoisted(() => ({
@@ -7,6 +6,15 @@ const repo = vi.hoisted(() => ({
 }))
 
 vi.mock("@workspace/db/repositories", () => repo)
+
+const dbMock = vi.hoisted(() => ({
+  transaction: vi.fn(
+    async <Result>(callback: (tx: unknown) => Promise<Result>): Promise<Result> =>
+      callback({})
+  ),
+}))
+
+vi.mock("@workspace/db", () => ({ db: dbMock }))
 
 import {
   listProjectAttachmentsUseCase,
@@ -18,7 +26,6 @@ const ctx = {
   organizationId: "org-1",
   role: "owner" as const,
 }
-const deps = { executor: {} as DatabaseExecutor }
 
 describe("file use cases", () => {
   beforeEach(() => {
@@ -28,7 +35,7 @@ describe("file use cases", () => {
   })
 
   it("records completed uploads for the current workspace and uploader", async () => {
-    const result = await recordUploadedFileUseCase(ctx, deps, {
+    const result = await recordUploadedFileUseCase(ctx, {
       key: "upload-key",
       url: "https://cdn.example.com/file.pdf",
       filename: "receipt.pdf",
@@ -38,7 +45,7 @@ describe("file use cases", () => {
     })
 
     expect(result).toEqual({ id: "file-1" })
-    expect(repo.createUploadedFile).toHaveBeenCalledWith(deps.executor, {
+    expect(repo.createUploadedFile).toHaveBeenCalledWith(dbMock, {
       organizationId: "org-1",
       uploaderId: "user-1",
       key: "upload-key",
@@ -53,7 +60,7 @@ describe("file use cases", () => {
 
   it("rejects malformed uploaded file input", async () => {
     await expect(
-      recordUploadedFileUseCase(ctx, deps, {
+      recordUploadedFileUseCase(ctx, {
         key: "",
         url: "not-a-url",
         filename: "",
@@ -67,11 +74,11 @@ describe("file use cases", () => {
 
   it("lists project attachments within the current workspace", async () => {
     await expect(
-      listProjectAttachmentsUseCase(ctx, deps, "project-1")
+      listProjectAttachmentsUseCase(ctx, "project-1")
     ).resolves.toEqual([{ file: { id: "file-1" } }])
 
     expect(repo.listProjectAttachments).toHaveBeenCalledWith(
-      deps.executor,
+      dbMock,
       "org-1",
       "project-1"
     )
@@ -79,7 +86,7 @@ describe("file use cases", () => {
 
   it("rejects blank project ids", async () => {
     try {
-      listProjectAttachmentsUseCase(ctx, deps, " ")
+      listProjectAttachmentsUseCase(ctx, " ")
       throw new Error("Expected validation to fail.")
     } catch (error) {
       expect(error).toMatchObject({ code: "VALIDATION_FAILED" })

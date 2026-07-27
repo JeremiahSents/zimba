@@ -1,8 +1,6 @@
+import { db } from "@workspace/db"
 import { projectInputSchema } from "@workspace/contracts"
-import type {
-  DatabaseExecutor,
-  TransactionRunner,
-} from "@workspace/db/repositories"
+
 import {
   createAllocation,
   createProject,
@@ -32,7 +30,6 @@ const createProjectSchema = projectInputSchema.extend({
 
 export async function createProjectWithAllocationsUseCase(
   ctx: WorkspaceContext,
-  deps: { executor: DatabaseExecutor; transaction: TransactionRunner },
   rawInput: unknown
 ) {
   const input = createProjectSchema.safeParse(rawInput)
@@ -40,7 +37,7 @@ export async function createProjectWithAllocationsUseCase(
   if (input.data.organizationId !== ctx.organizationId)
     validationError("Organization mismatch.")
 
-  return deps.transaction(async (transaction) => {
+  return db.transaction(async (transaction) => {
     const project = await createProject(transaction, {
       organizationId: ctx.organizationId,
       name: input.data.name,

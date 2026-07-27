@@ -6,6 +6,15 @@ vi.mock("@workspace/db/repositories", () => ({
   findMembershipByUserAndOrganization: vi.fn(),
 }))
 
+const dbMock = vi.hoisted(() => ({
+  transaction: vi.fn(
+    async <Result>(callback: (tx: unknown) => Promise<Result>): Promise<Result> =>
+      callback({})
+  ),
+}))
+
+vi.mock("@workspace/db", () => ({ db: dbMock }))
+
 const { findWorkspaceBySlug, findMembershipByUserAndOrganization } =
   await import("@workspace/db/repositories")
 const { resolveWorkspace } = await import("./resolve-workspace")
@@ -22,9 +31,7 @@ describe("resolveWorkspace", () => {
       id: "member-1",
       role: "owner",
     })
-    const ctx = await resolveWorkspace("user-1", "acme-ltd", {
-      executor: {} as never,
-    })
+    const ctx = await resolveWorkspace("user-1", "acme-ltd")
     expect(ctx.organizationId).toBe("org-1")
     expect(ctx.organizationName).toBe("Acme Ltd")
     expect(ctx.slug).toBe("acme-ltd")
@@ -35,7 +42,7 @@ describe("resolveWorkspace", () => {
   it("throws not found for missing workspace", async () => {
     vi.mocked(findWorkspaceBySlug).mockResolvedValue(null)
     await expect(
-      resolveWorkspace("user-1", "nonexistent", { executor: {} as never })
+      resolveWorkspace("user-1", "nonexistent")
     ).rejects.toThrow(ApplicationError)
   })
 
@@ -48,7 +55,7 @@ describe("resolveWorkspace", () => {
     })
     vi.mocked(findMembershipByUserAndOrganization).mockResolvedValue(null)
     await expect(
-      resolveWorkspace("user-1", "acme-ltd", { executor: {} as never })
+      resolveWorkspace("user-1", "acme-ltd")
     ).rejects.toThrow(ApplicationError)
   })
 
@@ -64,9 +71,7 @@ describe("resolveWorkspace", () => {
       role: "unknown_role",
     })
     await expect(
-      resolveWorkspace("user-1", "acme-ltd", {
-        executor: {} as never,
-      })
+      resolveWorkspace("user-1", "acme-ltd")
     ).rejects.toThrow(ApplicationError)
   })
 
@@ -78,9 +83,7 @@ describe("resolveWorkspace", () => {
       status: "suspended",
     })
     await expect(
-      resolveWorkspace("user-1", "acme-ltd", {
-        executor: {} as never,
-      })
+      resolveWorkspace("user-1", "acme-ltd")
     ).rejects.toThrow(ApplicationError)
   })
 })

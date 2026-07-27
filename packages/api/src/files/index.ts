@@ -1,4 +1,5 @@
-import type { DatabaseExecutor } from "@workspace/db/repositories"
+import { db } from "@workspace/db"
+
 import {
   createUploadedFile,
   listProjectAttachments,
@@ -18,13 +19,12 @@ const recordUploadedFileSchema = z.object({
 
 export async function recordUploadedFileUseCase(
   ctx: WorkspaceContext,
-  deps: { executor: DatabaseExecutor },
   rawInput: unknown
 ) {
   const input = recordUploadedFileSchema.safeParse(rawInput)
   if (!input.success) validationError("Invalid uploaded file input.")
 
-  return createUploadedFile(deps.executor, {
+  return createUploadedFile(db, {
     organizationId: ctx.organizationId,
     uploaderId: ctx.userId,
     key: input.data.key,
@@ -39,9 +39,8 @@ export async function recordUploadedFileUseCase(
 
 export function listProjectAttachmentsUseCase(
   ctx: Pick<WorkspaceContext, "organizationId">,
-  deps: { executor: DatabaseExecutor },
   projectId: string
 ) {
   if (!projectId.trim()) validationError("Project id is required.")
-  return listProjectAttachments(deps.executor, ctx.organizationId, projectId)
+  return listProjectAttachments(db, ctx.organizationId, projectId)
 }

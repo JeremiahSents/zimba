@@ -13,7 +13,6 @@ import {
   getPendingApplicationCountUseCase,
   getPendingTransferCountUseCase,
 } from "@workspace/api"
-import { apiExecutor } from "@workspace/api-runtime"
 import { cn } from "@workspace/ui/lib/utils"
 import Link from "next/link"
 import { AdminDashboardShell } from "@/components/dashboard-shell"
@@ -77,10 +76,10 @@ export default async function OverviewPage() {
       getRecentActivity(8),
       getSystemHealth(),
       getOptionalWorkflowCount("pending application", () =>
-        getPendingApplicationCountUseCase(apiExecutor)
+        getPendingApplicationCountUseCase()
       ),
       getOptionalWorkflowCount("pending transfer", () =>
-        getPendingTransferCountUseCase(apiExecutor)
+        getPendingTransferCountUseCase()
       ),
     ])
 

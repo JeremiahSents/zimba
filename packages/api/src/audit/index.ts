@@ -1,4 +1,5 @@
-import type { DatabaseExecutor } from "@workspace/db/repositories"
+import { db } from "@workspace/db"
+
 import { appendAuditEvent } from "@workspace/db/repositories"
 import { z } from "zod"
 import type { WorkspaceContext } from "../shared/workspace-context"
@@ -12,11 +13,10 @@ const auditInputSchema = z.object({
 
 export function recordAuditUseCase(
   ctx: Pick<WorkspaceContext, "organizationId" | "userId">,
-  deps: { executor: DatabaseExecutor },
   rawInput: unknown
 ) {
   const input = auditInputSchema.parse(rawInput)
-  return appendAuditEvent(deps.executor, {
+  return appendAuditEvent(db, {
     organizationId: ctx.organizationId,
     actorId: ctx.userId,
     action: input.action,

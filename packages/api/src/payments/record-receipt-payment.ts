@@ -1,4 +1,5 @@
-import type { TransactionRunner } from "@workspace/db/repositories"
+import { db } from "@workspace/db"
+
 import {
   createLedgerPayment,
   findExpenseForOrganization,
@@ -23,14 +24,13 @@ const inputSchema = z.object({
 
 export async function recordReceiptPaymentUseCase(
   ctx: WorkspaceContext,
-  deps: { transaction: TransactionRunner },
   rawInput: unknown
 ) {
   requireRole(ctx.role, ["owner", "site_manager", "accountant"])
   const input = inputSchema.safeParse(rawInput)
   if (!input.success) validationError("Enter a valid payment.")
 
-  return deps.transaction(async (tx) => {
+  return db.transaction(async (tx) => {
     const expense = await findExpenseForOrganization(
       tx,
       ctx.organizationId,

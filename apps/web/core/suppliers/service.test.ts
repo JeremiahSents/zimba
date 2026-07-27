@@ -106,7 +106,7 @@ describe("Suppliers Service", () => {
     })
 
     expect(created?.id).toBe("sup-2")
-    expect(vi.mocked(api.createSupplierUseCase).mock.calls[0]?.[2]).toEqual(
+    expect(vi.mocked(api.createSupplierUseCase).mock.calls[0]?.[1]).toEqual(
       expect.objectContaining({
         organizationId: "org-1",
         name: "New Supplier",

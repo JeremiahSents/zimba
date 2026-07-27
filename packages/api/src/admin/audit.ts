@@ -1,14 +1,13 @@
-import type { DatabaseExecutor } from "@workspace/db/repositories"
+import { db } from "@workspace/db"
+
 import {
   appendPlatformAudit,
   listPlatformAuditEvents,
   listRecentActivityEvents,
 } from "@workspace/db/repositories"
 
-export async function listPlatformAuditLogsUseCase(deps: {
-  executor: DatabaseExecutor
-}) {
-  const rows = await listPlatformAuditEvents(deps.executor)
+export async function listPlatformAuditLogsUseCase() {
+  const rows = await listPlatformAuditEvents(db)
 
   return rows.map((row) => ({
     ...row,
@@ -17,10 +16,9 @@ export async function listPlatformAuditLogsUseCase(deps: {
 }
 
 export async function listRecentActivityUseCase(
-  deps: { executor: DatabaseExecutor },
   limit = 10
 ) {
-  const rows = await listRecentActivityEvents(deps.executor, limit)
+  const rows = await listRecentActivityEvents(db, limit)
 
   return rows.map((row) => ({
     ...row,
@@ -28,14 +26,11 @@ export async function listRecentActivityUseCase(
   }))
 }
 
-export function listPlatformActivityEventsUseCase(deps: {
-  executor: DatabaseExecutor
-}) {
-  return listRecentActivityUseCase(deps, 100)
+export function listPlatformActivityEventsUseCase() {
+  return listRecentActivityUseCase(100)
 }
 
 export async function recordPlatformAuditUseCase(
-  deps: { executor: DatabaseExecutor },
   input: {
     actorId: string
     targetUserId?: string | null
@@ -43,7 +38,7 @@ export async function recordPlatformAuditUseCase(
     metadata?: Record<string, unknown>
   }
 ) {
-  await appendPlatformAudit(deps.executor, {
+  await appendPlatformAudit(db, {
     actorId: input.actorId,
     targetUserId: input.targetUserId ?? null,
     operation: input.operation,

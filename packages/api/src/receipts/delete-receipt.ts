@@ -1,7 +1,5 @@
-import type {
-  DatabaseExecutor,
-  TransactionRunner,
-} from "@workspace/db/repositories"
+import { db } from "@workspace/db"
+
 import {
   appendAuditEvent,
   deletePayableForOrganization,
@@ -13,11 +11,10 @@ import type { WorkspaceContext } from "../shared/workspace-context"
 
 export async function deleteReceiptUseCase(
   ctx: WorkspaceContext,
-  deps: { executor: DatabaseExecutor; transaction: TransactionRunner },
   receiptId: string
 ) {
   requireRole(ctx.role, ["owner", "site_manager", "accountant"])
-  return deps.transaction(async (tx) => {
+  return db.transaction(async (tx) => {
     const [expense] = await deleteReceiptForOrganization(
       tx,
       ctx.organizationId,

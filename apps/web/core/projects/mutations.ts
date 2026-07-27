@@ -8,11 +8,6 @@ import {
   updateAllocationUseCase,
   updateProjectUseCase,
 } from "@workspace/api"
-import {
-  apiDatabase,
-  apiExecutor,
-  apiTransaction,
-} from "@workspace/api-runtime"
 import type { WorkspaceRole } from "@workspace/contracts"
 import type {
   AllocationUpdate,
@@ -29,7 +24,6 @@ export async function createProject(data: ProjectCreate) {
       organizationId: organization.organizationId,
       role: organization.role as WorkspaceRole,
     },
-    apiDatabase,
     {
       organizationId: organization.organizationId,
       name: data.name,
@@ -57,7 +51,6 @@ export async function createAllocation(
       organizationId: organization.organizationId,
       role: organization.role as WorkspaceRole,
     },
-    apiExecutor,
     projectId,
     data
   )
@@ -71,7 +64,6 @@ export async function updateProject(projectId: string, data: ProjectUpdate) {
       organizationId: organization.organizationId,
       role: organization.role as WorkspaceRole,
     },
-    apiTransaction,
     projectId,
     {
       name: data.name ?? undefined,
@@ -99,7 +91,6 @@ export async function updateAllocation(
       organizationId: organization.organizationId,
       role: organization.role as WorkspaceRole,
     },
-    apiExecutor,
     projectId,
     allocationId,
     { name: data.name ?? undefined, budget: data.budget ?? undefined }
@@ -114,7 +105,6 @@ export async function archiveProject(projectId: string) {
       organizationId: organization.organizationId,
       role: organization.role as WorkspaceRole,
     },
-    apiTransaction,
     projectId
   )
 }
@@ -127,7 +117,6 @@ export async function restoreProject(projectId: string) {
       organizationId: organization.organizationId,
       role: organization.role as WorkspaceRole,
     },
-    apiTransaction,
     projectId
   )
 }
@@ -140,7 +129,6 @@ export async function deleteProject(projectId: string) {
       organizationId: organization.organizationId,
       role: organization.role as WorkspaceRole,
     },
-    apiTransaction,
     projectId
   )
 }

@@ -1,4 +1,3 @@
-import type { DatabaseExecutor } from "@workspace/db/repositories"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 const repo = vi.hoisted(() => ({
@@ -7,9 +6,17 @@ const repo = vi.hoisted(() => ({
 
 vi.mock("@workspace/db/repositories", () => repo)
 
+const dbMock = vi.hoisted(() => ({
+  transaction: vi.fn(
+    async <Result>(callback: (tx: unknown) => Promise<Result>): Promise<Result> =>
+      callback({})
+  ),
+}))
+
+vi.mock("@workspace/db", () => ({ db: dbMock }))
+
 import { recordAuditUseCase } from "./index"
 
-const deps = { executor: {} as DatabaseExecutor }
 const ctx = { organizationId: "org-1", userId: "user-1" }
 
 describe("recordAuditUseCase", () => {
@@ -18,14 +25,14 @@ describe("recordAuditUseCase", () => {
   })
 
   it("records audit events for the current workspace and actor", async () => {
-    await recordAuditUseCase(ctx, deps, {
+    await recordAuditUseCase(ctx, {
       action: "project.update",
       entityType: "project",
       entityId: "project-1",
       changes: { name: "Villa" },
     })
 
-    expect(repo.appendAuditEvent).toHaveBeenCalledWith(deps.executor, {
+    expect(repo.appendAuditEvent).toHaveBeenCalledWith(dbMock, {
       organizationId: "org-1",
       actorId: "user-1",
       action: "project.update",
@@ -37,7 +44,7 @@ describe("recordAuditUseCase", () => {
 
   it("rejects malformed audit input", () => {
     expect(() =>
-      recordAuditUseCase(ctx, deps, {
+      recordAuditUseCase(ctx, {
         action: "",
         entityType: "",
         entityId: "",

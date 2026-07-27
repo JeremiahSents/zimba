@@ -1,7 +1,5 @@
-import type {
-  DatabaseExecutor,
-  TransactionRunner,
-} from "@workspace/db/repositories"
+import { db } from "@workspace/db"
+
 import {
   findExpenseForOrganization,
   insertReceiptPayment,
@@ -16,7 +14,6 @@ type ExpenseStatus = "Full" | "Partial" | "Not paid"
 
 export async function updateReceiptStatusUseCase(
   ctx: WorkspaceContext,
-  deps: { executor: DatabaseExecutor; transaction: TransactionRunner },
   receiptId: string,
   status: ExpenseStatus
 ) {
@@ -25,7 +22,7 @@ export async function updateReceiptStatusUseCase(
     validationError("Invalid receipt status.")
   if (status !== "Full") {
     const updated = await updateReceiptForOrganization(
-      deps.executor,
+      db,
       ctx.organizationId,
       receiptId,
       {
@@ -35,7 +32,7 @@ export async function updateReceiptStatusUseCase(
     if (!updated) notFoundError("Receipt not found.")
     return updated
   }
-  return deps.transaction(async (tx) => {
+  return db.transaction(async (tx) => {
     const detail = await findExpenseForOrganization(
       tx,
       ctx.organizationId,

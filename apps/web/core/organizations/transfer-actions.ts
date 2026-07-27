@@ -4,7 +4,6 @@ import {
   recordPlatformAuditUseCase,
   requestOwnershipTransferUseCase,
 } from "@workspace/api"
-import { apiDatabase } from "@workspace/api-runtime"
 import { revalidatePath } from "next/cache"
 import { requireSession } from "@/core/auth/service"
 
@@ -18,14 +17,13 @@ export async function requestOwnershipTransfer(formData: FormData) {
   try {
     await requestOwnershipTransferUseCase(
       { userId: session.user.id },
-      apiDatabase,
       {
         organizationId: session.organization.organizationId,
         toUserId,
         reason: reason || undefined,
       }
     )
-    await recordPlatformAuditUseCase(apiDatabase, {
+    await recordPlatformAuditUseCase({
       actorId: session.user.id,
       targetUserId: toUserId,
       operation: "ownership_transfer_requested",

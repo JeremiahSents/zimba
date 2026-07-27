@@ -1,4 +1,3 @@
-import type { DatabaseExecutor } from "@workspace/db/repositories"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 const repo = vi.hoisted(() => ({
@@ -9,9 +8,16 @@ const repo = vi.hoisted(() => ({
 
 vi.mock("@workspace/db/repositories", () => repo)
 
-import { getInvitationPreviewUseCase, listTeamUseCase } from "./read-team"
+const dbMock = vi.hoisted(() => ({
+  transaction: vi.fn(
+    async <Result>(callback: (tx: unknown) => Promise<Result>): Promise<Result> =>
+      callback({})
+  ),
+}))
 
-const deps = { executor: {} as DatabaseExecutor }
+vi.mock("@workspace/db", () => ({ db: dbMock }))
+
+import { getInvitationPreviewUseCase, listTeamUseCase } from "./read-team"
 
 describe("team read use cases", () => {
   beforeEach(() => {
@@ -22,15 +28,15 @@ describe("team read use cases", () => {
 
   it("lists members and pending invitations for the workspace", async () => {
     await expect(
-      listTeamUseCase({ organizationId: "org-1" }, deps)
+      listTeamUseCase({ organizationId: "org-1" })
     ).resolves.toEqual({
       members: [{ id: "member-1" }],
       invitations: [{ id: "invite-1" }],
     })
 
-    expect(repo.listTeamMembers).toHaveBeenCalledWith(deps.executor, "org-1")
+    expect(repo.listTeamMembers).toHaveBeenCalledWith(dbMock, "org-1")
     expect(repo.listPendingInvitations).toHaveBeenCalledWith(
-      deps.executor,
+      dbMock,
       "org-1"
     )
   })
@@ -39,7 +45,7 @@ describe("team read use cases", () => {
     repo.findInvitationPreviewByTokenHash.mockResolvedValue([])
 
     await expect(
-      getInvitationPreviewUseCase(deps, "a".repeat(20))
+      getInvitationPreviewUseCase("a".repeat(20))
     ).resolves.toEqual({ state: "invalid" })
   })
 
@@ -55,7 +61,7 @@ describe("team read use cases", () => {
     ])
 
     await expect(
-      getInvitationPreviewUseCase(deps, "a".repeat(20))
+      getInvitationPreviewUseCase("a".repeat(20))
     ).resolves.toMatchObject({ state: "used", expiresAt })
   })
 
@@ -70,13 +76,13 @@ describe("team read use cases", () => {
     ])
 
     await expect(
-      getInvitationPreviewUseCase(deps, "a".repeat(20))
+      getInvitationPreviewUseCase("a".repeat(20))
     ).resolves.toMatchObject({ state: "expired" })
   })
 
   it("rejects malformed preview tokens", async () => {
     await expect(
-      getInvitationPreviewUseCase(deps, "short")
+      getInvitationPreviewUseCase("short")
     ).rejects.toMatchObject({ code: "VALIDATION_FAILED" })
     expect(repo.findInvitationPreviewByTokenHash).not.toHaveBeenCalled()
   })

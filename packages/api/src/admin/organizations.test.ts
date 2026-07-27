@@ -1,4 +1,3 @@
-import type { DatabaseExecutor } from "@workspace/db/repositories"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 const repo = vi.hoisted(() => ({
@@ -10,14 +9,21 @@ const repo = vi.hoisted(() => ({
 
 vi.mock("@workspace/db/repositories", () => repo)
 
+const dbMock = vi.hoisted(() => ({
+  transaction: vi.fn(
+    async <Result>(callback: (tx: unknown) => Promise<Result>): Promise<Result> =>
+      callback({})
+  ),
+}))
+
+vi.mock("@workspace/db", () => ({ db: dbMock }))
+
 import {
   getOrganizationDetailUseCase,
   getOrganizationStatsUseCase,
   listOrganizationsUseCase,
   updateOrganizationStatusUseCase,
 } from "./organizations"
-
-const deps = { executor: {} as DatabaseExecutor }
 
 describe("admin organization use cases", () => {
   beforeEach(() => {
@@ -27,14 +33,14 @@ describe("admin organization use cases", () => {
   it("lists organizations with stats", async () => {
     repo.listOrganizationsWithStats.mockReturnValue("organizations")
 
-    expect(listOrganizationsUseCase(deps)).toBe("organizations")
-    expect(repo.listOrganizationsWithStats).toHaveBeenCalledWith(deps.executor)
+    expect(listOrganizationsUseCase()).toBe("organizations")
+    expect(repo.listOrganizationsWithStats).toHaveBeenCalledWith(dbMock)
   })
 
   it("returns organization detail when found", async () => {
     repo.findOrganizationDetail.mockResolvedValue({ id: "org-1" })
 
-    await expect(getOrganizationDetailUseCase(deps, "org-1")).resolves.toEqual({
+    await expect(getOrganizationDetailUseCase("org-1")).resolves.toEqual({
       id: "org-1",
     })
   })
@@ -43,7 +49,7 @@ describe("admin organization use cases", () => {
     repo.findOrganizationDetail.mockResolvedValue(null)
 
     await expect(
-      getOrganizationDetailUseCase(deps, "missing")
+      getOrganizationDetailUseCase("missing")
     ).rejects.toMatchObject({ code: "NOT_FOUND" })
   })
 
@@ -51,16 +57,16 @@ describe("admin organization use cases", () => {
     repo.readOrganizationStats.mockReturnValue("stats")
     repo.updateOrganizationStatus.mockReturnValue("updated")
 
-    expect(getOrganizationStatsUseCase(deps, "org-1")).toBe("stats")
-    expect(updateOrganizationStatusUseCase(deps, "org-1", "suspended")).toBe(
+    expect(getOrganizationStatsUseCase("org-1")).toBe("stats")
+    expect(updateOrganizationStatusUseCase("org-1", "suspended")).toBe(
       "updated"
     )
     expect(repo.readOrganizationStats).toHaveBeenCalledWith(
-      deps.executor,
+      dbMock,
       "org-1"
     )
     expect(repo.updateOrganizationStatus).toHaveBeenCalledWith(
-      deps.executor,
+      dbMock,
       "org-1",
       "suspended"
     )

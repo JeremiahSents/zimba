@@ -6,7 +6,6 @@ import {
   recordPlatformAuditUseCase,
   rejectOnboardingApplicationUseCase,
 } from "@workspace/api"
-import { apiDatabase } from "@workspace/api-runtime"
 import {
   sendApplicationApprovedEmail,
   sendApplicationRejectedEmail,
@@ -20,13 +19,10 @@ export async function approveApplication(formData: FormData) {
   const applicationId = String(formData.get("applicationId") ?? "")
   if (!applicationId) return
 
-  const application = await getOnboardingApplicationDetailUseCase(
-    apiDatabase,
-    applicationId
+  const application = await getOnboardingApplicationDetailUseCase(applicationId
   )
   const result = await approveOnboardingApplicationUseCase(
     { reviewerId: session.user.id },
-    apiDatabase,
     applicationId
   )
   if (application?.email) {
@@ -40,7 +36,7 @@ export async function approveApplication(formData: FormData) {
     })
   }
 
-  await recordPlatformAuditUseCase(apiDatabase, {
+  await recordPlatformAuditUseCase({
     actorId: session.user.id,
     targetUserId: application?.userId ?? null,
     operation: "onboarding_application_approved",
@@ -64,13 +60,10 @@ export async function rejectApplication(formData: FormData) {
   const rejectionReason = String(formData.get("rejectionReason") ?? "").trim()
   if (!applicationId) return
 
-  const application = await getOnboardingApplicationDetailUseCase(
-    apiDatabase,
-    applicationId
+  const application = await getOnboardingApplicationDetailUseCase(applicationId
   )
   await rejectOnboardingApplicationUseCase(
     { reviewerId: session.user.id },
-    apiDatabase,
     applicationId,
     rejectionReason || undefined
   )
@@ -86,7 +79,7 @@ export async function rejectApplication(formData: FormData) {
     })
   }
 
-  await recordPlatformAuditUseCase(apiDatabase, {
+  await recordPlatformAuditUseCase({
     actorId: session.user.id,
     targetUserId: application?.userId ?? null,
     operation: "onboarding_application_rejected",

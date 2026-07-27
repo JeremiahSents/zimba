@@ -1,7 +1,6 @@
 "use server"
 
 import { createReceipt as createReceiptUseCase } from "@workspace/api"
-import { apiTransaction } from "@workspace/api-runtime"
 import {
   expenseLinkSchema,
   idSchema,
@@ -56,7 +55,6 @@ export async function createPayableExpenseAction(
     const ctx = await getWorkspaceContext(workspaceSlug)
     const created = await createReceiptUseCase(
       ctx,
-      { runInTransaction: apiTransaction.transaction },
       {
         projectId: String(expense.project_id),
         supplierId: String(expense.supplier_id),

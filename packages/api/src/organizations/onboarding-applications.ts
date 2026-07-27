@@ -1,11 +1,9 @@
+import { db } from "@workspace/db"
 import type {
   OnboardingApplicationDto,
   OnboardingApplicationListDto,
 } from "@workspace/contracts"
-import type {
-  DatabaseExecutor,
-  TransactionRunner,
-} from "@workspace/db/repositories"
+
 import {
   countPendingOnboardingApplications,
   createOnboardingApplication,
@@ -39,7 +37,6 @@ function slugify(name: string) {
 
 export async function submitOnboardingApplicationUseCase(
   ctx: { userId: string },
-  deps: { executor: DatabaseExecutor },
   input: {
     fullName: string
     email: string
@@ -62,13 +59,13 @@ export async function submitOnboardingApplicationUseCase(
     validationError("Enter a valid company name.")
 
   const [existing] = await findPendingOnboardingApplication(
-    deps.executor,
+    db,
     ctx.userId
   )
   if (existing && existing.status === "pending")
     conflictError("You already have a pending application.")
 
-  await createOnboardingApplication(deps.executor, {
+  await createOnboardingApplication(db, {
     userId: ctx.userId,
     fullName,
     email,
@@ -83,10 +80,8 @@ export async function submitOnboardingApplicationUseCase(
   })
 }
 
-export async function listOnboardingApplicationsUseCase(deps: {
-  executor: DatabaseExecutor
-}): Promise<OnboardingApplicationListDto[]> {
-  const rows = await listOnboardingApplicationsWithUser(deps.executor)
+export async function listOnboardingApplicationsUseCase(): Promise<OnboardingApplicationListDto[]> {
+  const rows = await listOnboardingApplicationsWithUser(db)
   return rows.map((row) => ({
     id: row.id,
     fullName: row.fullName,
@@ -100,10 +95,9 @@ export async function listOnboardingApplicationsUseCase(deps: {
 }
 
 export async function getOnboardingApplicationDetailUseCase(
-  deps: { executor: DatabaseExecutor },
   id: string
 ): Promise<OnboardingApplicationDto | null> {
-  const [app] = await findOnboardingApplicationById(deps.executor, id)
+  const [app] = await findOnboardingApplicationById(db, id)
   if (!app) return null
   return {
     id: app.id,
@@ -129,18 +123,17 @@ export async function getOnboardingApplicationDetailUseCase(
 
 export async function approveOnboardingApplicationUseCase(
   ctx: { reviewerId: string },
-  deps: { executor: DatabaseExecutor; transaction: TransactionRunner },
   applicationId: string
 ): Promise<{ organizationId: string; slug: string }> {
   const [app] = await findOnboardingApplicationById(
-    deps.executor,
+    db,
     applicationId
   )
   if (!app) notFoundError("Application not found.")
   if (app.status !== "pending")
     conflictError("This application has already been reviewed.")
 
-  return deps.transaction(async (tx) => {
+  return db.transaction(async (tx) => {
     const [existing] = await findMembershipByUser(tx, app.userId)
     if (existing) conflictError("User already belongs to an organization.")
 
@@ -178,19 +171,18 @@ export async function approveOnboardingApplicationUseCase(
 
 export async function rejectOnboardingApplicationUseCase(
   ctx: { reviewerId: string },
-  deps: { executor: DatabaseExecutor },
   applicationId: string,
   rejectionReason?: string
 ): Promise<void> {
   const [app] = await findOnboardingApplicationById(
-    deps.executor,
+    db,
     applicationId
   )
   if (!app) notFoundError("Application not found.")
   if (app.status !== "pending")
     conflictError("This application has already been reviewed.")
 
-  await updateOnboardingApplicationStatus(deps.executor, applicationId, {
+  await updateOnboardingApplicationStatus(db, applicationId, {
     status: "rejected",
     reviewedBy: ctx.reviewerId,
     reviewedAt: new Date(),
@@ -198,17 +190,14 @@ export async function rejectOnboardingApplicationUseCase(
   })
 }
 
-export async function getPendingApplicationCountUseCase(deps: {
-  executor: DatabaseExecutor
-}): Promise<number> {
-  return countPendingOnboardingApplications(deps.executor)
+export async function getPendingApplicationCountUseCase(): Promise<number> {
+  return countPendingOnboardingApplications(db)
 }
 
 export async function getOnboardingApplicationForUserUseCase(
-  deps: { executor: DatabaseExecutor },
   userId: string
 ): Promise<OnboardingApplicationDto | null> {
-  const [app] = await findPendingOnboardingApplication(deps.executor, userId)
+  const [app] = await findPendingOnboardingApplication(db, userId)
   if (!app) return null
   return {
     id: app.id,

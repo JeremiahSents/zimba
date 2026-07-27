@@ -1,5 +1,4 @@
 import { getOnboardingApplicationDetailUseCase } from "@workspace/api"
-import { apiExecutor } from "@workspace/api-runtime"
 import { Badge } from "@workspace/ui/components/badge"
 import {
   Card,
@@ -27,9 +26,7 @@ export default async function ApplicationDetailPage({
   await requirePlatformSession()
   const { id } = await params
 
-  const application = await getOnboardingApplicationDetailUseCase(
-    apiExecutor,
-    id
+  const application = await getOnboardingApplicationDetailUseCase(id
   )
   if (!application) notFound()
 

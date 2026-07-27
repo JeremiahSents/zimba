@@ -1,7 +1,6 @@
 import "server-only"
 
 import { listTeamUseCase } from "@workspace/api"
-import { apiExecutor } from "@workspace/api-runtime"
 
 export type TeamMember = {
   id: string
@@ -13,7 +12,7 @@ export type TeamMember = {
 export async function listTeamMembers(
   organizationId: string
 ): Promise<TeamMember[]> {
-  const { members } = await listTeamUseCase({ organizationId }, apiExecutor)
+  const { members } = await listTeamUseCase({ organizationId })
 
   return members.map((m) => ({
     id: m.userId,

@@ -1,7 +1,4 @@
-import type {
-  DatabaseTransaction,
-  TransactionRunner,
-} from "@workspace/db/repositories"
+import type { DatabaseTransaction } from "@workspace/db/repositories"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 const repo = vi.hoisted(() => ({
@@ -14,6 +11,15 @@ const repo = vi.hoisted(() => ({
 }))
 
 vi.mock("@workspace/db/repositories", () => repo)
+
+const dbMock = vi.hoisted(() => ({
+  transaction: vi.fn(
+    async <Result>(callback: (tx: unknown) => Promise<Result>): Promise<Result> =>
+      callback({})
+  ),
+}))
+
+vi.mock("@workspace/db", () => ({ db: dbMock }))
 
 import {
   archiveProjectUseCase,
@@ -44,17 +50,10 @@ const completedAttachment = {
   purpose: "project_attachment",
 }
 
-const transactionMock = vi.fn(
-  async <Result>(
-    callback: (tx: DatabaseTransaction) => Promise<Result>
-  ): Promise<Result> => callback({} as DatabaseTransaction)
-)
-const deps = { transaction: transactionMock as TransactionRunner }
-
 describe("project mutation use cases", () => {
   beforeEach(() => {
     vi.resetAllMocks()
-    transactionMock.mockImplementation(
+    dbMock.transaction.mockImplementation(
       async <Result>(
         callback: (tx: DatabaseTransaction) => Promise<Result>
       ): Promise<Result> => callback({} as DatabaseTransaction)
@@ -67,7 +66,7 @@ describe("project mutation use cases", () => {
   })
 
   it("updates a project, validates attachments, and writes an audit event", async () => {
-    const result = await updateProjectUseCase(ctx, deps, "project-1", {
+    const result = await updateProjectUseCase(ctx, "project-1", {
       name: "Updated Villa",
       attachmentIds: ["file-1"],
     })
@@ -105,22 +104,22 @@ describe("project mutation use cases", () => {
 
   it("rejects invalid project input", async () => {
     await expect(
-      updateProjectUseCase(ctx, deps, "project-1", { name: "" })
+      updateProjectUseCase(ctx, "project-1", { name: "" })
     ).rejects.toMatchObject({ code: "VALIDATION_FAILED" })
-    expect(transactionMock).not.toHaveBeenCalled()
+    expect(dbMock.transaction).not.toHaveBeenCalled()
   })
 
   it("rejects an unknown or cross-workspace project", async () => {
     repo.findActiveProjectForOrganization.mockResolvedValue([])
     await expect(
-      updateProjectUseCase(ctx, deps, "project-2", { name: "Name" })
+      updateProjectUseCase(ctx, "project-2", { name: "Name" })
     ).rejects.toMatchObject({ code: "NOT_FOUND" })
   })
 
   it("rejects an attachment from another workspace", async () => {
     repo.findFileForOrganization.mockResolvedValue([])
     await expect(
-      updateProjectUseCase(ctx, deps, "project-1", {
+      updateProjectUseCase(ctx, "project-1", {
         attachmentIds: ["foreign-file"],
       })
     ).rejects.toMatchObject({ code: "VALIDATION_FAILED" })
@@ -128,7 +127,7 @@ describe("project mutation use cases", () => {
   })
 
   it("archives and restores projects as owner-only mutations", async () => {
-    await archiveProjectUseCase(ctx, deps, "project-1")
+    await archiveProjectUseCase(ctx, "project-1")
     expect(repo.updateProjectForOrganization).toHaveBeenCalledWith(
       expect.anything(),
       "org-1",
@@ -136,7 +135,7 @@ describe("project mutation use cases", () => {
       expect.objectContaining({ status: "archived", archivedBy: "user-1" })
     )
 
-    await restoreProjectUseCase(ctx, deps, "project-1")
+    await restoreProjectUseCase(ctx, "project-1")
     expect(repo.updateProjectForOrganization).toHaveBeenCalledWith(
       expect.anything(),
       "org-1",
@@ -147,13 +146,13 @@ describe("project mutation use cases", () => {
 
   it("rejects delete for unsupported workspace roles", async () => {
     await expect(
-      deleteProjectUseCase({ ...ctx, role: "site_manager" }, deps, "project-1")
+      deleteProjectUseCase({ ...ctx, role: "site_manager" }, "project-1")
     ).rejects.toMatchObject({ code: "FORBIDDEN" })
     expect(repo.deleteProjectForOrganization).not.toHaveBeenCalled()
   })
 
   it("deletes a project and audits the deletion", async () => {
-    const result = await deleteProjectUseCase(ctx, deps, "project-1")
+    const result = await deleteProjectUseCase(ctx, "project-1")
 
     expect(result).toBe(project)
     expect(repo.deleteProjectForOrganization).toHaveBeenCalledWith(
@@ -173,7 +172,7 @@ describe("project mutation use cases", () => {
   it("rejects unknown project deletion", async () => {
     repo.deleteProjectForOrganization.mockResolvedValue(undefined)
     await expect(
-      deleteProjectUseCase(ctx, deps, "missing-project")
+      deleteProjectUseCase(ctx, "missing-project")
     ).rejects.toMatchObject({ code: "NOT_FOUND" })
   })
 
@@ -181,13 +180,13 @@ describe("project mutation use cases", () => {
     repo.createProjectAttachment.mockRejectedValue(new Error("insert failed"))
 
     await expect(
-      updateProjectUseCase(ctx, deps, "project-1", {
+      updateProjectUseCase(ctx, "project-1", {
         name: "Updated",
         attachmentIds: ["file-1"],
       })
     ).rejects.toThrow("insert failed")
 
-    expect(transactionMock).toHaveBeenCalledTimes(1)
+    expect(dbMock.transaction).toHaveBeenCalledTimes(1)
     expect(repo.appendAuditEvent).not.toHaveBeenCalled()
   })
 })

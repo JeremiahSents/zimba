@@ -1,4 +1,5 @@
-import type { TransactionRunner } from "@workspace/db/repositories"
+import { db } from "@workspace/db"
+
 import {
   appendAuditEvent,
   createProjectAttachment,
@@ -26,7 +27,6 @@ const updateProjectSchema = z.object({
 
 export async function updateProjectUseCase(
   ctx: WorkspaceContext,
-  deps: { transaction: TransactionRunner },
   projectId: string,
   rawInput: unknown
 ) {
@@ -34,7 +34,7 @@ export async function updateProjectUseCase(
   const input = updateProjectSchema.safeParse(rawInput)
   if (!input.success) validationError("Invalid project input.")
 
-  return deps.transaction(async (transaction) => {
+  return db.transaction(async (transaction) => {
     const [existing] = await findActiveProjectForOrganization(
       transaction,
       ctx.organizationId,
@@ -116,29 +116,26 @@ export async function updateProjectUseCase(
 
 export async function archiveProjectUseCase(
   ctx: WorkspaceContext,
-  deps: { transaction: TransactionRunner },
   projectId: string
 ) {
   requireRole(ctx.role, ["owner"])
-  return setProjectArchivedState(ctx, deps, projectId, true)
+  return setProjectArchivedState(ctx, projectId, true)
 }
 
 export async function restoreProjectUseCase(
   ctx: WorkspaceContext,
-  deps: { transaction: TransactionRunner },
   projectId: string
 ) {
   requireRole(ctx.role, ["owner"])
-  return setProjectArchivedState(ctx, deps, projectId, false)
+  return setProjectArchivedState(ctx, projectId, false)
 }
 
 export async function deleteProjectUseCase(
   ctx: WorkspaceContext,
-  deps: { transaction: TransactionRunner },
   projectId: string
 ) {
   requireRole(ctx.role, ["owner"])
-  return deps.transaction(async (transaction) => {
+  return db.transaction(async (transaction) => {
     const deleted = await deleteProjectForOrganization(
       transaction,
       ctx.organizationId,
@@ -159,11 +156,10 @@ export async function deleteProjectUseCase(
 
 async function setProjectArchivedState(
   ctx: WorkspaceContext,
-  deps: { transaction: TransactionRunner },
   projectId: string,
   archived: boolean
 ) {
-  return deps.transaction(async (transaction) => {
+  return db.transaction(async (transaction) => {
     const updated = await updateProjectForOrganization(
       transaction,
       ctx.organizationId,

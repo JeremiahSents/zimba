@@ -1,7 +1,5 @@
-import type {
-  DatabaseExecutor,
-  TransactionRunner,
-} from "@workspace/db/repositories"
+import { db } from "@workspace/db"
+
 import {
   appendAuditEvent,
   findAllocationForProject,
@@ -17,13 +15,12 @@ import type { WorkspaceContext } from "../shared/workspace-context"
 
 export async function correctReceiptCategoryUseCase(
   ctx: WorkspaceContext,
-  deps: { executor: DatabaseExecutor; transaction: TransactionRunner },
   receiptId: string,
   allocationId: string
 ) {
   requireRole(ctx.role, ["owner", "site_manager", "accountant"])
   if (!receiptId || !allocationId) validationError("Select a category.")
-  return deps.transaction(async (tx) => {
+  return db.transaction(async (tx) => {
     const existing = await findExpenseForOrganization(
       tx,
       ctx.organizationId,

@@ -1,9 +1,10 @@
+import { db } from "@workspace/db"
 import type {
   ResolvedWorkspaceContext,
   WorkspaceRole,
 } from "@workspace/contracts"
 import { workspaceSlugSchema } from "@workspace/contracts"
-import type { DatabaseExecutor } from "@workspace/db/repositories"
+
 import {
   findMembershipByUserAndOrganization,
   findWorkspaceBySlug,
@@ -26,19 +27,18 @@ function parseRole(role: string): WorkspaceRole {
 
 export async function resolveWorkspace(
   userId: string,
-  slug: string,
-  deps: { executor: DatabaseExecutor }
+  slug: string
 ): Promise<ResolvedWorkspaceContext> {
   const parsedSlug = workspaceSlugSchema.safeParse(slug)
   if (!parsedSlug.success) notFoundError("Workspace not found.")
 
-  const workspace = await findWorkspaceBySlug(deps.executor, parsedSlug.data)
+  const workspace = await findWorkspaceBySlug(db, parsedSlug.data)
   if (workspace?.status !== "active") {
     notFoundError("Workspace not found.")
   }
 
   const membership = await findMembershipByUserAndOrganization(
-    deps.executor,
+    db,
     userId,
     workspace.id
   )

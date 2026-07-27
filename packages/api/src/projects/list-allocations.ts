@@ -1,4 +1,5 @@
-import type { DatabaseExecutor } from "@workspace/db/repositories"
+import { db } from "@workspace/db"
+
 import {
   findActiveProjectForOrganization,
   listAllocationsForProject,
@@ -8,14 +9,13 @@ import type { WorkspaceContext } from "../shared/workspace-context"
 
 export async function listProjectAllocationsUseCase(
   ctx: WorkspaceContext,
-  deps: { executor: DatabaseExecutor },
   projectId: string
 ) {
   const [project] = await findActiveProjectForOrganization(
-    deps.executor,
+    db,
     ctx.organizationId,
     projectId
   )
   if (!project) notFoundError("Project not found.")
-  return listAllocationsForProject(deps.executor, ctx.organizationId, projectId)
+  return listAllocationsForProject(db, ctx.organizationId, projectId)
 }

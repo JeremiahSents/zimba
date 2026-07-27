@@ -1,7 +1,4 @@
-import type {
-  DatabaseTransaction,
-  TransactionRunner,
-} from "@workspace/db/repositories"
+import type { DatabaseTransaction } from "@workspace/db/repositories"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 const repo = vi.hoisted(() => ({
@@ -15,6 +12,15 @@ const repo = vi.hoisted(() => ({
 
 vi.mock("@workspace/db/repositories", () => repo)
 
+const dbMock = vi.hoisted(() => ({
+  transaction: vi.fn(
+    async <Result>(callback: (tx: unknown) => Promise<Result>): Promise<Result> =>
+      callback({})
+  ),
+}))
+
+vi.mock("@workspace/db", () => ({ db: dbMock }))
+
 import { markReceiptFullyPaidUseCase } from "./mark-receipt-paid"
 
 const context = {
@@ -23,17 +29,10 @@ const context = {
   role: "accountant" as const,
 }
 
-const transactionMock = vi.fn(
-  async <Result>(
-    callback: (tx: DatabaseTransaction) => Promise<Result>
-  ): Promise<Result> => callback({} as DatabaseTransaction)
-)
-const deps = { transaction: transactionMock as TransactionRunner }
-
 describe("markReceiptFullyPaidUseCase", () => {
   beforeEach(() => {
     vi.resetAllMocks()
-    transactionMock.mockImplementation(
+    dbMock.transaction.mockImplementation(
       async <Result>(
         callback: (tx: DatabaseTransaction) => Promise<Result>
       ): Promise<Result> => callback({} as DatabaseTransaction)
@@ -52,7 +51,6 @@ describe("markReceiptFullyPaidUseCase", () => {
   it("marks an expense receipt fully paid using the server-calculated outstanding amount", async () => {
     const result = await markReceiptFullyPaidUseCase(
       context,
-      deps,
       "receipt-1",
       "key-1"
     )
@@ -94,7 +92,7 @@ describe("markReceiptFullyPaidUseCase", () => {
       payments: [{ amountCents: 5_000 }],
     })
 
-    await markReceiptFullyPaidUseCase(context, deps, "payable-1", "key-2")
+    await markReceiptFullyPaidUseCase(context, "payable-1", "key-2")
 
     expect(repo.createLedgerPayment).toHaveBeenCalledWith(
       expect.anything(),
@@ -123,7 +121,7 @@ describe("markReceiptFullyPaidUseCase", () => {
     })
 
     await expect(
-      markReceiptFullyPaidUseCase(context, deps, "receipt-1", "key-1")
+      markReceiptFullyPaidUseCase(context, "receipt-1", "key-1")
     ).rejects.toMatchObject({ code: "CONFLICT" })
     expect(repo.createLedgerPayment).not.toHaveBeenCalled()
   })
@@ -133,7 +131,7 @@ describe("markReceiptFullyPaidUseCase", () => {
     repo.findPayableForOrganization.mockResolvedValue(null)
 
     await expect(
-      markReceiptFullyPaidUseCase(context, deps, "missing", "key-1")
+      markReceiptFullyPaidUseCase(context, "missing", "key-1")
     ).rejects.toMatchObject({ code: "NOT_FOUND" })
   })
 
@@ -141,11 +139,10 @@ describe("markReceiptFullyPaidUseCase", () => {
     await expect(
       markReceiptFullyPaidUseCase(
         { ...context, role: "viewer" },
-        deps,
         "receipt-1",
         "key-1"
       )
     ).rejects.toMatchObject({ code: "FORBIDDEN" })
-    expect(transactionMock).not.toHaveBeenCalled()
+    expect(dbMock.transaction).not.toHaveBeenCalled()
   })
 })

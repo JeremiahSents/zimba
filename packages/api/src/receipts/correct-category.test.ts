@@ -11,6 +11,15 @@ const repo = vi.hoisted(() => ({
 }))
 vi.mock("@workspace/db/repositories", () => repo)
 
+const dbMock = vi.hoisted(() => ({
+  transaction: vi.fn(
+    async <Result>(callback: (tx: unknown) => Promise<Result>): Promise<Result> =>
+      callback({})
+  ),
+}))
+
+vi.mock("@workspace/db", () => ({ db: dbMock }))
+
 import { correctReceiptCategoryUseCase } from "./correct-category"
 
 const context = {
@@ -34,7 +43,6 @@ describe("correctReceiptCategoryUseCase", () => {
     })
     const result = await correctReceiptCategoryUseCase(
       context,
-      { executor: {} as never, transaction: run as never },
       "receipt-1",
       "allocation-1"
     )
@@ -77,7 +85,6 @@ describe("correctReceiptCategoryUseCase", () => {
     })
     await correctReceiptCategoryUseCase(
       context,
-      { executor: {} as never, transaction: run as never },
       "payable-1",
       "allocation-1"
     )

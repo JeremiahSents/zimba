@@ -4,7 +4,6 @@ import {
   recordPlatformAuditUseCase,
   submitOnboardingApplicationUseCase,
 } from "@workspace/api"
-import { apiDatabase } from "@workspace/api-runtime"
 import { sendApplicationSubmittedEmail } from "@workspace/transactional"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
@@ -41,7 +40,6 @@ export async function completeOnboarding(
   try {
     await submitOnboardingApplicationUseCase(
       { userId: session.user.id },
-      apiDatabase,
       {
         fullName,
         email: session.user.email,
@@ -61,7 +59,7 @@ export async function completeOnboarding(
     }).catch((error) => {
       console.error("Onboarding welcome email failed", error)
     })
-    await recordPlatformAuditUseCase(apiDatabase, {
+    await recordPlatformAuditUseCase({
       actorId: session.user.id,
       targetUserId: session.user.id,
       operation: "onboarding_application_submitted",

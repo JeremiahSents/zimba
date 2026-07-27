@@ -9,6 +9,15 @@ const repo = vi.hoisted(() => ({
 
 vi.mock("@workspace/db/repositories", () => repo)
 
+const dbMock = vi.hoisted(() => ({
+  transaction: vi.fn(
+    async <Result>(callback: (tx: unknown) => Promise<Result>): Promise<Result> =>
+      callback({})
+  ),
+}))
+
+vi.mock("@workspace/db", () => ({ db: dbMock }))
+
 import { createProjectWithAllocationsUseCase } from "./create-project"
 
 const context = {
@@ -20,6 +29,10 @@ const context = {
 describe("createProjectWithAllocationsUseCase", () => {
   beforeEach(() => {
     vi.resetAllMocks()
+    dbMock.transaction.mockImplementation(
+      async <Result>(callback: (tx: never) => Promise<Result>): Promise<Result> =>
+        callback({} as never)
+    )
     repo.createProject.mockResolvedValue({
       id: "project-1",
       organizationId: "org-1",
@@ -31,12 +44,8 @@ describe("createProjectWithAllocationsUseCase", () => {
   })
 
   it("creates the project and allocations in one transaction", async () => {
-    const transaction = vi.fn(
-      async (callback: (tx: never) => Promise<unknown>) => callback({} as never)
-    )
     const result = await createProjectWithAllocationsUseCase(
       context,
-      { executor: {} as never, transaction: transaction as never },
       {
         organizationId: "org-1",
         name: "House",
@@ -48,7 +57,7 @@ describe("createProjectWithAllocationsUseCase", () => {
       }
     )
     expect(result.id).toBe("project-1")
-    expect(transaction).toHaveBeenCalledOnce()
+    expect(dbMock.transaction).toHaveBeenCalledOnce()
     expect(repo.createAllocation).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({ projectId: "project-1", budgetCents: 100000 })
@@ -62,7 +71,6 @@ describe("createProjectWithAllocationsUseCase", () => {
     await expect(
       createProjectWithAllocationsUseCase(
         context,
-        { executor: {} as never, transaction: transaction as never },
         {
           organizationId: "org-1",
           name: "House",

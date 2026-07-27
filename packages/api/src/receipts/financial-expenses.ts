@@ -1,4 +1,5 @@
-import type { DatabaseExecutor } from "@workspace/db/repositories"
+import { db } from "@workspace/db"
+
 import {
   findExpenseForOrganization,
   findPayableForOrganization,
@@ -32,16 +33,15 @@ export type FinancialExpenseRow = {
 
 export async function listFinancialExpenseRowsUseCase(
   ctx: Pick<WorkspaceContext, "organizationId">,
-  deps: { executor: DatabaseExecutor },
   projectId?: string
 ): Promise<FinancialExpenseRow[]> {
   const rows = await listExpensesForOrganization(
-    deps.executor,
+    db,
     ctx.organizationId,
     projectId
   )
   const payables = await listPayablesForOrganization(
-    deps.executor,
+    db,
     ctx.organizationId
   )
   const expenseIds = rows.map(({ expense }) => expense.id)
@@ -52,17 +52,17 @@ export async function listFinancialExpenseRowsUseCase(
 
   const [expenseLines, expensePayments, payablePayments] = await Promise.all([
     listReceiptLinesWithAllocationForExpenses(
-      deps.executor,
+      db,
       ctx.organizationId,
       expenseIds
     ),
     listReceiptPaymentsForExpenses(
-      deps.executor,
+      db,
       ctx.organizationId,
       expenseIds
     ),
     listPayablePaymentsForPayables(
-      deps.executor,
+      db,
       ctx.organizationId,
       legacyPayableIds
     ),
@@ -180,11 +180,10 @@ export async function listFinancialExpenseRowsUseCase(
 
 export function getExpenseDetailUseCase(
   ctx: Pick<WorkspaceContext, "organizationId">,
-  deps: { executor: DatabaseExecutor },
   expenseId: string
 ) {
   return findExpenseForOrganization(
-    deps.executor,
+    db,
     ctx.organizationId,
     expenseId
   )
@@ -192,11 +191,10 @@ export function getExpenseDetailUseCase(
 
 export function getPayableDetailUseCase(
   ctx: Pick<WorkspaceContext, "organizationId">,
-  deps: { executor: DatabaseExecutor },
   payableId: string
 ) {
   return findPayableForOrganization(
-    deps.executor,
+    db,
     ctx.organizationId,
     payableId
   )

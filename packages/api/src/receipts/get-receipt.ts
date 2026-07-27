@@ -1,16 +1,16 @@
+import { db } from "@workspace/db"
 import type { ReceiptDto } from "@workspace/contracts"
-import type { DatabaseExecutor } from "@workspace/db/repositories"
+
 import { findExpenseForOrganization } from "@workspace/db/repositories"
 import { notFoundError } from "../shared/application-error"
 import type { WorkspaceContext } from "../shared/workspace-context"
 
 export async function getReceipt(
   ctx: WorkspaceContext,
-  deps: { executor: DatabaseExecutor },
   receiptId: string
 ): Promise<ReceiptDto> {
   const result = await findExpenseForOrganization(
-    deps.executor,
+    db,
     ctx.organizationId,
     receiptId
   )

@@ -1,6 +1,7 @@
+import { db } from "@workspace/db"
 import type { ProjectDto } from "@workspace/contracts"
 import { projectInputSchema } from "@workspace/contracts"
-import type { DatabaseExecutor } from "@workspace/db/repositories"
+
 import {
   createProject,
   listProjectsForOrganization,
@@ -10,13 +11,12 @@ import type { WorkspaceContext } from "../shared/workspace-context"
 
 export async function createProjectUseCase(
   ctx: WorkspaceContext,
-  deps: { executor: DatabaseExecutor },
   rawInput: unknown
 ): Promise<ProjectDto> {
   const input = projectInputSchema.parse(rawInput)
   if (input.organizationId !== ctx.organizationId)
     validationError("Organization mismatch.")
-  const created = await createProject(deps.executor, {
+  const created = await createProject(db, {
     organizationId: ctx.organizationId,
     name: input.name,
     location: input.location,
@@ -34,11 +34,10 @@ export async function createProjectUseCase(
 }
 
 export async function listProjectsUseCase(
-  ctx: WorkspaceContext,
-  deps: { executor: DatabaseExecutor }
+  ctx: WorkspaceContext
 ): Promise<ProjectDto[]> {
   const rows = await listProjectsForOrganization(
-    deps.executor,
+    db,
     ctx.organizationId
   )
   return rows.map((row) => ({

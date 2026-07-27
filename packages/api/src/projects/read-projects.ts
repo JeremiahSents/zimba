@@ -1,4 +1,5 @@
-import type { DatabaseExecutor } from "@workspace/db/repositories"
+import { db } from "@workspace/db"
+
 import {
   findActiveProjectForOrganization,
   listAllocationsForProject,
@@ -19,55 +20,46 @@ export type ProjectFinancialSummary = ProjectRow & {
 }
 
 export async function listProjectSummariesUseCase(
-  ctx: Pick<WorkspaceContext, "organizationId">,
-  deps: { executor: DatabaseExecutor }
+  ctx: Pick<WorkspaceContext, "organizationId">
 ): Promise<ProjectFinancialSummary[]> {
   return withProjectFinancials(
-    await listProjectsForOrganization(deps.executor, ctx.organizationId),
-    ctx,
-    deps
+    await listProjectsForOrganization(db, ctx.organizationId),
+    ctx
   )
 }
 
 export async function listArchivedProjectSummariesUseCase(
-  ctx: Pick<WorkspaceContext, "organizationId">,
-  deps: { executor: DatabaseExecutor }
+  ctx: Pick<WorkspaceContext, "organizationId">
 ): Promise<ProjectFinancialSummary[]> {
   return withProjectFinancials(
-    await listArchivedProjectsForOrganization(
-      deps.executor,
-      ctx.organizationId
-    ),
-    ctx,
-    deps
+    await listArchivedProjectsForOrganization(db, ctx.organizationId),
+    ctx
   )
 }
 
 export async function getProjectSummaryUseCase(
   ctx: Pick<WorkspaceContext, "organizationId">,
-  deps: { executor: DatabaseExecutor },
   projectId: string
 ): Promise<ProjectFinancialSummary | null> {
   const [row] = await findActiveProjectForOrganization(
-    deps.executor,
+    db,
     ctx.organizationId,
     projectId
   )
   if (!row) return null
-  const [result] = await withProjectFinancials([row], ctx, deps)
+  const [result] = await withProjectFinancials([row], ctx)
   return result ?? null
 }
 
 async function withProjectFinancials(
   rows: ProjectRow[],
-  ctx: Pick<WorkspaceContext, "organizationId">,
-  deps: { executor: DatabaseExecutor }
+  ctx: Pick<WorkspaceContext, "organizationId">
 ) {
-  const expenseRows = await listFinancialExpenseRowsUseCase(ctx, deps)
+  const expenseRows = await listFinancialExpenseRowsUseCase(ctx)
   return Promise.all(
     rows.map(async (row) => {
       const allocations = await listAllocationsForProject(
-        deps.executor,
+        db,
         ctx.organizationId,
         row.id
       )

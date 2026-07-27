@@ -1,8 +1,6 @@
+import { db } from "@workspace/db"
 import type { OwnershipTransferRequestDto } from "@workspace/contracts"
-import type {
-  DatabaseExecutor,
-  TransactionRunner,
-} from "@workspace/db/repositories"
+
 import {
   countPendingOwnershipTransfers,
   createOwnershipTransferRequest,
@@ -22,7 +20,6 @@ import {
 
 export async function requestOwnershipTransferUseCase(
   ctx: { userId: string },
-  deps: { executor: DatabaseExecutor },
   input: {
     organizationId: string
     toUserId: string
@@ -33,7 +30,7 @@ export async function requestOwnershipTransferUseCase(
     validationError("You cannot transfer ownership to yourself.")
 
   const fromMembership = await findMembershipByUserAndOrganization(
-    deps.executor,
+    db,
     ctx.userId,
     input.organizationId
   )
@@ -41,7 +38,7 @@ export async function requestOwnershipTransferUseCase(
     forbidden("Only the current owner can request a transfer.")
 
   const toMembership = await findMembershipByUserAndOrganization(
-    deps.executor,
+    db,
     input.toUserId,
     input.organizationId
   )
@@ -49,7 +46,7 @@ export async function requestOwnershipTransferUseCase(
     notFoundError("The target user is not a member of this organization.")
 
   const [existing] = await findPendingOwnershipTransferForOrg(
-    deps.executor,
+    db,
     input.organizationId
   )
   if (existing && existing.status === "pending")
@@ -57,7 +54,7 @@ export async function requestOwnershipTransferUseCase(
       "There is already a pending transfer request for this organization."
     )
 
-  await createOwnershipTransferRequest(deps.executor, {
+  await createOwnershipTransferRequest(db, {
     organizationId: input.organizationId,
     fromUserId: ctx.userId,
     toUserId: input.toUserId,
@@ -66,10 +63,8 @@ export async function requestOwnershipTransferUseCase(
   })
 }
 
-export async function listOwnershipTransferRequestsUseCase(deps: {
-  executor: DatabaseExecutor
-}): Promise<OwnershipTransferRequestDto[]> {
-  const rows = await listOwnershipTransferRequests(deps.executor)
+export async function listOwnershipTransferRequestsUseCase(): Promise<OwnershipTransferRequestDto[]> {
+  const rows = await listOwnershipTransferRequests(db)
   return rows.map((row) => ({
     id: row.id,
     organizationId: row.organizationId,
@@ -91,18 +86,17 @@ export async function listOwnershipTransferRequestsUseCase(deps: {
 
 export async function approveOwnershipTransferUseCase(
   ctx: { reviewerId: string },
-  deps: { executor: DatabaseExecutor; transaction: TransactionRunner },
   transferId: string
 ): Promise<void> {
   const [transfer] = await findOwnershipTransferRequestById(
-    deps.executor,
+    db,
     transferId
   )
   if (!transfer) notFoundError("Transfer request not found.")
   if (transfer.status !== "pending")
     conflictError("This transfer request has already been reviewed.")
 
-  return deps.transaction(async (tx) => {
+  return db.transaction(async (tx) => {
     const fromMembership = await findMembershipByUserAndOrganization(
       tx,
       transfer.fromUserId,
@@ -134,19 +128,18 @@ export async function approveOwnershipTransferUseCase(
 
 export async function rejectOwnershipTransferUseCase(
   ctx: { reviewerId: string },
-  deps: { executor: DatabaseExecutor },
   transferId: string,
   rejectionReason?: string
 ): Promise<void> {
   const [transfer] = await findOwnershipTransferRequestById(
-    deps.executor,
+    db,
     transferId
   )
   if (!transfer) notFoundError("Transfer request not found.")
   if (transfer.status !== "pending")
     conflictError("This transfer request has already been reviewed.")
 
-  await updateOwnershipTransferRequestStatus(deps.executor, transferId, {
+  await updateOwnershipTransferRequestStatus(db, transferId, {
     status: "rejected",
     reviewedBy: ctx.reviewerId,
     reviewedAt: new Date(),
@@ -154,8 +147,6 @@ export async function rejectOwnershipTransferUseCase(
   })
 }
 
-export async function getPendingTransferCountUseCase(deps: {
-  executor: DatabaseExecutor
-}): Promise<number> {
-  return countPendingOwnershipTransfers(deps.executor)
+export async function getPendingTransferCountUseCase(): Promise<number> {
+  return countPendingOwnershipTransfers(db)
 }

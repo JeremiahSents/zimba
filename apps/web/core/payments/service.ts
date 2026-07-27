@@ -6,7 +6,6 @@ import {
   recordReceiptPaymentUseCase,
   updateUpcomingPaymentUseCase,
 } from "@workspace/api"
-import { apiExecutor, apiTransaction } from "@workspace/api-runtime"
 import type { UpcomingPaymentCreate, UpcomingPaymentUpdate } from "@/lib/types"
 import { requireSession } from "../auth/service"
 
@@ -21,7 +20,6 @@ export async function createUpcomingPayment(
       organizationId: organization.organizationId,
       role: organization.role as never,
     },
-    apiExecutor,
     {
       projectId,
       title: data.title,
@@ -44,7 +42,6 @@ export async function updateUpcomingPayment(
       organizationId: organization.organizationId,
       role: organization.role as never,
     },
-    apiExecutor,
     paymentId,
     {
       title: data.title,
@@ -65,7 +62,6 @@ export async function deleteUpcomingPayment(paymentId: string) {
       organizationId: organization.organizationId,
       role: organization.role as never,
     },
-    apiExecutor,
     paymentId
   )
 }
@@ -87,7 +83,6 @@ export async function createLedgerPayment(data: {
       organizationId: organization.organizationId,
       role: organization.role as never,
     },
-    apiTransaction,
     {
       supplierId: data.supplier_id,
       receiptId,
@@ -111,7 +106,6 @@ export async function markExpenseFullyPaid(
       organizationId: organization.organizationId,
       role: organization.role as never,
     },
-    apiTransaction,
     expenseId,
     idempotencyKey
   )

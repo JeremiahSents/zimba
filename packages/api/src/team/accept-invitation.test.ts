@@ -1,7 +1,4 @@
-import type {
-  DatabaseTransaction,
-  TransactionRunner,
-} from "@workspace/db/repositories"
+import type { DatabaseTransaction, TransactionRunner } from "@workspace/db/repositories"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 const repo = vi.hoisted(() => ({
@@ -11,6 +8,15 @@ const repo = vi.hoisted(() => ({
 }))
 
 vi.mock("@workspace/db/repositories", () => repo)
+
+const dbMock = vi.hoisted(() => ({
+  transaction: vi.fn(
+    async <Result>(callback: (tx: unknown) => Promise<Result>): Promise<Result> =>
+      callback({})
+  ),
+}))
+
+vi.mock("@workspace/db", () => ({ db: dbMock }))
 
 import { acceptInvitationUseCase } from "./accept-invitation"
 
@@ -24,17 +30,6 @@ const invite = {
   expiresAt: new Date(Date.now() + 60_000),
 }
 
-const transactionMock = vi.fn(
-  async <Result>(
-    callback: (tx: DatabaseTransaction) => Promise<Result>
-  ): Promise<Result> => callback({} as DatabaseTransaction)
-)
-
-const validDeps = {
-  executor: {} as never,
-  transaction: transactionMock as TransactionRunner,
-}
-
 const validCtx = { userId: "user-1", email: "person@example.com" }
 
 describe("acceptInvitationUseCase", () => {
@@ -45,7 +40,7 @@ describe("acceptInvitationUseCase", () => {
       { slug: "acme", status: "active" },
     ])
     repo.claimInvitationAndUpsertMember.mockResolvedValue(true)
-    transactionMock.mockImplementation(
+    dbMock.transaction.mockImplementation(
       async <Result>(
         callback: (tx: DatabaseTransaction) => Promise<Result>
       ): Promise<Result> => callback({} as DatabaseTransaction)
@@ -55,7 +50,6 @@ describe("acceptInvitationUseCase", () => {
   it("accepts a valid invitation and returns its workspace slug", async () => {
     const result = await acceptInvitationUseCase(
       { userId: "user-1", email: "PERSON@example.com" },
-      validDeps,
       "a".repeat(20)
     )
     expect(result).toEqual({ workspaceSlug: "acme" })
@@ -64,7 +58,6 @@ describe("acceptInvitationUseCase", () => {
   it("accepts even if the user already belongs to another workspace", async () => {
     const result = await acceptInvitationUseCase(
       validCtx,
-      validDeps,
       "a".repeat(20)
     )
     expect(result).toEqual({ workspaceSlug: "acme" })
@@ -80,14 +73,14 @@ describe("acceptInvitationUseCase", () => {
 
   it("rejects a malformed token with VALIDATION_FAILED", async () => {
     await expect(
-      acceptInvitationUseCase(validCtx, validDeps, "short")
+      acceptInvitationUseCase(validCtx, "short")
     ).rejects.toMatchObject({ code: "VALIDATION_FAILED" })
     expect(repo.findInvitationByTokenHash).not.toHaveBeenCalled()
   })
 
   it("rejects a non-string token with VALIDATION_FAILED", async () => {
     await expect(
-      acceptInvitationUseCase(validCtx, validDeps, 12345)
+      acceptInvitationUseCase(validCtx, 12345)
     ).rejects.toMatchObject({ code: "VALIDATION_FAILED" })
     expect(repo.findInvitationByTokenHash).not.toHaveBeenCalled()
   })
@@ -95,7 +88,7 @@ describe("acceptInvitationUseCase", () => {
   it("rejects an unknown token with NOT_FOUND", async () => {
     repo.findInvitationByTokenHash.mockResolvedValue([])
     await expect(
-      acceptInvitationUseCase(validCtx, validDeps, "b".repeat(20))
+      acceptInvitationUseCase(validCtx, "b".repeat(20))
     ).rejects.toMatchObject({ code: "NOT_FOUND" })
   })
 
@@ -104,7 +97,7 @@ describe("acceptInvitationUseCase", () => {
       { ...invite, expiresAt: new Date(Date.now() - 1) },
     ])
     await expect(
-      acceptInvitationUseCase(validCtx, validDeps, "a".repeat(20))
+      acceptInvitationUseCase(validCtx, "a".repeat(20))
     ).rejects.toMatchObject({ code: "NOT_FOUND" })
   })
 
@@ -113,14 +106,14 @@ describe("acceptInvitationUseCase", () => {
       { ...invite, status: "accepted" },
     ])
     await expect(
-      acceptInvitationUseCase(validCtx, validDeps, "a".repeat(20))
+      acceptInvitationUseCase(validCtx, "a".repeat(20))
     ).rejects.toMatchObject({ code: "CONFLICT" })
   })
 
   it("rejects a concurrent claim with CONFLICT", async () => {
     repo.claimInvitationAndUpsertMember.mockResolvedValue(false)
     await expect(
-      acceptInvitationUseCase(validCtx, validDeps, "a".repeat(20))
+      acceptInvitationUseCase(validCtx, "a".repeat(20))
     ).rejects.toMatchObject({ code: "CONFLICT" })
   })
 
@@ -128,7 +121,6 @@ describe("acceptInvitationUseCase", () => {
     await expect(
       acceptInvitationUseCase(
         { userId: "user-1", email: "other@example.com" },
-        validDeps,
         "a".repeat(20)
       )
     ).rejects.toMatchObject({ code: "FORBIDDEN" })
@@ -139,7 +131,7 @@ describe("acceptInvitationUseCase", () => {
       { slug: "acme", status: "inactive" },
     ])
     await expect(
-      acceptInvitationUseCase(validCtx, validDeps, "a".repeat(20))
+      acceptInvitationUseCase(validCtx, "a".repeat(20))
     ).rejects.toMatchObject({ code: "NOT_FOUND" })
   })
 
@@ -149,7 +141,6 @@ describe("acceptInvitationUseCase", () => {
     ])
     const error = await acceptInvitationUseCase(
       validCtx,
-      validDeps,
       "a".repeat(20)
     ).catch((e) => e)
     expect(error.code).toBe("NOT_FOUND")
@@ -160,7 +151,6 @@ describe("acceptInvitationUseCase", () => {
     repo.findInvitationByTokenHash.mockResolvedValue([])
     const error = await acceptInvitationUseCase(
       validCtx,
-      validDeps,
       "b".repeat(20)
     ).catch((e) => e)
     expect(error.code).toBe("NOT_FOUND")

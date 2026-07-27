@@ -1,7 +1,4 @@
-import type {
-  DatabaseTransaction,
-  TransactionRunner,
-} from "@workspace/db/repositories"
+import type { DatabaseTransaction } from "@workspace/db/repositories"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 const repo = vi.hoisted(() => ({
@@ -14,6 +11,15 @@ const repo = vi.hoisted(() => ({
 
 vi.mock("@workspace/db/repositories", () => repo)
 
+const dbMock = vi.hoisted(() => ({
+  transaction: vi.fn(
+    async <Result>(callback: (tx: unknown) => Promise<Result>): Promise<Result> =>
+      callback({})
+  ),
+}))
+
+vi.mock("@workspace/db", () => ({ db: dbMock }))
+
 import { recordReceiptPaymentUseCase } from "./record-receipt-payment"
 
 const context = {
@@ -21,13 +27,6 @@ const context = {
   organizationId: "org-1",
   role: "accountant" as const,
 }
-
-const transactionMock = vi.fn(
-  async <Result>(
-    callback: (tx: DatabaseTransaction) => Promise<Result>
-  ): Promise<Result> => callback({} as DatabaseTransaction)
-)
-const deps = { transaction: transactionMock as TransactionRunner }
 
 const validInput = {
   supplierId: "supplier-1",
@@ -41,7 +40,7 @@ const validInput = {
 describe("recordReceiptPaymentUseCase", () => {
   beforeEach(() => {
     vi.resetAllMocks()
-    transactionMock.mockImplementation(
+    dbMock.transaction.mockImplementation(
       async <Result>(
         callback: (tx: DatabaseTransaction) => Promise<Result>
       ): Promise<Result> => callback({} as DatabaseTransaction)
@@ -56,7 +55,7 @@ describe("recordReceiptPaymentUseCase", () => {
   })
 
   it("records an expense payment and syncs receipt status in the transaction", async () => {
-    const result = await recordReceiptPaymentUseCase(context, deps, validInput)
+    const result = await recordReceiptPaymentUseCase(context, validInput)
 
     expect(result).toEqual({ id: "payment-1" })
     expect(repo.createLedgerPayment).toHaveBeenCalledWith(
@@ -85,7 +84,7 @@ describe("recordReceiptPaymentUseCase", () => {
       payments: [],
     })
 
-    await recordReceiptPaymentUseCase(context, deps, validInput)
+    await recordReceiptPaymentUseCase(context, validInput)
 
     expect(repo.createLedgerPayment).toHaveBeenCalledWith(
       expect.anything(),
@@ -102,7 +101,7 @@ describe("recordReceiptPaymentUseCase", () => {
 
   it("rejects overpayment using server-side outstanding balance", async () => {
     await expect(
-      recordReceiptPaymentUseCase(context, deps, {
+      recordReceiptPaymentUseCase(context, {
         ...validInput,
         amountCents: 20_000,
       })
@@ -112,7 +111,7 @@ describe("recordReceiptPaymentUseCase", () => {
 
   it("rejects supplier mismatch", async () => {
     await expect(
-      recordReceiptPaymentUseCase(context, deps, {
+      recordReceiptPaymentUseCase(context, {
         ...validInput,
         supplierId: "other-supplier",
       })
@@ -124,7 +123,7 @@ describe("recordReceiptPaymentUseCase", () => {
     repo.findExpenseForOrganization.mockResolvedValue(null)
     repo.findPayableForOrganization.mockResolvedValue(null)
     await expect(
-      recordReceiptPaymentUseCase(context, deps, validInput)
+      recordReceiptPaymentUseCase(context, validInput)
     ).rejects.toMatchObject({ code: "NOT_FOUND" })
   })
 
@@ -132,10 +131,9 @@ describe("recordReceiptPaymentUseCase", () => {
     await expect(
       recordReceiptPaymentUseCase(
         { ...context, role: "viewer" },
-        deps,
         validInput
       )
     ).rejects.toMatchObject({ code: "FORBIDDEN" })
-    expect(transactionMock).not.toHaveBeenCalled()
+    expect(dbMock.transaction).not.toHaveBeenCalled()
   })
 })

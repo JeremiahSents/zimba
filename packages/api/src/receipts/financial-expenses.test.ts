@@ -1,4 +1,3 @@
-import type { DatabaseExecutor } from "@workspace/db/repositories"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 const repo = vi.hoisted(() => ({
@@ -13,13 +12,21 @@ const repo = vi.hoisted(() => ({
 
 vi.mock("@workspace/db/repositories", () => repo)
 
+const dbMock = vi.hoisted(() => ({
+  transaction: vi.fn(
+    async <Result>(callback: (tx: unknown) => Promise<Result>): Promise<Result> =>
+      callback({})
+  ),
+}))
+
+vi.mock("@workspace/db", () => ({ db: dbMock }))
+
 import {
   getExpenseDetailUseCase,
   getPayableDetailUseCase,
   listFinancialExpenseRowsUseCase,
 } from "./financial-expenses"
 
-const deps = { executor: {} as DatabaseExecutor }
 const ctx = { organizationId: "org-1" }
 
 describe("financial expense read use cases", () => {
@@ -71,7 +78,7 @@ describe("financial expense read use cases", () => {
       { expenseId: "receipt-1", payableId: null, amountCents: 500 },
     ])
 
-    await expect(listFinancialExpenseRowsUseCase(ctx, deps)).resolves.toEqual([
+    await expect(listFinancialExpenseRowsUseCase(ctx)).resolves.toEqual([
       expect.objectContaining({
         id: "line-1",
         receiptId: "receipt-1",
@@ -84,12 +91,12 @@ describe("financial expense read use cases", () => {
       }),
     ])
     expect(repo.listReceiptLinesWithAllocationForExpenses).toHaveBeenCalledWith(
-      deps.executor,
+      dbMock,
       "org-1",
       ["receipt-1"]
     )
     expect(repo.listReceiptPaymentsForExpenses).toHaveBeenCalledWith(
-      deps.executor,
+      dbMock,
       "org-1",
       ["receipt-1"]
     )
@@ -120,7 +127,7 @@ describe("financial expense read use cases", () => {
       { payableId: "payable-1", amountCents: 200 },
     ])
 
-    await expect(listFinancialExpenseRowsUseCase(ctx, deps)).resolves.toEqual([
+    await expect(listFinancialExpenseRowsUseCase(ctx)).resolves.toEqual([
       expect.objectContaining({
         id: "payable-1",
         receiptId: "payable-1",
@@ -129,7 +136,7 @@ describe("financial expense read use cases", () => {
       }),
     ])
     expect(repo.listPayablePaymentsForPayables).toHaveBeenCalledWith(
-      deps.executor,
+      dbMock,
       "org-1",
       ["payable-1"]
     )
@@ -140,20 +147,20 @@ describe("financial expense read use cases", () => {
     repo.findExpenseForOrganization.mockResolvedValue({ expense: { id: "r1" } })
     repo.findPayableForOrganization.mockResolvedValue({ payable: { id: "p1" } })
 
-    await expect(getExpenseDetailUseCase(ctx, deps, "r1")).resolves.toEqual({
+    await expect(getExpenseDetailUseCase(ctx, "r1")).resolves.toEqual({
       expense: { id: "r1" },
     })
-    await expect(getPayableDetailUseCase(ctx, deps, "p1")).resolves.toEqual({
+    await expect(getPayableDetailUseCase(ctx, "p1")).resolves.toEqual({
       payable: { id: "p1" },
     })
 
     expect(repo.findExpenseForOrganization).toHaveBeenCalledWith(
-      deps.executor,
+      dbMock,
       "org-1",
       "r1"
     )
     expect(repo.findPayableForOrganization).toHaveBeenCalledWith(
-      deps.executor,
+      dbMock,
       "org-1",
       "p1"
     )

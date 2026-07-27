@@ -1,4 +1,5 @@
-import type { DatabaseExecutor } from "@workspace/db/repositories"
+import { db } from "@workspace/db"
+
 import {
   deletePayableForOrganization,
   updatePayableForOrganization,
@@ -19,7 +20,6 @@ const updateSchema = z.object({
 
 export async function updateUpcomingPaymentUseCase(
   ctx: WorkspaceContext,
-  deps: { executor: DatabaseExecutor },
   paymentId: unknown,
   rawInput: unknown
 ) {
@@ -28,7 +28,7 @@ export async function updateUpcomingPaymentUseCase(
   if (!id.success || !input.success)
     validationError("Enter a valid payment update.")
   const updated = await updatePayableForOrganization(
-    deps.executor,
+    db,
     ctx.organizationId,
     id.data,
     {
@@ -49,13 +49,12 @@ export async function updateUpcomingPaymentUseCase(
 
 export async function deleteUpcomingPaymentUseCase(
   ctx: WorkspaceContext,
-  deps: { executor: DatabaseExecutor },
   paymentId: unknown
 ) {
   const id = idSchema.safeParse(paymentId)
   if (!id.success) validationError("Payment ID is required.")
   const deleted = await deletePayableForOrganization(
-    deps.executor,
+    db,
     ctx.organizationId,
     id.data
   )

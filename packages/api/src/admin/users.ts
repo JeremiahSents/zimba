@@ -1,11 +1,9 @@
+import { db } from "@workspace/db"
 import type {
   PlatformUserDetailDto,
   PlatformUserListDto,
 } from "@workspace/contracts"
-import type {
-  DatabaseExecutor,
-  TransactionRunner,
-} from "@workspace/db/repositories"
+import type { DatabaseExecutor } from "@workspace/db/repositories"
 import {
   appendPlatformAudit,
   countSuperAdmins,
@@ -30,17 +28,14 @@ export type PlatformRole = "super_admin" | "support"
 export type PlatformAccess = PlatformRole | null
 
 export async function getPlatformAccessForUserUseCase(
-  deps: { executor: DatabaseExecutor },
   userId: string
 ): Promise<PlatformAccess> {
-  const [platformUser] = await findPlatformUserForUser(deps.executor, userId)
+  const [platformUser] = await findPlatformUserForUser(db, userId)
   return normalizePlatformRole(platformUser?.role)
 }
 
-export async function listPlatformUsersUseCase(deps: {
-  executor: DatabaseExecutor
-}): Promise<PlatformUserListDto[]> {
-  const rows = await listPlatformUserRows(deps.executor)
+export async function listPlatformUsersUseCase(): Promise<PlatformUserListDto[]> {
+  const rows = await listPlatformUserRows(db)
   const result = new Map<string, PlatformUserListDto>()
   for (const row of rows) {
     const existing = result.get(row.id)
@@ -63,10 +58,9 @@ export async function listPlatformUsersUseCase(deps: {
 }
 
 export async function getPlatformUserDetailUseCase(
-  deps: { executor: DatabaseExecutor },
   id: string
 ): Promise<PlatformUserDetailDto | null> {
-  const rows = await findPlatformUserDetailRows(deps.executor, id)
+  const rows = await findPlatformUserDetailRows(db, id)
   if (!rows[0]) return null
   const first = rows[0]
   return {
@@ -94,12 +88,11 @@ export async function getPlatformUserDetailUseCase(
 }
 
 export async function updatePlatformUserRoleUseCase(
-  deps: { transaction: TransactionRunner },
   actorId: string,
   targetId: string,
   role: PlatformRole
 ) {
-  return deps.transaction(async (tx) => {
+  return db.transaction(async (tx) => {
     await assertUsersExist(tx, actorId, targetId)
     const existing = await findPlatformAccessForUser(tx, targetId)
     if (existing[0]?.role === "super_admin" && role !== "super_admin") {
@@ -120,11 +113,10 @@ export async function updatePlatformUserRoleUseCase(
 }
 
 export async function removePlatformUserUseCase(
-  deps: { transaction: TransactionRunner },
   actorId: string,
   targetId: string
 ) {
-  return deps.transaction(async (tx) => {
+  return db.transaction(async (tx) => {
     await assertUsersExist(tx, actorId, targetId)
     const existing = await findPlatformAccessForUser(tx, targetId)
     if (!existing[0]) notFoundError("Platform user not found.")
@@ -145,7 +137,6 @@ export async function removePlatformUserUseCase(
 }
 
 export async function validateSuperAdminInviteUseCase(
-  deps: { executor: DatabaseExecutor },
   input: { email: string; name: string }
 ) {
   const normalizedEmail = input.email.trim().toLowerCase()
@@ -153,10 +144,10 @@ export async function validateSuperAdminInviteUseCase(
     validationError("Enter a name and valid email address.")
   }
 
-  const [existingUser] = await findUserByEmail(deps.executor, normalizedEmail)
+  const [existingUser] = await findUserByEmail(db, normalizedEmail)
   if (existingUser) {
     const [existingPlatform] = await findPlatformUserForUser(
-      deps.executor,
+      db,
       existingUser.id
     )
     if (existingPlatform)

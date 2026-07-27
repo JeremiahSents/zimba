@@ -1,4 +1,3 @@
-import type { DatabaseExecutor } from "@workspace/db/repositories"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 const repo = vi.hoisted(() => ({
@@ -8,13 +7,20 @@ const repo = vi.hoisted(() => ({
 
 vi.mock("@workspace/db/repositories", () => repo)
 
+const dbMock = vi.hoisted(() => ({
+  transaction: vi.fn(
+    async <Result>(callback: (tx: unknown) => Promise<Result>): Promise<Result> =>
+      callback({})
+  ),
+}))
+
+vi.mock("@workspace/db", () => ({ db: dbMock }))
+
 import {
   listPlatformActivityEventsUseCase,
   listPlatformAuditLogsUseCase,
   listRecentActivityUseCase,
 } from "./audit"
-
-const deps = { executor: {} as DatabaseExecutor }
 
 describe("admin audit read use cases", () => {
   beforeEach(() => {
@@ -26,7 +32,7 @@ describe("admin audit read use cases", () => {
       { id: "audit-1", actorName: null },
     ])
 
-    await expect(listPlatformAuditLogsUseCase(deps)).resolves.toEqual([
+    await expect(listPlatformAuditLogsUseCase()).resolves.toEqual([
       expect.objectContaining({ actorName: "Unknown" }),
     ])
   })
@@ -36,19 +42,19 @@ describe("admin audit read use cases", () => {
       { id: "activity-1", actorName: null },
     ])
 
-    await expect(listRecentActivityUseCase(deps, 7)).resolves.toEqual([
+    await expect(listRecentActivityUseCase(7)).resolves.toEqual([
       expect.objectContaining({ actorName: "System" }),
     ])
-    expect(repo.listRecentActivityEvents).toHaveBeenCalledWith(deps.executor, 7)
+    expect(repo.listRecentActivityEvents).toHaveBeenCalledWith(dbMock, 7)
   })
 
   it("uses a larger limit for platform activity", async () => {
     repo.listRecentActivityEvents.mockResolvedValue([])
 
-    await listPlatformActivityEventsUseCase(deps)
+    await listPlatformActivityEventsUseCase()
 
     expect(repo.listRecentActivityEvents).toHaveBeenCalledWith(
-      deps.executor,
+      dbMock,
       100
     )
   })

@@ -1,7 +1,4 @@
-import type {
-  DatabaseTransaction,
-  TransactionRunner,
-} from "@workspace/db/repositories"
+import type { DatabaseTransaction, TransactionRunner } from "@workspace/db/repositories"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 const repo = vi.hoisted(() => ({
@@ -15,6 +12,15 @@ const repo = vi.hoisted(() => ({
   updateSupplierForOrganization: vi.fn(),
 }))
 vi.mock("@workspace/db/repositories", () => repo)
+
+const dbMock = vi.hoisted(() => ({
+  transaction: vi.fn(
+    async <Result>(callback: (tx: unknown) => Promise<Result>): Promise<Result> =>
+      callback({})
+  ),
+}))
+
+vi.mock("@workspace/db", () => ({ db: dbMock }))
 
 import {
   createSupplierCategoryUseCase,
@@ -39,18 +45,10 @@ const supplier = {
   status: "active",
 }
 
-const transactionMock = vi.fn(
-  async <Result>(
-    callback: (tx: DatabaseTransaction) => Promise<Result>
-  ): Promise<Result> => callback({} as DatabaseTransaction)
-)
-const transactionDeps = { transaction: transactionMock as TransactionRunner }
-const executorDeps = { executor: {} as never }
-
 describe("supplier use cases", () => {
   beforeEach(() => {
     vi.resetAllMocks()
-    transactionMock.mockImplementation(
+    dbMock.transaction.mockImplementation(
       async <Result>(
         callback: (tx: DatabaseTransaction) => Promise<Result>
       ): Promise<Result> => callback({} as DatabaseTransaction)
@@ -72,7 +70,7 @@ describe("supplier use cases", () => {
   })
 
   it("creates a supplier in the trusted workspace", async () => {
-    const result = await createSupplierUseCase(context, executorDeps, {
+    const result = await createSupplierUseCase(context, {
       organizationId: "org-1",
       name: "Acme",
       category: "materials",
@@ -88,7 +86,7 @@ describe("supplier use cases", () => {
   it("rejects duplicate suppliers in the workspace", async () => {
     repo.findSupplierByNameForOrganization.mockResolvedValue([supplier])
     await expect(
-      createSupplierUseCase(context, executorDeps, {
+      createSupplierUseCase(context, {
         organizationId: "org-1",
         name: "Acme",
         category: "materials",
@@ -99,7 +97,7 @@ describe("supplier use cases", () => {
   it("rejects category slugs from another workspace", async () => {
     repo.findSupplierCategoryBySlug.mockResolvedValue([])
     await expect(
-      createSupplierUseCase(context, executorDeps, {
+      createSupplierUseCase(context, {
         organizationId: "org-1",
         name: "Acme",
         category: "foreign-category",
@@ -110,7 +108,6 @@ describe("supplier use cases", () => {
   it("updates a tenant-scoped supplier and audits in the transaction", async () => {
     const result = await updateSupplierUseCase(
       context,
-      transactionDeps,
       "supplier-1",
       { name: "Acme", category: "materials" }
     )
@@ -135,7 +132,7 @@ describe("supplier use cases", () => {
   it("returns not found without leaking another tenant", async () => {
     repo.updateSupplierForOrganization.mockResolvedValue(undefined)
     await expect(
-      updateSupplierUseCase(context, transactionDeps, "other", {
+      updateSupplierUseCase(context, "other", {
         name: "Acme",
         category: "materials",
       })
@@ -146,19 +143,17 @@ describe("supplier use cases", () => {
     await expect(
       updateSupplierUseCase(
         { ...context, role: "viewer" },
-        transactionDeps,
         "supplier-1",
         { name: "Acme", category: "materials" }
       )
     ).rejects.toMatchObject({ code: "FORBIDDEN" })
-    expect(transactionMock).not.toHaveBeenCalled()
+    expect(dbMock.transaction).not.toHaveBeenCalled()
   })
 
   it("creates a supplier category scoped to the workspace", async () => {
     repo.findSupplierCategoryBySlug.mockResolvedValue([])
     const category = await createSupplierCategoryUseCase(
       context,
-      executorDeps,
       " Heavy   Transport "
     )
 
@@ -174,8 +169,8 @@ describe("supplier use cases", () => {
   })
 
   it("lists supplier summaries and categories for the trusted workspace", async () => {
-    await listSupplierSummariesUseCase(context, executorDeps)
-    await listSupplierCategoriesUseCase(context, executorDeps)
+    await listSupplierSummariesUseCase(context)
+    await listSupplierCategoriesUseCase(context)
 
     expect(repo.listSupplierSummaries).toHaveBeenCalledWith(
       expect.anything(),

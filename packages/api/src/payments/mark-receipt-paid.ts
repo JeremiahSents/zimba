@@ -1,4 +1,5 @@
-import type { TransactionRunner } from "@workspace/db/repositories"
+import { db } from "@workspace/db"
+
 import {
   appendAuditEvent,
   createLedgerPayment,
@@ -20,7 +21,6 @@ const idSchema = z.string().trim().min(1)
 
 export async function markReceiptFullyPaidUseCase(
   ctx: WorkspaceContext,
-  deps: { transaction: TransactionRunner },
   rawReceiptId: unknown,
   rawIdempotencyKey: unknown
 ) {
@@ -30,7 +30,7 @@ export async function markReceiptFullyPaidUseCase(
   if (!receiptId.success || !idempotencyKey.success)
     validationError("Invalid receipt payment.")
 
-  return deps.transaction(async (tx) => {
+  return db.transaction(async (tx) => {
     const expense = await findExpenseForOrganization(
       tx,
       ctx.organizationId,

@@ -7,7 +7,6 @@ import {
   listProjectAttachmentsUseCase,
   listProjectSummariesUseCase,
 } from "@workspace/api"
-import { apiExecutor } from "@workspace/api-runtime"
 import type { WorkspaceRole } from "@workspace/contracts"
 import type {
   ProjectDashboardResponse,
@@ -18,8 +17,7 @@ import { requireSession } from "../auth/service"
 export async function getProjectsList() {
   const { organization } = await requireSession()
   const projects = await listProjectSummariesUseCase(
-    { organizationId: organization.organizationId },
-    apiExecutor
+    { organizationId: organization.organizationId }
   )
 
   return projects.map(toProjectDashboardResponse)
@@ -28,8 +26,7 @@ export async function getProjectsList() {
 export async function getArchivedProjectsList() {
   const { organization } = await requireSession()
   const projects = await listArchivedProjectSummariesUseCase(
-    { organizationId: organization.organizationId },
-    apiExecutor
+    { organizationId: organization.organizationId }
   )
 
   return projects.map(toProjectDashboardResponse)
@@ -41,7 +38,6 @@ export async function getProjectDetail(
   const { user, organization } = await requireSession()
   const project = await getProjectSummaryUseCase(
     { organizationId: organization.organizationId },
-    apiExecutor,
     projectId
   )
 
@@ -55,18 +51,15 @@ export async function getProjectDetail(
       organizationId: organization.organizationId,
       role: organization.role as WorkspaceRole,
     },
-    apiExecutor,
     projectId
   )
   const [expenseRows, attachments] = await Promise.all([
     listFinancialExpenseRowsUseCase(
       { organizationId: organization.organizationId },
-      apiExecutor,
       projectId
     ),
     listProjectAttachmentsUseCase(
       { organizationId: organization.organizationId },
-      apiExecutor,
       projectId
     ),
   ])

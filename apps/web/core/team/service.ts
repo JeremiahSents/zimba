@@ -7,11 +7,6 @@ import {
   getInvitationPreviewUseCase,
   listTeamUseCase,
 } from "@workspace/api"
-import {
-  apiDatabase,
-  apiExecutor,
-  apiTransaction,
-} from "@workspace/api-runtime"
 import type { WorkspaceRole } from "@workspace/contracts"
 import { sendMemberInviteEmail } from "@workspace/transactional"
 import { normalizeRole } from "../auth/permissions"
@@ -25,8 +20,7 @@ import { buildInviteUrl } from "./invite-url"
 export async function listTeam() {
   const { organization } = await requireSession()
   const team = await listTeamUseCase(
-    { organizationId: organization.organizationId },
-    apiExecutor
+    { organizationId: organization.organizationId }
   )
   return {
     members: team.members,
@@ -48,7 +42,6 @@ export async function createInvitation(input: {
       organizationId: organization.organizationId,
       role: normalizeRole(organization.role),
     },
-    apiTransaction,
     input
   )
   const inviteUrl = buildInviteUrl(created.token)
@@ -63,7 +56,6 @@ export async function createInvitation(input: {
   } catch (error) {
     await deleteInvitationUseCase(
       { organizationId: organization.organizationId },
-      apiExecutor,
       created.invitationId
     )
     throw error
@@ -76,12 +68,11 @@ export async function acceptInvitation(token: string) {
   if (!session) unauthorized("Sign in to accept your invitation.")
   const result = await acceptInvitationUseCase(
     { userId: session.user.id, email: session.user.email },
-    apiDatabase,
     token
   )
   return result.workspaceSlug
 }
 
 export async function getInvitationPreview(token: string) {
-  return getInvitationPreviewUseCase(apiExecutor, token)
+  return getInvitationPreviewUseCase(token)
 }

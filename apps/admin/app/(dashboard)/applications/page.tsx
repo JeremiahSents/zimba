@@ -11,7 +11,6 @@ import {
   listOnboardingApplicationsUseCase,
   listOwnershipTransferRequestsUseCase,
 } from "@workspace/api"
-import { apiExecutor } from "@workspace/api-runtime"
 import {
   Tabs,
   TabsContent,
@@ -61,22 +60,22 @@ export default async function ApplicationsPage({
     await Promise.all([
       readWorkflowData(
         "onboarding applications",
-        () => listOnboardingApplicationsUseCase(apiExecutor),
+        () => listOnboardingApplicationsUseCase(),
         []
       ),
       readWorkflowData(
         "ownership transfers",
-        () => listOwnershipTransferRequestsUseCase(apiExecutor),
+        () => listOwnershipTransferRequestsUseCase(),
         []
       ),
       readWorkflowData(
         "pending application count",
-        () => getPendingApplicationCountUseCase(apiExecutor),
+        () => getPendingApplicationCountUseCase(),
         0
       ),
       readWorkflowData(
         "pending transfer count",
-        () => getPendingTransferCountUseCase(apiExecutor),
+        () => getPendingTransferCountUseCase(),
         0
       ),
     ])

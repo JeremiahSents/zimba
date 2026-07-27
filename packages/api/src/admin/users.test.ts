@@ -1,7 +1,4 @@
-import type {
-  DatabaseTransaction,
-  TransactionRunner,
-} from "@workspace/db/repositories"
+import type { DatabaseTransaction } from "@workspace/db/repositories"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 const repo = vi.hoisted(() => ({
@@ -18,23 +15,25 @@ const repo = vi.hoisted(() => ({
 
 vi.mock("@workspace/db/repositories", () => repo)
 
+const dbMock = vi.hoisted(() => ({
+  transaction: vi.fn(
+    async <Result>(callback: (tx: unknown) => Promise<Result>): Promise<Result> =>
+      callback({})
+  ),
+}))
+
+vi.mock("@workspace/db", () => ({ db: dbMock }))
+
 import {
   removePlatformUserUseCase,
   updatePlatformUserRoleUseCase,
   validateSuperAdminInviteUseCase,
 } from "./users"
 
-const transactionMock = vi.fn(
-  async <Result>(
-    callback: (tx: DatabaseTransaction) => Promise<Result>
-  ): Promise<Result> => callback({} as DatabaseTransaction)
-)
-const deps = { transaction: transactionMock as TransactionRunner }
-
 describe("admin platform user use cases", () => {
   beforeEach(() => {
     vi.resetAllMocks()
-    transactionMock.mockImplementation(
+    dbMock.transaction.mockImplementation(
       async <Result>(
         callback: (tx: DatabaseTransaction) => Promise<Result>
       ): Promise<Result> => callback({} as DatabaseTransaction)
@@ -47,7 +46,7 @@ describe("admin platform user use cases", () => {
 
   it("rejects changing your own platform access", async () => {
     await expect(
-      updatePlatformUserRoleUseCase(deps, "user-1", "user-1", "support")
+      updatePlatformUserRoleUseCase("user-1", "user-1", "support")
     ).rejects.toThrow("You cannot change your own platform access.")
   })
 
@@ -57,7 +56,7 @@ describe("admin platform user use cases", () => {
     ])
 
     await expect(
-      updatePlatformUserRoleUseCase(deps, "support-1", "target-1", "support")
+      updatePlatformUserRoleUseCase("support-1", "target-1", "support")
     ).rejects.toThrow("Only super admins can change platform access.")
     expect(repo.updatePlatformAccess).not.toHaveBeenCalled()
   })
@@ -71,7 +70,7 @@ describe("admin platform user use cases", () => {
     repo.countSuperAdmins.mockResolvedValue([{ value: 1 }])
 
     await expect(
-      removePlatformUserUseCase(deps, "actor-1", "target-1")
+      removePlatformUserUseCase("actor-1", "target-1")
     ).rejects.toThrow("At least one super admin must remain.")
     expect(repo.deletePlatformAccess).not.toHaveBeenCalled()
     expect(repo.appendPlatformAudit).not.toHaveBeenCalled()
@@ -84,14 +83,12 @@ describe("admin platform user use cases", () => {
         : [{ id: "platform-1", role: "support" }]
     )
 
-    await updatePlatformUserRoleUseCase(
-      deps,
-      "actor-1",
+    await updatePlatformUserRoleUseCase("actor-1",
       "target-1",
       "super_admin"
     )
 
-    expect(transactionMock).toHaveBeenCalledOnce()
+    expect(dbMock.transaction).toHaveBeenCalledOnce()
     expect(repo.updatePlatformAccess).toHaveBeenCalledWith(
       expect.anything(),
       "platform-1",
@@ -115,7 +112,7 @@ describe("admin platform user use cases", () => {
         : [{ id: "platform-1", role: "support" }]
     )
 
-    await removePlatformUserUseCase(deps, "actor-1", "target-1")
+    await removePlatformUserUseCase("actor-1", "target-1")
 
     expect(repo.deletePlatformAccess).toHaveBeenCalledWith(
       expect.anything(),
@@ -137,7 +134,6 @@ describe("admin platform user use cases", () => {
 
     await expect(
       validateSuperAdminInviteUseCase(
-        { executor: {} as never },
         {
           email: "person@example.com",
           name: "Person",

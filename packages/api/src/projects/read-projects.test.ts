@@ -1,4 +1,3 @@
-import type { DatabaseExecutor } from "@workspace/db/repositories"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 const repo = vi.hoisted(() => ({
@@ -17,13 +16,21 @@ const repo = vi.hoisted(() => ({
 
 vi.mock("@workspace/db/repositories", () => repo)
 
+const dbMock = vi.hoisted(() => ({
+  transaction: vi.fn(
+    async <Result>(callback: (tx: unknown) => Promise<Result>): Promise<Result> =>
+      callback({})
+  ),
+}))
+
+vi.mock("@workspace/db", () => ({ db: dbMock }))
+
 import {
   getProjectSummaryUseCase,
   listArchivedProjectSummariesUseCase,
   listProjectSummariesUseCase,
 } from "./read-projects"
 
-const deps = { executor: {} as DatabaseExecutor }
 const ctx = { organizationId: "org-1" }
 const project = {
   id: "project-1",
@@ -80,7 +87,7 @@ describe("project read use cases", () => {
       },
     ])
 
-    await expect(listProjectSummariesUseCase(ctx, deps)).resolves.toEqual([
+    await expect(listProjectSummariesUseCase(ctx)).resolves.toEqual([
       expect.objectContaining({
         id: "project-1",
         budgetCents: 1000,
@@ -91,10 +98,10 @@ describe("project read use cases", () => {
   })
 
   it("lists archived project summaries through the archived repository query", async () => {
-    await listArchivedProjectSummariesUseCase(ctx, deps)
+    await listArchivedProjectSummariesUseCase(ctx)
 
     expect(repo.listArchivedProjectsForOrganization).toHaveBeenCalledWith(
-      deps.executor,
+      dbMock,
       "org-1"
     )
   })
@@ -103,7 +110,7 @@ describe("project read use cases", () => {
     repo.findActiveProjectForOrganization.mockResolvedValue([])
 
     await expect(
-      getProjectSummaryUseCase(ctx, deps, "missing")
+      getProjectSummaryUseCase(ctx, "missing")
     ).resolves.toBeNull()
   })
 })

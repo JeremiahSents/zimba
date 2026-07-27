@@ -1,5 +1,6 @@
+import { db } from "@workspace/db"
 import { createHash, randomBytes } from "node:crypto"
-import type { TransactionRunner } from "@workspace/db/repositories"
+
 import {
   appendAuditEvent,
   createInvitationRecord,
@@ -19,7 +20,6 @@ const inputSchema = z.object({
 
 export async function createInvitationUseCase(
   ctx: WorkspaceContext,
-  deps: { transaction: TransactionRunner },
   rawInput: unknown
 ) {
   requireRole(ctx.role, ["owner", "site_manager"])
@@ -33,7 +33,7 @@ export async function createInvitationUseCase(
   const tokenHash = createHash("sha256").update(token).digest("hex")
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
 
-  const invitationId = await deps.transaction(async (tx) => {
+  const invitationId = await db.transaction(async (tx) => {
     const [existing] = await findPendingInvitation(
       tx,
       ctx.organizationId,

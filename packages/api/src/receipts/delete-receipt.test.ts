@@ -7,6 +7,15 @@ const repo = vi.hoisted(() => ({
 }))
 vi.mock("@workspace/db/repositories", () => repo)
 
+const dbMock = vi.hoisted(() => ({
+  transaction: vi.fn(
+    async <Result>(callback: (tx: unknown) => Promise<Result>): Promise<Result> =>
+      callback({})
+  ),
+}))
+
+vi.mock("@workspace/db", () => ({ db: dbMock }))
+
 import { deleteReceiptUseCase } from "./delete-receipt"
 
 const context = {
@@ -27,7 +36,6 @@ describe("deleteReceiptUseCase", () => {
   it("deletes a tenant-scoped receipt and writes audit in the transaction", async () => {
     const result = await deleteReceiptUseCase(
       context,
-      { executor: {} as never, transaction: run as never },
       "receipt-1"
     )
 
@@ -52,7 +60,6 @@ describe("deleteReceiptUseCase", () => {
     await expect(
       deleteReceiptUseCase(
         { ...context, role: "viewer" },
-        { executor: {} as never, transaction: run as never },
         "receipt-1"
       )
     ).rejects.toMatchObject({ code: "FORBIDDEN" })
@@ -66,7 +73,6 @@ describe("deleteReceiptUseCase", () => {
     await expect(
       deleteReceiptUseCase(
         context,
-        { executor: {} as never, transaction: run as never },
         "missing"
       )
     ).rejects.toMatchObject({ code: "NOT_FOUND" })

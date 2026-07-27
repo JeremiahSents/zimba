@@ -29,15 +29,26 @@ async function exists(path) {
   }
 }
 
+// packages/api owns business logic: it may reach down into the database, but
+// never up into a framework.
 const apiFiles = await walk(join(root, "packages", "api"))
 for (const file of apiFiles) {
   const source = await readFile(file, "utf8")
   if (/from ["'](?:next|react)(?:\/|["'])/.test(source))
     add(file, "packages/api must not import Next.js or React")
-  if (source.includes("@workspace/db/schema") || /from ["']drizzle-orm/.test(source))
-    add(file, "packages/api must not import Drizzle schemas or Drizzle APIs")
   if (source.includes("better-auth"))
     add(file, "packages/api must not import Better Auth")
+}
+
+// Apps consume @workspace/api only. Database access lives behind the use cases.
+for (const app of ["web", "admin"]) {
+  for (const file of await walk(join(root, "apps", app))) {
+    const source = await readFile(file, "utf8")
+    if (/from ["']@workspace\/db(?:["'/])/.test(source))
+      add(file, `apps/${app} must not import @workspace/db; call a use case`)
+    if (/from ["']drizzle-orm/.test(source))
+      add(file, `apps/${app} must not import Drizzle; call a use case`)
+  }
 }
 
 const webFiles = await walk(join(root, "apps", "web"))
@@ -49,12 +60,15 @@ for (const file of webFiles) {
     add(file, "legacy domains import")
   if (/['"`]\/admin(?:\/|['"`])/.test(source))
     add(file, "customer code must not reference /admin")
-  if (
-    /(db\.|from ["']@workspace\/db(?:["'/]))/.test(source) &&
-    file.includes(`${sep}app${sep}`) &&
-    !file.includes(`${sep}api${sep}`)
-  )
-    add(file, "database access belongs in repositories/core, not route pages")
+}
+
+// Dissolved packages: importing them means a stale merge.
+for (const dir of ["apps", "packages"]) {
+  for (const file of await walk(join(root, dir))) {
+    const source = await readFile(file, "utf8")
+    if (source.includes("@workspace/api-runtime"))
+      add(file, "@workspace/api-runtime was removed; import @workspace/api")
+  }
 }
 
 const routeFiles = (await walk(join(root, "apps", "web", "app"))).filter(

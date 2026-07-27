@@ -1,6 +1,12 @@
-import type { TransactionRunner } from "@workspace/db/repositories"
-import { describe, expect, it, vi } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 import type { WorkspaceContext } from "../shared/workspace-context"
+
+const dbMock = vi.hoisted(() => ({
+  transaction: vi.fn(),
+}))
+
+vi.mock("@workspace/db", () => ({ db: dbMock }))
+
 import { createReceipt } from "./create-receipt"
 
 function makeCtx(): WorkspaceContext {
@@ -38,23 +44,20 @@ function mockExecutor(overrides: Record<string, unknown> = {}) {
   return { ...base, ...overrides } as unknown
 }
 
-function transactionWith(executor: unknown) {
-  const transactionStarted = vi.fn()
-  const runInTransaction: TransactionRunner = (callback) => {
-    transactionStarted()
-    return callback(executor as never)
-  }
-  return {
-    runInTransaction,
-    transactionStarted,
-  }
+function runTransactionsWith(executor: unknown) {
+  dbMock.transaction.mockImplementation((callback: (tx: never) => unknown) =>
+    callback(executor as never)
+  )
 }
 
 describe("createReceipt use case", () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
   it("creates a receipt with valid input", async () => {
-    const executor = mockExecutor() as never
-    const transaction = transactionWith(executor)
-    const result = await createReceipt(makeCtx(), transaction, {
+    runTransactionsWith(mockExecutor())
+    const result = await createReceipt(makeCtx(), {
       projectId: "p1",
       supplierId: "s1",
       currency: "UGX",
@@ -71,20 +74,20 @@ describe("createReceipt use case", () => {
     expect(result.id).toBeDefined()
     expect(result.paymentStatus).toBe("unpaid")
     expect(result.totalCents).toBe(10000)
-    expect(transaction.transactionStarted).toHaveBeenCalledOnce()
+    expect(dbMock.transaction).toHaveBeenCalledOnce()
   })
 
   it("rejects invalid input with zod parse error", async () => {
-    const executor = mockExecutor() as never
+    runTransactionsWith(mockExecutor())
     await expect(
-      createReceipt(makeCtx(), transactionWith(executor), { projectId: "" })
+      createReceipt(makeCtx(), { projectId: "" })
     ).rejects.toThrow()
   })
 
   it("rejects overpayment", async () => {
-    const executor = mockExecutor() as never
+    runTransactionsWith(mockExecutor())
     await expect(
-      createReceipt(makeCtx(), transactionWith(executor), {
+      createReceipt(makeCtx(), {
         projectId: "p1",
         supplierId: "s1",
         currency: "UGX",

@@ -1,4 +1,5 @@
-import type { DatabaseExecutor } from "@workspace/db/repositories"
+import { db } from "@workspace/db"
+
 import {
   createPayable,
   findProjectForOrganization,
@@ -18,18 +19,17 @@ const inputSchema = z.object({
 
 export async function createUpcomingPaymentUseCase(
   ctx: WorkspaceContext,
-  deps: { executor: DatabaseExecutor },
   rawInput: unknown
 ) {
   const parsed = inputSchema.safeParse(rawInput)
   if (!parsed.success) validationError("Enter a valid upcoming payment.")
   const [project] = await findProjectForOrganization(
-    deps.executor,
+    db,
     ctx.organizationId,
     parsed.data.projectId
   )
   if (!project) notFoundError("Project not found.")
-  const created = await createPayable(deps.executor, {
+  const created = await createPayable(db, {
     id: crypto.randomUUID(),
     organizationId: ctx.organizationId,
     projectId: parsed.data.projectId,

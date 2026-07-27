@@ -1,7 +1,5 @@
-import type {
-  DatabaseExecutor,
-  TransactionRunner,
-} from "@workspace/db/repositories"
+import { db } from "@workspace/db"
+
 import {
   createOrganization,
   createOrganizationMember,
@@ -25,7 +23,6 @@ function slugify(name: string) {
 
 export async function completeOnboardingUseCase(
   ctx: { userId: string },
-  deps: { executor: DatabaseExecutor; transaction: TransactionRunner },
   rawInput: unknown
 ) {
   if (!rawInput || typeof rawInput !== "object") validationError()
@@ -41,7 +38,7 @@ export async function completeOnboardingUseCase(
     companyName.length > 120
   )
     validationError("Enter a valid name and company name.")
-  return deps.transaction(async (tx) => {
+  return db.transaction(async (tx) => {
     const [existing] = await findMembershipByUser(tx, ctx.userId)
     if (existing) return { created: false as const }
     const base = slugify(companyName)

@@ -1,9 +1,7 @@
+import { db } from "@workspace/db"
 import type { SupplierDto } from "@workspace/contracts"
 import { supplierInputSchema } from "@workspace/contracts"
-import type {
-  DatabaseExecutor,
-  TransactionRunner,
-} from "@workspace/db/repositories"
+import type { DatabaseExecutor } from "@workspace/db/repositories"
 import {
   appendAuditEvent,
   createSupplier,
@@ -33,7 +31,6 @@ const builtInCategorySlugs = new Set([
 
 export async function createSupplierUseCase(
   ctx: WorkspaceContext,
-  deps: { executor: DatabaseExecutor },
   rawInput: unknown
 ): Promise<SupplierDto> {
   requireRole(ctx.role, ["owner", "site_manager", "accountant"])
@@ -42,17 +39,17 @@ export async function createSupplierUseCase(
   if (input.data.organizationId !== ctx.organizationId)
     validationError("Organization mismatch.")
   await validateSupplierCategory(
-    deps.executor,
+    db,
     ctx.organizationId,
     input.data.category
   )
   const [existing] = await findSupplierByNameForOrganization(
-    deps.executor,
+    db,
     ctx.organizationId,
     input.data.name
   )
   if (existing) conflictError("A supplier with this name already exists.")
-  const created = await createSupplier(deps.executor, {
+  const created = await createSupplier(db, {
     organizationId: ctx.organizationId,
     name: input.data.name,
     category: input.data.category,
@@ -76,11 +73,10 @@ export async function createSupplierUseCase(
 
 export async function getSupplierUseCase(
   ctx: WorkspaceContext,
-  deps: { executor: DatabaseExecutor },
   supplierId: string
 ): Promise<SupplierDto> {
   const [supplier] = await findSupplierForOrganization(
-    deps.executor,
+    db,
     ctx.organizationId,
     supplierId
   )
@@ -96,11 +92,10 @@ export async function getSupplierUseCase(
 }
 
 export async function listSuppliersUseCase(
-  ctx: WorkspaceContext,
-  deps: { executor: DatabaseExecutor }
+  ctx: WorkspaceContext
 ): Promise<SupplierDto[]> {
   const rows = await listSuppliersForOrganization(
-    deps.executor,
+    db,
     ctx.organizationId
   )
   return rows.map((row) => ({
@@ -114,22 +109,19 @@ export async function listSuppliersUseCase(
 }
 
 export async function listSupplierSummariesUseCase(
-  ctx: WorkspaceContext,
-  deps: { executor: DatabaseExecutor }
+  ctx: WorkspaceContext
 ) {
-  return listSupplierSummaries(deps.executor, ctx.organizationId)
+  return listSupplierSummaries(db, ctx.organizationId)
 }
 
 export async function listSupplierCategoriesUseCase(
-  ctx: WorkspaceContext,
-  deps: { executor: DatabaseExecutor }
+  ctx: WorkspaceContext
 ) {
-  return listSupplierCategories(deps.executor, ctx.organizationId)
+  return listSupplierCategories(db, ctx.organizationId)
 }
 
 export async function updateSupplierUseCase(
   ctx: WorkspaceContext,
-  deps: { transaction: TransactionRunner },
   supplierId: string,
   rawInput: unknown
 ): Promise<SupplierDto> {
@@ -138,7 +130,7 @@ export async function updateSupplierUseCase(
     .omit({ organizationId: true })
     .safeParse(rawInput)
   if (!input.success) validationError("Enter valid supplier details.")
-  return deps.transaction(async (transaction) => {
+  return db.transaction(async (transaction) => {
     await validateSupplierCategory(
       transaction,
       ctx.organizationId,
@@ -188,7 +180,6 @@ export async function updateSupplierUseCase(
 
 export async function createSupplierCategoryUseCase(
   ctx: WorkspaceContext,
-  deps: { executor: DatabaseExecutor },
   rawName: unknown
 ) {
   requireRole(ctx.role, ["owner", "site_manager", "accountant"])
@@ -204,13 +195,13 @@ export async function createSupplierCategoryUseCase(
   if (["materials", "labour", "equipment", "services"].includes(slug))
     conflictError("That category already exists in this organization.")
   const [existing] = await findSupplierCategoryBySlug(
-    deps.executor,
+    db,
     ctx.organizationId,
     slug
   )
   if (existing)
     conflictError("That category already exists in this organization.")
-  const category = await createSupplierCategory(deps.executor, {
+  const category = await createSupplierCategory(db, {
     organizationId: ctx.organizationId,
     name,
     slug,

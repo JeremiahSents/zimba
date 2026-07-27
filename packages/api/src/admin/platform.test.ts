@@ -1,4 +1,3 @@
-import type { DatabaseExecutor } from "@workspace/db/repositories"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 const repo = vi.hoisted(() => ({
@@ -11,6 +10,15 @@ const repo = vi.hoisted(() => ({
 
 vi.mock("@workspace/db/repositories", () => repo)
 
+const dbMock = vi.hoisted(() => ({
+  transaction: vi.fn(
+    async <Result>(callback: (tx: unknown) => Promise<Result>): Promise<Result> =>
+      callback({})
+  ),
+}))
+
+vi.mock("@workspace/db", () => ({ db: dbMock }))
+
 import {
   getPlatformStatsUseCase,
   listPlatformPaymentsUseCase,
@@ -18,8 +26,6 @@ import {
   listPlatformReceiptsUseCase,
   listPlatformSuppliersUseCase,
 } from "./platform"
-
-const deps = { executor: {} as DatabaseExecutor }
 
 describe("admin platform read use cases", () => {
   beforeEach(() => {
@@ -32,7 +38,7 @@ describe("admin platform read use cases", () => {
       trialOrganizations: 3,
     })
 
-    await expect(getPlatformStatsUseCase(deps)).resolves.toMatchObject({
+    await expect(getPlatformStatsUseCase()).resolves.toMatchObject({
       organizationsNeedingAttention: 5,
     })
   })
@@ -45,10 +51,10 @@ describe("admin platform read use cases", () => {
       { id: "payment-1", supplierName: null },
     ])
 
-    await expect(listPlatformReceiptsUseCase(deps)).resolves.toEqual([
+    await expect(listPlatformReceiptsUseCase()).resolves.toEqual([
       expect.objectContaining({ projectName: "None", supplierName: "None" }),
     ])
-    await expect(listPlatformPaymentsUseCase(deps)).resolves.toEqual([
+    await expect(listPlatformPaymentsUseCase()).resolves.toEqual([
       expect.objectContaining({ supplierName: "None" }),
     ])
   })
@@ -57,7 +63,7 @@ describe("admin platform read use cases", () => {
     repo.listPlatformSuppliers.mockReturnValue("suppliers")
     repo.listPlatformProjects.mockReturnValue("projects")
 
-    expect(listPlatformSuppliersUseCase(deps)).toBe("suppliers")
-    expect(listPlatformProjectsUseCase(deps)).toBe("projects")
+    expect(listPlatformSuppliersUseCase()).toBe("suppliers")
+    expect(listPlatformProjectsUseCase()).toBe("projects")
   })
 })

@@ -1,4 +1,3 @@
-import type { DatabaseExecutor } from "@workspace/db/repositories"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 const repo = vi.hoisted(() => ({
@@ -7,9 +6,17 @@ const repo = vi.hoisted(() => ({
 
 vi.mock("@workspace/db/repositories", () => repo)
 
+const dbMock = vi.hoisted(() => ({
+  transaction: vi.fn(
+    async <Result>(callback: (tx: unknown) => Promise<Result>): Promise<Result> =>
+      callback({})
+  ),
+}))
+
+vi.mock("@workspace/db", () => ({ db: dbMock }))
+
 import { deleteInvitationUseCase } from "./delete-invitation"
 
-const deps = { executor: {} as DatabaseExecutor }
 const ctx = { organizationId: "org-1" }
 
 describe("deleteInvitationUseCase", () => {
@@ -20,11 +27,11 @@ describe("deleteInvitationUseCase", () => {
 
   it("deletes invitations through workspace scope", async () => {
     await expect(
-      deleteInvitationUseCase(ctx, deps, "invite-1")
+      deleteInvitationUseCase(ctx, "invite-1")
     ).resolves.toEqual({ id: "invite-1" })
 
     expect(repo.deleteInvitationForOrganization).toHaveBeenCalledWith(
-      deps.executor,
+      dbMock,
       "org-1",
       "invite-1"
     )
@@ -34,12 +41,12 @@ describe("deleteInvitationUseCase", () => {
     repo.deleteInvitationForOrganization.mockResolvedValue([])
 
     await expect(
-      deleteInvitationUseCase(ctx, deps, "missing")
+      deleteInvitationUseCase(ctx, "missing")
     ).resolves.toBeNull()
   })
 
   it("rejects blank invitation ids", async () => {
-    await expect(deleteInvitationUseCase(ctx, deps, " ")).rejects.toMatchObject(
+    await expect(deleteInvitationUseCase(ctx, " ")).rejects.toMatchObject(
       { code: "VALIDATION_FAILED" }
     )
     expect(repo.deleteInvitationForOrganization).not.toHaveBeenCalled()

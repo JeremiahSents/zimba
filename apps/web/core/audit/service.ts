@@ -1,6 +1,5 @@
 import "server-only"
 import { recordAuditUseCase } from "@workspace/api"
-import { apiExecutor } from "@workspace/api-runtime"
 
 export async function recordAudit(input: {
   organizationId: string
@@ -12,7 +11,6 @@ export async function recordAudit(input: {
 }) {
   await recordAuditUseCase(
     { organizationId: input.organizationId, userId: input.actorId },
-    apiExecutor,
     {
       action: input.action,
       entityType: input.entityType,

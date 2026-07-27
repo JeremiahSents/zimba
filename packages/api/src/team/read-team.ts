@@ -1,5 +1,6 @@
+import { db } from "@workspace/db"
 import { createHash } from "node:crypto"
-import type { DatabaseExecutor } from "@workspace/db/repositories"
+
 import {
   findInvitationPreviewByTokenHash,
   listPendingInvitations,
@@ -9,19 +10,17 @@ import { validationError } from "../shared/application-error"
 import type { WorkspaceContext } from "../shared/workspace-context"
 
 export async function listTeamUseCase(
-  ctx: Pick<WorkspaceContext, "organizationId">,
-  deps: { executor: DatabaseExecutor }
+  ctx: Pick<WorkspaceContext, "organizationId">
 ) {
   const [members, invitations] = await Promise.all([
-    listTeamMembers(deps.executor, ctx.organizationId),
-    listPendingInvitations(deps.executor, ctx.organizationId),
+    listTeamMembers(db, ctx.organizationId),
+    listPendingInvitations(db, ctx.organizationId),
   ])
 
   return { members, invitations }
 }
 
 export async function getInvitationPreviewUseCase(
-  deps: { executor: DatabaseExecutor },
   rawToken: unknown
 ) {
   if (typeof rawToken !== "string" || rawToken.length < 20)
@@ -29,7 +28,7 @@ export async function getInvitationPreviewUseCase(
 
   const tokenHash = createHash("sha256").update(rawToken).digest("hex")
   const [invite] = await findInvitationPreviewByTokenHash(
-    deps.executor,
+    db,
     tokenHash
   )
   if (!invite) return { state: "invalid" as const }

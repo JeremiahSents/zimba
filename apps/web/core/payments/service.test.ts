@@ -69,7 +69,7 @@ describe("Payments Service", () => {
 
     expect(result?.id).toBe("pay-1")
     expect(
-      vi.mocked(api.createUpcomingPaymentUseCase).mock.calls[0]?.[2]
+      vi.mocked(api.createUpcomingPaymentUseCase).mock.calls[0]?.[1]
     ).toEqual(
       expect.objectContaining({
         projectId: "proj-1",
@@ -84,11 +84,11 @@ describe("Payments Service", () => {
       status: "paid",
     })
 
-    expect(vi.mocked(api.updateUpcomingPaymentUseCase).mock.calls[0]?.[2]).toBe(
+    expect(vi.mocked(api.updateUpcomingPaymentUseCase).mock.calls[0]?.[1]).toBe(
       "pay-2"
     )
     expect(
-      vi.mocked(api.updateUpcomingPaymentUseCase).mock.calls[0]?.[3]
+      vi.mocked(api.updateUpcomingPaymentUseCase).mock.calls[0]?.[2]
     ).toEqual(expect.objectContaining({ status: "paid" }))
   })
 

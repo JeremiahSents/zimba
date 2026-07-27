@@ -1,4 +1,5 @@
-import type { DatabaseExecutor } from "@workspace/db/repositories"
+import { db } from "@workspace/db"
+
 import {
   listPlatformPayments as readPlatformPayments,
   listPlatformProjects as readPlatformProjects,
@@ -7,10 +8,8 @@ import {
   listPlatformSuppliers as readPlatformSuppliers,
 } from "@workspace/db/repositories"
 
-export async function getPlatformStatsUseCase(deps: {
-  executor: DatabaseExecutor
-}) {
-  const stats = await readPlatformStats(deps.executor)
+export async function getPlatformStatsUseCase() {
+  const stats = await readPlatformStats(db)
 
   return {
     ...stats,
@@ -19,16 +18,12 @@ export async function getPlatformStatsUseCase(deps: {
   }
 }
 
-export function listPlatformSuppliersUseCase(deps: {
-  executor: DatabaseExecutor
-}) {
-  return readPlatformSuppliers(deps.executor)
+export function listPlatformSuppliersUseCase() {
+  return readPlatformSuppliers(db)
 }
 
-export async function listPlatformReceiptsUseCase(deps: {
-  executor: DatabaseExecutor
-}) {
-  const rows = await readPlatformReceipts(deps.executor)
+export async function listPlatformReceiptsUseCase() {
+  const rows = await readPlatformReceipts(db)
 
   return rows.map((row) => ({
     ...row,
@@ -37,10 +32,8 @@ export async function listPlatformReceiptsUseCase(deps: {
   }))
 }
 
-export async function listPlatformPaymentsUseCase(deps: {
-  executor: DatabaseExecutor
-}) {
-  const rows = await readPlatformPayments(deps.executor)
+export async function listPlatformPaymentsUseCase() {
+  const rows = await readPlatformPayments(db)
 
   return rows.map((row) => ({
     ...row,
@@ -48,8 +41,6 @@ export async function listPlatformPaymentsUseCase(deps: {
   }))
 }
 
-export function listPlatformProjectsUseCase(deps: {
-  executor: DatabaseExecutor
-}) {
-  return readPlatformProjects(deps.executor)
+export function listPlatformProjectsUseCase() {
+  return readPlatformProjects(db)
 }

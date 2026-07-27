@@ -8,7 +8,6 @@ import {
   listFinancialExpenseRowsUseCase,
   updateReceiptStatusUseCase,
 } from "@workspace/api"
-import { apiDatabase, apiExecutor } from "@workspace/api-runtime"
 import type { WorkspaceRole } from "@workspace/contracts"
 import type {
   ExpenseStatus,
@@ -21,8 +20,7 @@ import { notFound } from "../shared/errors"
 export async function listExpenseRows(): Promise<ExpenseTableRow[]> {
   const { organization } = await requireSession()
   const rows = await listFinancialExpenseRowsUseCase(
-    { organizationId: organization.organizationId },
-    apiExecutor
+    { organizationId: organization.organizationId }
   )
   return rows.map((row) => ({
     id: row.id,
@@ -68,7 +66,6 @@ export async function updateExpenseStatus(
       organizationId: organization.organizationId,
       role: organization.role as WorkspaceRole,
     },
-    apiDatabase,
     expenseId,
     status
   )
@@ -80,13 +77,11 @@ export async function getPayableExpense(
   const { organization } = await requireSession()
   const result = await getExpenseDetailUseCase(
     { organizationId: organization.organizationId },
-    apiExecutor,
     expenseId
   )
   if (!result) {
     const payable = await getPayableDetailUseCase(
       { organizationId: organization.organizationId },
-      apiExecutor,
       expenseId
     )
     if (!payable) notFound("Receipt not found.")
@@ -219,7 +214,6 @@ export async function correctReceiptCategory(
       organizationId: organization.organizationId,
       role: organization.role as WorkspaceRole,
     },
-    apiDatabase,
     receiptId,
     allocationId
   )
@@ -234,7 +228,6 @@ export async function deleteReceipt(receiptId: string) {
       organizationId: organization.organizationId,
       role: organization.role as WorkspaceRole,
     },
-    apiDatabase,
     receiptId
   )
 }
@@ -243,8 +236,7 @@ export async function deleteReceipt(receiptId: string) {
 export async function getReceiptCategoryAudit() {
   const { organization } = await requireSession()
   const rows = await listFinancialExpenseRowsUseCase(
-    { organizationId: organization.organizationId },
-    apiExecutor
+    { organizationId: organization.organizationId }
   )
   return {
     assigned: rows.filter((row) => row.categoryState === "assigned").length,
