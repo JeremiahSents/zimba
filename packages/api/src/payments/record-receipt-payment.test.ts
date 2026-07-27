@@ -13,8 +13,9 @@ vi.mock("@workspace/db/repositories", () => repo)
 
 const dbMock = vi.hoisted(() => ({
   transaction: vi.fn(
-    async <Result>(callback: (tx: unknown) => Promise<Result>): Promise<Result> =>
-      callback({})
+    async <Result>(
+      callback: (tx: unknown) => Promise<Result>
+    ): Promise<Result> => callback({})
   ),
 }))
 
@@ -129,10 +130,7 @@ describe("recordReceiptPaymentUseCase", () => {
 
   it("rejects unsupported roles before opening the transaction", async () => {
     await expect(
-      recordReceiptPaymentUseCase(
-        { ...context, role: "viewer" },
-        validInput
-      )
+      recordReceiptPaymentUseCase({ ...context, role: "viewer" }, validInput)
     ).rejects.toMatchObject({ code: "FORBIDDEN" })
     expect(dbMock.transaction).not.toHaveBeenCalled()
   })

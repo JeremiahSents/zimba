@@ -120,7 +120,6 @@ describe("Projects Service", () => {
 
     expect(api.listFinancialExpenseRowsUseCase).toHaveBeenCalledWith(
       { organizationId: "org-1" },
-      expect.anything(),
       "1"
     )
     expect(detail?.name).toBe("Test Project")

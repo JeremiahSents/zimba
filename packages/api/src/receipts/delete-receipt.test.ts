@@ -9,8 +9,9 @@ vi.mock("@workspace/db/repositories", () => repo)
 
 const dbMock = vi.hoisted(() => ({
   transaction: vi.fn(
-    async <Result>(callback: (tx: unknown) => Promise<Result>): Promise<Result> =>
-      callback({})
+    async <Result>(
+      callback: (tx: unknown) => Promise<Result>
+    ): Promise<Result> => callback({})
   ),
 }))
 
@@ -34,10 +35,7 @@ describe("deleteReceiptUseCase", () => {
   })
 
   it("deletes a tenant-scoped receipt and writes audit in the transaction", async () => {
-    const result = await deleteReceiptUseCase(
-      context,
-      "receipt-1"
-    )
+    const result = await deleteReceiptUseCase(context, "receipt-1")
 
     expect(result).toEqual({ id: "receipt-1" })
     expect(repo.deleteReceiptForOrganization).toHaveBeenCalledWith(
@@ -58,10 +56,7 @@ describe("deleteReceiptUseCase", () => {
 
   it("rejects unsupported roles before deleting", async () => {
     await expect(
-      deleteReceiptUseCase(
-        { ...context, role: "viewer" },
-        "receipt-1"
-      )
+      deleteReceiptUseCase({ ...context, role: "viewer" }, "receipt-1")
     ).rejects.toMatchObject({ code: "FORBIDDEN" })
     expect(repo.deleteReceiptForOrganization).not.toHaveBeenCalled()
   })
@@ -71,10 +66,7 @@ describe("deleteReceiptUseCase", () => {
     repo.deletePayableForOrganization.mockResolvedValue(undefined)
 
     await expect(
-      deleteReceiptUseCase(
-        context,
-        "missing"
-      )
+      deleteReceiptUseCase(context, "missing")
     ).rejects.toMatchObject({ code: "NOT_FOUND" })
     expect(repo.appendAuditEvent).not.toHaveBeenCalled()
   })

@@ -12,8 +12,9 @@ vi.mock("@workspace/db/repositories", () => repo)
 
 const dbMock = vi.hoisted(() => ({
   transaction: vi.fn(
-    async <Result>(callback: (tx: unknown) => Promise<Result>): Promise<Result> =>
-      callback({})
+    async <Result>(
+      callback: (tx: unknown) => Promise<Result>
+    ): Promise<Result> => callback({})
   ),
 }))
 
@@ -96,10 +97,13 @@ describe("createInvitationUseCase", () => {
 
   it("rejects unsupported actors", async () => {
     await expect(
-      createInvitationUseCase({ ...context, role: "accountant" }, {
-        email: "person@example.com",
-        role: "viewer",
-      })
+      createInvitationUseCase(
+        { ...context, role: "accountant" },
+        {
+          email: "person@example.com",
+          role: "viewer",
+        }
+      )
     ).rejects.toMatchObject({ code: "FORBIDDEN" })
     expect(dbMock.transaction).not.toHaveBeenCalled()
   })

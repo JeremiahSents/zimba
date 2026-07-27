@@ -8,8 +8,9 @@ vi.mock("@workspace/db/repositories", () => repo)
 
 const dbMock = vi.hoisted(() => ({
   transaction: vi.fn(
-    async <Result>(callback: (tx: unknown) => Promise<Result>): Promise<Result> =>
-      callback({})
+    async <Result>(
+      callback: (tx: unknown) => Promise<Result>
+    ): Promise<Result> => callback({})
   ),
 }))
 
@@ -26,9 +27,9 @@ describe("deleteInvitationUseCase", () => {
   })
 
   it("deletes invitations through workspace scope", async () => {
-    await expect(
-      deleteInvitationUseCase(ctx, "invite-1")
-    ).resolves.toEqual({ id: "invite-1" })
+    await expect(deleteInvitationUseCase(ctx, "invite-1")).resolves.toEqual({
+      id: "invite-1",
+    })
 
     expect(repo.deleteInvitationForOrganization).toHaveBeenCalledWith(
       dbMock,
@@ -40,15 +41,13 @@ describe("deleteInvitationUseCase", () => {
   it("returns null when no invitation is deleted", async () => {
     repo.deleteInvitationForOrganization.mockResolvedValue([])
 
-    await expect(
-      deleteInvitationUseCase(ctx, "missing")
-    ).resolves.toBeNull()
+    await expect(deleteInvitationUseCase(ctx, "missing")).resolves.toBeNull()
   })
 
   it("rejects blank invitation ids", async () => {
-    await expect(deleteInvitationUseCase(ctx, " ")).rejects.toMatchObject(
-      { code: "VALIDATION_FAILED" }
-    )
+    await expect(deleteInvitationUseCase(ctx, " ")).rejects.toMatchObject({
+      code: "VALIDATION_FAILED",
+    })
     expect(repo.deleteInvitationForOrganization).not.toHaveBeenCalled()
   })
 })

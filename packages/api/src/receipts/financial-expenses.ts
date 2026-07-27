@@ -40,10 +40,7 @@ export async function listFinancialExpenseRowsUseCase(
     ctx.organizationId,
     projectId
   )
-  const payables = await listPayablesForOrganization(
-    db,
-    ctx.organizationId
-  )
+  const payables = await listPayablesForOrganization(db, ctx.organizationId)
   const expenseIds = rows.map(({ expense }) => expense.id)
   const currentExpenseIds = new Set(rows.map(({ expense }) => expense.id))
   const legacyPayableIds = payables
@@ -56,16 +53,8 @@ export async function listFinancialExpenseRowsUseCase(
       ctx.organizationId,
       expenseIds
     ),
-    listReceiptPaymentsForExpenses(
-      db,
-      ctx.organizationId,
-      expenseIds
-    ),
-    listPayablePaymentsForPayables(
-      db,
-      ctx.organizationId,
-      legacyPayableIds
-    ),
+    listReceiptPaymentsForExpenses(db, ctx.organizationId, expenseIds),
+    listPayablePaymentsForPayables(db, ctx.organizationId, legacyPayableIds),
   ])
 
   const linesByExpenseId = new Map<string, typeof expenseLines>()
@@ -182,20 +171,12 @@ export function getExpenseDetailUseCase(
   ctx: Pick<WorkspaceContext, "organizationId">,
   expenseId: string
 ) {
-  return findExpenseForOrganization(
-    db,
-    ctx.organizationId,
-    expenseId
-  )
+  return findExpenseForOrganization(db, ctx.organizationId, expenseId)
 }
 
 export function getPayableDetailUseCase(
   ctx: Pick<WorkspaceContext, "organizationId">,
   payableId: string
 ) {
-  return findPayableForOrganization(
-    db,
-    ctx.organizationId,
-    payableId
-  )
+  return findPayableForOrganization(db, ctx.organizationId, payableId)
 }

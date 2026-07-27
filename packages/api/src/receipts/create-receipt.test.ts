@@ -79,9 +79,7 @@ describe("createReceipt use case", () => {
 
   it("rejects invalid input with zod parse error", async () => {
     runTransactionsWith(mockExecutor())
-    await expect(
-      createReceipt(makeCtx(), { projectId: "" })
-    ).rejects.toThrow()
+    await expect(createReceipt(makeCtx(), { projectId: "" })).rejects.toThrow()
   })
 
   it("rejects overpayment", async () => {

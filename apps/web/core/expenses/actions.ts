@@ -53,36 +53,33 @@ export async function createPayableExpenseAction(
 
   try {
     const ctx = await getWorkspaceContext(workspaceSlug)
-    const created = await createReceiptUseCase(
-      ctx,
-      {
-        projectId: String(expense.project_id),
-        supplierId: String(expense.supplier_id),
-        expenseDate: expense.expense_date
-          ? new Date(expense.expense_date)
-          : undefined,
-        currency: expense.currency,
-        receiptFileId: expense.receipt_file_id,
-        lines: expense.lines.map((line) => ({
-          allocationId: String(line.allocation_id),
-          itemDescription: line.description,
-          quantity: line.quantity,
-          unitRateCents: Math.round(line.unit_amount * 100),
-          amountCents: Math.round(line.quantity * line.unit_amount * 100),
-        })),
-        payment: expense.amount_paid
-          ? {
-              amountCents: Math.round(expense.amount_paid * 100),
-              currency: expense.currency,
-              paymentDate: expense.payment_date
-                ? new Date(expense.payment_date)
-                : undefined,
-              method: expense.payment_method,
-              reference: expense.payment_reference,
-            }
-          : undefined,
-      }
-    )
+    const created = await createReceiptUseCase(ctx, {
+      projectId: String(expense.project_id),
+      supplierId: String(expense.supplier_id),
+      expenseDate: expense.expense_date
+        ? new Date(expense.expense_date)
+        : undefined,
+      currency: expense.currency,
+      receiptFileId: expense.receipt_file_id,
+      lines: expense.lines.map((line) => ({
+        allocationId: String(line.allocation_id),
+        itemDescription: line.description,
+        quantity: line.quantity,
+        unitRateCents: Math.round(line.unit_amount * 100),
+        amountCents: Math.round(line.quantity * line.unit_amount * 100),
+      })),
+      payment: expense.amount_paid
+        ? {
+            amountCents: Math.round(expense.amount_paid * 100),
+            currency: expense.currency,
+            paymentDate: expense.payment_date
+              ? new Date(expense.payment_date)
+              : undefined,
+            method: expense.payment_method,
+            reference: expense.payment_reference,
+          }
+        : undefined,
+    })
     const payable = await getPayableExpense(created.id)
     revalidateConnectedRoutes(undefined, workspaceSlug)
     return { success: true, data: payable }

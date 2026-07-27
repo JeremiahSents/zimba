@@ -26,8 +26,7 @@ export default async function ApplicationDetailPage({
   await requirePlatformSession()
   const { id } = await params
 
-  const application = await getOnboardingApplicationDetailUseCase(id
-  )
+  const application = await getOnboardingApplicationDetailUseCase(id)
   if (!application) notFound()
 
   const isPending = application.status === "pending"

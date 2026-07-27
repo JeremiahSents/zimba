@@ -1,8 +1,8 @@
-import { db } from "@workspace/db"
 import type {
   OnboardingApplicationDto,
   OnboardingApplicationListDto,
 } from "@workspace/contracts"
+import { db } from "@workspace/db"
 
 import {
   countPendingOnboardingApplications,
@@ -58,10 +58,7 @@ export async function submitOnboardingApplicationUseCase(
   if (companyName.length < 2 || companyName.length > 120)
     validationError("Enter a valid company name.")
 
-  const [existing] = await findPendingOnboardingApplication(
-    db,
-    ctx.userId
-  )
+  const [existing] = await findPendingOnboardingApplication(db, ctx.userId)
   if (existing && existing.status === "pending")
     conflictError("You already have a pending application.")
 
@@ -80,7 +77,9 @@ export async function submitOnboardingApplicationUseCase(
   })
 }
 
-export async function listOnboardingApplicationsUseCase(): Promise<OnboardingApplicationListDto[]> {
+export async function listOnboardingApplicationsUseCase(): Promise<
+  OnboardingApplicationListDto[]
+> {
   const rows = await listOnboardingApplicationsWithUser(db)
   return rows.map((row) => ({
     id: row.id,
@@ -125,10 +124,7 @@ export async function approveOnboardingApplicationUseCase(
   ctx: { reviewerId: string },
   applicationId: string
 ): Promise<{ organizationId: string; slug: string }> {
-  const [app] = await findOnboardingApplicationById(
-    db,
-    applicationId
-  )
+  const [app] = await findOnboardingApplicationById(db, applicationId)
   if (!app) notFoundError("Application not found.")
   if (app.status !== "pending")
     conflictError("This application has already been reviewed.")
@@ -174,10 +170,7 @@ export async function rejectOnboardingApplicationUseCase(
   applicationId: string,
   rejectionReason?: string
 ): Promise<void> {
-  const [app] = await findOnboardingApplicationById(
-    db,
-    applicationId
-  )
+  const [app] = await findOnboardingApplicationById(db, applicationId)
   if (!app) notFoundError("Application not found.")
   if (app.status !== "pending")
     conflictError("This application has already been reviewed.")

@@ -12,23 +12,16 @@ export function listOrganizationsUseCase() {
   return listOrganizationsWithStats(db)
 }
 
-export async function getOrganizationDetailUseCase(
-  id: string
-) {
+export async function getOrganizationDetailUseCase(id: string) {
   const org = await findOrganizationDetail(db, id)
   if (!org) notFoundError("Organization not found.")
   return org
 }
 
-export function getOrganizationStatsUseCase(
-  id: string
-) {
+export function getOrganizationStatsUseCase(id: string) {
   return readOrganizationStats(db, id)
 }
 
-export function updateOrganizationStatusUseCase(
-  id: string,
-  status: string
-) {
+export function updateOrganizationStatusUseCase(id: string, status: string) {
   return updateOrganizationStatusInDb(db, id, status)
 }

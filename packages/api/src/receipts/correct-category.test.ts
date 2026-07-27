@@ -13,8 +13,9 @@ vi.mock("@workspace/db/repositories", () => repo)
 
 const dbMock = vi.hoisted(() => ({
   transaction: vi.fn(
-    async <Result>(callback: (tx: unknown) => Promise<Result>): Promise<Result> =>
-      callback({})
+    async <Result>(
+      callback: (tx: unknown) => Promise<Result>
+    ): Promise<Result> => callback({})
   ),
 }))
 
@@ -83,11 +84,7 @@ describe("correctReceiptCategoryUseCase", () => {
         dueDate: null,
       },
     })
-    await correctReceiptCategoryUseCase(
-      context,
-      "payable-1",
-      "allocation-1"
-    )
+    await correctReceiptCategoryUseCase(context, "payable-1", "allocation-1")
     expect(repo.insertReceipt).toHaveBeenCalledOnce()
     expect(repo.insertReceiptLine).toHaveBeenCalledWith(
       {},

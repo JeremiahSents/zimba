@@ -1,6 +1,6 @@
-import { db } from "@workspace/db"
 import type { ProjectDto } from "@workspace/contracts"
 import { projectInputSchema } from "@workspace/contracts"
+import { db } from "@workspace/db"
 
 import {
   createProject,
@@ -36,10 +36,7 @@ export async function createProjectUseCase(
 export async function listProjectsUseCase(
   ctx: WorkspaceContext
 ): Promise<ProjectDto[]> {
-  const rows = await listProjectsForOrganization(
-    db,
-    ctx.organizationId
-  )
+  const rows = await listProjectsForOrganization(db, ctx.organizationId)
   return rows.map((row) => ({
     id: row.id,
     organizationId: row.organizationId,

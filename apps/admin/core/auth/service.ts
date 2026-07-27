@@ -26,7 +26,8 @@ export const getPlatformSession = cache(
       return null
     }
 
-    const platformRole = await getPlatformAccessForUserUseCase(authSession.user.id
+    const platformRole = await getPlatformAccessForUserUseCase(
+      authSession.user.id
     )
 
     return {

@@ -10,11 +10,7 @@ export async function getOrganizationMembershipUseCase(
   workspaceSlug?: string | null
 ) {
   const [membership] = workspaceSlug
-    ? await findUserOrganizationMembershipBySlug(
-        db,
-        userId,
-        workspaceSlug
-      )
+    ? await findUserOrganizationMembershipBySlug(db, userId, workspaceSlug)
     : await findUserOrganizationMembership(db, userId)
   return membership ?? null
 }

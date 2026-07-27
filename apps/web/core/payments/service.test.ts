@@ -104,7 +104,6 @@ describe("Payments Service", () => {
 
     expect(api.recordReceiptPaymentUseCase).toHaveBeenCalledWith(
       expect.objectContaining({ organizationId: "org-1" }),
-      expect.anything(),
       expect.objectContaining({
         supplierId: "sup-1",
         receiptId: "exp-1",
@@ -125,7 +124,6 @@ describe("Payments Service", () => {
     })
 
     expect(api.recordReceiptPaymentUseCase).toHaveBeenCalledWith(
-      expect.anything(),
       expect.anything(),
       expect.objectContaining({
         receiptId: "payable-1",

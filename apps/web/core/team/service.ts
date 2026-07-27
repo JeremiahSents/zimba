@@ -10,18 +10,15 @@ import {
 import type { WorkspaceRole } from "@workspace/contracts"
 import { sendMemberInviteEmail } from "@workspace/transactional"
 import { normalizeRole } from "../auth/permissions"
-import {
-  getSessionWithOrganization,
-  requireSession,
-} from "../auth/service"
+import { getSessionWithOrganization, requireSession } from "../auth/service"
 import { unauthorized } from "../shared/errors"
 import { buildInviteUrl } from "./invite-url"
 
 export async function listTeam() {
   const { organization } = await requireSession()
-  const team = await listTeamUseCase(
-    { organizationId: organization.organizationId }
-  )
+  const team = await listTeamUseCase({
+    organizationId: organization.organizationId,
+  })
   return {
     members: team.members,
     invitations: team.invitations,

@@ -13,13 +13,11 @@ import { requireSession } from "../auth/service"
 
 export async function getSuppliersList(): Promise<SupplierResponse[]> {
   const { user, organization } = await requireSession()
-  const suppliers = await listSupplierSummariesUseCase(
-    {
-      userId: user.id,
-      organizationId: organization.organizationId,
-      role: normalizeRole(organization.role) as WorkspaceRole,
-    }
-  )
+  const suppliers = await listSupplierSummariesUseCase({
+    userId: user.id,
+    organizationId: organization.organizationId,
+    role: normalizeRole(organization.role) as WorkspaceRole,
+  })
   return suppliers.map((s) => {
     const { receiptCount = 0, incurredCents = 0, paidCents = 0 } = s
     return {
@@ -75,13 +73,11 @@ export async function updateSupplier(
 
 export async function getSupplierCategories() {
   const { user, organization } = await requireSession()
-  return listSupplierCategoriesUseCase(
-    {
-      userId: user.id,
-      organizationId: organization.organizationId,
-      role: normalizeRole(organization.role) as WorkspaceRole,
-    }
-  )
+  return listSupplierCategoriesUseCase({
+    userId: user.id,
+    organizationId: organization.organizationId,
+    role: normalizeRole(organization.role) as WorkspaceRole,
+  })
 }
 
 export async function createSupplierCategory(name: string) {

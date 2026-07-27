@@ -1,4 +1,7 @@
-import type { DatabaseTransaction, TransactionRunner } from "@workspace/db/repositories"
+import type {
+  DatabaseTransaction,
+  TransactionRunner,
+} from "@workspace/db/repositories"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 const repo = vi.hoisted(() => ({
@@ -15,8 +18,9 @@ vi.mock("@workspace/db/repositories", () => repo)
 
 const dbMock = vi.hoisted(() => ({
   transaction: vi.fn(
-    async <Result>(callback: (tx: unknown) => Promise<Result>): Promise<Result> =>
-      callback({})
+    async <Result>(
+      callback: (tx: unknown) => Promise<Result>
+    ): Promise<Result> => callback({})
   ),
 }))
 
@@ -106,11 +110,10 @@ describe("supplier use cases", () => {
   })
 
   it("updates a tenant-scoped supplier and audits in the transaction", async () => {
-    const result = await updateSupplierUseCase(
-      context,
-      "supplier-1",
-      { name: "Acme", category: "materials" }
-    )
+    const result = await updateSupplierUseCase(context, "supplier-1", {
+      name: "Acme",
+      category: "materials",
+    })
 
     expect(result.id).toBe("supplier-1")
     expect(repo.updateSupplierForOrganization).toHaveBeenCalledWith(
@@ -141,11 +144,10 @@ describe("supplier use cases", () => {
 
   it("rejects updates from unsupported roles", async () => {
     await expect(
-      updateSupplierUseCase(
-        { ...context, role: "viewer" },
-        "supplier-1",
-        { name: "Acme", category: "materials" }
-      )
+      updateSupplierUseCase({ ...context, role: "viewer" }, "supplier-1", {
+        name: "Acme",
+        category: "materials",
+      })
     ).rejects.toMatchObject({ code: "FORBIDDEN" })
     expect(dbMock.transaction).not.toHaveBeenCalled()
   })

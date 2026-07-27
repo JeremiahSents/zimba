@@ -9,8 +9,9 @@ vi.mock("@workspace/db/repositories", () => repo)
 
 const dbMock = vi.hoisted(() => ({
   transaction: vi.fn(
-    async <Result>(callback: (tx: unknown) => Promise<Result>): Promise<Result> =>
-      callback({})
+    async <Result>(
+      callback: (tx: unknown) => Promise<Result>
+    ): Promise<Result> => callback({})
   ),
 }))
 
@@ -53,9 +54,6 @@ describe("admin audit read use cases", () => {
 
     await listPlatformActivityEventsUseCase()
 
-    expect(repo.listRecentActivityEvents).toHaveBeenCalledWith(
-      dbMock,
-      100
-    )
+    expect(repo.listRecentActivityEvents).toHaveBeenCalledWith(dbMock, 100)
   })
 })

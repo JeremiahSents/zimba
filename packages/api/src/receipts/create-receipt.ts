@@ -1,6 +1,6 @@
-import { db } from "@workspace/db"
 import type { ReceiptCreateOutputDto } from "@workspace/contracts"
 import { receiptCreateInputSchema } from "@workspace/contracts"
+import { db } from "@workspace/db"
 import type { DatabaseExecutor } from "@workspace/db/repositories"
 import {
   findActiveProjectForOrganization,

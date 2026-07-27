@@ -1,5 +1,5 @@
-import { db } from "@workspace/db"
 import type { OwnershipTransferRequestDto } from "@workspace/contracts"
+import { db } from "@workspace/db"
 
 import {
   countPendingOwnershipTransfers,
@@ -63,7 +63,9 @@ export async function requestOwnershipTransferUseCase(
   })
 }
 
-export async function listOwnershipTransferRequestsUseCase(): Promise<OwnershipTransferRequestDto[]> {
+export async function listOwnershipTransferRequestsUseCase(): Promise<
+  OwnershipTransferRequestDto[]
+> {
   const rows = await listOwnershipTransferRequests(db)
   return rows.map((row) => ({
     id: row.id,
@@ -88,10 +90,7 @@ export async function approveOwnershipTransferUseCase(
   ctx: { reviewerId: string },
   transferId: string
 ): Promise<void> {
-  const [transfer] = await findOwnershipTransferRequestById(
-    db,
-    transferId
-  )
+  const [transfer] = await findOwnershipTransferRequestById(db, transferId)
   if (!transfer) notFoundError("Transfer request not found.")
   if (transfer.status !== "pending")
     conflictError("This transfer request has already been reviewed.")
@@ -131,10 +130,7 @@ export async function rejectOwnershipTransferUseCase(
   transferId: string,
   rejectionReason?: string
 ): Promise<void> {
-  const [transfer] = await findOwnershipTransferRequestById(
-    db,
-    transferId
-  )
+  const [transfer] = await findOwnershipTransferRequestById(db, transferId)
   if (!transfer) notFoundError("Transfer request not found.")
   if (transfer.status !== "pending")
     conflictError("This transfer request has already been reviewed.")

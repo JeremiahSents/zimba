@@ -15,9 +15,7 @@ export async function listPlatformAuditLogsUseCase() {
   }))
 }
 
-export async function listRecentActivityUseCase(
-  limit = 10
-) {
+export async function listRecentActivityUseCase(limit = 10) {
   const rows = await listRecentActivityEvents(db, limit)
 
   return rows.map((row) => ({
@@ -30,14 +28,12 @@ export function listPlatformActivityEventsUseCase() {
   return listRecentActivityUseCase(100)
 }
 
-export async function recordPlatformAuditUseCase(
-  input: {
-    actorId: string
-    targetUserId?: string | null
-    operation: string
-    metadata?: Record<string, unknown>
-  }
-) {
+export async function recordPlatformAuditUseCase(input: {
+  actorId: string
+  targetUserId?: string | null
+  operation: string
+  metadata?: Record<string, unknown>
+}) {
   await appendPlatformAudit(db, {
     actorId: input.actorId,
     targetUserId: input.targetUserId ?? null,

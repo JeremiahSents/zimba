@@ -1,5 +1,5 @@
-import { db } from "@workspace/db"
 import { createHash } from "node:crypto"
+import { db } from "@workspace/db"
 
 import {
   findInvitationPreviewByTokenHash,
@@ -20,17 +20,12 @@ export async function listTeamUseCase(
   return { members, invitations }
 }
 
-export async function getInvitationPreviewUseCase(
-  rawToken: unknown
-) {
+export async function getInvitationPreviewUseCase(rawToken: unknown) {
   if (typeof rawToken !== "string" || rawToken.length < 20)
     validationError("This invitation link is invalid.")
 
   const tokenHash = createHash("sha256").update(rawToken).digest("hex")
-  const [invite] = await findInvitationPreviewByTokenHash(
-    db,
-    tokenHash
-  )
+  const [invite] = await findInvitationPreviewByTokenHash(db, tokenHash)
   if (!invite) return { state: "invalid" as const }
 
   const preview = {

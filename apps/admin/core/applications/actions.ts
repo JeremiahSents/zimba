@@ -19,8 +19,7 @@ export async function approveApplication(formData: FormData) {
   const applicationId = String(formData.get("applicationId") ?? "")
   if (!applicationId) return
 
-  const application = await getOnboardingApplicationDetailUseCase(applicationId
-  )
+  const application = await getOnboardingApplicationDetailUseCase(applicationId)
   const result = await approveOnboardingApplicationUseCase(
     { reviewerId: session.user.id },
     applicationId
@@ -60,8 +59,7 @@ export async function rejectApplication(formData: FormData) {
   const rejectionReason = String(formData.get("rejectionReason") ?? "").trim()
   if (!applicationId) return
 
-  const application = await getOnboardingApplicationDetailUseCase(applicationId
-  )
+  const application = await getOnboardingApplicationDetailUseCase(applicationId)
   await rejectOnboardingApplicationUseCase(
     { reviewerId: session.user.id },
     applicationId,

@@ -8,8 +8,9 @@ vi.mock("@workspace/db/repositories", () => ({
 
 const dbMock = vi.hoisted(() => ({
   transaction: vi.fn(
-    async <Result>(callback: (tx: unknown) => Promise<Result>): Promise<Result> =>
-      callback({})
+    async <Result>(
+      callback: (tx: unknown) => Promise<Result>
+    ): Promise<Result> => callback({})
   ),
 }))
 
@@ -41,9 +42,9 @@ describe("resolveWorkspace", () => {
 
   it("throws not found for missing workspace", async () => {
     vi.mocked(findWorkspaceBySlug).mockResolvedValue(null)
-    await expect(
-      resolveWorkspace("user-1", "nonexistent")
-    ).rejects.toThrow(ApplicationError)
+    await expect(resolveWorkspace("user-1", "nonexistent")).rejects.toThrow(
+      ApplicationError
+    )
   })
 
   it("throws not found for non-member", async () => {
@@ -54,9 +55,9 @@ describe("resolveWorkspace", () => {
       status: "active",
     })
     vi.mocked(findMembershipByUserAndOrganization).mockResolvedValue(null)
-    await expect(
-      resolveWorkspace("user-1", "acme-ltd")
-    ).rejects.toThrow(ApplicationError)
+    await expect(resolveWorkspace("user-1", "acme-ltd")).rejects.toThrow(
+      ApplicationError
+    )
   })
 
   it("rejects an unknown membership role", async () => {
@@ -70,9 +71,9 @@ describe("resolveWorkspace", () => {
       id: "member-1",
       role: "unknown_role",
     })
-    await expect(
-      resolveWorkspace("user-1", "acme-ltd")
-    ).rejects.toThrow(ApplicationError)
+    await expect(resolveWorkspace("user-1", "acme-ltd")).rejects.toThrow(
+      ApplicationError
+    )
   })
 
   it("rejects an inactive workspace", async () => {
@@ -82,8 +83,8 @@ describe("resolveWorkspace", () => {
       slug: "acme-ltd",
       status: "suspended",
     })
-    await expect(
-      resolveWorkspace("user-1", "acme-ltd")
-    ).rejects.toThrow(ApplicationError)
+    await expect(resolveWorkspace("user-1", "acme-ltd")).rejects.toThrow(
+      ApplicationError
+    )
   })
 })

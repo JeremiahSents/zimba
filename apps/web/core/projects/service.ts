@@ -16,18 +16,18 @@ import { requireSession } from "../auth/service"
 
 export async function getProjectsList() {
   const { organization } = await requireSession()
-  const projects = await listProjectSummariesUseCase(
-    { organizationId: organization.organizationId }
-  )
+  const projects = await listProjectSummariesUseCase({
+    organizationId: organization.organizationId,
+  })
 
   return projects.map(toProjectDashboardResponse)
 }
 
 export async function getArchivedProjectsList() {
   const { organization } = await requireSession()
-  const projects = await listArchivedProjectSummariesUseCase(
-    { organizationId: organization.organizationId }
-  )
+  const projects = await listArchivedProjectSummariesUseCase({
+    organizationId: organization.organizationId,
+  })
 
   return projects.map(toProjectDashboardResponse)
 }

@@ -1,5 +1,5 @@
-import { db } from "@workspace/db"
 import { projectInputSchema } from "@workspace/contracts"
+import { db } from "@workspace/db"
 
 import {
   createAllocation,

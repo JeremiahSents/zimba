@@ -1,5 +1,5 @@
-import { db } from "@workspace/db"
 import { createHash } from "node:crypto"
+import { db } from "@workspace/db"
 
 import {
   claimInvitationAndUpsertMember,
@@ -28,10 +28,7 @@ export async function acceptInvitationUseCase(
     notFoundError("This invitation is invalid or expired.")
   if (invite.email.toLowerCase() !== ctx.email.trim().toLowerCase())
     forbidden("This invitation is for a different account.")
-  const [workspace] = await findOrganizationById(
-    db,
-    invite.organizationId
-  )
+  const [workspace] = await findOrganizationById(db, invite.organizationId)
   if (workspace?.status !== "active")
     notFoundError("This invitation is invalid or expired.")
   if (invite.status !== "pending")

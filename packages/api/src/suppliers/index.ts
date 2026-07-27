@@ -1,6 +1,6 @@
-import { db } from "@workspace/db"
 import type { SupplierDto } from "@workspace/contracts"
 import { supplierInputSchema } from "@workspace/contracts"
+import { db } from "@workspace/db"
 import type { DatabaseExecutor } from "@workspace/db/repositories"
 import {
   appendAuditEvent,
@@ -38,11 +38,7 @@ export async function createSupplierUseCase(
   if (!input.success) validationError("Enter valid supplier details.")
   if (input.data.organizationId !== ctx.organizationId)
     validationError("Organization mismatch.")
-  await validateSupplierCategory(
-    db,
-    ctx.organizationId,
-    input.data.category
-  )
+  await validateSupplierCategory(db, ctx.organizationId, input.data.category)
   const [existing] = await findSupplierByNameForOrganization(
     db,
     ctx.organizationId,
@@ -94,10 +90,7 @@ export async function getSupplierUseCase(
 export async function listSuppliersUseCase(
   ctx: WorkspaceContext
 ): Promise<SupplierDto[]> {
-  const rows = await listSuppliersForOrganization(
-    db,
-    ctx.organizationId
-  )
+  const rows = await listSuppliersForOrganization(db, ctx.organizationId)
   return rows.map((row) => ({
     id: row.id,
     organizationId: row.organizationId,
@@ -108,15 +101,11 @@ export async function listSuppliersUseCase(
   }))
 }
 
-export async function listSupplierSummariesUseCase(
-  ctx: WorkspaceContext
-) {
+export async function listSupplierSummariesUseCase(ctx: WorkspaceContext) {
   return listSupplierSummaries(db, ctx.organizationId)
 }
 
-export async function listSupplierCategoriesUseCase(
-  ctx: WorkspaceContext
-) {
+export async function listSupplierCategoriesUseCase(ctx: WorkspaceContext) {
   return listSupplierCategories(db, ctx.organizationId)
 }
 

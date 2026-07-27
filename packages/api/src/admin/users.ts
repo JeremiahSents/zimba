@@ -1,8 +1,8 @@
-import { db } from "@workspace/db"
 import type {
   PlatformUserDetailDto,
   PlatformUserListDto,
 } from "@workspace/contracts"
+import { db } from "@workspace/db"
 import type { DatabaseExecutor } from "@workspace/db/repositories"
 import {
   appendPlatformAudit,
@@ -34,7 +34,9 @@ export async function getPlatformAccessForUserUseCase(
   return normalizePlatformRole(platformUser?.role)
 }
 
-export async function listPlatformUsersUseCase(): Promise<PlatformUserListDto[]> {
+export async function listPlatformUsersUseCase(): Promise<
+  PlatformUserListDto[]
+> {
   const rows = await listPlatformUserRows(db)
   const result = new Map<string, PlatformUserListDto>()
   for (const row of rows) {
@@ -136,9 +138,10 @@ export async function removePlatformUserUseCase(
   })
 }
 
-export async function validateSuperAdminInviteUseCase(
-  input: { email: string; name: string }
-) {
+export async function validateSuperAdminInviteUseCase(input: {
+  email: string
+  name: string
+}) {
   const normalizedEmail = input.email.trim().toLowerCase()
   if (!input.name.trim() || !normalizedEmail.includes("@")) {
     validationError("Enter a name and valid email address.")

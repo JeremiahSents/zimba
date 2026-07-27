@@ -94,8 +94,7 @@ describe("Suppliers Service", () => {
       status: "active",
     })
     expect(api.listSupplierSummariesUseCase).toHaveBeenCalledWith(
-      expect.objectContaining({ organizationId: "org-1", role: "owner" }),
-      expect.anything()
+      expect.objectContaining({ organizationId: "org-1", role: "owner" })
     )
   })
 
@@ -119,7 +118,6 @@ describe("Suppliers Service", () => {
     await createSupplierCategory("  Heavy   Transport ")
     expect(api.createSupplierCategoryUseCase).toHaveBeenCalledWith(
       expect.objectContaining({ organizationId: "org-1" }),
-      expect.anything(),
       "  Heavy   Transport "
     )
   })

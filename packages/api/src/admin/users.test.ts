@@ -17,8 +17,9 @@ vi.mock("@workspace/db/repositories", () => repo)
 
 const dbMock = vi.hoisted(() => ({
   transaction: vi.fn(
-    async <Result>(callback: (tx: unknown) => Promise<Result>): Promise<Result> =>
-      callback({})
+    async <Result>(
+      callback: (tx: unknown) => Promise<Result>
+    ): Promise<Result> => callback({})
   ),
 }))
 
@@ -83,10 +84,7 @@ describe("admin platform user use cases", () => {
         : [{ id: "platform-1", role: "support" }]
     )
 
-    await updatePlatformUserRoleUseCase("actor-1",
-      "target-1",
-      "super_admin"
-    )
+    await updatePlatformUserRoleUseCase("actor-1", "target-1", "super_admin")
 
     expect(dbMock.transaction).toHaveBeenCalledOnce()
     expect(repo.updatePlatformAccess).toHaveBeenCalledWith(
@@ -133,12 +131,10 @@ describe("admin platform user use cases", () => {
     repo.findPlatformUserForUser.mockResolvedValue([{ id: "platform-1" }])
 
     await expect(
-      validateSuperAdminInviteUseCase(
-        {
-          email: "person@example.com",
-          name: "Person",
-        }
-      )
+      validateSuperAdminInviteUseCase({
+        email: "person@example.com",
+        name: "Person",
+      })
     ).rejects.toThrow("This user already has platform access.")
   })
 })

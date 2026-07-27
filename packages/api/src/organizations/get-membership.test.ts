@@ -8,8 +8,9 @@ vi.mock("@workspace/db/repositories", () => repo)
 
 const dbMock = vi.hoisted(() => ({
   transaction: vi.fn(
-    async <Result>(callback: (tx: unknown) => Promise<Result>): Promise<Result> =>
-      callback({})
+    async <Result>(
+      callback: (tx: unknown) => Promise<Result>
+    ): Promise<Result> => callback({})
   ),
 }))
 
@@ -24,10 +25,7 @@ describe("getOrganizationMembershipUseCase", () => {
     repo.findUserOrganizationMembershipBySlug.mockResolvedValue([
       { organizationId: "org-1", slug: "zimba" },
     ])
-    const result = await getOrganizationMembershipUseCase(
-      "user-1",
-      "zimba"
-    )
+    const result = await getOrganizationMembershipUseCase("user-1", "zimba")
     expect(result?.organizationId).toBe("org-1")
     expect(repo.findUserOrganizationMembershipBySlug).toHaveBeenCalledWith(
       dbMock,
@@ -38,8 +36,6 @@ describe("getOrganizationMembershipUseCase", () => {
 
   it("returns null when there is no membership", async () => {
     repo.findUserOrganizationMembership.mockResolvedValue([])
-    await expect(
-      getOrganizationMembershipUseCase("user-1")
-    ).resolves.toBeNull()
+    await expect(getOrganizationMembershipUseCase("user-1")).resolves.toBeNull()
   })
 })

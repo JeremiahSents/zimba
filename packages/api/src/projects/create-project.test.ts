@@ -11,8 +11,9 @@ vi.mock("@workspace/db/repositories", () => repo)
 
 const dbMock = vi.hoisted(() => ({
   transaction: vi.fn(
-    async <Result>(callback: (tx: unknown) => Promise<Result>): Promise<Result> =>
-      callback({})
+    async <Result>(
+      callback: (tx: unknown) => Promise<Result>
+    ): Promise<Result> => callback({})
   ),
 }))
 
@@ -30,8 +31,9 @@ describe("createProjectWithAllocationsUseCase", () => {
   beforeEach(() => {
     vi.resetAllMocks()
     dbMock.transaction.mockImplementation(
-      async <Result>(callback: (tx: never) => Promise<Result>): Promise<Result> =>
-        callback({} as never)
+      async <Result>(
+        callback: (tx: never) => Promise<Result>
+      ): Promise<Result> => callback({} as never)
     )
     repo.createProject.mockResolvedValue({
       id: "project-1",
@@ -44,18 +46,15 @@ describe("createProjectWithAllocationsUseCase", () => {
   })
 
   it("creates the project and allocations in one transaction", async () => {
-    const result = await createProjectWithAllocationsUseCase(
-      context,
-      {
-        organizationId: "org-1",
-        name: "House",
-        location: "Kampala",
-        currency: "UGX",
-        landSize: "100 sqm",
-        buildingType: "residential",
-        allocations: [{ name: "Foundation", budget: 1000 }],
-      }
-    )
+    const result = await createProjectWithAllocationsUseCase(context, {
+      organizationId: "org-1",
+      name: "House",
+      location: "Kampala",
+      currency: "UGX",
+      landSize: "100 sqm",
+      buildingType: "residential",
+      allocations: [{ name: "Foundation", budget: 1000 }],
+    })
     expect(result.id).toBe("project-1")
     expect(dbMock.transaction).toHaveBeenCalledOnce()
     expect(repo.createAllocation).toHaveBeenCalledWith(
@@ -69,19 +68,16 @@ describe("createProjectWithAllocationsUseCase", () => {
     const transaction = async (callback: (tx: never) => Promise<unknown>) =>
       callback({} as never)
     await expect(
-      createProjectWithAllocationsUseCase(
-        context,
-        {
-          organizationId: "org-1",
-          name: "House",
-          location: "Kampala",
-          currency: "UGX",
-          landSize: "100 sqm",
-          buildingType: "residential",
-          allocations: [{ name: "Foundation", budget: 1000 }],
-          attachmentIds: ["other-file"],
-        }
-      )
+      createProjectWithAllocationsUseCase(context, {
+        organizationId: "org-1",
+        name: "House",
+        location: "Kampala",
+        currency: "UGX",
+        landSize: "100 sqm",
+        buildingType: "residential",
+        allocations: [{ name: "Foundation", budget: 1000 }],
+        attachmentIds: ["other-file"],
+      })
     ).rejects.toMatchObject({ code: "VALIDATION_FAILED" })
     expect(repo.createProjectAttachment).not.toHaveBeenCalled()
   })

@@ -19,9 +19,9 @@ import { notFound } from "../shared/errors"
 
 export async function listExpenseRows(): Promise<ExpenseTableRow[]> {
   const { organization } = await requireSession()
-  const rows = await listFinancialExpenseRowsUseCase(
-    { organizationId: organization.organizationId }
-  )
+  const rows = await listFinancialExpenseRowsUseCase({
+    organizationId: organization.organizationId,
+  })
   return rows.map((row) => ({
     id: row.id,
     receipt_id: row.receiptId,
@@ -235,9 +235,9 @@ export async function deleteReceipt(receiptId: string) {
 /** Read-only operational report used before any historical data repair. */
 export async function getReceiptCategoryAudit() {
   const { organization } = await requireSession()
-  const rows = await listFinancialExpenseRowsUseCase(
-    { organizationId: organization.organizationId }
-  )
+  const rows = await listFinancialExpenseRowsUseCase({
+    organizationId: organization.organizationId,
+  })
   return {
     assigned: rows.filter((row) => row.categoryState === "assigned").length,
     uncategorizedLegacyPayables: rows

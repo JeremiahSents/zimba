@@ -1,4 +1,7 @@
-import type { DatabaseTransaction, TransactionRunner } from "@workspace/db/repositories"
+import type {
+  DatabaseTransaction,
+  TransactionRunner,
+} from "@workspace/db/repositories"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 const repo = vi.hoisted(() => ({
@@ -11,8 +14,9 @@ vi.mock("@workspace/db/repositories", () => repo)
 
 const dbMock = vi.hoisted(() => ({
   transaction: vi.fn(
-    async <Result>(callback: (tx: unknown) => Promise<Result>): Promise<Result> =>
-      callback({})
+    async <Result>(
+      callback: (tx: unknown) => Promise<Result>
+    ): Promise<Result> => callback({})
   ),
 }))
 
@@ -56,10 +60,7 @@ describe("acceptInvitationUseCase", () => {
   })
 
   it("accepts even if the user already belongs to another workspace", async () => {
-    const result = await acceptInvitationUseCase(
-      validCtx,
-      "a".repeat(20)
-    )
+    const result = await acceptInvitationUseCase(validCtx, "a".repeat(20))
     expect(result).toEqual({ workspaceSlug: "acme" })
     expect(repo.claimInvitationAndUpsertMember).toHaveBeenCalledWith(
       expect.anything(),
@@ -139,20 +140,18 @@ describe("acceptInvitationUseCase", () => {
     repo.findOrganizationById.mockResolvedValue([
       { slug: "acme", status: "inactive" },
     ])
-    const error = await acceptInvitationUseCase(
-      validCtx,
-      "a".repeat(20)
-    ).catch((e) => e)
+    const error = await acceptInvitationUseCase(validCtx, "a".repeat(20)).catch(
+      (e) => e
+    )
     expect(error.code).toBe("NOT_FOUND")
     expect(error.message).toBe("This invitation is invalid or expired.")
   })
 
   it("does not leak whether the workspace or invitation exists for unknown token", async () => {
     repo.findInvitationByTokenHash.mockResolvedValue([])
-    const error = await acceptInvitationUseCase(
-      validCtx,
-      "b".repeat(20)
-    ).catch((e) => e)
+    const error = await acceptInvitationUseCase(validCtx, "b".repeat(20)).catch(
+      (e) => e
+    )
     expect(error.code).toBe("NOT_FOUND")
     expect(error.message).toBe("This invitation is invalid or expired.")
   })

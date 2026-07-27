@@ -10,8 +10,9 @@ vi.mock("@workspace/db/repositories", () => repo)
 
 const dbMock = vi.hoisted(() => ({
   transaction: vi.fn(
-    async <Result>(callback: (tx: unknown) => Promise<Result>): Promise<Result> =>
-      callback({})
+    async <Result>(
+      callback: (tx: unknown) => Promise<Result>
+    ): Promise<Result> => callback({})
   ),
 }))
 
@@ -27,26 +28,23 @@ describe("team read use cases", () => {
   })
 
   it("lists members and pending invitations for the workspace", async () => {
-    await expect(
-      listTeamUseCase({ organizationId: "org-1" })
-    ).resolves.toEqual({
-      members: [{ id: "member-1" }],
-      invitations: [{ id: "invite-1" }],
-    })
+    await expect(listTeamUseCase({ organizationId: "org-1" })).resolves.toEqual(
+      {
+        members: [{ id: "member-1" }],
+        invitations: [{ id: "invite-1" }],
+      }
+    )
 
     expect(repo.listTeamMembers).toHaveBeenCalledWith(dbMock, "org-1")
-    expect(repo.listPendingInvitations).toHaveBeenCalledWith(
-      dbMock,
-      "org-1"
-    )
+    expect(repo.listPendingInvitations).toHaveBeenCalledWith(dbMock, "org-1")
   })
 
   it("returns invalid for an unknown invitation preview token", async () => {
     repo.findInvitationPreviewByTokenHash.mockResolvedValue([])
 
-    await expect(
-      getInvitationPreviewUseCase("a".repeat(20))
-    ).resolves.toEqual({ state: "invalid" })
+    await expect(getInvitationPreviewUseCase("a".repeat(20))).resolves.toEqual({
+      state: "invalid",
+    })
   })
 
   it("maps accepted invitations to used previews", async () => {
@@ -81,9 +79,9 @@ describe("team read use cases", () => {
   })
 
   it("rejects malformed preview tokens", async () => {
-    await expect(
-      getInvitationPreviewUseCase("short")
-    ).rejects.toMatchObject({ code: "VALIDATION_FAILED" })
+    await expect(getInvitationPreviewUseCase("short")).rejects.toMatchObject({
+      code: "VALIDATION_FAILED",
+    })
     expect(repo.findInvitationPreviewByTokenHash).not.toHaveBeenCalled()
   })
 })

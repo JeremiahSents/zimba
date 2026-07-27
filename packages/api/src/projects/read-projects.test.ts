@@ -18,8 +18,9 @@ vi.mock("@workspace/db/repositories", () => repo)
 
 const dbMock = vi.hoisted(() => ({
   transaction: vi.fn(
-    async <Result>(callback: (tx: unknown) => Promise<Result>): Promise<Result> =>
-      callback({})
+    async <Result>(
+      callback: (tx: unknown) => Promise<Result>
+    ): Promise<Result> => callback({})
   ),
 }))
 
@@ -109,8 +110,6 @@ describe("project read use cases", () => {
   it("returns null for an unknown active project", async () => {
     repo.findActiveProjectForOrganization.mockResolvedValue([])
 
-    await expect(
-      getProjectSummaryUseCase(ctx, "missing")
-    ).resolves.toBeNull()
+    await expect(getProjectSummaryUseCase(ctx, "missing")).resolves.toBeNull()
   })
 })

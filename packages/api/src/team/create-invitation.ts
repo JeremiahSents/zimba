@@ -1,5 +1,5 @@
-import { db } from "@workspace/db"
 import { createHash, randomBytes } from "node:crypto"
+import { db } from "@workspace/db"
 
 import {
   appendAuditEvent,

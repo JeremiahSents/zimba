@@ -1,5 +1,5 @@
-import { db } from "@workspace/db"
 import type { ReceiptDto } from "@workspace/contracts"
+import { db } from "@workspace/db"
 
 import { findExpenseForOrganization } from "@workspace/db/repositories"
 import { notFoundError } from "../shared/application-error"

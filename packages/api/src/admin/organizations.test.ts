@@ -11,8 +11,9 @@ vi.mock("@workspace/db/repositories", () => repo)
 
 const dbMock = vi.hoisted(() => ({
   transaction: vi.fn(
-    async <Result>(callback: (tx: unknown) => Promise<Result>): Promise<Result> =>
-      callback({})
+    async <Result>(
+      callback: (tx: unknown) => Promise<Result>
+    ): Promise<Result> => callback({})
   ),
 }))
 
@@ -48,9 +49,9 @@ describe("admin organization use cases", () => {
   it("throws not found when organization detail is missing", async () => {
     repo.findOrganizationDetail.mockResolvedValue(null)
 
-    await expect(
-      getOrganizationDetailUseCase("missing")
-    ).rejects.toMatchObject({ code: "NOT_FOUND" })
+    await expect(getOrganizationDetailUseCase("missing")).rejects.toMatchObject(
+      { code: "NOT_FOUND" }
+    )
   })
 
   it("delegates organization stats and status updates", () => {
@@ -61,10 +62,7 @@ describe("admin organization use cases", () => {
     expect(updateOrganizationStatusUseCase("org-1", "suspended")).toBe(
       "updated"
     )
-    expect(repo.readOrganizationStats).toHaveBeenCalledWith(
-      dbMock,
-      "org-1"
-    )
+    expect(repo.readOrganizationStats).toHaveBeenCalledWith(dbMock, "org-1")
     expect(repo.updateOrganizationStatus).toHaveBeenCalledWith(
       dbMock,
       "org-1",

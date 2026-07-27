@@ -1,9 +1,9 @@
-import { db } from "@workspace/db"
 import type {
   ResolvedWorkspaceContext,
   WorkspaceRole,
 } from "@workspace/contracts"
 import { workspaceSlugSchema } from "@workspace/contracts"
+import { db } from "@workspace/db"
 
 import {
   findMembershipByUserAndOrganization,
