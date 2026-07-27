@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { SupplierDetailPage } from "@/components/suppliers/supplier-detail-page"
 import { getDashboardOverviewData } from "@/core/dashboard/service"
-import { getSupplierBySlug } from "@/lib/supplier-data"
+import { getSupplierBySlug } from "@/components/suppliers/supplier-data"
 
 export const dynamic = "force-dynamic"
 

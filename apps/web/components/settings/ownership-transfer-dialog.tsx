@@ -21,14 +21,8 @@ import {
   SelectValue,
 } from "@workspace/ui/components/select"
 import { useState } from "react"
+import type { TeamMember } from "@/core/organizations/team-service"
 import { requestOwnershipTransfer } from "@/core/organizations/transfer-actions"
-
-type TeamMember = {
-  id: string
-  name: string
-  email: string
-  role: string
-}
 
 export function OwnershipTransferDialog({
   members,

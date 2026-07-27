@@ -29,7 +29,7 @@ import {
   MobileDataMeta,
 } from "@/components/shared/mobile-data-card"
 import { ResponsiveDataView } from "@/components/shared/responsive-data-view"
-import { exportProjectPdf } from "@/lib/export-pdf"
+import { exportProjectPdf } from "@/components/reports/export-pdf"
 import { formatCurrency, formatPercent } from "@/lib/format"
 import type { ProjectDashboardResponse } from "@/lib/types"
 

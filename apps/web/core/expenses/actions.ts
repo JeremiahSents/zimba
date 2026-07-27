@@ -21,7 +21,7 @@ import {
   expectedActionFailure,
 } from "@/core/shared/action-result"
 import { handleActionError } from "@/core/shared/handle-action-error"
-import { hasValidPayableLines } from "@/lib/receipt-validation"
+import { hasValidPayableLines } from "@/core/expenses/receipt-validation"
 import type {
   ExpenseStatus,
   PayableExpenseCreate,

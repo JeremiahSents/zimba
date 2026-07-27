@@ -8,15 +8,6 @@ import type {
 } from "@workspace/api"
 import type { ExpenseTableRow, SupplierResponse } from "@/lib/types"
 
-export type {
-  SupplierLedgerEntry,
-  SupplierListItem,
-  SupplierPaymentStatus,
-  SupplierProfile,
-  SupplierReceiptRow,
-  SupplierReceiptStatus,
-} from "@workspace/api"
-
 export function getSupplierSlug(name: string) {
   return name
     .toLowerCase()

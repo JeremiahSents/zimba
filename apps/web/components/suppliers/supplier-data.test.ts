@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 
 import { getSupplierLedger, getSupplierListItems } from "./supplier-data"
-import type { ExpenseTableRow, SupplierResponse } from "./types"
+import type { ExpenseTableRow, SupplierResponse } from "@/lib/types"
 
 describe("supplier data helpers", () => {
   it("uses supplier ids and persisted financial totals for ledger numbers", () => {

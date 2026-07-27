@@ -36,7 +36,7 @@ import {
   initialAllocationTotal,
   readProjectCreateDraft,
   writeProjectCreateDraft,
-} from "@/lib/project-create-draft"
+} from "@/components/projects/project-create-draft"
 
 function persistRows(rows: InitialAllocation[]) {
   const draft = readProjectCreateDraft()

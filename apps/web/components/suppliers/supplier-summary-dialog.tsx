@@ -8,7 +8,7 @@ import {
   DialogTitle,
 } from "@workspace/ui/components/dialog"
 import { formatCurrency } from "@/lib/format"
-import type { SupplierListItem } from "@/lib/supplier-data"
+import type { SupplierListItem } from "@workspace/api"
 
 export function SupplierSummaryDialog({
   supplier,

@@ -26,7 +26,7 @@ import {
   initialAllocationTotal,
   readProjectCreateDraft,
   writeProjectCreateDraft,
-} from "@/lib/project-create-draft"
+} from "@/components/projects/project-create-draft"
 import { uploadZimbaFile } from "@/lib/upload-file"
 
 const emptyDetails: ProjectDetails = {

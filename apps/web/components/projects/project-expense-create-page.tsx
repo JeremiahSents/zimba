@@ -33,7 +33,7 @@ import {
   deleteReceiptDraft,
   readReceiptDraft,
   writeReceiptDraft,
-} from "@/lib/receipt-draft"
+} from "@/components/projects/receipt-draft"
 import type {
   ProjectDetailResponse,
   SupplierResponse,

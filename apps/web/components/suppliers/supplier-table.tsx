@@ -29,11 +29,7 @@ import { useWorkspaceSlug } from "@/components/shared/use-workspace-slug"
 import { SupplierReceiptMobileList } from "@/components/suppliers/supplier-receipt-mobile-list"
 import { SupplierSummaryDialog } from "@/components/suppliers/supplier-summary-dialog"
 import { formatCurrency, formatShortDate } from "@/lib/format"
-import type {
-  SupplierListItem,
-  SupplierReceiptRow,
-  SupplierReceiptStatus,
-} from "@/lib/supplier-data"
+import type { SupplierListItem, SupplierReceiptRow, SupplierReceiptStatus } from "@workspace/api"
 
 const statusStyles: Record<SupplierReceiptStatus, string> = {
   New: "border-sky-200 bg-sky-50 text-sky-700",

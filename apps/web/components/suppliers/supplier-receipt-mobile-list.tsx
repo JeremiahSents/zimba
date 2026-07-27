@@ -1,10 +1,7 @@
 "use client"
 
 import { formatCurrency, formatShortDate } from "@/lib/format"
-import type {
-  SupplierReceiptRow,
-  SupplierReceiptStatus,
-} from "@/lib/supplier-data"
+import type { SupplierReceiptRow, SupplierReceiptStatus } from "@workspace/api"
 
 const statusStyles: Record<SupplierReceiptStatus, string> = {
   New: "border-sky-200 bg-sky-50 text-sky-700",

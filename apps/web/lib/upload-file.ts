@@ -1,6 +1,9 @@
+import { genUploader } from "uploadthing/client"
+import type { OurFileRouter } from "@/app/api/uploadthing/core"
 import { ApplicationError } from "@/core/shared/errors"
 import type { FileUploadPurpose } from "@/lib/types"
-import { uploadFiles } from "@/lib/uploadthing"
+
+const { uploadFiles } = genUploader<OurFileRouter>()
 
 export async function uploadZimbaFile(
   file: File,

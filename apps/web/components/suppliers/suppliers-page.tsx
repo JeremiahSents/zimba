@@ -17,7 +17,7 @@ import { formatCurrency } from "@/lib/format"
 import {
   getSupplierListItems,
   type SupplierListItem,
-} from "@/lib/supplier-data"
+} from "@/components/suppliers/supplier-data"
 import type { DashboardOverviewData } from "@/lib/types"
 
 export function SuppliersPage({ data }: { data: DashboardOverviewData }) {

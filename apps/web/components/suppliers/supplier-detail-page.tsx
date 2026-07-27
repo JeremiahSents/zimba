@@ -42,7 +42,7 @@ import {
   getSupplierListItems,
   getSupplierProfile,
   getSupplierReceiptRows,
-} from "@/lib/supplier-data"
+} from "@/components/suppliers/supplier-data"
 import type { ExpenseTableRow, SupplierResponse } from "@/lib/types"
 
 export function SupplierDetailPage({

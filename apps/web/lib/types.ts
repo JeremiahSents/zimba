@@ -231,6 +231,8 @@ export type ProjectDetailResponse = ProjectDashboardResponse & {
   suppliers: SupplierBreakdown[]
   upcoming_payments?: UpcomingPaymentResponse[]
 }
+/** A row on the Team page. The settings/ownership flow uses the id-bearing
+ * TeamMember from core/organizations/team-service instead. */
 export type TeamMember = {
   name: string
   email?: string

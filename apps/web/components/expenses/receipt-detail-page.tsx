@@ -43,7 +43,7 @@ import {
 } from "@/core/payments/actions"
 import type { PublicError } from "@/core/shared/errors"
 import { formatCurrency, formatShortDate } from "@/lib/format"
-import { formatReceiptNumber } from "@/lib/receipt-number"
+import { formatReceiptNumber } from "@/components/expenses/receipt-number"
 import type {
   ExpenseTableRow,
   PayableExpenseResponse,
