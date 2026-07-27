@@ -9,6 +9,7 @@ import { OwnershipTransferDialog } from "@/components/settings/ownership-transfe
 import { ActivityRow } from "@/components/shared/activity-row"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { SettingField } from "@/components/shared/setting-field"
+import type { TeamMember } from "@/lib/types"
 
 export function SettingsPage({
   company,
@@ -19,12 +20,7 @@ export function SettingsPage({
   company: string
   role: string
   isOwner?: boolean
-  teamMembers?: Array<{
-    id: string
-    name: string
-    email: string
-    role: string
-  }>
+  teamMembers?: TeamMember[]
 }) {
   return (
     <DashboardShell

@@ -1,13 +1,9 @@
 import "server-only"
 
 import { listTeamUseCase } from "@workspace/api"
+import type { TeamMember } from "@/lib/types"
 
-export type TeamMember = {
-  id: string
-  name: string
-  email: string
-  role: string
-}
+export type { TeamMember }
 
 export async function listTeamMembers(
   organizationId: string

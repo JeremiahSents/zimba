@@ -6,18 +6,15 @@ import {
   UserGroupIcon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
+import type { SupplierListItem } from "@workspace/api"
 import { Button } from "@workspace/ui/components/button"
 import { Card } from "@workspace/ui/components/card"
 import Link from "next/link"
 import { useMemo } from "react"
-
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { useWorkspaceSlug } from "@/components/shared/use-workspace-slug"
+import { getSupplierListItems } from "@/components/suppliers/supplier-data"
 import { formatCurrency } from "@/lib/format"
-import {
-  getSupplierListItems,
-  type SupplierListItem,
-} from "@/components/suppliers/supplier-data"
 import type { DashboardOverviewData } from "@/lib/types"
 
 export function SuppliersPage({ data }: { data: DashboardOverviewData }) {

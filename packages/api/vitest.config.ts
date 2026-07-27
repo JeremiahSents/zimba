@@ -3,6 +3,7 @@ import { defineConfig } from "vitest/config"
 export default defineConfig({
   test: {
     environment: "node",
+    include: ["tests/**/*.test.ts"],
     env: {
       // Use cases import the db client directly, so the module must construct a
       // pool at import time. pg connects lazily, so no server is contacted.

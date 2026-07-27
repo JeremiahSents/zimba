@@ -21,8 +21,8 @@ import {
   SelectValue,
 } from "@workspace/ui/components/select"
 import { useState } from "react"
-import type { TeamMember } from "@/core/organizations/team-service"
 import { requestOwnershipTransfer } from "@/core/organizations/transfer-actions"
+import type { TeamMember } from "@/lib/types"
 
 export function OwnershipTransferDialog({
   members,
@@ -109,8 +109,8 @@ export function OwnershipTransferDialog({
               </SelectTrigger>
               <SelectContent>
                 {eligibleMembers.map((m) => (
-                  <SelectItem key={m.id} value={m.id}>
-                    {m.name} ({m.email})
+                  <SelectItem key={m.id} value={m.id ?? ""}>
+                    {m.name} ({m.email ?? ""})
                   </SelectItem>
                 ))}
               </SelectContent>
