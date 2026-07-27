@@ -1,5 +1,6 @@
 import "server-only"
 
+import type { WorkspaceContext, WorkspaceRole } from "@workspace/api"
 import { headers } from "next/headers"
 import { cache } from "react"
 import {
@@ -64,4 +65,14 @@ export async function requireSession(): Promise<SessionWithOrganization> {
   }
 
   return authSession
+}
+
+/** The signed-in caller as a use case expects them. */
+export async function requireWorkspaceContext(): Promise<WorkspaceContext> {
+  const { user, organization } = await requireSession()
+  return {
+    userId: user.id,
+    organizationId: organization.organizationId,
+    role: organization.role as WorkspaceRole,
+  }
 }

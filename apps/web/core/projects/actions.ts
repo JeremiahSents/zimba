@@ -1,17 +1,19 @@
 "use server"
 
+import {
+  archiveProjectUseCase,
+  createAllocationUseCase,
+  createProjectWithAllocationsUseCase,
+  deleteProjectUseCase,
+  restoreProjectUseCase,
+  updateAllocationUseCase,
+  updateProjectUseCase,
+} from "@workspace/api"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { ensureActionSession } from "@/core/auth/action-session"
+import { requireWorkspaceContext } from "@/core/auth/service"
 import { getWorkspaceSlug } from "@/core/auth/workspace-slug"
-import {
-  archiveProject,
-  createProject,
-  deleteProject,
-  restoreProject,
-  updateAllocation,
-  updateProject,
-} from "@/core/projects/mutations"
 import {
   type ActionResult,
   expectedActionFailure,
@@ -54,7 +56,20 @@ export async function createProjectAction(
 
   let projectId: string
   try {
-    const created = await createProject(project)
+    const ctx = await requireWorkspaceContext()
+    const created = await createProjectWithAllocationsUseCase(ctx, {
+      organizationId: ctx.organizationId,
+      name: project.name,
+      location: project.location,
+      currency: "UGX",
+      landSize: project.land_size,
+      buildingType: project.building_type,
+      clientName: project.client_name,
+      startDate: project.start_date,
+      targetEndDate: project.target_end_date,
+      allocations: project.allocations,
+      attachmentIds: project.attachment_ids ?? [],
+    })
     if (!created) throw new Error("Project could not be created.")
     projectId = created.id
   } catch (error) {
@@ -73,7 +88,17 @@ export async function updateProjectAction(
   const authFailure = await ensureActionSession("projects.update")
   if (authFailure) return authFailure
   try {
-    await updateProject(projectId, project)
+    await updateProjectUseCase(await requireWorkspaceContext(), projectId, {
+      name: project.name ?? undefined,
+      location: project.location ?? undefined,
+      clientName: project.client_name ?? undefined,
+      buildingType: project.building_type ?? undefined,
+      landSize: project.land_size ?? undefined,
+      startDate: project.start_date ?? undefined,
+      targetEndDate: project.target_end_date ?? undefined,
+      status: project.status ?? undefined,
+      attachmentIds: project.attachment_ids ?? undefined,
+    })
     revalidateConnectedRoutes(projectId)
     return { success: true, data: undefined }
   } catch (error) {
@@ -89,7 +114,15 @@ export async function updateAllocationAction(
   const authFailure = await ensureActionSession("allocations.update")
   if (authFailure) return authFailure
   try {
-    await updateAllocation(projectId, allocationId, allocation)
+    await updateAllocationUseCase(
+      await requireWorkspaceContext(),
+      projectId,
+      allocationId,
+      {
+        name: allocation.name ?? undefined,
+        budget: allocation.budget ?? undefined,
+      }
+    )
     revalidateConnectedRoutes(projectId)
     return { success: true, data: undefined }
   } catch (error) {
@@ -103,7 +136,7 @@ export async function archiveProjectAction(
   const authFailure = await ensureActionSession("projects.archive")
   if (authFailure) return authFailure
   try {
-    await archiveProject(projectId)
+    await archiveProjectUseCase(await requireWorkspaceContext(), projectId)
     revalidateConnectedRoutes(projectId)
   } catch (error) {
     return handleActionError(error, "projects.archive")
@@ -118,7 +151,7 @@ export async function restoreProjectAction(
   const authFailure = await ensureActionSession("projects.restore")
   if (authFailure) return authFailure
   try {
-    await restoreProject(projectId)
+    await restoreProjectUseCase(await requireWorkspaceContext(), projectId)
     revalidateConnectedRoutes(projectId)
     return { success: true, data: undefined }
   } catch (error) {
@@ -132,7 +165,7 @@ export async function deleteProjectAction(
   const authFailure = await ensureActionSession("projects.delete")
   if (authFailure) return authFailure
   try {
-    await deleteProject(projectId)
+    await deleteProjectUseCase(await requireWorkspaceContext(), projectId)
     revalidateConnectedRoutes(projectId)
     return { success: true, data: undefined }
   } catch (error) {
@@ -158,11 +191,11 @@ export async function createProjectTaskAction(
   }
 
   try {
-    const { createAllocation } = await import("@/core/projects/mutations")
-    const allocation = await createAllocation(projectId, {
-      budget: input.budget,
-      name: input.name.trim(),
-    })
+    const allocation = await createAllocationUseCase(
+      await requireWorkspaceContext(),
+      projectId,
+      { budget: input.budget, name: input.name.trim() }
+    )
     if (!allocation) throw new Error("Allocation could not be created.")
     revalidateConnectedRoutes(projectId)
     return {

@@ -3,9 +3,7 @@ import {
   DashboardSquare02Icon,
   FolderKanbanIcon,
   MoneyBag02Icon,
-  Settings02Icon,
   UserGroupIcon,
-  Wallet02Icon,
 } from "@hugeicons/core-free-icons"
 
 type NavSegment = {
@@ -24,13 +22,6 @@ export const dashboardNavigation: readonly NavSegment[] = [
 ] as const
 
 export const mobilePrimaryNavigation = dashboardNavigation.slice(0, 4)
-
-export const mobileMoreNavigation: readonly NavSegment[] = [
-  { title: "Analytics", segment: "analytics", icon: Analytics02Icon },
-  { title: "Reports", segment: "reports", icon: Analytics02Icon },
-  { title: "Budget", segment: "budget", icon: Wallet02Icon },
-  { title: "Settings", segment: "settings", icon: Settings02Icon },
-] as const
 
 export function getWorkspaceSlug(pathname: string): string | null {
   const match = pathname.match(/^\/([^/]+)/)
@@ -53,10 +44,4 @@ export function isDashboardRouteActive(
   const href = buildWorkspaceHref(slug, segment)
   if (segment === "home") return pathname === href
   return pathname === href || pathname.startsWith(`${href}/`)
-}
-
-export function isMobileMoreRoute(pathname: string, slug: string) {
-  return mobileMoreNavigation.some((item) =>
-    isDashboardRouteActive(pathname, slug, item.segment)
-  )
 }
