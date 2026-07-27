@@ -1,5 +1,5 @@
-import type { WorkspaceRole } from "@workspace/contracts"
 import { forbidden } from "./application-error"
+import type { WorkspaceRole } from "./auth-types"
 
 const roleHierarchy: Record<WorkspaceRole, number> = {
   owner: 4,

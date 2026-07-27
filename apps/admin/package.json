@@ -22,7 +22,6 @@
     "@tanstack/react-table": "^8.21.3",
     "@workspace/api": "workspace:*",
     "@workspace/auth": "workspace:*",
-    "@workspace/contracts": "workspace:*",
     "@workspace/transactional": "workspace:*",
     "@workspace/ui": "workspace:*",
     "better-auth": "^1.6.23",

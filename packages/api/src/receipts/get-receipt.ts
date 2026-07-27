@@ -1,7 +1,6 @@
-import type { ReceiptDto } from "@workspace/contracts"
 import { db } from "@workspace/db"
-
-import { findExpenseForOrganization } from "@workspace/db/repositories"
+import { findExpenseForOrganization } from "@workspace/db/receipts"
+import type { ReceiptDto } from "../schemas"
 import { notFoundError } from "../shared/application-error"
 import type { WorkspaceContext } from "../shared/workspace-context"
 

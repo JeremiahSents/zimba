@@ -1,11 +1,6 @@
 import { db } from "@workspace/db"
 
-import {
-  findOrganizationDetail,
-  listOrganizationsWithStats,
-  readOrganizationStats,
-  updateOrganizationStatus as updateOrganizationStatusInDb,
-} from "@workspace/db/repositories"
+import { findOrganizationDetail, listOrganizationsWithStats, readOrganizationStats, updateOrganizationStatus as updateOrganizationStatusInDb } from "@workspace/db/organizations"
 import { notFoundError } from "../shared/application-error"
 
 export function listOrganizationsUseCase() {

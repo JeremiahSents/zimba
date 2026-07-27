@@ -1,4 +1,4 @@
-import type { ActionResult as SharedActionResult } from "@workspace/contracts"
+import type { ActionResult as SharedActionResult } from "@workspace/api"
 import { ApplicationError, type ErrorCode, type PublicError } from "./errors"
 
 export type ActionResult<T = void> = SharedActionResult<T>

@@ -9,7 +9,9 @@ const repo = vi.hoisted(() => ({
   insertReceiptLine: vi.fn(),
   updateReceiptLinesAllocation: vi.fn(),
 }))
-vi.mock("@workspace/db/repositories", () => repo)
+vi.mock("@workspace/db/audit", () => repo)
+vi.mock("@workspace/db/projects", () => repo)
+vi.mock("@workspace/db/receipts", () => repo)
 
 const dbMock = vi.hoisted(() => ({
   transaction: vi.fn(

@@ -1,6 +1,6 @@
 import { db } from "@workspace/db"
 
-import { appendAuditEvent } from "@workspace/db/repositories"
+import { appendAuditEvent } from "@workspace/db/audit"
 import { z } from "zod"
 import type { WorkspaceContext } from "../shared/workspace-context"
 

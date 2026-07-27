@@ -1,5 +1,5 @@
-import type { WorkspaceRole } from "@workspace/contracts"
-import type { DatabaseExecutor } from "@workspace/db/repositories"
+import type { DatabaseExecutor } from "@workspace/db/executor"
+import type { WorkspaceRole } from "../schemas"
 
 export type RequestMetadata = {
   ipAddress?: string

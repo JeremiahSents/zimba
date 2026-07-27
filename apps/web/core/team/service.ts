@@ -1,5 +1,6 @@
 import "server-only"
 
+import type { WorkspaceRole } from "@workspace/api"
 import {
   acceptInvitationUseCase,
   createInvitationUseCase,
@@ -7,7 +8,6 @@ import {
   getInvitationPreviewUseCase,
   listTeamUseCase,
 } from "@workspace/api"
-import type { WorkspaceRole } from "@workspace/contracts"
 import { sendMemberInviteEmail } from "@workspace/transactional"
 import { normalizeRole } from "../auth/permissions"
 import { getSessionWithOrganization, requireSession } from "../auth/service"

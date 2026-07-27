@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest"
 import { ApplicationError } from "../shared/application-error"
 
-vi.mock("@workspace/db/repositories", () => ({
+vi.mock("@workspace/db/organizations", () => ({
   findWorkspaceBySlug: vi.fn(),
   findMembershipByUserAndOrganization: vi.fn(),
 }))
@@ -17,7 +17,7 @@ const dbMock = vi.hoisted(() => ({
 vi.mock("@workspace/db", () => ({ db: dbMock }))
 
 const { findWorkspaceBySlug, findMembershipByUserAndOrganization } =
-  await import("@workspace/db/repositories")
+  await import("@workspace/db/organizations")
 const { resolveWorkspace } = await import("./resolve-workspace")
 
 describe("resolveWorkspace", () => {

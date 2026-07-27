@@ -4,7 +4,7 @@ const repo = vi.hoisted(() => ({
   appendAuditEvent: vi.fn(),
 }))
 
-vi.mock("@workspace/db/repositories", () => repo)
+vi.mock("@workspace/db/audit", () => repo)
 
 const dbMock = vi.hoisted(() => ({
   transaction: vi.fn(

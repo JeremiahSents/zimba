@@ -1,6 +1,6 @@
 "use server"
 
-import { organizationStatusInputSchema } from "@workspace/contracts"
+import { organizationStatusInputSchema } from "@workspace/api"
 import { revalidatePath } from "next/cache"
 import { ensureActionSession } from "@/core/auth/action-session"
 import {

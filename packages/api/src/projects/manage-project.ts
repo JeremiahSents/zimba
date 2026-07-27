@@ -1,13 +1,8 @@
 import { db } from "@workspace/db"
 
-import {
-  appendAuditEvent,
-  createProjectAttachment,
-  deleteProjectForOrganization,
-  findActiveProjectForOrganization,
-  findFileForOrganization,
-  updateProjectForOrganization,
-} from "@workspace/db/repositories"
+import { appendAuditEvent } from "@workspace/db/audit"
+import { createProjectAttachment, findFileForOrganization } from "@workspace/db/files"
+import { deleteProjectForOrganization, findActiveProjectForOrganization, updateProjectForOrganization } from "@workspace/db/projects"
 import { z } from "zod"
 import { notFoundError, validationError } from "../shared/application-error"
 import { requireRole } from "../shared/authorization"

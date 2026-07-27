@@ -1,11 +1,7 @@
-import type { ProjectDto } from "@workspace/contracts"
-import { projectInputSchema } from "@workspace/contracts"
 import { db } from "@workspace/db"
-
-import {
-  createProject,
-  listProjectsForOrganization,
-} from "@workspace/db/repositories"
+import { createProject, listProjectsForOrganization } from "@workspace/db/projects"
+import type { ProjectDto } from "../schemas"
+import { projectInputSchema } from "../schemas"
 import { validationError } from "../shared/application-error"
 import type { WorkspaceContext } from "../shared/workspace-context"
 

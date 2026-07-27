@@ -1,12 +1,6 @@
 import { db } from "@workspace/db"
 
-import {
-  listPlatformPayments as readPlatformPayments,
-  listPlatformProjects as readPlatformProjects,
-  listPlatformReceipts as readPlatformReceipts,
-  readPlatformStats,
-  listPlatformSuppliers as readPlatformSuppliers,
-} from "@workspace/db/repositories"
+import { listPlatformPayments as readPlatformPayments, listPlatformProjects as readPlatformProjects, listPlatformReceipts as readPlatformReceipts, listPlatformSuppliers as readPlatformSuppliers, readPlatformStats } from "@workspace/db/platform"
 
 export async function getPlatformStatsUseCase() {
   const stats = await readPlatformStats(db)

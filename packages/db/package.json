@@ -17,6 +17,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "server-only": "^0.0.1",
     "drizzle-orm": "^0.45.2",
     "pg": "^8.22.0"
   },
@@ -34,8 +35,8 @@
     ".": "./src/index.ts",
     "./schema": "./src/schemas/index.ts",
     "./schemas": "./src/schemas/index.ts",
-    "./schemas/*": "./src/schemas/*.ts",
-    "./repositories": "./src/repositories/index.ts",
-    "./repositories/*": "./src/repositories/*.ts"
+    "./executor": "./src/shared/executor.ts",
+    "./*": "./src/*/queries.ts",
+    "./*/schema": "./src/*/schema.ts"
   }
 }

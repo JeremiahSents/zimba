@@ -1,10 +1,7 @@
 import { db } from "@workspace/db"
 
-import {
-  appendAuditEvent,
-  deletePayableForOrganization,
-  deleteReceiptForOrganization,
-} from "@workspace/db/repositories"
+import { appendAuditEvent } from "@workspace/db/audit"
+import { deletePayableForOrganization, deleteReceiptForOrganization } from "@workspace/db/receipts"
 import { notFoundError } from "../shared/application-error"
 import { requireRole } from "../shared/authorization"
 import type { WorkspaceContext } from "../shared/workspace-context"

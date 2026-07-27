@@ -5,7 +5,8 @@ const repo = vi.hoisted(() => ({
   deletePayableForOrganization: vi.fn(),
   deleteReceiptForOrganization: vi.fn(),
 }))
-vi.mock("@workspace/db/repositories", () => repo)
+vi.mock("@workspace/db/audit", () => repo)
+vi.mock("@workspace/db/receipts", () => repo)
 
 const dbMock = vi.hoisted(() => ({
   transaction: vi.fn(

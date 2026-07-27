@@ -1,9 +1,6 @@
 import { db } from "@workspace/db"
 
-import {
-  findActiveProjectForOrganization,
-  listAllocationsForProject,
-} from "@workspace/db/repositories"
+import { findActiveProjectForOrganization, listAllocationsForProject } from "@workspace/db/projects"
 import { notFoundError } from "../shared/application-error"
 import type { WorkspaceContext } from "../shared/workspace-context"
 

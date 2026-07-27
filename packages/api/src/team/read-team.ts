@@ -1,11 +1,7 @@
 import { createHash } from "node:crypto"
 import { db } from "@workspace/db"
 
-import {
-  findInvitationPreviewByTokenHash,
-  listPendingInvitations,
-  listTeamMembers,
-} from "@workspace/db/repositories"
+import { findInvitationPreviewByTokenHash, listPendingInvitations, listTeamMembers } from "@workspace/db/organizations"
 import { validationError } from "../shared/application-error"
 import type { WorkspaceContext } from "../shared/workspace-context"
 

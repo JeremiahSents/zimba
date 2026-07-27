@@ -1,11 +1,7 @@
 import { createHash } from "node:crypto"
 import { db } from "@workspace/db"
 
-import {
-  claimInvitationAndUpsertMember,
-  findInvitationByTokenHash,
-  findOrganizationById,
-} from "@workspace/db/repositories"
+import { claimInvitationAndUpsertMember, findInvitationByTokenHash, findOrganizationById } from "@workspace/db/organizations"
 import {
   conflictError,
   forbidden,

@@ -1,4 +1,5 @@
 import "server-only"
+import type { WorkspaceRole } from "@workspace/api"
 import {
   archiveProjectUseCase,
   createAllocationUseCase,
@@ -8,7 +9,6 @@ import {
   updateAllocationUseCase,
   updateProjectUseCase,
 } from "@workspace/api"
-import type { WorkspaceRole } from "@workspace/contracts"
 import type {
   AllocationUpdate,
   ProjectCreate,

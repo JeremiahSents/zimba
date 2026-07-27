@@ -1,9 +1,7 @@
 import { db } from "@workspace/db"
 
-import {
-  createPayable,
-  findProjectForOrganization,
-} from "@workspace/db/repositories"
+import { findProjectForOrganization } from "@workspace/db/projects"
+import { createPayable } from "@workspace/db/receipts"
 import { z } from "zod"
 import { notFoundError, validationError } from "../shared/application-error"
 import type { WorkspaceContext } from "../shared/workspace-context"

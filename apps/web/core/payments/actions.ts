@@ -1,6 +1,6 @@
 "use server"
 
-import { idSchema } from "@workspace/contracts"
+import { idSchema } from "@workspace/api"
 import { revalidatePath } from "next/cache"
 import { ensureActionSession } from "@/core/auth/action-session"
 import { getWorkspaceSlug } from "@/core/auth/workspace-slug"

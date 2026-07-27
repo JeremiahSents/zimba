@@ -1,17 +1,11 @@
-import type { ReceiptCreateOutputDto } from "@workspace/contracts"
-import { receiptCreateInputSchema } from "@workspace/contracts"
 import { db } from "@workspace/db"
-import type { DatabaseExecutor } from "@workspace/db/repositories"
-import {
-  findActiveProjectForOrganization,
-  findAllocationForProject,
-  findCompletedFile,
-  findSupplierForOrganization,
-  insertReceipt,
-  insertReceiptLine,
-  insertReceiptPayment,
-  updateReceiptPaymentStatus,
-} from "@workspace/db/repositories"
+import type { DatabaseExecutor } from "@workspace/db/executor"
+import { findCompletedFile } from "@workspace/db/files"
+import { findActiveProjectForOrganization, findAllocationForProject } from "@workspace/db/projects"
+import { insertReceipt, insertReceiptLine, insertReceiptPayment, updateReceiptPaymentStatus } from "@workspace/db/receipts"
+import { findSupplierForOrganization } from "@workspace/db/suppliers"
+import type { ReceiptCreateOutputDto } from "../schemas"
+import { receiptCreateInputSchema } from "../schemas"
 import { notFoundError, validationError } from "../shared/application-error"
 import type { WorkspaceContext } from "../shared/workspace-context"
 

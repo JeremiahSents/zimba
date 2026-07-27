@@ -1,6 +1,6 @@
 import { db } from "@workspace/db"
 
-import { deleteInvitationForOrganization } from "@workspace/db/repositories"
+import { deleteInvitationForOrganization } from "@workspace/db/organizations"
 import { z } from "zod"
 import { validationError } from "../shared/application-error"
 import type { WorkspaceContext } from "../shared/workspace-context"

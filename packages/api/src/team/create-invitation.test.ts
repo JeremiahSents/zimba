@@ -1,4 +1,4 @@
-import type { DatabaseTransaction } from "@workspace/db/repositories"
+import type { DatabaseTransaction } from "@workspace/db/executor"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 const repo = vi.hoisted(() => ({
@@ -8,7 +8,8 @@ const repo = vi.hoisted(() => ({
   findPendingInvitation: vi.fn(),
 }))
 
-vi.mock("@workspace/db/repositories", () => repo)
+vi.mock("@workspace/db/audit", () => repo)
+vi.mock("@workspace/db/organizations", () => repo)
 
 const dbMock = vi.hoisted(() => ({
   transaction: vi.fn(

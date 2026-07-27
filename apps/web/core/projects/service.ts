@@ -1,4 +1,5 @@
 import "server-only"
+import type { WorkspaceRole } from "@workspace/api"
 import {
   getProjectSummaryUseCase,
   listArchivedProjectSummariesUseCase,
@@ -7,7 +8,6 @@ import {
   listProjectAttachmentsUseCase,
   listProjectSummariesUseCase,
 } from "@workspace/api"
-import type { WorkspaceRole } from "@workspace/contracts"
 import type {
   ProjectDashboardResponse,
   ProjectDetailResponse,

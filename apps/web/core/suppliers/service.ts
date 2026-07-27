@@ -1,4 +1,5 @@
 import "server-only"
+import type { WorkspaceRole } from "@workspace/api"
 import {
   createSupplierCategoryUseCase,
   createSupplierUseCase,
@@ -6,7 +7,6 @@ import {
   listSupplierSummariesUseCase,
   updateSupplierUseCase,
 } from "@workspace/api"
-import type { WorkspaceRole } from "@workspace/contracts"
 import type { SupplierCreate, SupplierResponse } from "@/lib/types"
 import { normalizeRole } from "../auth/permissions"
 import { requireSession } from "../auth/service"

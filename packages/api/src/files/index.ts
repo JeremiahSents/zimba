@@ -1,9 +1,6 @@
 import { db } from "@workspace/db"
 
-import {
-  createUploadedFile,
-  listProjectAttachments,
-} from "@workspace/db/repositories"
+import { createUploadedFile, listProjectAttachments } from "@workspace/db/files"
 import { z } from "zod"
 import { validationError } from "../shared/application-error"
 import type { WorkspaceContext } from "../shared/workspace-context"

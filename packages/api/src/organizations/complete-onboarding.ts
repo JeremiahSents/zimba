@@ -1,12 +1,7 @@
 import { db } from "@workspace/db"
 
-import {
-  createOrganization,
-  createOrganizationMember,
-  findMembershipByUser,
-  findOrganizationBySlug,
-  updateUserName,
-} from "@workspace/db/repositories"
+import { updateUserName } from "@workspace/db/auth"
+import { createOrganization, createOrganizationMember, findMembershipByUser, findOrganizationBySlug } from "@workspace/db/organizations"
 import { validationError } from "../shared/application-error"
 
 function slugify(name: string) {

@@ -5,7 +5,7 @@ import {
   idSchema as contractIdSchema,
   fieldErrorsFromZod,
   supplierFormSchema,
-} from "@workspace/contracts"
+} from "@workspace/api"
 import { revalidatePath } from "next/cache"
 import { ensureActionSession } from "@/core/auth/action-session"
 import { getWorkspaceSlug } from "@/core/auth/workspace-slug"

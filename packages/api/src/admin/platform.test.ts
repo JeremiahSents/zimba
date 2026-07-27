@@ -8,7 +8,7 @@ const repo = vi.hoisted(() => ({
   readPlatformStats: vi.fn(),
 }))
 
-vi.mock("@workspace/db/repositories", () => repo)
+vi.mock("@workspace/db/platform", () => repo)
 
 const dbMock = vi.hoisted(() => ({
   transaction: vi.fn(

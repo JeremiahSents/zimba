@@ -8,4 +8,4 @@ export {
   nonNegativeMoneySchema,
   positiveMoneySchema,
   workspaceRoleSchema,
-} from "@workspace/contracts"
+} from "@workspace/api"

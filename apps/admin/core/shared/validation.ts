@@ -3,4 +3,4 @@ export {
   idSchema,
   organizationStatusSchema,
   platformRoleSchema,
-} from "@workspace/contracts"
+} from "@workspace/api"

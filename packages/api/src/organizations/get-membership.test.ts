@@ -4,7 +4,7 @@ const repo = vi.hoisted(() => ({
   findUserOrganizationMembership: vi.fn(),
   findUserOrganizationMembershipBySlug: vi.fn(),
 }))
-vi.mock("@workspace/db/repositories", () => repo)
+vi.mock("@workspace/db/organizations", () => repo)
 
 const dbMock = vi.hoisted(() => ({
   transaction: vi.fn(

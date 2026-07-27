@@ -1,11 +1,6 @@
 import { db } from "@workspace/db"
 
-import {
-  findExpenseForOrganization,
-  insertReceiptPayment,
-  updateReceiptForOrganization,
-  updateReceiptPaymentStatus,
-} from "@workspace/db/repositories"
+import { findExpenseForOrganization, insertReceiptPayment, updateReceiptForOrganization, updateReceiptPaymentStatus } from "@workspace/db/receipts"
 import { notFoundError, validationError } from "../shared/application-error"
 import { requireRole } from "../shared/authorization"
 import type { WorkspaceContext } from "../shared/workspace-context"

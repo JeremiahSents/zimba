@@ -7,7 +7,8 @@ const repo = vi.hoisted(() => ({
   findFileForOrganization: vi.fn(),
 }))
 
-vi.mock("@workspace/db/repositories", () => repo)
+vi.mock("@workspace/db/files", () => repo)
+vi.mock("@workspace/db/projects", () => repo)
 
 const dbMock = vi.hoisted(() => ({
   transaction: vi.fn(

@@ -1,22 +1,8 @@
-import type {
-  PlatformUserDetailDto,
-  PlatformUserListDto,
-} from "@workspace/contracts"
 import { db } from "@workspace/db"
-import type { DatabaseExecutor } from "@workspace/db/repositories"
-import {
-  appendPlatformAudit,
-  countSuperAdmins,
-  createPlatformAccess,
-  deletePlatformAccess,
-  findPlatformAccessForUser,
-  findPlatformUserDetailRows,
-  findPlatformUserForUser,
-  findUserByEmail,
-  findUserById,
-  listPlatformUserRows,
-  updatePlatformAccess,
-} from "@workspace/db/repositories"
+import type { DatabaseExecutor } from "@workspace/db/executor"
+import { findUserByEmail, findUserById } from "@workspace/db/auth"
+import { appendPlatformAudit, countSuperAdmins, createPlatformAccess, deletePlatformAccess, findPlatformAccessForUser, findPlatformUserDetailRows, findPlatformUserForUser, listPlatformUserRows, updatePlatformAccess } from "@workspace/db/platform"
+import type { PlatformUserDetailDto, PlatformUserListDto } from "../schemas"
 import {
   conflictError,
   forbidden,

@@ -1,13 +1,7 @@
 import { db } from "@workspace/db"
 
-import {
-  appendAuditEvent,
-  createLedgerPayment,
-  findExpenseForOrganization,
-  findPayableForOrganization,
-  updatePayableForOrganization,
-  updateReceiptForOrganization,
-} from "@workspace/db/repositories"
+import { appendAuditEvent } from "@workspace/db/audit"
+import { createLedgerPayment, findExpenseForOrganization, findPayableForOrganization, updatePayableForOrganization, updateReceiptForOrganization } from "@workspace/db/receipts"
 import { z } from "zod"
 import {
   conflictError,

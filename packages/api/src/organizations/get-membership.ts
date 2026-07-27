@@ -1,9 +1,6 @@
 import { db } from "@workspace/db"
 
-import {
-  findUserOrganizationMembership,
-  findUserOrganizationMembershipBySlug,
-} from "@workspace/db/repositories"
+import { findUserOrganizationMembership, findUserOrganizationMembershipBySlug } from "@workspace/db/organizations"
 
 export async function getOrganizationMembershipUseCase(
   userId: string,

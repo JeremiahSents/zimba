@@ -1,21 +1,18 @@
 import "server-only"
 
+import type { PlatformUserDetailDto, PlatformUserListDto } from "@workspace/api"
 import {
   getPlatformUserDetailUseCase,
   listPlatformUsersUseCase,
   removePlatformUserUseCase,
   updatePlatformUserRoleUseCase,
 } from "@workspace/api"
-import type {
-  PlatformUserDetailDto,
-  PlatformUserListDto,
-} from "@workspace/contracts"
 import type { PlatformRole } from "../auth/service"
 
 export type {
   PlatformUserDetailDto,
   PlatformUserListDto,
-} from "@workspace/contracts"
+} from "@workspace/api"
 
 export async function listPlatformUsers(): Promise<PlatformUserListDto[]> {
   return listPlatformUsersUseCase()

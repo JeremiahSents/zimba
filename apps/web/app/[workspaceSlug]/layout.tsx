@@ -1,6 +1,6 @@
 import "server-only"
 
-import type { ResolvedWorkspaceContext } from "@workspace/contracts"
+import type { ResolvedWorkspaceContext } from "@workspace/api"
 import { SidebarProvider } from "@workspace/ui/components/sidebar"
 import { cookies } from "next/headers"
 import { notFound, redirect } from "next/navigation"

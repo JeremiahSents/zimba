@@ -1,22 +1,11 @@
+import { db } from "@workspace/db"
+import { updateUserName } from "@workspace/db/auth"
+import { countPendingOnboardingApplications, createOnboardingApplication, findOnboardingApplicationById, findPendingOnboardingApplication, listOnboardingApplicationsWithUser, updateOnboardingApplicationStatus } from "@workspace/db/onboarding"
+import { createOrganization, createOrganizationMember, findMembershipByUser, findOrganizationBySlug } from "@workspace/db/organizations"
 import type {
   OnboardingApplicationDto,
   OnboardingApplicationListDto,
-} from "@workspace/contracts"
-import { db } from "@workspace/db"
-
-import {
-  countPendingOnboardingApplications,
-  createOnboardingApplication,
-  createOrganization,
-  createOrganizationMember,
-  findMembershipByUser,
-  findOnboardingApplicationById,
-  findOrganizationBySlug,
-  findPendingOnboardingApplication,
-  listOnboardingApplicationsWithUser,
-  updateOnboardingApplicationStatus,
-  updateUserName,
-} from "@workspace/db/repositories"
+} from "../schemas"
 import {
   conflictError,
   notFoundError,

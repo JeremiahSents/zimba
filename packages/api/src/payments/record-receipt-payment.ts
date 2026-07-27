@@ -1,12 +1,6 @@
 import { db } from "@workspace/db"
 
-import {
-  createLedgerPayment,
-  findExpenseForOrganization,
-  findPayableForOrganization,
-  syncExpensePaymentStatus,
-  updatePayableForOrganization,
-} from "@workspace/db/repositories"
+import { createLedgerPayment, findExpenseForOrganization, findPayableForOrganization, syncExpensePaymentStatus, updatePayableForOrganization } from "@workspace/db/receipts"
 import { z } from "zod"
 import { notFoundError, validationError } from "../shared/application-error"
 import { requireRole } from "../shared/authorization"

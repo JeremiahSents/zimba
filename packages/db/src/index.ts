@@ -1,3 +1,5 @@
+import "server-only"
+
 import { drizzle } from "drizzle-orm/node-postgres"
 import { Pool } from "pg"
 import * as schema from "./schemas/index"
@@ -51,8 +53,18 @@ if (process.env.NODE_ENV !== "production") {
   globalForDatabase.zimbaPool = pool
 }
 
-export * from "./repositories/index"
+export * from "./audit/queries"
+export * from "./auth/queries"
+export * from "./files/queries"
+export * from "./onboarding/queries"
+export * from "./organizations/queries"
+export * from "./ownership-transfers/queries"
+export * from "./platform/queries"
+export * from "./projects/queries"
+export * from "./receipts/queries"
 export * from "./schemas/index"
+export * from "./shared/executor"
+export * from "./suppliers/queries"
 export { schema }
 
 export const db = drizzle(pool, { schema })

@@ -1,5 +1,6 @@
 import "server-only"
 
+import type { WorkspaceRole } from "@workspace/api"
 import {
   correctReceiptCategoryUseCase,
   deleteReceiptUseCase,
@@ -8,7 +9,6 @@ import {
   listFinancialExpenseRowsUseCase,
   updateReceiptStatusUseCase,
 } from "@workspace/api"
-import type { WorkspaceRole } from "@workspace/contracts"
 import type {
   ExpenseStatus,
   ExpenseTableRow,

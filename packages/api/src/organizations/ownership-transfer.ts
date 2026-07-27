@@ -1,16 +1,7 @@
-import type { OwnershipTransferRequestDto } from "@workspace/contracts"
 import { db } from "@workspace/db"
-
-import {
-  countPendingOwnershipTransfers,
-  createOwnershipTransferRequest,
-  findMembershipByUserAndOrganization,
-  findOwnershipTransferRequestById,
-  findPendingOwnershipTransferForOrg,
-  listOwnershipTransferRequests,
-  updateMemberRole,
-  updateOwnershipTransferRequestStatus,
-} from "@workspace/db/repositories"
+import { findMembershipByUserAndOrganization, updateMemberRole } from "@workspace/db/organizations"
+import { countPendingOwnershipTransfers, createOwnershipTransferRequest, findOwnershipTransferRequestById, findPendingOwnershipTransferForOrg, listOwnershipTransferRequests, updateOwnershipTransferRequestStatus } from "@workspace/db/ownership-transfers"
+import type { OwnershipTransferRequestDto } from "../schemas"
 import {
   conflictError,
   forbidden,

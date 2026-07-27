@@ -1,7 +1,6 @@
 import "server-only"
 
 export { checkDatabaseHealth } from "@workspace/db"
-
 export * from "./admin/audit"
 export * from "./admin/organizations"
 export * from "./admin/platform"
@@ -27,6 +26,9 @@ export * from "./receipts/correct-category"
 export * from "./receipts/delete-receipt"
 export * from "./receipts/financial-expenses"
 export * from "./receipts/manage-receipt"
+// Input schemas and contract types; also importable client-side via
+// "@workspace/api/schemas".
+export * from "./schemas"
 export * from "./shared"
 export * from "./suppliers"
 export * from "./team/accept-invitation"

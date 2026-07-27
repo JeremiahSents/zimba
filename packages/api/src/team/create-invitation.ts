@@ -1,12 +1,8 @@
 import { createHash, randomBytes } from "node:crypto"
 import { db } from "@workspace/db"
 
-import {
-  appendAuditEvent,
-  createInvitationRecord,
-  deleteInvitation,
-  findPendingInvitation,
-} from "@workspace/db/repositories"
+import { appendAuditEvent } from "@workspace/db/audit"
+import { createInvitationRecord, deleteInvitation, findPendingInvitation } from "@workspace/db/organizations"
 import { z } from "zod"
 import { forbidden, validationError } from "../shared/application-error"
 import { requireRole } from "../shared/authorization"

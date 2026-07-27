@@ -5,7 +5,7 @@ import type {
   SupplierProfile,
   SupplierReceiptRow,
   SupplierReceiptStatus,
-} from "@workspace/contracts"
+} from "@workspace/api"
 import type { ExpenseTableRow, SupplierResponse } from "@/lib/types"
 
 export type {
@@ -15,7 +15,7 @@ export type {
   SupplierProfile,
   SupplierReceiptRow,
   SupplierReceiptStatus,
-} from "@workspace/contracts"
+} from "@workspace/api"
 
 export function getSupplierSlug(name: string) {
   return name

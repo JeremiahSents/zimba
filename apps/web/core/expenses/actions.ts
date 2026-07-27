@@ -1,11 +1,11 @@
 "use server"
 
-import { createReceipt as createReceiptUseCase } from "@workspace/api"
 import {
+  createReceipt as createReceiptUseCase,
   expenseLinkSchema,
   idSchema,
   receiptStatusInputSchema,
-} from "@workspace/contracts"
+} from "@workspace/api"
 import { revalidatePath } from "next/cache"
 import { ensureActionSession } from "@/core/auth/action-session"
 import { getWorkspaceContext } from "@/core/auth/workspace-context"

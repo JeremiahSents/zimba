@@ -1,7 +1,7 @@
 import "server-only"
 
+import type { OnboardingApplicationDto } from "@workspace/api"
 import { getOnboardingApplicationForUserUseCase } from "@workspace/api"
-import type { OnboardingApplicationDto } from "@workspace/contracts"
 
 export async function getOnboardingApplicationForUser(
   userId: string

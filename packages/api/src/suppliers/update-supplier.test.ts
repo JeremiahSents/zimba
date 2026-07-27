@@ -1,7 +1,4 @@
-import type {
-  DatabaseTransaction,
-  TransactionRunner,
-} from "@workspace/db/repositories"
+import type { DatabaseTransaction, TransactionRunner } from "@workspace/db/executor"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 const repo = vi.hoisted(() => ({
@@ -14,7 +11,8 @@ const repo = vi.hoisted(() => ({
   listSupplierSummaries: vi.fn(),
   updateSupplierForOrganization: vi.fn(),
 }))
-vi.mock("@workspace/db/repositories", () => repo)
+vi.mock("@workspace/db/audit", () => repo)
+vi.mock("@workspace/db/suppliers", () => repo)
 
 const dbMock = vi.hoisted(() => ({
   transaction: vi.fn(

@@ -1,14 +1,6 @@
 import { db } from "@workspace/db"
 
-import {
-  findExpenseForOrganization,
-  findPayableForOrganization,
-  listExpensesForOrganization,
-  listPayablePaymentsForPayables,
-  listPayablesForOrganization,
-  listReceiptLinesWithAllocationForExpenses,
-  listReceiptPaymentsForExpenses,
-} from "@workspace/db/repositories"
+import { findExpenseForOrganization, findPayableForOrganization, listExpensesForOrganization, listPayablePaymentsForPayables, listPayablesForOrganization, listReceiptLinesWithAllocationForExpenses, listReceiptPaymentsForExpenses } from "@workspace/db/receipts"
 import type { WorkspaceContext } from "../shared/workspace-context"
 
 export type FinancialExpenseRow = {

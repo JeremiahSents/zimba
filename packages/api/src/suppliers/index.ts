@@ -1,19 +1,9 @@
-import type { SupplierDto } from "@workspace/contracts"
-import { supplierInputSchema } from "@workspace/contracts"
 import { db } from "@workspace/db"
-import type { DatabaseExecutor } from "@workspace/db/repositories"
-import {
-  appendAuditEvent,
-  createSupplier,
-  createSupplierCategory,
-  findSupplierByNameForOrganization,
-  findSupplierCategoryBySlug,
-  findSupplierForOrganization,
-  listSupplierCategories,
-  listSupplierSummaries,
-  listSuppliersForOrganization,
-  updateSupplierForOrganization,
-} from "@workspace/db/repositories"
+import type { DatabaseExecutor } from "@workspace/db/executor"
+import { appendAuditEvent } from "@workspace/db/audit"
+import { createSupplier, createSupplierCategory, findSupplierByNameForOrganization, findSupplierCategoryBySlug, findSupplierForOrganization, listSupplierCategories, listSupplierSummaries, listSuppliersForOrganization, updateSupplierForOrganization } from "@workspace/db/suppliers"
+import type { SupplierDto } from "../schemas"
+import { supplierInputSchema } from "../schemas"
 import {
   conflictError,
   notFoundError,

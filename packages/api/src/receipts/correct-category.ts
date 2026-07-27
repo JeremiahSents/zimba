@@ -1,14 +1,8 @@
 import { db } from "@workspace/db"
 
-import {
-  appendAuditEvent,
-  findAllocationForProject,
-  findExpenseForOrganization,
-  findPayableForOrganization,
-  insertReceipt,
-  insertReceiptLine,
-  updateReceiptLinesAllocation,
-} from "@workspace/db/repositories"
+import { appendAuditEvent } from "@workspace/db/audit"
+import { findAllocationForProject } from "@workspace/db/projects"
+import { findExpenseForOrganization, findPayableForOrganization, insertReceipt, insertReceiptLine, updateReceiptLinesAllocation } from "@workspace/db/receipts"
 import { notFoundError, validationError } from "../shared/application-error"
 import { requireRole } from "../shared/authorization"
 import type { WorkspaceContext } from "../shared/workspace-context"

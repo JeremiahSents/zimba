@@ -1,13 +1,8 @@
-import { projectInputSchema } from "@workspace/contracts"
 import { db } from "@workspace/db"
-
-import {
-  createAllocation,
-  createProject,
-  createProjectAttachment,
-  findFileForOrganization,
-} from "@workspace/db/repositories"
+import { createProjectAttachment, findFileForOrganization } from "@workspace/db/files"
+import { createAllocation, createProject } from "@workspace/db/projects"
 import { z } from "zod"
+import { projectInputSchema } from "../schemas"
 import { validationError } from "../shared/application-error"
 import type { WorkspaceContext } from "../shared/workspace-context"
 

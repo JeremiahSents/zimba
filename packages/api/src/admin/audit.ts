@@ -1,10 +1,7 @@
 import { db } from "@workspace/db"
 
-import {
-  appendPlatformAudit,
-  listPlatformAuditEvents,
-  listRecentActivityEvents,
-} from "@workspace/db/repositories"
+import { listPlatformAuditEvents, listRecentActivityEvents } from "@workspace/db/audit"
+import { appendPlatformAudit } from "@workspace/db/platform"
 
 export async function listPlatformAuditLogsUseCase() {
   const rows = await listPlatformAuditEvents(db)

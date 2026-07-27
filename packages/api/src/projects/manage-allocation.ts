@@ -1,10 +1,6 @@
 import { db } from "@workspace/db"
 
-import {
-  createAllocation,
-  findActiveProjectForOrganization,
-  updateAllocation,
-} from "@workspace/db/repositories"
+import { createAllocation, findActiveProjectForOrganization, updateAllocation } from "@workspace/db/projects"
 import { z } from "zod"
 import { notFoundError, validationError } from "../shared/application-error"
 import { requireRole } from "../shared/authorization"

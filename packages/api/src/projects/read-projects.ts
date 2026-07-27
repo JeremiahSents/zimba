@@ -1,11 +1,6 @@
 import { db } from "@workspace/db"
 
-import {
-  findActiveProjectForOrganization,
-  listAllocationsForProject,
-  listArchivedProjectsForOrganization,
-  listProjectsForOrganization,
-} from "@workspace/db/repositories"
+import { findActiveProjectForOrganization, listAllocationsForProject, listArchivedProjectsForOrganization, listProjectsForOrganization } from "@workspace/db/projects"
 import { listFinancialExpenseRowsUseCase } from "../receipts/financial-expenses"
 import type { WorkspaceContext } from "../shared/workspace-context"
 

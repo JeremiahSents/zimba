@@ -1,14 +1,7 @@
-import type {
-  ResolvedWorkspaceContext,
-  WorkspaceRole,
-} from "@workspace/contracts"
-import { workspaceSlugSchema } from "@workspace/contracts"
 import { db } from "@workspace/db"
-
-import {
-  findMembershipByUserAndOrganization,
-  findWorkspaceBySlug,
-} from "@workspace/db/repositories"
+import { findMembershipByUserAndOrganization, findWorkspaceBySlug } from "@workspace/db/organizations"
+import type { ResolvedWorkspaceContext, WorkspaceRole } from "../schemas"
+import { workspaceSlugSchema } from "../schemas"
 import { notFoundError } from "../shared/application-error"
 
 const validRoles: WorkspaceRole[] = [

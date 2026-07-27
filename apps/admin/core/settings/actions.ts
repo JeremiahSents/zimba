@@ -1,6 +1,6 @@
 "use server"
 
-import { adminInviteSchema } from "@workspace/contracts"
+import { adminInviteSchema } from "@workspace/api"
 import { revalidatePath } from "next/cache"
 import { ensureActionSession } from "@/core/auth/action-session"
 import {

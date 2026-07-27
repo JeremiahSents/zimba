@@ -1,6 +1,6 @@
 "use server"
 
-import { platformRoleUpdateSchema } from "@workspace/contracts"
+import { platformRoleUpdateSchema } from "@workspace/api"
 import { revalidatePath } from "next/cache"
 import { ensureActionSession } from "@/core/auth/action-session"
 import { requirePlatformRole } from "@/core/auth/service"
