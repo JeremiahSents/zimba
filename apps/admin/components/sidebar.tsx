@@ -1,19 +1,5 @@
 "use client"
 
-import {
-  Activity01Icon,
-  Alert01Icon,
-  BanknoteIcon,
-  Building03Icon,
-  CreditCardIcon,
-  DashboardSquare02Icon,
-  FactoryIcon,
-  FileCheckIcon,
-  HeadphonesIcon,
-  Invoice01Icon,
-  Settings02Icon,
-  UserGroupIcon,
-} from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
   Sidebar,
@@ -31,34 +17,16 @@ import {
 import Image from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-
-const mainNav = [
-  { name: "Overview", href: "/overview", icon: DashboardSquare02Icon },
-  { name: "Organizations", href: "/organizations", icon: Building03Icon },
-  { name: "Users", href: "/users", icon: UserGroupIcon },
-  { name: "Applications & Transfers", href: "/applications", icon: FileCheckIcon },
-]
-
-const operationsNav = [
-  { name: "Projects", href: "/projects", icon: FactoryIcon },
-  { name: "Suppliers", href: "/suppliers", icon: UserGroupIcon },
-  { name: "Receipts", href: "/receipts", icon: Invoice01Icon },
-  { name: "Payments", href: "/payments", icon: BanknoteIcon },
-]
-
-const platformNav = [
-  { name: "Billing", href: "/billing", icon: CreditCardIcon },
-  { name: "Support", href: "/support", icon: HeadphonesIcon },
-  { name: "Activity Log", href: "/activity", icon: Activity01Icon },
-  { name: "System Health", href: "/system", icon: Alert01Icon },
-]
+import {
+  isAdminRouteActive,
+  managementNav,
+  operationsNav,
+  platformNav,
+  settingsNavItem,
+} from "@/components/admin-navigation"
 
 const menuButtonClassName =
   "relative h-10 rounded-md px-3 font-medium text-[13px] text-sidebar-foreground/75 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground data-active:bg-primary/10 data-active:text-primary group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:grid group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:place-items-center group-data-[collapsible=icon]:p-0! group-data-[collapsible=icon]:[&_span]:hidden [&_svg]:size-4! [&_svg]:text-sidebar-foreground/50 data-active:[&_svg]:text-primary"
-
-function isActive(pathname: string, href: string) {
-  return pathname === href || pathname.startsWith(`${href}/`)
-}
 
 export function SuperAdminSidebar() {
   const pathname = usePathname()
@@ -79,11 +47,11 @@ export function SuperAdminSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="gap-2">
-              {mainNav.map((item) => (
+              {managementNav.map((item) => (
                 <SidebarMenuItem key={item.name}>
                   <SidebarMenuButton
                     tooltip={item.name}
-                    isActive={isActive(pathname, item.href)}
+                    isActive={isAdminRouteActive(pathname, item.href)}
                     className={menuButtonClassName}
                     render={
                       <Link href={item.href}>
@@ -108,7 +76,7 @@ export function SuperAdminSidebar() {
                 <SidebarMenuItem key={item.name}>
                   <SidebarMenuButton
                     tooltip={item.name}
-                    isActive={isActive(pathname, item.href)}
+                    isActive={isAdminRouteActive(pathname, item.href)}
                     className={menuButtonClassName}
                     render={
                       <Link href={item.href}>
@@ -133,7 +101,7 @@ export function SuperAdminSidebar() {
                 <SidebarMenuItem key={item.name}>
                   <SidebarMenuButton
                     tooltip={item.name}
-                    isActive={isActive(pathname, item.href)}
+                    isActive={isAdminRouteActive(pathname, item.href)}
                     className={menuButtonClassName}
                     render={
                       <Link href={item.href}>
@@ -153,13 +121,13 @@ export function SuperAdminSidebar() {
         <SidebarMenu className="gap-2">
           <SidebarMenuItem>
             <SidebarMenuButton
-              tooltip="Settings"
-              isActive={isActive(pathname, "/settings")}
+              tooltip={settingsNavItem.name}
+              isActive={isAdminRouteActive(pathname, settingsNavItem.href)}
               className={menuButtonClassName}
               render={
-                <Link href="/settings">
-                  <HugeiconsIcon icon={Settings02Icon} strokeWidth={2} />
-                  <span>Settings</span>
+                <Link href={settingsNavItem.href}>
+                  <HugeiconsIcon icon={settingsNavItem.icon} strokeWidth={2} />
+                  <span>{settingsNavItem.name}</span>
                 </Link>
               }
             />
