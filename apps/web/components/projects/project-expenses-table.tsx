@@ -95,7 +95,7 @@ export function ProjectExpensesTable({
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    initialState: { pagination: { pageSize: 5 } },
+    initialState: { pagination: { pageSize: 10 } },
   })
 
   const totalRows = table.getFilteredRowModel().rows.length

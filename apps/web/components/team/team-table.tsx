@@ -9,8 +9,8 @@ import {
   type SortingState,
   useReactTable,
 } from "@tanstack/react-table"
+import { Badge } from "@workspace/ui/components/badge"
 import { DataTable } from "@workspace/ui/components/data-table"
-import { StatusBadge } from "@workspace/ui/components/status-badge"
 import { type ReactNode, useMemo, useState } from "react"
 import {
   MobileDataCard,
@@ -42,7 +42,7 @@ export function TeamTable({
       {
         id: "access",
         header: "Access",
-        cell: () => <StatusBadge tone="success">Active</StatusBadge>,
+        cell: () => <Badge variant="success">Active</Badge>,
         enableSorting: false,
       },
     ],
@@ -83,7 +83,7 @@ export function TeamTable({
           <MobileDataCard
             eyebrow={member.role}
             title={member.name}
-            status={<StatusBadge tone="success">Active</StatusBadge>}
+            status={<Badge variant="success">Active</Badge>}
           >
             <dl>
               <MobileDataMeta label="Responsibility">

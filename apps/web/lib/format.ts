@@ -19,6 +19,15 @@ export function formatPercent(value: number) {
   return `${Math.round(value)}%`
 }
 
+/**
+ * Capitalises the first letter of each word for display. Only touches the
+ * leading character, so acronyms and existing capitals survive ("my home" →
+ * "My Home", "ACME site" → "ACME Site").
+ */
+export function formatTitleCase(value: string) {
+  return value.replace(/(^|\s)(\S)/g, (_, lead, first) => lead + first.toUpperCase())
+}
+
 export function formatShortDate(date: string) {
   const value = /^\d{4}-\d{2}-\d{2}$/.test(date)
     ? new Date(`${date}T00:00:00`)
