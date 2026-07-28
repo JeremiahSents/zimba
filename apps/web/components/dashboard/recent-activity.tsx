@@ -1,27 +1,26 @@
 "use client"
 
+import {
+  type ColumnDef,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getSortedRowModel,
+  type SortingState,
+  useReactTable,
+} from "@tanstack/react-table"
+import { DataTable } from "@workspace/ui/components/data-table"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { useMemo, useState } from "react"
 
 import {
   MobileDataCard,
   MobileDataMeta,
 } from "@/components/shared/mobile-data-card"
+import { ExpenseStatusBadge } from "@/components/shared/status-badges"
 import { useWorkspaceSlug } from "@/components/shared/use-workspace-slug"
 import { formatCurrency, formatShortDate } from "@/lib/format"
-import type { DashboardOverviewData } from "@/lib/types"
-
-const taskPillClasses: Record<string, string> = {
-  Concrete: "border-sky-200 bg-sky-50 text-sky-700",
-  Labour: "border-amber-200 bg-amber-50 text-amber-700",
-  Steel: "border-violet-200 bg-violet-50 text-violet-700",
-  Equipment: "border-teal-200 bg-teal-50 text-teal-700",
-}
-
-const statusPillClasses = {
-  Partial: "border-amber-200 bg-amber-50 text-amber-700",
-  Full: "border-green-200 bg-green-50 text-green-700",
-  "Not paid": "border-slate-200 bg-slate-50 text-slate-600",
-}
+import type { DashboardOverviewData, ExpenseTableRow } from "@/lib/types"
 
 export function RecentActivity({
   expenses,
@@ -29,35 +28,98 @@ export function RecentActivity({
   expenses: DashboardOverviewData["expenses"]
 }) {
   const slug = useWorkspaceSlug()
+  const router = useRouter()
+  const [globalFilter, setGlobalFilter] = useState("")
+  const [sorting, setSorting] = useState<SortingState>([])
+
+  const columns = useMemo<ColumnDef<ExpenseTableRow>[]>(
+    () => [
+      {
+        accessorKey: "project_name",
+        header: "Project",
+        cell: ({ row }) => (
+          <span className="font-medium">{row.original.project_name}</span>
+        ),
+      },
+      {
+        accessorKey: "item_description",
+        header: "Expense",
+      },
+      {
+        accessorKey: "supplier_name",
+        header: "Supplier",
+      },
+      {
+        accessorKey: "task_name",
+        header: "Category",
+      },
+      {
+        accessorKey: "date",
+        header: "Date",
+        cell: ({ getValue }) => formatShortDate(getValue<string>()),
+        meta: { cellClassName: "tabular-nums whitespace-nowrap" },
+      },
+      {
+        accessorKey: "status",
+        header: "Status",
+        cell: ({ row }) => <ExpenseStatusBadge status={row.original.status} />,
+      },
+      {
+        accessorKey: "amount",
+        header: "Amount",
+        cell: ({ getValue }) => formatCurrency(getValue<number>()),
+        meta: { cellClassName: "tabular-nums whitespace-nowrap" },
+      },
+    ],
+    []
+  )
+
+  const table = useReactTable({
+    data: expenses,
+    columns,
+    state: { globalFilter, sorting },
+    onGlobalFilterChange: setGlobalFilter,
+    onSortingChange: setSorting,
+    getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+  })
+
   return (
     <section>
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <h2 className="font-heading font-semibold text-base text-foreground tracking-tight">
-          Recent expenses
-        </h2>
-        <Link
-          href={`/${slug}/projects`}
-          className="font-semibold text-primary text-xs transition-colors hover:text-primary/75"
-        >
-          View expenses
-        </Link>
-      </div>
-      {expenses.length ? (
-        <>
-          <div className="space-y-3 md:hidden">
-            {expenses.map((expense) => (
+      <DataTable
+        table={table}
+        title="Recent expenses"
+        rowNumbers
+        search={{
+          value: globalFilter,
+          onChange: setGlobalFilter,
+          placeholder: "Search expenses...",
+          label: "Search recent expenses",
+        }}
+        onRowClick={(row) =>
+          router.push(
+            `/${slug}/expenses/receipts/${row.original.receipt_id ?? row.original.id}`
+          )
+        }
+        emptyMessage="No expenses yet."
+        pagination="never"
+        renderMobileRow={(row) => {
+          const expense = row.original
+          return (
+            <Link
+              href={`/${slug}/expenses/receipts/${expense.receipt_id ?? expense.id}`}
+              className="block transition-transform active:scale-[0.99]"
+            >
               <MobileDataCard
-                key={expense.id}
                 eyebrow={expense.project_name}
-                title={expense.item_description}
-                value={formatCurrency(expense.amount)}
-                status={
-                  <span
-                    className={`inline-flex rounded-full border px-2 py-1 font-medium text-[10px] ${statusPillClasses[expense.status]}`}
-                  >
-                    {expense.status}
+                title={
+                  <span className="font-medium text-primary">
+                    {expense.item_description}
                   </span>
                 }
+                value={formatCurrency(expense.amount)}
+                status={<ExpenseStatusBadge status={expense.status} />}
               >
                 <dl className="grid grid-cols-2 gap-x-4 gap-y-3">
                   <MobileDataMeta label="Supplier">
@@ -73,76 +135,10 @@ export function RecentActivity({
                   </div>
                 </dl>
               </MobileDataCard>
-            ))}
-          </div>
-          <div className="hidden overflow-hidden rounded-lg border md:block">
-            <table className="w-full table-fixed text-left">
-              <colgroup>
-                <col className="w-[19%]" />
-                <col className="w-[23%]" />
-                <col className="w-[16%]" />
-                <col className="w-[16%]" />
-                <col className="w-[11%]" />
-                <col className="w-[15%]" />
-              </colgroup>
-              <thead className="border-b bg-muted/25 text-[10px] text-muted-foreground sm:text-xs">
-                <tr>
-                  <th className="px-1 py-2.5 font-medium sm:px-4">
-                    Project name
-                  </th>
-                  <th className="px-1 py-2.5 font-medium sm:px-4">
-                    Expense name
-                  </th>
-                  <th className="px-1 py-2.5 font-medium sm:px-4">Supplier</th>
-                  <th className="px-1 py-2.5 font-medium sm:px-4">Category</th>
-                  <th className="px-1 py-2.5 font-medium sm:px-4">Date</th>
-                  <th className="px-1 py-2.5 font-medium sm:px-4">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {expenses.map((expense) => (
-                  <tr key={expense.id} className="hover:bg-muted/35">
-                    <td className="px-1 py-3 align-top sm:px-4 sm:align-middle">
-                      <p className="break-words font-medium text-[10px] sm:text-xs">
-                        {expense.project_name}
-                      </p>
-                    </td>
-                    <td className="px-1 py-3 align-top sm:px-4 sm:align-middle">
-                      <p className="break-words text-[10px] sm:text-xs">
-                        {expense.item_description}
-                      </p>
-                    </td>
-                    <td className="break-words px-1 py-3 align-top text-[10px] text-muted-foreground sm:px-4 sm:align-middle sm:text-xs">
-                      {expense.supplier_name}
-                    </td>
-                    <td className="px-0.5 py-3 align-top sm:px-4 sm:align-middle">
-                      <span
-                        className={`inline-flex max-w-full break-words rounded-md border px-1 py-0.5 font-medium text-[9px] sm:px-1.5 sm:text-[10px] ${taskPillClasses[expense.task_name] ?? "border-border bg-muted/50 text-muted-foreground"}`}
-                      >
-                        {expense.task_name}
-                      </span>
-                    </td>
-                    <td className="px-1 py-3 align-top text-[10px] text-muted-foreground sm:px-4 sm:align-middle sm:text-xs">
-                      {formatShortDate(expense.date)}
-                    </td>
-                    <td className="px-1 py-3 align-top sm:px-4 sm:align-middle">
-                      <span
-                        className={`inline-flex max-w-full break-words rounded-md border px-1 py-0.5 font-medium text-[9px] sm:px-1.5 sm:text-[10px] ${statusPillClasses[expense.status]}`}
-                      >
-                        {expense.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </>
-      ) : (
-        <p className="py-4 text-center text-muted-foreground text-xs">
-          No expenses yet.
-        </p>
-      )}
+            </Link>
+          )
+        }}
+      />
       <div className="mt-4 flex justify-center">
         <Link
           href={`/${slug}/projects`}

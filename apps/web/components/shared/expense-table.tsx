@@ -31,7 +31,10 @@ export function ExpenseTable({
 }) {
   const slug = useWorkspaceSlug()
   const router = useRouter()
-  const receiptRows = groupExpensesByReceipt(expenses)
+  const receiptRows = useMemo(
+    () => groupExpensesByReceipt(expenses),
+    [expenses]
+  )
   const [globalFilter, setGlobalFilter] = useState("")
   const [sorting, setSorting] = useState<SortingState>([])
 
