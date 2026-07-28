@@ -11,6 +11,7 @@ import {
 } from "@tanstack/react-table"
 import { DataTable } from "@workspace/ui/components/data-table"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { type ReactNode, useMemo, useState } from "react"
 import {
   MobileDataCard,
@@ -29,6 +30,7 @@ export function ExpenseTable({
   title?: ReactNode
 }) {
   const slug = useWorkspaceSlug()
+  const router = useRouter()
   const receiptRows = groupExpensesByReceipt(expenses)
   const [globalFilter, setGlobalFilter] = useState("")
   const [sorting, setSorting] = useState<SortingState>([])
@@ -46,13 +48,6 @@ export function ExpenseTable({
       {
         accessorKey: "item_description",
         header: "Receipt",
-        cell: ({ getValue, row }) => (
-          <Link
-            href={`/${slug}/expenses/receipts/${row.original.receipt_id ?? row.original.id}`}
-          >
-            {getValue<string>()}
-          </Link>
-        ),
       },
       {
         accessorKey: "status",
@@ -66,7 +61,7 @@ export function ExpenseTable({
         meta: { cellClassName: "tabular-nums whitespace-nowrap" },
       },
     ],
-    [slug]
+    []
   )
 
   const table = useReactTable({
@@ -95,6 +90,11 @@ export function ExpenseTable({
         placeholder: "Search expenses...",
         label: "Search expenses",
       }}
+      onRowClick={(row) =>
+        router.push(
+          `/${slug}/expenses/receipts/${row.original.receipt_id ?? row.original.id}`
+        )
+      }
       emptyMessage="No expenses match your search."
       footerNote={`${totalRows} ${totalRows === 1 ? "expense" : "expenses"}`}
       renderMobileRow={(row) => {

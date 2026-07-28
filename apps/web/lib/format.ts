@@ -25,7 +25,10 @@ export function formatPercent(value: number) {
  * "My Home", "ACME site" → "ACME Site").
  */
 export function formatTitleCase(value: string) {
-  return value.replace(/(^|\s)(\S)/g, (_, lead, first) => lead + first.toUpperCase())
+  return value.replace(
+    /(^|\s)(\S)/g,
+    (_, lead, first) => lead + first.toUpperCase()
+  )
 }
 
 export function formatShortDate(date: string) {

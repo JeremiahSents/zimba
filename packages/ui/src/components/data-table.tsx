@@ -308,10 +308,11 @@ export function DataTable<TData>({
               </>
             )}
           </p>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             <Button
-              variant="secondary"
+              variant="ghost"
               size="sm"
+              className="text-muted-foreground hover:text-foreground"
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
             >
@@ -319,8 +320,9 @@ export function DataTable<TData>({
               Previous
             </Button>
             <Button
-              variant="default"
+              variant="ghost"
               size="sm"
+              className="text-muted-foreground hover:text-foreground"
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
             >

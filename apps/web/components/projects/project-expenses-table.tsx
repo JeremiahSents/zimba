@@ -11,6 +11,7 @@ import {
 } from "@tanstack/react-table"
 import { DataTable } from "@workspace/ui/components/data-table"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { type ReactNode, useMemo, useState } from "react"
 
 import {
@@ -34,6 +35,7 @@ export function ProjectExpensesTable({
   title?: ReactNode
 }) {
   const slug = useWorkspaceSlug()
+  const router = useRouter()
   const [globalFilter, setGlobalFilter] = useState("")
   const [sorting, setSorting] = useState<SortingState>([])
 
@@ -42,13 +44,6 @@ export function ProjectExpensesTable({
       {
         accessorKey: "item_description",
         header: "Item",
-        cell: ({ row }) => (
-          <Link
-            href={`/${slug}/expenses/receipts/${row.original.receipt_id ?? row.original.id}`}
-          >
-            {row.original.item_description}
-          </Link>
-        ),
       },
       {
         accessorKey: "task_name",
@@ -82,7 +77,7 @@ export function ProjectExpensesTable({
         },
       },
     ],
-    [slug]
+    []
   )
 
   const table = useReactTable({
@@ -111,6 +106,11 @@ export function ProjectExpensesTable({
         placeholder: "Search expenses...",
         label: "Search project expenses",
       }}
+      onRowClick={(row) =>
+        router.push(
+          `/${slug}/expenses/receipts/${row.original.receipt_id ?? row.original.id}`
+        )
+      }
       emptyMessage="No expenses match your search."
       footerNote={`${totalRows} ${totalRows === 1 ? "expense" : "expenses"}`}
       renderMobileRow={(row) => {

@@ -119,8 +119,7 @@ function sumPayments(expenses: ExpenseResponse[]) {
         paid: totals.paid + paid,
         outstanding:
           totals.outstanding +
-          (expense.outstanding_amount ??
-            Math.max(expense.amount - paid, 0)),
+          (expense.outstanding_amount ?? Math.max(expense.amount - paid, 0)),
       }
     },
     { paid: 0, outstanding: 0 }

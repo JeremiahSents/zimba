@@ -3,27 +3,21 @@
 import { Menu } from "@base-ui/react/menu"
 import { MoreHorizontalCircle01Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Badge } from "@workspace/ui/components/badge"
 import {
   type ChartConfig,
   ChartContainer,
 } from "@workspace/ui/components/chart"
-import { Progress } from "@workspace/ui/components/progress"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
-import { Cell, Pie, PieChart } from "recharts"
+import { Bar, BarChart, Cell, XAxis, YAxis } from "recharts"
 import { ProjectExpensesTable } from "@/components/projects/project-expenses-table"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { ErrorNotice } from "@/components/shared/error-notice"
 import { useWorkspaceSlug } from "@/components/shared/use-workspace-slug"
 import { archiveProjectAction } from "@/core/projects/actions"
 import type { PublicError } from "@/core/shared/errors"
-import {
-  formatCurrency,
-  formatPercent,
-  formatTitleCase,
-} from "@/lib/format"
+import { formatCurrency, formatPercent, formatTitleCase } from "@/lib/format"
 import type { ExpenseResponse, ProjectDetailResponse } from "@/lib/types"
 
 /**
@@ -41,10 +35,9 @@ const taskColors = [
   "#4a3aa7",
 ] as const
 
-const REMAINING_SLICE = "__remaining__"
-
 const chartConfig: ChartConfig = {
-  value: { label: "Spent", color: "var(--primary)" },
+  spent: { label: "Spent" },
+  unspent: { label: "Unspent" },
 }
 
 /** Soft card chrome: no hard border, generous radius, barely-there lift. */
@@ -77,15 +70,18 @@ export function ProjectDetailPage({
 
   const utilisation = project.pct
   const totals = sumPayments(expenses)
-  const colorFor = buildTaskColors(project.tasks)
-  // Spent per task plus the unspent budget as a muted track segment, so the
-  // filled share of the ring matches the "% used" figure in the centre.
-  const slices = project.tasks
-    .filter((task) => task.spent > 0)
-    .map((task) => ({ name: task.name, value: task.spent }))
-  if (project.remaining > 0) {
-    slices.push({ name: REMAINING_SLICE, value: project.remaining })
-  }
+  // Each bar is normalised to its own budget, so a small budget that is
+  // mostly used reads as a long bar instead of vanishing next to a large one.
+  // Ranked most-used first; the task list shares the order so the two halves
+  // of the card read as one ranking.
+  const rankedTasks = [...project.tasks].sort(
+    (a, b) => utilisationOf(b) - utilisationOf(a)
+  )
+  const colorFor = buildTaskColors(rankedTasks)
+  const spendByTask = rankedTasks.map((task) => {
+    const pct = utilisationOf(task)
+    return { name: task.name, spent: pct, unspent: 100 - pct }
+  })
 
   return (
     <DashboardShell
@@ -173,79 +169,112 @@ export function ProjectDetailPage({
       <div className={`mb-4 ${panel}`}>
         <div className="grid divide-y lg:grid-cols-2 lg:divide-x lg:divide-y-0">
           <div className="flex flex-col p-5 sm:p-6">
-            <p className={eyebrow}>Budget</p>
-            <div className="relative mx-auto my-auto flex aspect-square w-full max-w-[11.5rem] items-center justify-center py-6">
-              <ChartContainer
-                config={chartConfig}
-                className="absolute inset-0 aspect-auto h-full w-full"
-              >
-                <PieChart>
-                  <Pie
-                    data={slices.length > 0 ? slices : [{ name: "", value: 1 }]}
-                    dataKey="value"
-                    nameKey="name"
-                    innerRadius="84%"
-                    outerRadius="96%"
-                    cornerRadius={8}
-                    strokeWidth={0}
-                    paddingAngle={slices.length > 1 ? 2.5 : 0}
-                  >
-                    {(slices.length > 0 ? slices : [{ name: "" }]).map(
-                      (slice) => (
-                        <Cell
-                          key={slice.name}
-                          fill={colorFor(slice.name) ?? "var(--muted)"}
-                        />
-                      )
-                    )}
-                  </Pie>
-                </PieChart>
-              </ChartContainer>
-              <div className="pointer-events-none z-10 flex flex-col items-center text-center">
-                <span className="text-muted-foreground text-xs">Remaining</span>
-                <span className="mt-1 font-heading font-semibold text-2xl tabular-nums tracking-tight">
-                  {formatCurrency(project.remaining)}
-                </span>
-                <span className="mt-1 text-muted-foreground text-xs">
-                  of {formatCurrency(project.budget)}
-                </span>
-                <Badge variant="secondary" className="mt-2">
-                  {formatPercent(utilisation)} used
-                </Badge>
-              </div>
+            <div className="flex items-baseline justify-between gap-4">
+              <p className={eyebrow}>Budget</p>
+              <p className={eyebrow}>{formatPercent(utilisation)} used</p>
             </div>
+            <div className="mt-4">
+              <p className="font-heading font-semibold text-2xl tabular-nums tracking-tight">
+                {formatCurrency(project.remaining)}
+                <span className="ml-1.5 font-normal font-sans text-base text-muted-foreground">
+                  remaining
+                </span>
+              </p>
+            </div>
+            <ChartContainer
+              config={chartConfig}
+              className="mt-6 w-full"
+              style={{ height: Math.max(spendByTask.length, 1) * 48 }}
+            >
+              <BarChart
+                accessibilityLayer
+                data={spendByTask}
+                layout="vertical"
+                margin={{ top: 0, right: 12, bottom: 0, left: 0 }}
+                barSize={26}
+              >
+                <YAxis
+                  dataKey="name"
+                  type="category"
+                  width={82}
+                  tickLine={false}
+                  axisLine={false}
+                  tick={{ fill: "var(--foreground)", fontSize: 13 }}
+                />
+                <XAxis type="number" hide domain={[0, 100]} />
+                <Bar
+                  dataKey="unspent"
+                  stackId="budget"
+                  fill="var(--muted)"
+                  radius={6}
+                  stroke="var(--card)"
+                  strokeWidth={2}
+                />
+                <Bar
+                  dataKey="spent"
+                  stackId="budget"
+                  radius={6}
+                  stroke="var(--card)"
+                  strokeWidth={2}
+                >
+                  {spendByTask.map((row) => (
+                    <Cell key={row.name} fill={colorFor(row.name)} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ChartContainer>
+            <p className="mt-auto pt-5 text-sm">
+              <span className="tabular-nums">
+                {formatCurrency(project.spent)}
+              </span>
+              <span className="text-muted-foreground"> spent of </span>
+              <span className="tabular-nums">
+                {formatCurrency(project.budget)}
+              </span>
+            </p>
           </div>
 
           <TaskBreakdown
-            tasks={project.tasks}
+            tasks={rankedTasks}
             colorFor={colorFor}
             taskHref={(taskId) =>
               `/${slug}/projects/${project.id}/tasks/${taskId}`
             }
           />
         </div>
-      </div>
 
-      <div className={`mb-4 ${panel} p-5 sm:p-6`}>
-        <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
-          <p className={eyebrow}>Payments</p>
-          <p className="text-muted-foreground text-sm">
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 border-t px-5 py-4 text-sm sm:px-6">
+          <span>
+            <span className="text-muted-foreground">Paid </span>
+            <span className="tabular-nums">{formatCurrency(totals.paid)}</span>
+            <span className="text-muted-foreground tabular-nums">
+              {" "}
+              (
+              {formatPercent(
+                share(totals.paid, totals.paid + totals.outstanding)
+              )}
+              )
+            </span>
+          </span>
+          {totals.outstanding > 0 ? (
+            <span>
+              <span className="text-muted-foreground">Outstanding </span>
+              <span className="text-warning tabular-nums">
+                {formatCurrency(totals.outstanding)}
+              </span>
+            </span>
+          ) : (
+            <span className="flex items-center gap-1.5 text-success">
+              <span
+                aria-hidden="true"
+                className="size-1.5 rounded-full bg-success"
+              />
+              All receipts settled
+            </span>
+          )}
+          <span className="ml-auto text-muted-foreground">
             {expenses.length} {expenses.length === 1 ? "receipt" : "receipts"}
-          </p>
-        </div>
-        <div className="mt-4 grid gap-4 sm:grid-cols-2">
-          <MoneyLine
-            label="Paid"
-            value={formatCurrency(totals.paid)}
-            pct={share(totals.paid, totals.paid + totals.outstanding)}
-            tone="success"
-          />
-          <MoneyLine
-            label="Outstanding"
-            value={formatCurrency(totals.outstanding)}
-            pct={share(totals.outstanding, totals.paid + totals.outstanding)}
-            tone="muted"
-          />
+          </span>
         </div>
       </div>
 
@@ -332,34 +361,11 @@ function TaskBreakdown({
   )
 }
 
-function MoneyLine({
-  label,
-  value,
-  pct,
-  tone,
-}: {
-  label: string
-  value: string
-  pct: number
-  tone: "success" | "muted"
-}) {
-  return (
-    <div>
-      <div className="flex items-baseline justify-between gap-3">
-        <span className="text-sm">{label}</span>
-        <span className="text-sm tabular-nums">{value}</span>
-      </div>
-      <Progress
-        value={pct}
-        aria-label={`${label} share of total spend`}
-        className={`mt-2 h-1.5 ${
-          tone === "success"
-            ? "[&_[data-slot=progress-indicator]]:bg-primary"
-            : "[&_[data-slot=progress-indicator]]:bg-muted-foreground/35"
-        }`}
-      />
-    </div>
-  )
+function utilisationOf(task: ProjectDetailResponse["tasks"][number]) {
+  if (task.budget > 0) {
+    return Math.min((task.spent / task.budget) * 100, 100)
+  }
+  return task.spent > 0 ? 100 : 0
 }
 
 function buildTaskColors(tasks: ProjectDetailResponse["tasks"]) {
