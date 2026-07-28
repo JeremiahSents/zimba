@@ -2,7 +2,13 @@ import { db } from "@workspace/db"
 
 import { appendAuditEvent } from "@workspace/db/audit"
 import { findAllocationForProject } from "@workspace/db/projects"
-import { findExpenseForOrganization, findPayableForOrganization, insertReceipt, insertReceiptLine, updateReceiptLinesAllocation } from "@workspace/db/receipts"
+import {
+  findExpenseForOrganization,
+  findPayableForOrganization,
+  insertReceipt,
+  insertReceiptLine,
+  updateReceiptLinesAllocation,
+} from "@workspace/db/receipts"
 import { notFoundError, validationError } from "../shared/application-error"
 import { requireRole } from "../shared/authorization"
 import type { WorkspaceContext } from "../shared/workspace-context"
@@ -45,14 +51,13 @@ export async function correctReceiptCategoryUseCase(
         organizationId: ctx.organizationId,
         projectId: payable.payable.projectId,
         supplierId: payable.payable.supplierId,
-        paymentStatus: payable.payable.status,
+        status: payable.payable.status,
         expenseDate: payable.payable.dueDate ?? payable.payable.createdAt,
       })
       await insertReceiptLine(tx, {
         organizationId: ctx.organizationId,
         expenseId: payable.payable.id,
-        allocationId,
-        legacyAllocationId: allocationId,
+        budgetItemId: allocationId,
         itemDescription: payable.payable.description || payable.payable.title,
         quantity: 1,
         unitRateCents: payable.payable.amountCents,

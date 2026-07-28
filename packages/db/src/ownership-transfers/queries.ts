@@ -2,17 +2,17 @@ import { count, desc, eq } from "drizzle-orm"
 import { alias } from "drizzle-orm/pg-core"
 import { user } from "../auth/schema"
 import { organization } from "../organizations/schema"
-import { ownershipTransferRequest } from "./schema"
 import type { DatabaseExecutor } from "../shared/executor"
+import { ownershipTransfer } from "./schema"
 
 const fromUser = alias(user, "from_user")
 const toUser = alias(user, "to_user")
 
 export function createOwnershipTransferRequest(
   executor: DatabaseExecutor,
-  data: typeof ownershipTransferRequest.$inferInsert
+  data: typeof ownershipTransfer.$inferInsert
 ) {
-  return executor.insert(ownershipTransferRequest).values(data)
+  return executor.insert(ownershipTransfer).values(data)
 }
 
 export function findOwnershipTransferRequestById(
@@ -21,8 +21,8 @@ export function findOwnershipTransferRequestById(
 ) {
   return executor
     .select()
-    .from(ownershipTransferRequest)
-    .where(eq(ownershipTransferRequest.id, id))
+    .from(ownershipTransfer)
+    .where(eq(ownershipTransfer.id, id))
     .limit(1)
 }
 
@@ -32,12 +32,12 @@ export function findPendingOwnershipTransferForOrg(
 ) {
   return executor
     .select({
-      id: ownershipTransferRequest.id,
-      status: ownershipTransferRequest.status,
+      id: ownershipTransfer.id,
+      status: ownershipTransfer.status,
     })
-    .from(ownershipTransferRequest)
-    .where(eq(ownershipTransferRequest.organizationId, organizationId))
-    .orderBy(desc(ownershipTransferRequest.createdAt))
+    .from(ownershipTransfer)
+    .where(eq(ownershipTransfer.organizationId, organizationId))
+    .orderBy(desc(ownershipTransfer.createdAt))
     .limit(1)
 }
 
@@ -46,30 +46,30 @@ export async function listOwnershipTransferRequests(
 ) {
   return executor
     .select({
-      id: ownershipTransferRequest.id,
-      organizationId: ownershipTransferRequest.organizationId,
+      id: ownershipTransfer.id,
+      organizationId: ownershipTransfer.organizationId,
       organizationName: organization.name,
-      fromUserId: ownershipTransferRequest.fromUserId,
+      fromUserId: ownershipTransfer.fromUserId,
       fromUserName: fromUser.name,
       fromUserEmail: fromUser.email,
-      toUserId: ownershipTransferRequest.toUserId,
+      toUserId: ownershipTransfer.toUserId,
       toUserName: toUser.name,
       toUserEmail: toUser.email,
-      status: ownershipTransferRequest.status,
-      reason: ownershipTransferRequest.reason,
-      reviewedBy: ownershipTransferRequest.reviewedBy,
-      reviewedAt: ownershipTransferRequest.reviewedAt,
-      rejectionReason: ownershipTransferRequest.rejectionReason,
-      createdAt: ownershipTransferRequest.createdAt,
+      status: ownershipTransfer.status,
+      reason: ownershipTransfer.reason,
+      reviewedBy: ownershipTransfer.reviewedBy,
+      reviewedAt: ownershipTransfer.reviewedAt,
+      rejectionReason: ownershipTransfer.rejectionReason,
+      createdAt: ownershipTransfer.createdAt,
     })
-    .from(ownershipTransferRequest)
+    .from(ownershipTransfer)
     .innerJoin(
       organization,
-      eq(organization.id, ownershipTransferRequest.organizationId)
+      eq(organization.id, ownershipTransfer.organizationId)
     )
-    .innerJoin(fromUser, eq(fromUser.id, ownershipTransferRequest.fromUserId))
-    .innerJoin(toUser, eq(toUser.id, ownershipTransferRequest.toUserId))
-    .orderBy(desc(ownershipTransferRequest.createdAt))
+    .innerJoin(fromUser, eq(fromUser.id, ownershipTransfer.fromUserId))
+    .innerJoin(toUser, eq(toUser.id, ownershipTransfer.toUserId))
+    .orderBy(desc(ownershipTransfer.createdAt))
 }
 
 export async function updateOwnershipTransferRequestStatus(
@@ -83,7 +83,7 @@ export async function updateOwnershipTransferRequestStatus(
   }
 ) {
   const [updated] = await executor
-    .update(ownershipTransferRequest)
+    .update(ownershipTransfer)
     .set({
       status: data.status,
       reviewedBy: data.reviewedBy,
@@ -91,7 +91,7 @@ export async function updateOwnershipTransferRequestStatus(
       rejectionReason: data.rejectionReason ?? null,
       updatedAt: new Date(),
     })
-    .where(eq(ownershipTransferRequest.id, id))
+    .where(eq(ownershipTransfer.id, id))
     .returning()
   return updated ?? null
 }
@@ -101,7 +101,7 @@ export async function countPendingOwnershipTransfers(
 ) {
   const [row] = await executor
     .select({ value: count() })
-    .from(ownershipTransferRequest)
-    .where(eq(ownershipTransferRequest.status, "pending"))
+    .from(ownershipTransfer)
+    .where(eq(ownershipTransfer.status, "pending"))
   return Number(row?.value ?? 0)
 }

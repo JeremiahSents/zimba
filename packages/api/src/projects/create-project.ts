@@ -1,5 +1,8 @@
 import { db } from "@workspace/db"
-import { createProjectAttachment, findFileForOrganization } from "@workspace/db/files"
+import {
+  createProjectAttachment,
+  findFileForOrganization,
+} from "@workspace/db/files"
 import { createAllocation, createProject } from "@workspace/db/projects"
 import { z } from "zod"
 import { projectInputSchema } from "../schemas"
@@ -40,7 +43,6 @@ export async function createProjectWithAllocationsUseCase(
       clientName: input.data.clientName ?? null,
       buildingType: input.data.buildingType,
       landSize: input.data.landSize,
-      plotSize: input.data.landSize,
       startDate: input.data.startDate ? new Date(input.data.startDate) : null,
       targetEndDate: input.data.targetEndDate
         ? new Date(input.data.targetEndDate)

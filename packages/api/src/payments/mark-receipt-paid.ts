@@ -1,7 +1,13 @@
 import { db } from "@workspace/db"
 
 import { appendAuditEvent } from "@workspace/db/audit"
-import { createLedgerPayment, findExpenseForOrganization, findPayableForOrganization, updatePayableForOrganization, updateReceiptForOrganization } from "@workspace/db/receipts"
+import {
+  createLedgerPayment,
+  findExpenseForOrganization,
+  findPayableForOrganization,
+  updatePayableForOrganization,
+  updateReceiptForOrganization,
+} from "@workspace/db/receipts"
 import { z } from "zod"
 import {
   conflictError,
@@ -58,7 +64,7 @@ export async function markReceiptFullyPaidUseCase(
         ctx.organizationId,
         receiptId.data,
         {
-          paymentStatus: "paid",
+          status: "paid",
         }
       )
       await appendAuditEvent(tx, {

@@ -6,7 +6,7 @@ import {
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { AdminDashboardShell } from "@/components/dashboard-shell"
-import { ReceiptItem, ReceiptsTable } from "@/components/receipts-table"
+import { type ReceiptItem, ReceiptsTable } from "@/components/receipts-table"
 import { StatCard } from "@/components/stat-card"
 import { listPlatformReceipts } from "@/core/finance/service"
 
@@ -15,7 +15,7 @@ export default async function ReceiptsPage() {
 
   const tableData: ReceiptItem[] = (receipts as ReceiptItem[]).map((r) => ({
     id: r.id,
-    paymentStatus: r.paymentStatus,
+    status: r.status,
     expenseDate: r.expenseDate,
     createdAt: r.createdAt,
     organizationName: r.organizationName,
@@ -23,9 +23,9 @@ export default async function ReceiptsPage() {
     supplierName: r.supplierName,
   }))
 
-  const paidCount = receipts.filter((r) => r.paymentStatus === "paid").length
+  const paidCount = receipts.filter((r) => r.status === "paid").length
   const pendingCount = receipts.filter(
-    (r) => r.paymentStatus === "pending" || r.paymentStatus === "unpaid"
+    (r) => r.status === "pending" || r.status === "unpaid"
   ).length
   const orgsCount = new Set(receipts.map((r) => r.organizationName)).size
 
@@ -91,7 +91,9 @@ export default async function ReceiptsPage() {
               className="size-4"
             />
           }
-          description={pendingCount > 0 ? `${pendingCount} unpaid receipts` : "All paid"}
+          description={
+            pendingCount > 0 ? `${pendingCount} unpaid receipts` : "All paid"
+          }
         />
         <StatCard
           title="Organizations"

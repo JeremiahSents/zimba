@@ -1,14 +1,11 @@
 import { count, desc, eq, sql } from "drizzle-orm"
 import { user } from "../auth/schema"
-import {
-  organization,
-  organizationMember,
-} from "../organizations/schema"
-import { platformAuditLog, platformUser } from "./schema"
+import { member, organization } from "../organizations/schema"
 import { project } from "../projects/schema"
 import { expense, expenseLine, payment } from "../receipts/schema"
-import { supplier } from "../suppliers/schema"
 import type { DatabaseExecutor } from "../shared/executor"
+import { supplier } from "../suppliers/schema"
+import { platformAuditLog, platformUser } from "./schema"
 
 export function findPlatformUserForUser(
   executor: DatabaseExecutor,
@@ -82,11 +79,8 @@ export function listPlatformUserRows(executor: DatabaseExecutor) {
     })
     .from(user)
     .leftJoin(platformUser, eq(platformUser.userId, user.id))
-    .leftJoin(organizationMember, eq(organizationMember.userId, user.id))
-    .leftJoin(
-      organization,
-      eq(organization.id, organizationMember.organizationId)
-    )
+    .leftJoin(member, eq(member.userId, user.id))
+    .leftJoin(organization, eq(organization.id, member.organizationId))
     .orderBy(desc(user.createdAt))
 }
 
@@ -105,15 +99,12 @@ export function findPlatformUserDetailRows(
       platformRole: platformUser.role,
       organizationId: organization.id,
       organizationName: organization.name,
-      membershipRole: organizationMember.role,
+      membershipRole: member.role,
     })
     .from(user)
     .leftJoin(platformUser, eq(platformUser.userId, user.id))
-    .leftJoin(organizationMember, eq(organizationMember.userId, user.id))
-    .leftJoin(
-      organization,
-      eq(organization.id, organizationMember.organizationId)
-    )
+    .leftJoin(member, eq(member.userId, user.id))
+    .leftJoin(organization, eq(organization.id, member.organizationId))
     .where(eq(user.id, userId))
 }
 
@@ -192,7 +183,7 @@ export function listPlatformReceipts(executor: DatabaseExecutor) {
   return executor
     .select({
       id: expense.id,
-      paymentStatus: expense.paymentStatus,
+      status: expense.status,
       expenseDate: expense.expenseDate,
       createdAt: expense.createdAt,
       organizationName: organization.name,

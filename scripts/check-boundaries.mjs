@@ -71,6 +71,15 @@ for (const dir of ["apps", "packages"]) {
   }
 }
 
+// Tests live in their package's tests/ folder, never beside the code.
+for (const dir of ["apps", "packages"]) {
+  for (const file of await walk(join(root, dir))) {
+    if (!/\.test\.tsx?$/.test(file)) continue
+    if (!file.split(sep).includes("tests"))
+      add(file, "test files belong in the package's tests/ folder")
+  }
+}
+
 const routeFiles = (await walk(join(root, "apps", "web", "app"))).filter(
   (file) => file.endsWith(`${sep}actions.ts`)
 )

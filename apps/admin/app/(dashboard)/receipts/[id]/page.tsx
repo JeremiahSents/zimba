@@ -41,7 +41,12 @@ export default async function ReceiptDetailPage({
       {/* ── Top Navigation Bar ── */}
       <div className="flex flex-wrap items-center justify-between gap-4 border-b pb-4">
         <div className="flex items-center gap-3">
-          <Button variant="outline" size="icon-sm" asChild className="rounded-xl">
+          <Button
+            variant="outline"
+            size="icon-sm"
+            asChild
+            className="rounded-xl"
+          >
             <Link href="/receipts" aria-label="Back to receipts">
               <HugeiconsIcon icon={ArrowLeft02Icon} className="size-4" />
             </Link>
@@ -51,10 +56,11 @@ export default async function ReceiptDetailPage({
               <h2 className="font-heading font-semibold text-xl tracking-tight">
                 Receipt Log
               </h2>
-              <StatusBadge status={receipt.paymentStatus} />
+              <StatusBadge status={receipt.status} />
             </div>
             <p className="mt-0.5 text-muted-foreground text-xs">
-              Organization: {receipt.organizationName} · Logged {formatCreatedDate(receipt.expenseDate || receipt.createdAt)}
+              Organization: {receipt.organizationName} · Logged{" "}
+              {formatCreatedDate(receipt.expenseDate || receipt.createdAt)}
             </p>
           </div>
         </div>
@@ -64,10 +70,10 @@ export default async function ReceiptDetailPage({
       <Card className="overflow-hidden border bg-gradient-to-r from-card via-card to-muted/20">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="font-semibold text-xs uppercase tracking-wider text-muted-foreground">
+            <CardTitle className="font-semibold text-muted-foreground text-xs uppercase tracking-wider">
               Receipt Details
             </CardTitle>
-            <StatusBadge status={receipt.paymentStatus} />
+            <StatusBadge status={receipt.status} />
           </div>
         </CardHeader>
         <CardContent>
@@ -95,8 +101,8 @@ export default async function ReceiptDetailPage({
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard
           title="Payment Status"
-          value={receipt.paymentStatus}
-          accent={receipt.paymentStatus === "paid" ? "emerald" : "amber"}
+          value={receipt.status}
+          accent={receipt.status === "paid" ? "emerald" : "amber"}
           icon={
             <HugeiconsIcon
               icon={Invoice01Icon}
@@ -151,12 +157,10 @@ export default async function ReceiptDetailPage({
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="text-base font-semibold">
+            <CardTitle className="font-semibold text-base">
               Receipt Information
             </CardTitle>
-            <CardDescription>
-              Parent entity and status details.
-            </CardDescription>
+            <CardDescription>Parent entity and status details.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 text-sm">
             <div className="flex justify-between border-b pb-3">
@@ -173,27 +177,28 @@ export default async function ReceiptDetailPage({
             </div>
             <div className="flex justify-between border-b pb-3">
               <span className="text-muted-foreground">Payment Status</span>
-              <StatusBadge status={receipt.paymentStatus} />
+              <StatusBadge status={receipt.status} />
             </div>
             <div className="flex justify-between border-b pb-3">
               <span className="text-muted-foreground">Logged Date</span>
-              <span>{formatCreatedDate(receipt.expenseDate || receipt.createdAt)}</span>
+              <span>
+                {formatCreatedDate(receipt.expenseDate || receipt.createdAt)}
+              </span>
             </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base font-semibold">
+            <CardTitle className="font-semibold text-base">
               Audit & Sync Status
             </CardTitle>
-            <CardDescription>
-              Platform audit log.
-            </CardDescription>
+            <CardDescription>Platform audit log.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 text-sm">
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              This receipt entry was captured and processed via Zimba platform expense management repository.
+            <p className="text-muted-foreground text-xs leading-relaxed">
+              This receipt entry was captured and processed via Zimba platform
+              expense management repository.
             </p>
           </CardContent>
         </Card>

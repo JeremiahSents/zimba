@@ -18,7 +18,7 @@ vi.mock("@workspace/db", () => ({ db: dbMock }))
 
 const { findWorkspaceBySlug, findMembershipByUserAndOrganization } =
   await import("@workspace/db/organizations")
-const { resolveWorkspace } = await import("./resolve-workspace")
+const { resolveWorkspace } = await import("../../src/shared/resolve-workspace")
 
 describe("resolveWorkspace", () => {
   it("resolves workspace context for a member", async () => {

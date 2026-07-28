@@ -92,7 +92,7 @@ describe("correctReceiptCategoryUseCase", () => {
       {},
       expect.objectContaining({
         expenseId: "payable-1",
-        allocationId: "allocation-1",
+        budgetItemId: "allocation-1",
         amountCents: 5000,
       })
     )

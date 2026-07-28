@@ -197,7 +197,7 @@ export function ProjectDetailPage({
         </div>
         <p className="mt-1 text-muted-foreground text-xs">
           {project.location}
-          {project.plot_size ? ` · ${project.plot_size}` : ""}
+          {project.land_size ? ` · ${project.land_size}` : ""}
         </p>
       </div>
 
@@ -278,7 +278,7 @@ export function ProjectDetailPage({
             </div>
             <p className="text-muted-foreground text-xs">
               {project.location}
-              {project.plot_size ? ` · ${project.plot_size}` : ""}
+              {project.land_size ? ` · ${project.land_size}` : ""}
             </p>
           </CardContent>
         </Card>

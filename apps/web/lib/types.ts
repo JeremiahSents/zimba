@@ -157,7 +157,6 @@ export type ProjectDashboardResponse = {
   id: string
   name: string
   location: string
-  plot_size?: string | null
   land_size?: string | null
   building_type?: string | null
   client_name?: string | null

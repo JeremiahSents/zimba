@@ -3,8 +3,8 @@ import { index, pgTable, text, timestamp, varchar } from "drizzle-orm/pg-core"
 import { user } from "../auth/schema"
 import { organization } from "../organizations/schema"
 
-export const ownershipTransferRequest = pgTable(
-  "ownership_transfer_request",
+export const ownershipTransfer = pgTable(
+  "ownership_transfer",
   {
     id: varchar("id")
       .primaryKey()

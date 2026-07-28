@@ -1,8 +1,8 @@
 import { desc, eq } from "drizzle-orm"
-import { activityEvent, auditLog } from "./schema"
 import { user } from "../auth/schema"
 import { organization } from "../organizations/schema"
 import type { DatabaseExecutor } from "../shared/executor"
+import { auditLog } from "./schema"
 
 export function listPlatformAuditEvents(
   executor: DatabaseExecutor,
@@ -32,19 +32,20 @@ export function listRecentActivityEvents(
 ) {
   return executor
     .select({
-      id: activityEvent.id,
-      action: activityEvent.action,
-      entityType: activityEvent.entityType,
-      entityId: activityEvent.entityId,
-      metadata: activityEvent.metadata,
-      createdAt: activityEvent.createdAt,
+      id: auditLog.id,
+      action: auditLog.action,
+      entityType: auditLog.entityType,
+      entityId: auditLog.entityId,
+      metadata: auditLog.changes,
+      createdAt: auditLog.createdAt,
       organizationName: organization.name,
       actorName: user.name,
     })
-    .from(activityEvent)
-    .innerJoin(organization, eq(activityEvent.organizationId, organization.id))
-    .leftJoin(user, eq(activityEvent.actorId, user.id))
-    .orderBy(desc(activityEvent.createdAt))
+    .from(auditLog)
+    .innerJoin(organization, eq(auditLog.organizationId, organization.id))
+    .leftJoin(user, eq(auditLog.actorId, user.id))
+    .where(eq(auditLog.kind, "activity"))
+    .orderBy(desc(auditLog.createdAt))
     .limit(limit)
 }
 

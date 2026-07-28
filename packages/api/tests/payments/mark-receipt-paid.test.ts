@@ -71,7 +71,7 @@ describe("markReceiptFullyPaidUseCase", () => {
       expect.anything(),
       "org-1",
       "receipt-1",
-      { paymentStatus: "paid" }
+      { status: "paid" }
     )
     expect(repo.appendAuditEvent).toHaveBeenCalledWith(
       expect.anything(),

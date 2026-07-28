@@ -1,15 +1,10 @@
 import { and, count, desc, eq, gt, isNotNull, sql } from "drizzle-orm"
 import { user } from "../auth/schema"
-import {
-  invitation,
-  member,
-  organization,
-  organizationMember,
-} from "./schema"
 import { project } from "../projects/schema"
 import { expense, expenseLine, payment } from "../receipts/schema"
-import { supplier } from "../suppliers/schema"
 import type { DatabaseExecutor } from "../shared/executor"
+import { supplier } from "../suppliers/schema"
+import { invitation, member, organization } from "./schema"
 
 export function findOrganizationById(
   executor: DatabaseExecutor,
@@ -28,8 +23,8 @@ export function listOrganizationMembers(
 ) {
   return executor
     .select()
-    .from(organizationMember)
-    .where(eq(organizationMember.organizationId, organizationId))
+    .from(member)
+    .where(eq(member.organizationId, organizationId))
 }
 
 export function findUserOrganizationMembership(
@@ -38,17 +33,14 @@ export function findUserOrganizationMembership(
 ) {
   return executor
     .select({
-      organizationId: organizationMember.organizationId,
+      organizationId: member.organizationId,
       organizationName: organization.name,
       slug: organization.slug,
-      role: organizationMember.role,
+      role: member.role,
     })
-    .from(organizationMember)
-    .innerJoin(
-      organization,
-      eq(organization.id, organizationMember.organizationId)
-    )
-    .where(eq(organizationMember.userId, userId))
+    .from(member)
+    .innerJoin(organization, eq(organization.id, member.organizationId))
+    .where(eq(member.userId, userId))
     .limit(1)
 }
 
@@ -59,19 +51,16 @@ export function findUserOrganizationMembershipBySlug(
 ) {
   return executor
     .select({
-      organizationId: organizationMember.organizationId,
+      organizationId: member.organizationId,
       organizationName: organization.name,
       slug: organization.slug,
-      role: organizationMember.role,
+      role: member.role,
     })
-    .from(organizationMember)
-    .innerJoin(
-      organization,
-      eq(organization.id, organizationMember.organizationId)
-    )
+    .from(member)
+    .innerJoin(organization, eq(organization.id, member.organizationId))
     .where(
       and(
-        eq(organizationMember.userId, userId),
+        eq(member.userId, userId),
         eq(organization.slug, slug),
         eq(organization.status, "active")
       )
@@ -151,8 +140,8 @@ export async function readOrganizationStats(
         .where(eq(project.organizationId, organizationId)),
       executor
         .select({ count: count() })
-        .from(organizationMember)
-        .where(eq(organizationMember.organizationId, organizationId)),
+        .from(member)
+        .where(eq(member.organizationId, organizationId)),
     ])
   return {
     expenseCount: expenseStats[0]?.expenseCount ?? 0,
@@ -444,15 +433,12 @@ export async function findMembershipByUserAndOrganization(
 ) {
   const [row] = await executor
     .select({
-      id: organizationMember.id,
-      role: organizationMember.role,
+      id: member.id,
+      role: member.role,
     })
-    .from(organizationMember)
+    .from(member)
     .where(
-      and(
-        eq(organizationMember.userId, userId),
-        eq(organizationMember.organizationId, organizationId)
-      )
+      and(eq(member.userId, userId), eq(member.organizationId, organizationId))
     )
     .limit(1)
   return row ?? null
@@ -482,14 +468,11 @@ export async function findUserMemberships(
       organizationId: organization.id,
       organizationName: organization.name,
       slug: organization.slug,
-      role: organizationMember.role,
+      role: member.role,
     })
-    .from(organizationMember)
-    .innerJoin(
-      organization,
-      eq(organization.id, organizationMember.organizationId)
-    )
-    .where(eq(organizationMember.userId, userId))
+    .from(member)
+    .innerJoin(organization, eq(organization.id, member.organizationId))
+    .where(eq(member.userId, userId))
 }
 
 export async function updateMemberRole(
@@ -498,9 +481,9 @@ export async function updateMemberRole(
   role: string
 ) {
   const [updated] = await executor
-    .update(organizationMember)
+    .update(member)
     .set({ role, updatedAt: new Date() })
-    .where(eq(organizationMember.id, memberId))
+    .where(eq(member.id, memberId))
     .returning()
   return updated ?? null
 }

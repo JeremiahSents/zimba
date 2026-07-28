@@ -1,6 +1,6 @@
 import { and, desc, eq, isNotNull, isNull } from "drizzle-orm"
-import { allocation, project } from "./schema"
 import type { DatabaseExecutor } from "../shared/executor"
+import { budgetItem, project } from "./schema"
 
 export function findProjectForOrganization(
   executor: DatabaseExecutor,
@@ -111,30 +111,30 @@ export function listAllocationsForProject(
 ) {
   return executor
     .select()
-    .from(allocation)
+    .from(budgetItem)
     .where(
       and(
-        eq(allocation.organizationId, organizationId),
-        eq(allocation.projectId, projectId)
+        eq(budgetItem.organizationId, organizationId),
+        eq(budgetItem.projectId, projectId)
       )
     )
-    .orderBy(desc(allocation.createdAt))
+    .orderBy(desc(budgetItem.createdAt))
 }
 
 export function findAllocationForProject(
   executor: DatabaseExecutor,
   organizationId: string,
   projectId: string,
-  allocationId: string
+  budgetItemId: string
 ) {
   return executor
     .select()
-    .from(allocation)
+    .from(budgetItem)
     .where(
       and(
-        eq(allocation.id, allocationId),
-        eq(allocation.projectId, projectId),
-        eq(allocation.organizationId, organizationId)
+        eq(budgetItem.id, budgetItemId),
+        eq(budgetItem.projectId, projectId),
+        eq(budgetItem.organizationId, organizationId)
       )
     )
     .limit(1)
@@ -142,9 +142,9 @@ export function findAllocationForProject(
 
 export async function createAllocation(
   executor: DatabaseExecutor,
-  data: typeof allocation.$inferInsert
+  data: typeof budgetItem.$inferInsert
 ) {
-  const [created] = await executor.insert(allocation).values(data).returning()
+  const [created] = await executor.insert(budgetItem).values(data).returning()
   return created
 }
 
@@ -152,17 +152,17 @@ export async function updateAllocation(
   executor: DatabaseExecutor,
   organizationId: string,
   projectId: string,
-  allocationId: string,
-  data: Partial<typeof allocation.$inferInsert>
+  budgetItemId: string,
+  data: Partial<typeof budgetItem.$inferInsert>
 ) {
   const [updated] = await executor
-    .update(allocation)
+    .update(budgetItem)
     .set({ ...data, updatedAt: new Date() })
     .where(
       and(
-        eq(allocation.id, allocationId),
-        eq(allocation.projectId, projectId),
-        eq(allocation.organizationId, organizationId)
+        eq(budgetItem.id, budgetItemId),
+        eq(budgetItem.projectId, projectId),
+        eq(budgetItem.organizationId, organizationId)
       )
     )
     .returning()

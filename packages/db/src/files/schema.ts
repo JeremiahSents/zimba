@@ -4,7 +4,7 @@ import { user } from "../auth/schema"
 import { organization } from "../organizations/schema"
 import { project } from "../projects/schema"
 
-export const uploadedFile = pgTable("file", {
+export const file = pgTable("file", {
   id: varchar("id")
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
@@ -28,35 +28,6 @@ export const uploadedFile = pgTable("file", {
     .notNull(),
 })
 
-export const document = pgTable("document", {
-  id: varchar("id")
-    .primaryKey()
-    .$defaultFn(() => crypto.randomUUID()),
-  organizationId: varchar("organization_id")
-    .notNull()
-    .references(() => organization.id, { onDelete: "cascade" }),
-  fileId: varchar("file_id")
-    .notNull()
-    .references(() => uploadedFile.id, { onDelete: "cascade" }),
-  type: varchar("type").notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-})
-
-export const documentLink = pgTable("document_link", {
-  id: varchar("id")
-    .primaryKey()
-    .$defaultFn(() => crypto.randomUUID()),
-  organizationId: varchar("organization_id")
-    .notNull()
-    .references(() => organization.id, { onDelete: "cascade" }),
-  documentId: varchar("document_id")
-    .notNull()
-    .references(() => document.id, { onDelete: "cascade" }),
-  entityType: varchar("entity_type").notNull(),
-  entityId: varchar("entity_id").notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-})
-
 export const projectAttachment = pgTable("project_attachment", {
   id: varchar("id")
     .primaryKey()
@@ -69,6 +40,6 @@ export const projectAttachment = pgTable("project_attachment", {
     .references(() => project.id, { onDelete: "cascade" }),
   fileId: varchar("file_id")
     .notNull()
-    .references(() => uploadedFile.id, { onDelete: "cascade" }),
+    .references(() => file.id, { onDelete: "cascade" }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 })

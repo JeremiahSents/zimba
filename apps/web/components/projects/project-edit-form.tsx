@@ -118,7 +118,7 @@ export function ProjectEditForm({
             <Field
               name="landSize"
               label="Land / plot size"
-              value={project.land_size ?? project.plot_size ?? ""}
+              value={project.land_size ?? ""}
             />
             <div>
               <Label htmlFor="status">Status</Label>

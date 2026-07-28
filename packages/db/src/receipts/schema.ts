@@ -1,5 +1,7 @@
+import { sql } from "drizzle-orm"
 import {
   bigint,
+  check,
   index,
   integer,
   pgTable,
@@ -9,6 +11,7 @@ import {
   varchar,
 } from "drizzle-orm/pg-core"
 
+import { file } from "../files/schema"
 import { organization } from "../organizations/schema"
 import { budgetItem, project } from "../projects/schema"
 import { supplier } from "../suppliers/schema"
@@ -28,8 +31,10 @@ export const expense = pgTable(
     supplierId: varchar("supplier_id").references(() => supplier.id, {
       onDelete: "set null",
     }),
-    paymentStatus: varchar("payment_status").notNull().default("unpaid"),
-    receiptFileId: varchar("receipt_file_id"),
+    status: varchar("status").notNull().default("unpaid"),
+    receiptFileId: varchar("receipt_file_id").references(() => file.id, {
+      onDelete: "set null",
+    }),
     expenseDate: timestamp("expense_date", { mode: "date" }),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
@@ -52,12 +57,9 @@ export const expenseLine = pgTable("expense_line", {
   expenseId: varchar("expense_id")
     .notNull()
     .references(() => expense.id, { onDelete: "cascade" }),
-  allocationId: varchar("budget_item_id")
+  budgetItemId: varchar("budget_item_id")
     .notNull()
     .references(() => budgetItem.id, { onDelete: "cascade" }),
-  // Kept during the staged migration so old production databases with the
-  // legacy foreign key can accept new receipt lines as well.
-  legacyAllocationId: varchar("allocation_id"),
   itemDescription: text("item_description").notNull(),
   quantity: integer("quantity").notNull().default(1),
   unitRateCents: bigint("unit_rate_cents", { mode: "number" })
@@ -69,59 +71,6 @@ export const expenseLine = pgTable("expense_line", {
     .defaultNow()
     .$onUpdate(() => new Date())
     .notNull(),
-})
-
-export const payment = pgTable(
-  "payment",
-  {
-    id: varchar("id")
-      .primaryKey()
-      .$defaultFn(() => crypto.randomUUID()),
-    expenseId: varchar("expense_id").references(() => expense.id, {
-      onDelete: "cascade",
-    }),
-    payableId: varchar("payable_id"),
-    organizationId: varchar("organization_id")
-      .notNull()
-      .references(() => organization.id, { onDelete: "cascade" }),
-    supplierId: varchar("supplier_id").references(() => supplier.id, {
-      onDelete: "set null",
-    }),
-    amountCents: bigint("amount_cents", { mode: "number" })
-      .notNull()
-      .default(0),
-    currency: varchar("currency").notNull().default("UGX"),
-    paymentDate: timestamp("payment_date", { mode: "date" }),
-    method: varchar("method"),
-    reference: text("reference"),
-    idempotencyKey: varchar("idempotency_key"),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
-  },
-  (table) => [
-    uniqueIndex("payment_org_idempotency_unique").on(
-      table.organizationId,
-      table.idempotencyKey
-    ),
-  ]
-)
-
-export const paymentReceipt = pgTable("payment_receipt", {
-  id: varchar("id")
-    .primaryKey()
-    .$defaultFn(() => crypto.randomUUID()),
-  organizationId: varchar("organization_id")
-    .notNull()
-    .references(() => organization.id, { onDelete: "cascade" }),
-  paymentId: varchar("payment_id")
-    .notNull()
-    .references(() => payment.id, { onDelete: "cascade" }),
-  receiptNumber: varchar("receipt_number").notNull(),
-  fileId: varchar("file_id"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
 })
 
 export const payable = pgTable("payable", {
@@ -150,4 +99,48 @@ export const payable = pgTable("payable", {
     .notNull(),
 })
 
-export const ledgerPayment = payment
+export const payment = pgTable(
+  "payment",
+  {
+    id: varchar("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    expenseId: varchar("expense_id").references(() => expense.id, {
+      onDelete: "cascade",
+    }),
+    payableId: varchar("payable_id").references(() => payable.id, {
+      onDelete: "cascade",
+    }),
+    organizationId: varchar("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    supplierId: varchar("supplier_id").references(() => supplier.id, {
+      onDelete: "set null",
+    }),
+    amountCents: bigint("amount_cents", { mode: "number" })
+      .notNull()
+      .default(0),
+    currency: varchar("currency").notNull().default("UGX"),
+    paymentDate: timestamp("payment_date", { mode: "date" }),
+    method: varchar("method"),
+    reference: text("reference"),
+    idempotencyKey: varchar("idempotency_key"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex("payment_org_idempotency_unique").on(
+      table.organizationId,
+      table.idempotencyKey
+    ),
+    // A payment settles an expense or a payable, never both. Older rows predate
+    // both links and are left alone, so "neither" stays allowed.
+    check(
+      "payment_single_target",
+      sql`not (${table.expenseId} is not null and ${table.payableId} is not null)`
+    ),
+  ]
+)

@@ -76,7 +76,12 @@ export default async function ProjectDetailPage({
       {/* ── Top Navigation Bar ── */}
       <div className="flex flex-wrap items-center justify-between gap-4 border-b pb-4">
         <div className="flex items-center gap-3">
-          <Button variant="outline" size="icon-sm" asChild className="rounded-xl">
+          <Button
+            variant="outline"
+            size="icon-sm"
+            asChild
+            className="rounded-xl"
+          >
             <Link href="/projects" aria-label="Back to projects">
               <HugeiconsIcon icon={ArrowLeft02Icon} className="size-4" />
             </Link>
@@ -89,7 +94,8 @@ export default async function ProjectDetailPage({
               <StatusBadge status={project.status} />
             </div>
             <p className="mt-0.5 text-muted-foreground text-xs">
-              Location: {project.location} · Created {formatDate(project.createdAt)}
+              Location: {project.location} · Created{" "}
+              {formatDate(project.createdAt)}
             </p>
           </div>
         </div>
@@ -99,10 +105,10 @@ export default async function ProjectDetailPage({
       <Card className="overflow-hidden border bg-gradient-to-r from-card via-card to-muted/20">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="font-semibold text-xs uppercase tracking-wider text-muted-foreground">
+            <CardTitle className="font-semibold text-muted-foreground text-xs uppercase tracking-wider">
               Project Overview
             </CardTitle>
-            <Badge variant="outline" className="capitalize text-xs">
+            <Badge variant="outline" className="text-xs capitalize">
               {project.currency}
             </Badge>
           </div>
@@ -123,7 +129,7 @@ export default async function ProjectDetailPage({
                   Organization:{" "}
                   <Link
                     href={`/organizations/${project.organizationId}`}
-                    className="text-primary font-medium underline hover:opacity-80 transition-opacity"
+                    className="font-medium text-primary underline transition-opacity hover:opacity-80"
                   >
                     {project.organizationName}
                   </Link>
@@ -136,7 +142,8 @@ export default async function ProjectDetailPage({
                 {formatCompactCurrency(totalSpendCents, project.currency)}
               </span>
               <span className="text-muted-foreground text-xs">
-                {formatFullCurrency(totalSpendCents, project.currency)} Total Spend
+                {formatFullCurrency(totalSpendCents, project.currency)} Total
+                Spend
               </span>
             </div>
           </div>
@@ -203,12 +210,10 @@ export default async function ProjectDetailPage({
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="text-base font-semibold">
+            <CardTitle className="font-semibold text-base">
               Project Specifications
             </CardTitle>
-            <CardDescription>
-              Technical and structural details.
-            </CardDescription>
+            <CardDescription>Technical and structural details.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 text-sm">
             <div className="flex justify-between border-b pb-3">
@@ -217,18 +222,14 @@ export default async function ProjectDetailPage({
             </div>
             <div className="flex justify-between border-b pb-3">
               <span className="text-muted-foreground">Building Type</span>
-              <span className="font-medium capitalize">{project.buildingType || "—"}</span>
+              <span className="font-medium capitalize">
+                {project.buildingType || "—"}
+              </span>
             </div>
             {project.clientName && (
               <div className="flex justify-between border-b pb-3">
                 <span className="text-muted-foreground">Client Name</span>
                 <span className="font-medium">{project.clientName}</span>
-              </div>
-            )}
-            {project.plotSize && (
-              <div className="flex justify-between border-b pb-3">
-                <span className="text-muted-foreground">Plot Size</span>
-                <span className="font-medium">{project.plotSize}</span>
               </div>
             )}
             {project.landSize && (
@@ -246,7 +247,7 @@ export default async function ProjectDetailPage({
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base font-semibold">
+            <CardTitle className="font-semibold text-base">
               Organization & Timeline
             </CardTitle>
             <CardDescription>
@@ -258,7 +259,7 @@ export default async function ProjectDetailPage({
               <span className="text-muted-foreground">Parent Organization</span>
               <Link
                 href={`/organizations/${project.organizationId}`}
-                className="text-primary font-medium underline hover:opacity-80 transition-opacity"
+                className="font-medium text-primary underline transition-opacity hover:opacity-80"
               >
                 {project.organizationName}
               </Link>

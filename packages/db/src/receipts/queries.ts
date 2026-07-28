@@ -1,14 +1,9 @@
 import { and, desc, eq, inArray, or, sql } from "drizzle-orm"
-import { uploadedFile } from "../files/schema"
-import { allocation, project } from "../projects/schema"
-import {
-  expense,
-  expenseLine,
-  ledgerPayment,
-  payable,
-} from "./schema"
-import { supplier } from "../suppliers/schema"
+import { file } from "../files/schema"
+import { budgetItem, project } from "../projects/schema"
 import type { DatabaseExecutor } from "../shared/executor"
+import { supplier } from "../suppliers/schema"
+import { expense, expenseLine, payable, payment } from "./schema"
 
 export function findReceiptForOrganization(
   executor: DatabaseExecutor,
@@ -128,11 +123,11 @@ export async function findPayableForOrganization(
   if (!row) return null
   const payments = await executor
     .select()
-    .from(ledgerPayment)
+    .from(payment)
     .where(
       and(
-        eq(ledgerPayment.payableId, payableId),
-        eq(ledgerPayment.organizationId, organizationId)
+        eq(payment.payableId, payableId),
+        eq(payment.organizationId, organizationId)
       )
     )
   return { ...row, payments }
@@ -148,7 +143,7 @@ export async function findExpenseForOrganization(
       expense,
       projectName: project.name,
       supplierName: supplier.name,
-      receiptFile: uploadedFile,
+      receiptFile: file,
     })
     .from(expense)
     .leftJoin(
@@ -166,10 +161,10 @@ export async function findExpenseForOrganization(
       )
     )
     .leftJoin(
-      uploadedFile,
+      file,
       and(
-        eq(uploadedFile.id, expense.receiptFileId),
-        eq(uploadedFile.organizationId, expense.organizationId)
+        eq(file.id, expense.receiptFileId),
+        eq(file.organizationId, expense.organizationId)
       )
     )
     .where(
@@ -178,13 +173,13 @@ export async function findExpenseForOrganization(
     .limit(1)
   if (!row) return null
   const lines = await executor
-    .select({ line: expenseLine, allocationName: allocation.name })
+    .select({ line: expenseLine, allocationName: budgetItem.name })
     .from(expenseLine)
     .leftJoin(
-      allocation,
+      budgetItem,
       and(
-        eq(allocation.id, expenseLine.allocationId),
-        eq(allocation.organizationId, expenseLine.organizationId)
+        eq(budgetItem.id, expenseLine.budgetItemId),
+        eq(budgetItem.organizationId, expenseLine.organizationId)
       )
     )
     .where(
@@ -195,11 +190,11 @@ export async function findExpenseForOrganization(
     )
   const payments = await executor
     .select()
-    .from(ledgerPayment)
+    .from(payment)
     .where(
       and(
-        eq(ledgerPayment.organizationId, organizationId),
-        sql`(${ledgerPayment.expenseId} = ${expenseId} OR ${ledgerPayment.payableId} = ${expenseId})`
+        eq(payment.organizationId, organizationId),
+        sql`(${payment.expenseId} = ${expenseId} OR ${payment.payableId} = ${expenseId})`
       )
     )
   return { ...row, lines, payments }
@@ -228,13 +223,13 @@ export function listReceiptLinesWithAllocation(
   receiptId: string
 ) {
   return executor
-    .select({ line: expenseLine, allocationName: allocation.name })
+    .select({ line: expenseLine, allocationName: budgetItem.name })
     .from(expenseLine)
     .leftJoin(
-      allocation,
+      budgetItem,
       and(
-        eq(allocation.id, expenseLine.allocationId),
-        eq(allocation.organizationId, expenseLine.organizationId)
+        eq(budgetItem.id, expenseLine.budgetItemId),
+        eq(budgetItem.organizationId, expenseLine.organizationId)
       )
     )
     .where(
@@ -253,13 +248,13 @@ export function listReceiptLinesWithAllocationForExpenses(
   if (expenseIds.length === 0) return Promise.resolve([])
 
   return executor
-    .select({ line: expenseLine, allocationName: allocation.name })
+    .select({ line: expenseLine, allocationName: budgetItem.name })
     .from(expenseLine)
     .leftJoin(
-      allocation,
+      budgetItem,
       and(
-        eq(allocation.id, expenseLine.allocationId),
-        eq(allocation.organizationId, expenseLine.organizationId)
+        eq(budgetItem.id, expenseLine.budgetItemId),
+        eq(budgetItem.organizationId, expenseLine.organizationId)
       )
     )
     .where(
@@ -279,13 +274,13 @@ export function listReceiptPaymentsForExpenses(
 
   return executor
     .select()
-    .from(ledgerPayment)
+    .from(payment)
     .where(
       and(
-        eq(ledgerPayment.organizationId, organizationId),
+        eq(payment.organizationId, organizationId),
         or(
-          inArray(ledgerPayment.expenseId, expenseIds),
-          inArray(ledgerPayment.payableId, expenseIds)
+          inArray(payment.expenseId, expenseIds),
+          inArray(payment.payableId, expenseIds)
         )
       )
     )
@@ -300,11 +295,11 @@ export function listPayablePaymentsForPayables(
 
   return executor
     .select()
-    .from(ledgerPayment)
+    .from(payment)
     .where(
       and(
-        eq(ledgerPayment.organizationId, organizationId),
-        inArray(ledgerPayment.payableId, payableIds)
+        eq(payment.organizationId, organizationId),
+        inArray(payment.payableId, payableIds)
       )
     )
 }
@@ -380,11 +375,11 @@ export async function deletePayableForOrganization(
   payableId: string
 ) {
   await executor
-    .delete(ledgerPayment)
+    .delete(payment)
     .where(
       and(
-        eq(ledgerPayment.organizationId, organizationId),
-        eq(ledgerPayment.payableId, payableId)
+        eq(payment.organizationId, organizationId),
+        eq(payment.payableId, payableId)
       )
     )
   const [deleted] = await executor
@@ -398,7 +393,7 @@ export async function deletePayableForOrganization(
 
 export async function createLedgerPayment(
   executor: DatabaseExecutor,
-  data: typeof ledgerPayment.$inferInsert
+  data: typeof payment.$inferInsert
 ) {
   if (data.supplierId) {
     const [supplierRow] = await executor
@@ -413,10 +408,7 @@ export async function createLedgerPayment(
       .limit(1)
     if (!supplierRow) return undefined
   }
-  const [created] = await executor
-    .insert(ledgerPayment)
-    .values(data)
-    .returning()
+  const [created] = await executor.insert(payment).values(data).returning()
   return created
 }
 
@@ -428,7 +420,7 @@ export async function syncExpensePaymentStatus(
   const [totals] = await executor
     .select({
       total: sql<number>`coalesce((select sum(${expenseLine.amountCents}) from ${expenseLine} where ${expenseLine.expenseId} = ${expenseId} and ${expenseLine.organizationId} = ${organizationId}), 0)`,
-      paid: sql<number>`coalesce((select sum(${ledgerPayment.amountCents}) from ${ledgerPayment} where ${ledgerPayment.expenseId} = ${expenseId} and ${ledgerPayment.organizationId} = ${organizationId}), 0)`,
+      paid: sql<number>`coalesce((select sum(${payment.amountCents}) from ${payment} where ${payment.expenseId} = ${expenseId} and ${payment.organizationId} = ${organizationId}), 0)`,
     })
     .from(expense)
     .where(
@@ -441,7 +433,7 @@ export async function syncExpensePaymentStatus(
   await executor
     .update(expense)
     .set({
-      paymentStatus:
+      status:
         paid >= total && total > 0 ? "paid" : paid > 0 ? "partial" : "unpaid",
     })
     .where(
@@ -453,13 +445,12 @@ export async function updateReceiptLinesAllocation(
   executor: DatabaseExecutor,
   organizationId: string,
   expenseId: string,
-  allocationId: string
+  budgetItemId: string
 ) {
   return executor
     .update(expenseLine)
     .set({
-      allocationId,
-      legacyAllocationId: allocationId,
+      budgetItemId,
       updatedAt: new Date(),
     })
     .where(
@@ -503,9 +494,9 @@ export function insertReceiptLine(
 
 export function insertReceiptPayment(
   executor: DatabaseExecutor,
-  data: typeof ledgerPayment.$inferInsert
+  data: typeof payment.$inferInsert
 ) {
-  return executor.insert(ledgerPayment).values(data)
+  return executor.insert(payment).values(data)
 }
 
 export function listReceiptPayments(
@@ -515,11 +506,11 @@ export function listReceiptPayments(
 ) {
   return executor
     .select()
-    .from(ledgerPayment)
+    .from(payment)
     .where(
       and(
-        eq(ledgerPayment.expenseId, expenseId),
-        eq(ledgerPayment.organizationId, organizationId)
+        eq(payment.expenseId, expenseId),
+        eq(payment.organizationId, organizationId)
       )
     )
 }
@@ -528,11 +519,11 @@ export async function updateReceiptPaymentStatus(
   executor: DatabaseExecutor,
   organizationId: string,
   expenseId: string,
-  paymentStatus: string
+  status: string
 ) {
   const [updated] = await executor
     .update(expense)
-    .set({ paymentStatus, updatedAt: new Date() })
+    .set({ status, updatedAt: new Date() })
     .where(
       and(eq(expense.id, expenseId), eq(expense.organizationId, organizationId))
     )

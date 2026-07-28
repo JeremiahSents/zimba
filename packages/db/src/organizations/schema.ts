@@ -17,7 +17,7 @@ export const organization = pgTable(
       .$defaultFn(() => crypto.randomUUID()),
     name: varchar("name").notNull(),
     slug: varchar("slug").notNull(),
-    baseCurrency: varchar("base_currency").notNull().default("UGX"),
+    currency: varchar("currency").notNull().default("UGX"),
     status: varchar("status").notNull().default("active"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
@@ -28,8 +28,8 @@ export const organization = pgTable(
   (table) => [uniqueIndex("organization_slug_unique").on(table.slug)]
 )
 
-export const organizationMember = pgTable(
-  "organization_member",
+export const member = pgTable(
+  "member",
   {
     id: varchar("id")
       .primaryKey()
@@ -49,7 +49,7 @@ export const organizationMember = pgTable(
       .notNull(),
   },
   (table) => [
-    uniqueIndex("organization_member_org_user_unique").on(
+    uniqueIndex("member_org_user_unique").on(
       table.organizationId,
       table.userId
     ),
@@ -82,21 +82,3 @@ export const invitation = pgTable(
     index("invitation_status_hash_idx").on(table.status, table.tokenHash),
   ]
 )
-
-export const memberProject = pgTable(
-  "member_project",
-  {
-    id: varchar("id")
-      .primaryKey()
-      .$defaultFn(() => crypto.randomUUID()),
-    memberId: varchar("member_id")
-      .notNull()
-      .references(() => organizationMember.id, { onDelete: "cascade" }),
-    projectId: varchar("project_id").notNull(),
-  },
-  (table) => [
-    uniqueIndex("member_project_unique").on(table.memberId, table.projectId),
-  ]
-)
-
-export const member = organizationMember

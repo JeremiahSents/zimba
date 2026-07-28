@@ -1,6 +1,11 @@
 import { db } from "@workspace/db"
 
-import { findExpenseForOrganization, insertReceiptPayment, updateReceiptForOrganization, updateReceiptPaymentStatus } from "@workspace/db/receipts"
+import {
+  findExpenseForOrganization,
+  insertReceiptPayment,
+  updateReceiptForOrganization,
+  updateReceiptPaymentStatus,
+} from "@workspace/db/receipts"
 import { notFoundError, validationError } from "../shared/application-error"
 import { requireRole } from "../shared/authorization"
 import type { WorkspaceContext } from "../shared/workspace-context"
@@ -21,7 +26,7 @@ export async function updateReceiptStatusUseCase(
       ctx.organizationId,
       receiptId,
       {
-        paymentStatus: status === "Partial" ? "partial" : "unpaid",
+        status: status === "Partial" ? "partial" : "unpaid",
       }
     )
     if (!updated) notFoundError("Receipt not found.")

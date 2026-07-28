@@ -184,7 +184,7 @@ export async function getPayableExpense(
       : "assigned",
     lines: result.lines.map(({ line, allocationName }) => ({
       id: line.id,
-      allocation_id: line.allocationId,
+      allocation_id: line.budgetItemId,
       allocation_name: allocationName ?? "General",
       description: line.itemDescription,
       quantity: line.quantity,

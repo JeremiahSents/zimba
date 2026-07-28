@@ -1,5 +1,6 @@
-import "server-only"
-
+// No "server-only" marker here: that package throws outside a bundler, which
+// would break drizzle-kit, the seed script and any other Node entry point.
+// `pnpm check:boundaries` is what actually stops apps from importing this.
 import { drizzle } from "drizzle-orm/node-postgres"
 import { Pool } from "pg"
 import * as schema from "./schemas/index"

@@ -54,7 +54,7 @@ export function ProjectsPage({
     return [
       project.name,
       project.location,
-      project.plot_size,
+      project.land_size,
       project.client_name,
       project.status,
       project.building_type,

@@ -1,6 +1,14 @@
 import { db } from "@workspace/db"
 
-import { findExpenseForOrganization, findPayableForOrganization, listExpensesForOrganization, listPayablePaymentsForPayables, listPayablesForOrganization, listReceiptLinesWithAllocationForExpenses, listReceiptPaymentsForExpenses } from "@workspace/db/receipts"
+import {
+  findExpenseForOrganization,
+  findPayableForOrganization,
+  listExpensesForOrganization,
+  listPayablePaymentsForPayables,
+  listPayablesForOrganization,
+  listReceiptLinesWithAllocationForExpenses,
+  listReceiptPaymentsForExpenses,
+} from "@workspace/db/receipts"
 import type { WorkspaceContext } from "../shared/workspace-context"
 
 export type FinancialExpenseRow = {
@@ -108,7 +116,7 @@ export async function listFinancialExpenseRowsUseCase(
         organizationId: expense.organizationId,
         projectId: expense.projectId ?? undefined,
         supplierId: expense.supplierId ?? undefined,
-        allocationId: line.allocationId,
+        allocationId: line.budgetItemId,
         date: expense.expenseDate ?? expense.createdAt,
         createdAt: expense.createdAt,
         taskName: allocationName ?? "General",
@@ -117,7 +125,7 @@ export async function listFinancialExpenseRowsUseCase(
         itemDescription: line.itemDescription,
         amountCents: line.amountCents,
         paidCents,
-        paymentStatus: expense.paymentStatus,
+        paymentStatus: expense.status,
         categoryState: allocationName
           ? ("assigned" as const)
           : ("uncategorized" as const),

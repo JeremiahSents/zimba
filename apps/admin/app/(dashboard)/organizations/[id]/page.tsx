@@ -198,7 +198,7 @@ export default async function OrganizationDetailPage({
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard
           title="Total Spend"
-          value={formatCompactCurrency(stats.totalSpendCents, org.baseCurrency)}
+          value={formatCompactCurrency(stats.totalSpendCents, org.currency)}
           accent="emerald"
           icon={
             <HugeiconsIcon
@@ -211,7 +211,7 @@ export default async function OrganizationDetailPage({
         />
         <StatCard
           title="Total Paid"
-          value={formatCompactCurrency(stats.totalPaidCents, org.baseCurrency)}
+          value={formatCompactCurrency(stats.totalPaidCents, org.currency)}
           accent="emerald"
           icon={
             <HugeiconsIcon
@@ -504,7 +504,7 @@ export default async function OrganizationDetailPage({
               </div>
               <div className="flex justify-between border-b pb-3">
                 <span className="text-muted-foreground">Base Currency</span>
-                <span className="font-semibold">{org.baseCurrency}</span>
+                <span className="font-semibold">{org.currency}</span>
               </div>
               <div className="flex justify-between border-b pb-3">
                 <span className="text-muted-foreground">Created Date</span>

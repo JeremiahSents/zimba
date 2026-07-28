@@ -20,10 +20,10 @@ export async function getReceipt(
     organizationId: result.expense.organizationId,
     projectId: result.expense.projectId,
     supplierId: result.expense.supplierId,
-    paymentStatus: result.expense.paymentStatus,
+    paymentStatus: result.expense.status,
     lines: result.lines.map(({ line }) => ({
       id: line.id,
-      allocationId: line.allocationId,
+      allocationId: line.budgetItemId,
       itemDescription: line.itemDescription,
       quantity: line.quantity,
       amountCents: line.amountCents,

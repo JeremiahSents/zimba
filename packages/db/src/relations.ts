@@ -1,22 +1,16 @@
 import { relations } from "drizzle-orm"
 import { account, session, user } from "./auth/schema"
 import { onboardingApplication } from "./onboarding/schema"
-import { organization, organizationMember } from "./organizations/schema"
-import { ownershipTransferRequest } from "./ownership-transfers/schema"
+import { member, organization } from "./organizations/schema"
+import { ownershipTransfer } from "./ownership-transfers/schema"
 import { budgetItem, project } from "./projects/schema"
-import {
-  expense,
-  expenseLine,
-  payable,
-  payment,
-  paymentReceipt,
-} from "./receipts/schema"
+import { expense, expenseLine, payable, payment } from "./receipts/schema"
 import { supplier, supplierCategory } from "./suppliers/schema"
 
 export const userRelations = relations(user, ({ many }) => ({
   sessions: many(session),
   accounts: many(account),
-  organizationMemberships: many(organizationMember),
+  organizationMemberships: many(member),
 }))
 
 export const sessionRelations = relations(session, ({ one }) => ({
@@ -34,7 +28,7 @@ export const accountRelations = relations(account, ({ one }) => ({
 }))
 
 export const organizationRelations = relations(organization, ({ many }) => ({
-  members: many(organizationMember),
+  members: many(member),
   projects: many(project),
   suppliers: many(supplier),
   supplierCategories: many(supplierCategory),
@@ -43,19 +37,16 @@ export const organizationRelations = relations(organization, ({ many }) => ({
   payables: many(payable),
 }))
 
-export const organizationMemberRelations = relations(
-  organizationMember,
-  ({ one }) => ({
-    organization: one(organization, {
-      fields: [organizationMember.organizationId],
-      references: [organization.id],
-    }),
-    user: one(user, {
-      fields: [organizationMember.userId],
-      references: [user.id],
-    }),
-  })
-)
+export const organizationMemberRelations = relations(member, ({ one }) => ({
+  organization: one(organization, {
+    fields: [member.organizationId],
+    references: [organization.id],
+  }),
+  user: one(user, {
+    fields: [member.userId],
+    references: [user.id],
+  }),
+}))
 
 export const projectRelations = relations(project, ({ many, one }) => ({
   organization: one(organization, {
@@ -126,7 +117,7 @@ export const expenseLineRelations = relations(expenseLine, ({ one }) => ({
     references: [expense.id],
   }),
   budgetItem: one(budgetItem, {
-    fields: [expenseLine.allocationId],
+    fields: [expenseLine.budgetItemId],
     references: [budgetItem.id],
   }),
 }))
@@ -143,17 +134,6 @@ export const paymentRelations = relations(payment, ({ one }) => ({
   supplier: one(supplier, {
     fields: [payment.supplierId],
     references: [supplier.id],
-  }),
-}))
-
-export const paymentReceiptRelations = relations(paymentReceipt, ({ one }) => ({
-  organization: one(organization, {
-    fields: [paymentReceipt.organizationId],
-    references: [organization.id],
-  }),
-  payment: one(payment, {
-    fields: [paymentReceipt.paymentId],
-    references: [payment.id],
   }),
 }))
 
@@ -192,24 +172,24 @@ export const onboardingApplicationRelations = relations(
 )
 
 export const ownershipTransferRequestRelations = relations(
-  ownershipTransferRequest,
+  ownershipTransfer,
   ({ one }) => ({
     organization: one(organization, {
-      fields: [ownershipTransferRequest.organizationId],
+      fields: [ownershipTransfer.organizationId],
       references: [organization.id],
     }),
     fromUser: one(user, {
-      fields: [ownershipTransferRequest.fromUserId],
+      fields: [ownershipTransfer.fromUserId],
       references: [user.id],
       relationName: "transferFrom",
     }),
     toUser: one(user, {
-      fields: [ownershipTransferRequest.toUserId],
+      fields: [ownershipTransfer.toUserId],
       references: [user.id],
       relationName: "transferTo",
     }),
     reviewer: one(user, {
-      fields: [ownershipTransferRequest.reviewedBy],
+      fields: [ownershipTransfer.reviewedBy],
       references: [user.id],
       relationName: "transferReviewer",
     }),

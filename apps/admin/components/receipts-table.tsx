@@ -5,12 +5,12 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import {
   type ColumnDef,
   type ColumnFiltersState,
-  type SortingState,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
+  type SortingState,
   useReactTable,
 } from "@tanstack/react-table"
 import { Button } from "@workspace/ui/components/button"
@@ -37,7 +37,7 @@ import { formatCreatedDate } from "@/lib/format-currency"
 
 export type ReceiptItem = {
   id: string
-  paymentStatus: string
+  status: string
   expenseDate: Date | string | null
   createdAt: Date | string
   organizationName: string
@@ -60,7 +60,7 @@ export function ReceiptsTable({ data }: ReceiptsTableProps) {
       header: ({ column }) => (
         <button
           type="button"
-          className="font-semibold text-xs text-foreground tracking-tight hover:text-primary transition-colors cursor-pointer"
+          className="cursor-pointer font-semibold text-foreground text-xs tracking-tight transition-colors hover:text-primary"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Organization
@@ -77,7 +77,7 @@ export function ReceiptsTable({ data }: ReceiptsTableProps) {
       header: ({ column }) => (
         <button
           type="button"
-          className="font-semibold text-xs text-foreground tracking-tight hover:text-primary transition-colors cursor-pointer"
+          className="cursor-pointer font-semibold text-foreground text-xs tracking-tight transition-colors hover:text-primary"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Project
@@ -94,37 +94,37 @@ export function ReceiptsTable({ data }: ReceiptsTableProps) {
       header: ({ column }) => (
         <button
           type="button"
-          className="font-semibold text-xs text-foreground tracking-tight hover:text-primary transition-colors cursor-pointer"
+          className="cursor-pointer font-semibold text-foreground text-xs tracking-tight transition-colors hover:text-primary"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Supplier
         </button>
       ),
       cell: ({ row }) => (
-        <span className="text-muted-foreground text-xs sm:text-sm font-medium">
+        <span className="font-medium text-muted-foreground text-xs sm:text-sm">
           {row.original.supplierName || "—"}
         </span>
       ),
     },
     {
-      accessorKey: "paymentStatus",
+      accessorKey: "status",
       header: ({ column }) => (
         <button
           type="button"
-          className="font-semibold text-xs text-foreground tracking-tight hover:text-primary transition-colors cursor-pointer"
+          className="cursor-pointer font-semibold text-foreground text-xs tracking-tight transition-colors hover:text-primary"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Payment Status
         </button>
       ),
-      cell: ({ row }) => <StatusBadge status={row.original.paymentStatus} />,
+      cell: ({ row }) => <StatusBadge status={row.original.status} />,
     },
     {
       accessorKey: "createdAt",
       header: ({ column }) => (
         <button
           type="button"
-          className="font-semibold text-xs text-foreground tracking-tight hover:text-primary transition-colors cursor-pointer"
+          className="cursor-pointer font-semibold text-foreground text-xs tracking-tight transition-colors hover:text-primary"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Date
@@ -132,16 +132,25 @@ export function ReceiptsTable({ data }: ReceiptsTableProps) {
       ),
       cell: ({ row }) => (
         <span className="font-medium text-foreground text-xs sm:text-sm">
-          {formatCreatedDate(row.original.expenseDate || row.original.createdAt)}
+          {formatCreatedDate(
+            row.original.expenseDate || row.original.createdAt
+          )}
         </span>
       ),
     },
     {
       id: "actions",
-      header: () => <div className="text-right font-semibold text-xs">Action</div>,
+      header: () => (
+        <div className="text-right font-semibold text-xs">Action</div>
+      ),
       cell: ({ row }) => (
         <div className="text-right">
-          <Button variant="outline" size="sm" asChild className="h-8 gap-1.5 rounded-lg px-2.5">
+          <Button
+            variant="outline"
+            size="sm"
+            asChild
+            className="h-8 gap-1.5 rounded-lg px-2.5"
+          >
             <Link href={`/receipts/${row.original.id}`}>
               <HugeiconsIcon icon={EyeIcon} className="size-3.5 text-primary" />
               <span>View</span>
@@ -175,7 +184,7 @@ export function ReceiptsTable({ data }: ReceiptsTableProps) {
   })
 
   const statusFilterValue =
-    (table.getColumn("paymentStatus")?.getFilterValue() as string) ?? "all"
+    (table.getColumn("status")?.getFilterValue() as string) ?? "all"
 
   return (
     <div className="space-y-4">
@@ -185,20 +194,20 @@ export function ReceiptsTable({ data }: ReceiptsTableProps) {
           <div className="relative min-w-48 max-w-sm flex-1">
             <HugeiconsIcon
               icon={Search01Icon}
-              className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+              className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
             />
             <Input
               placeholder="Search receipts by org, project, or supplier…"
               value={globalFilter ?? ""}
               onChange={(e) => setGlobalFilter(e.target.value)}
-              className="h-9 pl-9 rounded-xl"
+              className="h-9 rounded-xl pl-9"
             />
           </div>
           <Select
             value={statusFilterValue}
             onValueChange={(value) => {
               table
-                .getColumn("paymentStatus")
+                .getColumn("status")
                 ?.setFilterValue(value === "all" ? undefined : value)
             }}
           >
@@ -214,8 +223,9 @@ export function ReceiptsTable({ data }: ReceiptsTableProps) {
           </Select>
         </div>
 
-        <div className="text-muted-foreground text-xs font-medium">
-          Showing {table.getFilteredRowModel().rows.length} of {data.length} receipts
+        <div className="font-medium text-muted-foreground text-xs">
+          Showing {table.getFilteredRowModel().rows.length} of {data.length}{" "}
+          receipts
         </div>
       </div>
 
@@ -282,7 +292,7 @@ export function ReceiptsTable({ data }: ReceiptsTableProps) {
           >
             Previous
           </Button>
-          <span className="text-muted-foreground text-xs font-medium px-2">
+          <span className="px-2 font-medium text-muted-foreground text-xs">
             Page {table.getState().pagination.pageIndex + 1} of{" "}
             {table.getPageCount()}
           </span>

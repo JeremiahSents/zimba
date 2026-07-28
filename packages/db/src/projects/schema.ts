@@ -1,5 +1,6 @@
 import { bigint, pgTable, text, timestamp, varchar } from "drizzle-orm/pg-core"
 
+import { user } from "../auth/schema"
 import { organization } from "../organizations/schema"
 
 export const project = pgTable("project", {
@@ -11,7 +12,6 @@ export const project = pgTable("project", {
     .references(() => organization.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   location: text("location").notNull(),
-  plotSize: text("plot_size"),
   landSize: text("land_size"),
   buildingType: text("building_type"),
   clientName: text("client_name"),
@@ -20,7 +20,9 @@ export const project = pgTable("project", {
   startDate: timestamp("start_date", { mode: "date" }),
   targetEndDate: timestamp("target_end_date", { mode: "date" }),
   archivedAt: timestamp("archived_at", { mode: "date" }),
-  archivedBy: varchar("archived_by"),
+  archivedBy: text("archived_by").references(() => user.id, {
+    onDelete: "set null",
+  }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()
@@ -46,5 +48,3 @@ export const budgetItem = pgTable("budget_item", {
     .$onUpdate(() => new Date())
     .notNull(),
 })
-
-export const allocation = budgetItem

@@ -1,7 +1,7 @@
 import { and, asc, desc, eq, sql } from "drizzle-orm"
-import { expense, expenseLine, ledgerPayment } from "../receipts/schema"
-import { supplier, supplierCategory } from "./schema"
+import { expense, expenseLine, payment } from "../receipts/schema"
 import type { DatabaseExecutor } from "../shared/executor"
+import { supplier, supplierCategory } from "./schema"
 
 export function listSuppliersForOrganization(
   executor: DatabaseExecutor,
@@ -72,7 +72,7 @@ export function listSupplierSummaries(
       status: supplier.status,
       receiptCount: sql<number>`coalesce((select count(distinct ${expense.id}) from ${expense} where "expense"."organization_id" = ${organizationId} and "expense"."supplier_id" = "supplier"."id"), 0)`,
       incurredCents: sql<number>`coalesce((select sum(${expenseLine.amountCents}) from ${expenseLine} inner join ${expense} on "expense"."id" = "expense_line"."expense_id" where "expense_line"."organization_id" = ${organizationId} and "expense"."supplier_id" = "supplier"."id"), 0)`,
-      paidCents: sql<number>`coalesce((select sum(${ledgerPayment.amountCents}) from ${ledgerPayment} where "payment"."organization_id" = ${organizationId} and "payment"."supplier_id" = "supplier"."id"), 0)`,
+      paidCents: sql<number>`coalesce((select sum(${payment.amountCents}) from ${payment} where "payment"."organization_id" = ${organizationId} and "payment"."supplier_id" = "supplier"."id"), 0)`,
     })
     .from(supplier)
     .where(eq(supplier.organizationId, organizationId))

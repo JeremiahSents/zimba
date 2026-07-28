@@ -106,7 +106,7 @@ export function ProjectRow({ project }: { project: ProjectDashboardResponse }) {
             <HugeiconsIcon icon={Location01Icon} className="size-3.5" />
             {project.location}
           </span>
-          {project.plot_size && <span>{project.plot_size}</span>}
+          {project.land_size && <span>{project.land_size}</span>}
         </div>
         <p
           className={`mt-2 inline-flex rounded-full px-2 py-0.5 font-medium text-[10px] ${toneClasses.pill}`}

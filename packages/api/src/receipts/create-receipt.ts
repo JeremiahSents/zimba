@@ -1,8 +1,16 @@
 import { db } from "@workspace/db"
 import type { DatabaseExecutor } from "@workspace/db/executor"
 import { findCompletedFile } from "@workspace/db/files"
-import { findActiveProjectForOrganization, findAllocationForProject } from "@workspace/db/projects"
-import { insertReceipt, insertReceiptLine, insertReceiptPayment, updateReceiptPaymentStatus } from "@workspace/db/receipts"
+import {
+  findActiveProjectForOrganization,
+  findAllocationForProject,
+} from "@workspace/db/projects"
+import {
+  insertReceipt,
+  insertReceiptLine,
+  insertReceiptPayment,
+  updateReceiptPaymentStatus,
+} from "@workspace/db/receipts"
 import { findSupplierForOrganization } from "@workspace/db/suppliers"
 import type { ReceiptCreateOutputDto } from "../schemas"
 import { receiptCreateInputSchema } from "../schemas"
@@ -99,7 +107,7 @@ async function createReceiptInTransaction(
     supplierId: input.supplierId,
     receiptFileId: input.receiptFileId,
     expenseDate: input.expenseDate ?? new Date(),
-    paymentStatus,
+    status: paymentStatus,
   })
 
   for (const line of input.lines) {
@@ -107,8 +115,7 @@ async function createReceiptInTransaction(
       id: crypto.randomUUID(),
       organizationId,
       expenseId,
-      allocationId: line.allocationId,
-      legacyAllocationId: line.allocationId,
+      budgetItemId: line.allocationId,
       itemDescription: line.itemDescription,
       quantity: line.quantity,
       unitRateCents: line.unitRateCents,
