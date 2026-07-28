@@ -1,7 +1,6 @@
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components/card"
@@ -69,17 +68,7 @@ export function ExpensesPage({ data }: { data: DashboardOverviewData }) {
           value={formatCurrency(largestExpense)}
         />
       </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent expenses</CardTitle>
-          <CardDescription>
-            Latest payments logged across active projects.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ExpenseTable expenses={data.expenses} />
-        </CardContent>
-      </Card>
+      <ExpenseTable expenses={data.expenses} title="Recent expenses" />
     </DashboardShell>
   )
 }

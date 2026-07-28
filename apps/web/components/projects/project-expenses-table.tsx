@@ -1,15 +1,7 @@
 "use client"
 
 import {
-  ArrowLeft01Icon,
-  ArrowRight01Icon,
-  Search01Icon,
-  Sorting05Icon,
-} from "@hugeicons/core-free-icons"
-import { HugeiconsIcon } from "@hugeicons/react"
-import {
   type ColumnDef,
-  flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
@@ -17,91 +9,66 @@ import {
   type SortingState,
   useReactTable,
 } from "@tanstack/react-table"
-import { Button } from "@workspace/ui/components/button"
-import { Input } from "@workspace/ui/components/input"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@workspace/ui/components/table"
+import { DataTable } from "@workspace/ui/components/data-table"
 import Link from "next/link"
-import { useMemo, useState } from "react"
+import { type ReactNode, useMemo, useState } from "react"
 
 import {
   MobileDataCard,
   MobileDataMeta,
 } from "@/components/shared/mobile-data-card"
-import { ResponsiveDataView } from "@/components/shared/responsive-data-view"
+import { ExpenseStatusBadge } from "@/components/shared/status-badges"
 import { useWorkspaceSlug } from "@/components/shared/use-workspace-slug"
 import { formatCurrency, formatShortDate } from "@/lib/format"
 import type { ExpenseResponse, ExpenseStatus } from "@/lib/types"
 
-const statusPillClasses = {
-  Partial: "border-amber-200 bg-amber-50 text-amber-700",
-  Full: "border-green-200 bg-green-50 text-green-700",
-  "Not paid": "border-slate-200 bg-slate-50 text-slate-600",
-}
-
-const columnWidths: Record<string, string> = {
-  item_description: "w-[23%]",
-  task_name: "w-[13%]",
-  supplier_name: "w-[18%]",
-  amount: "w-[16%]",
-  date: "w-[14%]",
-  status: "w-[14%]",
+function statusLabel(status: ExpenseStatus) {
+  return status === "Full" ? "Paid in full" : status
 }
 
 export function ProjectExpensesTable({
   expenses,
+  title,
 }: {
   expenses: ExpenseResponse[]
+  title?: ReactNode
 }) {
   const slug = useWorkspaceSlug()
   const [globalFilter, setGlobalFilter] = useState("")
   const [sorting, setSorting] = useState<SortingState>([])
+
   const columns = useMemo<ColumnDef<ExpenseResponse>[]>(
     () => [
       {
         accessorKey: "item_description",
         header: "Item",
-        cell: ({ getValue }) => (
-          <span className="block truncate font-medium text-foreground">
-            {getValue<string>()}
-          </span>
+        cell: ({ row }) => (
+          <Link
+            href={`/${slug}/expenses/receipts/${row.original.receipt_id ?? row.original.id}`}
+          >
+            {row.original.item_description}
+          </Link>
         ),
       },
       {
         accessorKey: "task_name",
         header: "Category",
-        cell: ({ getValue }) => (
-          <span className="text-muted-foreground">{getValue<string>()}</span>
-        ),
       },
       {
         accessorKey: "supplier_name",
         header: "Supplier",
-        cell: ({ getValue }) => (
-          <span className="block truncate text-muted-foreground">
-            {getValue<string>()}
-          </span>
-        ),
       },
       {
         accessorKey: "amount",
         header: "Amount",
         cell: ({ getValue }) => formatCurrency(getValue<number>()),
+        meta: { cellClassName: "tabular-nums whitespace-nowrap" },
       },
       {
         accessorKey: "date",
         header: "Date",
-        cell: ({ getValue }) => (
-          <span className="whitespace-nowrap text-foreground tabular-nums">
-            {formatShortDate(getValue<string>())}
-          </span>
-        ),
+        cell: ({ getValue }) => formatShortDate(getValue<string>()),
+        meta: { cellClassName: "tabular-nums whitespace-nowrap" },
       },
       {
         id: "status",
@@ -110,17 +77,14 @@ export function ProjectExpensesTable({
         cell: ({ getValue }) => {
           const status = getValue<ExpenseStatus>()
           return (
-            <span
-              className={`inline-flex rounded-md border px-2 py-1 font-medium text-[10px] ${statusPillClasses[status]}`}
-            >
-              {status === "Full" ? "Paid in full" : status}
-            </span>
+            <ExpenseStatusBadge status={status} label={statusLabel(status)} />
           )
         },
       },
     ],
-    []
+    [slug]
   )
+
   const table = useReactTable({
     data: expenses,
     columns,
@@ -133,183 +97,56 @@ export function ProjectExpensesTable({
     getPaginationRowModel: getPaginationRowModel(),
     initialState: { pagination: { pageSize: 5 } },
   })
-  const rows = table.getRowModel().rows
+
+  const totalRows = table.getFilteredRowModel().rows.length
 
   return (
-    <div className="space-y-5 [&_[data-slot=table-container]]:overflow-x-auto">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="relative w-full max-w-xs">
-          <HugeiconsIcon
-            icon={Search01Icon}
-            strokeWidth={1.5}
-            className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
-          />
-          <Input
-            value={globalFilter}
-            onChange={(event) => setGlobalFilter(event.target.value)}
-            placeholder="Search expenses..."
-            aria-label="Search project expenses"
-            className="pl-9"
-          />
-        </div>
-        <p className="text-muted-foreground text-xs">
-          {table.getFilteredRowModel().rows.length}{" "}
-          {table.getFilteredRowModel().rows.length === 1
-            ? "expense"
-            : "expenses"}
-        </p>
-      </div>
-      <ResponsiveDataView
-        mobile={
-          rows.length ? (
-            <div className="space-y-3">
-              {rows.map((row) => {
-                const expense = row.original
-                const status = expense.status ?? "Full"
-                return (
-                  <Link
-                    key={row.id}
-                    href={`/${slug}/expenses/receipts/${expense.receipt_id ?? expense.id}`}
-                    className="block transition-transform active:scale-[0.99]"
-                  >
-                    <MobileDataCard
-                      eyebrow={expense.task_name}
-                      title={
-                        <span className="font-medium text-primary">
-                          {expense.item_description}
-                        </span>
-                      }
-                      value={formatCurrency(expense.amount)}
-                      status={
-                        <span
-                          className={`inline-flex rounded-lg border px-3 py-2 font-medium text-xs ${statusPillClasses[status]}`}
-                        >
-                          {status === "Full" ? "Paid in full" : status}
-                        </span>
-                      }
-                    >
-                      <dl className="grid grid-cols-2 gap-4">
-                        <MobileDataMeta label="Supplier">
-                          {expense.supplier_name}
-                        </MobileDataMeta>
-                        <MobileDataMeta label="Date">
-                          {formatShortDate(expense.date)}
-                        </MobileDataMeta>
-                      </dl>
-                    </MobileDataCard>
-                  </Link>
-                )
-              })}
-            </div>
-          ) : (
-            <div className="rounded-2xl border border-dashed p-8 text-center text-muted-foreground text-sm">
-              No expenses match your search.
-            </div>
-          )
-        }
-        desktop={
-          <Table className="min-w-[58rem] table-fixed border-y">
-            <TableHeader className="bg-muted/25">
-              {table.getHeaderGroups().map((group) => (
-                <TableRow key={group.id}>
-                  {group.headers.map((header) => (
-                    <TableHead
-                      key={header.id}
-                      className={`min-w-0 border-l px-4 first:border-l-0 ${columnWidths[header.id] ?? ""} ${header.id === "amount" ? "text-right" : ""}`}
-                    >
-                      {header.isPlaceholder ? null : (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="xs"
-                          className={`inline-flex items-center gap-1.5 text-inherit ${header.id === "amount" ? "ml-auto" : ""}`}
-                          onClick={header.column.getToggleSortingHandler()}
-                          disabled={!header.column.getCanSort()}
-                        >
-                          {flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                          {header.column.getCanSort() && (
-                            <HugeiconsIcon
-                              icon={Sorting05Icon}
-                              strokeWidth={1.5}
-                              className="size-3.5"
-                            />
-                          )}
-                        </Button>
-                      )}
-                    </TableHead>
-                  ))}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {rows.length ? (
-                rows.map((row) => (
-                  <TableRow key={row.id} className="hover:bg-muted/25">
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell
-                        key={cell.id}
-                        className={`min-w-0 overflow-hidden border-l px-4 py-4 align-middle first:border-l-0 ${cell.column.id === "amount" ? "text-right font-semibold" : ""}`}
-                      >
-                        {cell.column.id === "item_description" ? (
-                          <Link
-                            href={`/${slug}/expenses/receipts/${row.original.receipt_id ?? row.original.id}`}
-                            className="block truncate font-medium text-primary hover:underline"
-                          >
-                            {row.original.item_description}
-                          </Link>
-                        ) : (
-                          flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext()
-                          )
-                        )}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="h-24 text-center text-muted-foreground"
-                  >
-                    No expenses match your search.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        }
-      />
-      <div className="flex flex-col gap-3 border-t pt-5 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-muted-foreground text-xs">
-          Page {table.getState().pagination.pageIndex + 1} of{" "}
-          {Math.max(table.getPageCount(), 1)}
-        </p>
-        <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center">
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
+    <DataTable
+      table={table}
+      title={title}
+      search={{
+        value: globalFilter,
+        onChange: setGlobalFilter,
+        placeholder: "Search expenses...",
+        label: "Search project expenses",
+      }}
+      emptyMessage="No expenses match your search."
+      footerNote={`${totalRows} ${totalRows === 1 ? "expense" : "expenses"}`}
+      renderMobileRow={(row) => {
+        const expense = row.original
+        const status = expense.status ?? "Full"
+        return (
+          <Link
+            href={`/${slug}/expenses/receipts/${expense.receipt_id ?? expense.id}`}
+            className="block transition-transform active:scale-[0.99]"
           >
-            <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={1.5} />
-            Previous
-          </Button>
-          <Button
-            variant="default"
-            size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-          >
-            Next
-            <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={1.5} />
-          </Button>
-        </div>
-      </div>
-    </div>
+            <MobileDataCard
+              eyebrow={expense.task_name}
+              title={
+                <span className="font-medium text-primary">
+                  {expense.item_description}
+                </span>
+              }
+              value={formatCurrency(expense.amount)}
+              status={
+                <ExpenseStatusBadge
+                  status={status}
+                  label={statusLabel(status)}
+                />
+              }
+            >
+              <dl className="grid grid-cols-2 gap-4">
+                <MobileDataMeta label="Supplier">
+                  {expense.supplier_name}
+                </MobileDataMeta>
+                <MobileDataMeta label="Date">
+                  {formatShortDate(expense.date)}
+                </MobileDataMeta>
+              </dl>
+            </MobileDataCard>
+          </Link>
+        )
+      }}
+    />
   )
 }

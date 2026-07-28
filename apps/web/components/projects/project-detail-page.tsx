@@ -346,15 +346,7 @@ export function ProjectDetailPage({
           />
         )}
         <section className="flex min-h-0 flex-col pt-1">
-          <div className="mb-4">
-            <h2 className="font-heading font-semibold text-base tracking-tight">
-              Expenses
-            </h2>
-            <p className="mt-1 text-muted-foreground text-xs">
-              Track every project expense and its payment status in one place.
-            </p>
-          </div>
-          <ProjectExpensesTable expenses={expenses} />
+          <ProjectExpensesTable expenses={expenses} title="Expenses" />
         </section>
       </div>
     </DashboardShell>

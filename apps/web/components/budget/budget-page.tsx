@@ -114,23 +114,16 @@ export function BudgetPage({ data }: { data: DashboardOverviewData }) {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader className="flex flex-col items-stretch justify-between gap-4 sm:flex-row sm:items-start">
-          <div>
-            <CardTitle>Project budgets</CardTitle>
-            <CardDescription>
-              Allocation and utilization by individual project.
-            </CardDescription>
-          </div>
+      <ProjectBudgetTable
+        projects={data.projects}
+        title="Project budgets"
+        action={
           <Button size="sm">
             <HugeiconsIcon icon={WalletAdd01Icon} strokeWidth={2} />
             Set up budget
           </Button>
-        </CardHeader>
-        <CardContent>
-          <ProjectBudgetTable projects={data.projects} />
-        </CardContent>
-      </Card>
+        }
+      />
     </DashboardShell>
   )
 }

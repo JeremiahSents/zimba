@@ -104,10 +104,10 @@ export function TeamPage({
             </Button>
           )}
         </CardHeader>
-        <CardContent>
-          {showInvite && (
+        {showInvite && (
+          <CardContent>
             <form
-              className="mb-6 grid gap-4 rounded-xl border bg-muted/30 p-4 sm:grid-cols-2"
+              className="grid gap-4 rounded-xl border bg-muted/30 p-4 sm:grid-cols-2"
               action={async (formData) => {
                 const result = await inviteMemberAction({
                   email: String(formData.get("email")),
@@ -159,10 +159,10 @@ export function TeamPage({
                 )}
               </div>
             </form>
-          )}
-          <TeamTable members={members} />
-        </CardContent>
+          </CardContent>
+        )}
       </Card>
+      <TeamTable members={members} title="Team members" />
     </DashboardShell>
   )
 }

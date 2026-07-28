@@ -1,11 +1,5 @@
 import { Button } from "@workspace/ui/components/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@workspace/ui/components/card"
+import { Card } from "@workspace/ui/components/card"
 import { SpendBarChart } from "@/components/dashboard/spend-bar-chart"
 import { UtilizationAreaChart } from "@/components/dashboard/utilization-area-chart"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
@@ -70,17 +64,7 @@ export function AnalyticsPage({ data }: { data: DashboardOverviewData }) {
         <UtilizationAreaChart data={data.utilizationChart} />
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>All expenses</CardTitle>
-          <CardDescription>
-            Search and review expenses across every active project.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ExpenseTable expenses={data.expenses} />
-        </CardContent>
-      </Card>
+      <ExpenseTable expenses={data.expenses} title="All expenses" />
     </DashboardShell>
   )
 }

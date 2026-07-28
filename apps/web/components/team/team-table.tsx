@@ -2,7 +2,6 @@
 
 import {
   type ColumnDef,
-  flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
@@ -10,28 +9,25 @@ import {
   type SortingState,
   useReactTable,
 } from "@tanstack/react-table"
-import { Badge } from "@workspace/ui/components/badge"
-import { Button } from "@workspace/ui/components/button"
-import { Input } from "@workspace/ui/components/input"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@workspace/ui/components/table"
-import { useMemo, useState } from "react"
+import { DataTable } from "@workspace/ui/components/data-table"
+import { StatusBadge } from "@workspace/ui/components/status-badge"
+import { type ReactNode, useMemo, useState } from "react"
 import {
   MobileDataCard,
   MobileDataMeta,
 } from "@/components/shared/mobile-data-card"
-import { ResponsiveDataView } from "@/components/shared/responsive-data-view"
 import type { TeamMember } from "@/lib/types"
 
-export function TeamTable({ members }: { members: TeamMember[] }) {
+export function TeamTable({
+  members,
+  title,
+}: {
+  members: TeamMember[]
+  title?: ReactNode
+}) {
   const [filter, setFilter] = useState("")
   const [sorting, setSorting] = useState<SortingState>([])
+
   const columns = useMemo<ColumnDef<TeamMember>[]>(
     () => [
       {
@@ -46,12 +42,13 @@ export function TeamTable({ members }: { members: TeamMember[] }) {
       {
         id: "access",
         header: "Access",
-        cell: () => <Badge variant="success">Active</Badge>,
+        cell: () => <StatusBadge tone="success">Active</StatusBadge>,
         enableSorting: false,
       },
     ],
     []
   )
+
   const table = useReactTable({
     data: members,
     columns,
@@ -64,119 +61,37 @@ export function TeamTable({ members }: { members: TeamMember[] }) {
     getPaginationRowModel: getPaginationRowModel(),
     initialState: { pagination: { pageSize: 5 } },
   })
-  return (
-    <div className="space-y-4">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <Input
-          value={filter}
-          onChange={(event) => setFilter(event.target.value)}
-          placeholder="Search team..."
-          className="max-w-xs"
-        />
-        <span className="text-muted-foreground text-xs">
-          {table.getFilteredRowModel().rows.length} members
-        </span>
-      </div>
-      <ResponsiveDataView
-        mobile={
-          table.getRowModel().rows.length ? (
-            <div className="space-y-3">
-              {table.getRowModel().rows.map((row) => {
-                const member = row.original
-                return (
-                  <MobileDataCard
-                    key={row.id}
-                    eyebrow={member.role}
-                    title={member.name}
-                    status={<Badge variant="success">Active</Badge>}
-                  >
-                    <dl>
-                      <MobileDataMeta label="Responsibility">
-                        {member.responsibility}
-                      </MobileDataMeta>
-                    </dl>
-                  </MobileDataCard>
-                )
-              })}
-            </div>
-          ) : (
-            <EmptyTeamState />
-          )
-        }
-        desktop={
-          table.getRowModel().rows.length ? (
-            <Table>
-              <TableHeader>
-                {table.getHeaderGroups().map((group) => (
-                  <TableRow key={group.id}>
-                    {group.headers.map((header) => (
-                      <TableHead key={header.id}>
-                        <Button
-                          variant="ghost"
-                          size="xs"
-                          className="px-0 text-inherit"
-                          onClick={header.column.getToggleSortingHandler()}
-                          disabled={!header.column.getCanSort()}
-                        >
-                          {flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                        </Button>
-                      </TableHead>
-                    ))}
-                  </TableRow>
-                ))}
-              </TableHeader>
-              <TableBody>
-                {table.getRowModel().rows.map((row) => (
-                  <TableRow key={row.id}>
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          ) : (
-            <EmptyTeamState />
-          )
-        }
-      />
-      <div className="grid grid-cols-2 gap-2 border-t pt-3 sm:flex sm:justify-end">
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={() => table.previousPage()}
-          disabled={!table.getCanPreviousPage()}
-        >
-          Previous
-        </Button>
-        <Button
-          variant="default"
-          size="sm"
-          onClick={() => table.nextPage()}
-          disabled={!table.getCanNextPage()}
-        >
-          Next
-        </Button>
-      </div>
-    </div>
-  )
-}
 
-function EmptyTeamState() {
+  const totalRows = table.getFilteredRowModel().rows.length
+
   return (
-    <div className="rounded-xl border border-dashed px-5 py-10 text-center">
-      <p className="font-medium text-sm">No team members yet</p>
-      <p className="mt-1 text-muted-foreground text-xs">
-        Invite a member to give them access to this workspace.
-      </p>
-    </div>
+    <DataTable
+      table={table}
+      title={title}
+      search={{
+        value: filter,
+        onChange: setFilter,
+        placeholder: "Search team...",
+        label: "Search team members",
+      }}
+      emptyMessage="No team members yet. Invite a member to give them access to this workspace."
+      footerNote={`${totalRows} ${totalRows === 1 ? "member" : "members"}`}
+      renderMobileRow={(row) => {
+        const member = row.original
+        return (
+          <MobileDataCard
+            eyebrow={member.role}
+            title={member.name}
+            status={<StatusBadge tone="success">Active</StatusBadge>}
+          >
+            <dl>
+              <MobileDataMeta label="Responsibility">
+                {member.responsibility}
+              </MobileDataMeta>
+            </dl>
+          </MobileDataCard>
+        )
+      }}
+    />
   )
 }

@@ -35,14 +35,14 @@ import {
 import { useState } from "react"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { useWorkspaceSlug } from "@/components/shared/use-workspace-slug"
-import { SupplierTable } from "@/components/suppliers/supplier-table"
-import { updateSupplierAction } from "@/core/suppliers/actions"
-import { formatCurrency } from "@/lib/format"
 import {
   getSupplierListItems,
   getSupplierProfile,
   getSupplierReceiptRows,
 } from "@/components/suppliers/supplier-data"
+import { SupplierTable } from "@/components/suppliers/supplier-table"
+import { updateSupplierAction } from "@/core/suppliers/actions"
+import { formatCurrency } from "@/lib/format"
 import type { ExpenseTableRow, SupplierResponse } from "@/lib/types"
 
 export function SupplierDetailPage({
@@ -155,15 +155,11 @@ export function SupplierDetailPage({
         </Card>
       </section>
       <section className="mt-6">
-        <div className="mb-4">
-          <h2 className="font-heading font-semibold text-lg">
-            Receipt history
-          </h2>
-          <p className="mt-1 text-muted-foreground text-xs">
-            All receipts recorded for this supplier.
-          </p>
-        </div>
-        <SupplierTable receipts={receipts} suppliers={[supplier]} />
+        <SupplierTable
+          receipts={receipts}
+          suppliers={[supplier]}
+          title="Receipt history"
+        />
       </section>
       <Dialog
         open={editOpen}
