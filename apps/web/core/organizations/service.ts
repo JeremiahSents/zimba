@@ -7,6 +7,9 @@ export type OrganizationMembership = {
   organizationName: string
   slug: string
   role: string
+  /** Present only when access comes from a platform staff grant. */
+  viaGrantId?: string
+  grantExpiresAt?: Date
 }
 
 export async function getOrganizationMembership(

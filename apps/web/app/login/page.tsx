@@ -4,6 +4,7 @@ import Link from "next/link"
 import { redirect } from "next/navigation"
 import { LoginForm } from "@/components/auth/login-form"
 import { auth } from "@/core/auth/auth"
+import { ACCESS_EXPIRED } from "@/core/auth/login-errors"
 import { isDemoMode } from "@/core/demo/demo-data"
 import { getOrganizationMembership } from "@/core/organizations/service"
 import { getInvitationPreview } from "@/core/team/service"
@@ -24,7 +25,10 @@ export default async function LoginPage({
   const { error, callbackUrl } = await searchParams
   const destination = callbackUrl?.startsWith("/") ? callbackUrl : "/workspace"
   const demoEnabled = isDemoMode()
-  if (session) {
+  const accessExpired = error === ACCESS_EXPIRED
+  // A lapsed workspace grant leaves staff signed in but with nothing to open,
+  // so skip the usual redirect and let the notice explain what happened.
+  if (session && !accessExpired) {
     if (destination.startsWith("/invite/")) redirect(destination)
     const membership = await getOrganizationMembership(session.user.id)
     redirect(
@@ -54,6 +58,7 @@ export default async function LoginPage({
       <div className="w-full max-w-sm">
         <LoginForm
           oauthError={error === "oauth"}
+          accessExpired={accessExpired}
           callbackUrl={destination}
           invitation={invitation}
         />

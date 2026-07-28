@@ -3,6 +3,7 @@ import "server-only"
 import {
   createWorkspaceAuth,
   parseTrustedOrigins,
+  readAuthCookieDomain,
   readGoogleOAuthCredentials,
 } from "@workspace/auth"
 import { sendMagicLinkEmail } from "@workspace/transactional"
@@ -23,6 +24,7 @@ export const auth = createWorkspaceAuth({
     }),
   ],
   trustedOrigins: parseTrustedOrigins(env.BETTER_AUTH_TRUSTED_ORIGINS),
+  cookieDomain: readAuthCookieDomain(),
 })
 
 export type AuthSession = typeof auth.$Infer.Session

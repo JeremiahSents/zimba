@@ -40,7 +40,25 @@ describe("recordAuditUseCase", () => {
       entityType: "project",
       entityId: "project-1",
       changes: { name: "Villa" },
+      viaGrantId: null,
     })
+  })
+
+  it("stamps the grant id when platform staff act on a tenant", async () => {
+    await recordAuditUseCase(
+      { ...ctx, viaGrantId: "grant-1" },
+      {
+        action: "project.update",
+        entityType: "project",
+        entityId: "project-1",
+      }
+    )
+
+    // Without this the customer cannot tell a staff action from their own.
+    expect(repo.appendAuditEvent).toHaveBeenCalledWith(
+      dbMock,
+      expect.objectContaining({ actorId: "user-1", viaGrantId: "grant-1" })
+    )
   })
 
   it("rejects malformed audit input", () => {

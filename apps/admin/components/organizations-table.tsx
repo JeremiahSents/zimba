@@ -33,6 +33,7 @@ import {
 import Link from "next/link"
 import { useState } from "react"
 import { StatusBadge } from "@/components/status-badge"
+import { VisitOrganizationButton } from "@/components/visit-organization-button"
 
 export type OrganizationItem = {
   id: string
@@ -68,9 +69,13 @@ function formatCreatedDate(dateInput: Date | string) {
 
 interface OrganizationsTableProps {
   data: OrganizationItem[]
+  isSuperAdmin?: boolean
 }
 
-export function OrganizationsTable({ data }: OrganizationsTableProps) {
+export function OrganizationsTable({
+  data,
+  isSuperAdmin = false,
+}: OrganizationsTableProps) {
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [globalFilter, setGlobalFilter] = useState("")
@@ -161,7 +166,10 @@ export function OrganizationsTable({ data }: OrganizationsTableProps) {
       id: "actions",
       header: () => <div className="text-right font-semibold text-xs">Action</div>,
       cell: ({ row }) => (
-        <div className="text-right">
+        <div className="flex items-center justify-end gap-2">
+          {isSuperAdmin && (
+            <VisitOrganizationButton organizationId={row.original.id} />
+          )}
           <Button variant="outline" size="sm" asChild className="h-8 gap-1.5 rounded-lg px-2.5">
             <Link href={`/organizations/${row.original.id}`}>
               <HugeiconsIcon icon={EyeIcon} className="size-3.5 text-primary" />

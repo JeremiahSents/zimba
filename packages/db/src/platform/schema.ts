@@ -9,6 +9,7 @@ import {
 } from "drizzle-orm/pg-core"
 
 import { user } from "../auth/schema"
+import { organization } from "../organizations/schema"
 
 export const platformUser = pgTable(
   "platform_user",
@@ -44,3 +45,29 @@ export const platformAuditLog = pgTable("platform_audit_log", {
   metadata: jsonb("metadata").$type<Record<string, unknown>>(),
   createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
 })
+
+export const platformWorkspaceGrant = pgTable(
+  "platform_workspace_grant",
+  {
+    id: varchar("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    organizationId: varchar("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    role: varchar("role").notNull().default("owner"),
+    /** Access dies at this instant even if nobody remembers to revoke it. */
+    expiresAt: timestamp("expires_at", { mode: "date" }).notNull(),
+    revokedAt: timestamp("revoked_at", { mode: "date" }),
+    createdAt: timestamp("created_at", { mode: "date" })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index("platform_workspace_grant_user_idx").on(table.userId),
+    index("platform_workspace_grant_expires_idx").on(table.expiresAt),
+  ],
+)

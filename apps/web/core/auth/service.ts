@@ -1,6 +1,10 @@
 import "server-only"
 
-import type { WorkspaceContext, WorkspaceRole } from "@workspace/api"
+import {
+  isPlatformStaffUseCase,
+  type WorkspaceContext,
+  type WorkspaceRole,
+} from "@workspace/api"
 import { headers } from "next/headers"
 import { cache } from "react"
 import {
@@ -14,6 +18,7 @@ export type SessionWithOrganization = {
   user: typeof auth.$Infer.Session.user
   session: typeof auth.$Infer.Session.session
   organization: OrganizationMembership
+  viaGrant: boolean
 }
 
 export type SessionLookupResult =
@@ -22,6 +27,7 @@ export type SessionLookupResult =
       user: typeof auth.$Infer.Session.user
       session: typeof auth.$Infer.Session.session
       organization: null
+      viaGrant: false
     }
 
 export const getSessionWithOrganization = cache(
@@ -42,6 +48,7 @@ export const getSessionWithOrganization = cache(
         user: authSession.user,
         session: authSession.session,
         organization: null,
+        viaGrant: false,
       }
     }
 
@@ -49,8 +56,13 @@ export const getSessionWithOrganization = cache(
       user: authSession.user,
       session: authSession.session,
       organization: membership,
+      viaGrant: Boolean(membership.viaGrantId),
     }
   }
+)
+
+export const isPlatformStaff = cache(
+  async (userId: string): Promise<boolean> => isPlatformStaffUseCase(userId)
 )
 
 export async function requireSession(): Promise<SessionWithOrganization> {
@@ -74,5 +86,8 @@ export async function requireWorkspaceContext(): Promise<WorkspaceContext> {
     userId: user.id,
     organizationId: organization.organizationId,
     role: organization.role as WorkspaceRole,
+    ...(organization.viaGrantId
+      ? { viaGrantId: organization.viaGrantId }
+      : {}),
   }
 }

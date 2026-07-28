@@ -21,4 +21,7 @@ export type ResolvedWorkspaceContext = {
   slug: string
   userId: string
   role: z.infer<typeof workspaceRoleSchema>
+  /** Set when access comes from a platform grant rather than a membership. */
+  viaGrantId?: string
+  grantExpiresAt?: Date
 }

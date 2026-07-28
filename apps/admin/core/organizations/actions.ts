@@ -1,6 +1,9 @@
 "use server"
 
-import { organizationStatusInputSchema } from "@workspace/api"
+import {
+  grantWorkspaceAccessUseCase,
+  organizationStatusInputSchema,
+} from "@workspace/api"
 import { revalidatePath } from "next/cache"
 import { ensureActionSession } from "@/core/auth/action-session"
 import {
@@ -8,6 +11,8 @@ import {
   expectedActionFailure,
 } from "@/core/shared/action-result"
 import { handleActionError } from "@/core/shared/handle-action-error"
+import { getCustomerAppUrl } from "@/core/applications/customer-app-url"
+import { getPlatformSession } from "@/core/auth/service"
 import { updateOrganizationStatus } from "./service"
 
 export async function updateOrganizationStatusAction(
@@ -71,4 +76,32 @@ export async function activateOrganizationAction(
   id: string
 ): Promise<ActionResult> {
   return setOrganizationStatus(id, "active", "organizations.activate")
+}
+
+export async function visitOrganizationAction(
+  organizationId: string
+): Promise<ActionResult<{ url: string; expiresAt: Date }>> {
+  const authFailure = await ensureActionSession("organizations.visit", [
+    "super_admin",
+  ])
+  if (authFailure) return authFailure
+
+  try {
+    const session = await getPlatformSession()
+    if (!session?.user) {
+      return expectedActionFailure("UNAUTHENTICATED", "Sign in to continue.")
+    }
+
+    const { slug, expiresAt } = await grantWorkspaceAccessUseCase({
+      actorId: session.user.id,
+      organizationId,
+    })
+
+    // Nothing secret in this URL: the grant row is the authorization, and it
+    // is bound to the actor, this organization, and a 30-minute window.
+    const url = `${getCustomerAppUrl()}/${slug}`
+    return { success: true, data: { url, expiresAt } }
+  } catch (error) {
+    return handleActionError(error, "organizations.visit")
+  }
 }

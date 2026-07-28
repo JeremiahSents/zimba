@@ -12,7 +12,7 @@ const auditInputSchema = z.object({
 })
 
 export function recordAuditUseCase(
-  ctx: Pick<WorkspaceContext, "organizationId" | "userId">,
+  ctx: Pick<WorkspaceContext, "organizationId" | "userId" | "viaGrantId">,
   rawInput: unknown
 ) {
   const input = auditInputSchema.parse(rawInput)
@@ -23,5 +23,6 @@ export function recordAuditUseCase(
     entityType: input.entityType,
     entityId: input.entityId,
     changes: input.changes,
+    viaGrantId: ctx.viaGrantId ?? null,
   })
 }

@@ -1,11 +1,11 @@
-import { count, desc, eq, sql } from "drizzle-orm"
+import { and, count, desc, eq, gt, isNull, sql } from "drizzle-orm"
 import { user } from "../auth/schema"
 import { member, organization } from "../organizations/schema"
 import { project } from "../projects/schema"
 import { expense, expenseLine, payment } from "../receipts/schema"
 import type { DatabaseExecutor } from "../shared/executor"
 import { supplier } from "../suppliers/schema"
-import { platformAuditLog, platformUser } from "./schema"
+import { platformAuditLog, platformUser, platformWorkspaceGrant } from "./schema"
 
 export function findPlatformUserForUser(
   executor: DatabaseExecutor,
@@ -242,4 +242,97 @@ export async function listPlatformProjects(executor: DatabaseExecutor) {
     organizationName: row.organization?.name || "Unknown",
     totalSpendCents: (row.id && spendMap.get(row.id)) ?? 0,
   }))
+}
+
+/**
+ * A grant only counts as active while every one of these still holds, so
+ * revocation, expiry, losing super admin, and the workspace being suspended
+ * all cut access off at the same chokepoint.
+ */
+function activeGrantConditions(userId: string) {
+  return and(
+    eq(platformWorkspaceGrant.userId, userId),
+    isNull(platformWorkspaceGrant.revokedAt),
+    gt(platformWorkspaceGrant.expiresAt, sql`now()`),
+    eq(platformUser.role, "super_admin"),
+    eq(organization.status, "active")
+  )
+}
+
+const activeGrantColumns = {
+  id: platformWorkspaceGrant.id,
+  userId: platformWorkspaceGrant.userId,
+  organizationId: platformWorkspaceGrant.organizationId,
+  organizationName: organization.name,
+  slug: organization.slug,
+  role: platformWorkspaceGrant.role,
+  expiresAt: platformWorkspaceGrant.expiresAt,
+  createdAt: platformWorkspaceGrant.createdAt,
+}
+
+export function findActiveGrantForUser(
+  executor: DatabaseExecutor,
+  userId: string
+) {
+  return executor
+    .select(activeGrantColumns)
+    .from(platformWorkspaceGrant)
+    .innerJoin(
+      organization,
+      eq(organization.id, platformWorkspaceGrant.organizationId)
+    )
+    .innerJoin(platformUser, eq(platformUser.userId, platformWorkspaceGrant.userId))
+    .where(activeGrantConditions(userId))
+    .limit(1)
+}
+
+export function findActiveGrantForUserAndOrg(
+  executor: DatabaseExecutor,
+  userId: string,
+  organizationId: string
+) {
+  return executor
+    .select(activeGrantColumns)
+    .from(platformWorkspaceGrant)
+    .innerJoin(
+      organization,
+      eq(organization.id, platformWorkspaceGrant.organizationId)
+    )
+    .innerJoin(platformUser, eq(platformUser.userId, platformWorkspaceGrant.userId))
+    .where(
+      and(
+        activeGrantConditions(userId),
+        eq(platformWorkspaceGrant.organizationId, organizationId)
+      )
+    )
+    .limit(1)
+}
+
+export function insertGrant(
+  executor: DatabaseExecutor,
+  data: typeof platformWorkspaceGrant.$inferInsert
+) {
+  return executor.insert(platformWorkspaceGrant).values(data).returning({
+    id: platformWorkspaceGrant.id,
+    expiresAt: platformWorkspaceGrant.expiresAt,
+  })
+}
+
+export function revokeGrantsForUser(executor: DatabaseExecutor, userId: string) {
+  return executor
+    .update(platformWorkspaceGrant)
+    .set({ revokedAt: new Date() })
+    .where(
+      and(
+        eq(platformWorkspaceGrant.userId, userId),
+        isNull(platformWorkspaceGrant.revokedAt)
+      )
+    )
+}
+
+export function revokeGrantById(executor: DatabaseExecutor, grantId: string) {
+  return executor
+    .update(platformWorkspaceGrant)
+    .set({ revokedAt: new Date() })
+    .where(eq(platformWorkspaceGrant.id, grantId))
 }

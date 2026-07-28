@@ -7,6 +7,7 @@ export type WorkspaceUser = {
   image: string | null
   organizationName: string
   role: string
+  viaGrant?: boolean
 }
 
 export const WorkspaceContext = createContext<WorkspaceUser | null>(null)

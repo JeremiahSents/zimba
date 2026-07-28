@@ -11,14 +11,18 @@ import {
   OrganizationsTable,
 } from "@/components/organizations-table"
 import { StatCard } from "@/components/stat-card"
+import { getPlatformSession } from "@/core/auth/service"
 import { listOrganizations } from "@/core/organizations/service"
 import { getPlatformStats } from "@/core/platform/service"
 
 export default async function OrganizationsPage() {
-  const [organizations, stats] = await Promise.all([
+  const [organizations, stats, platformSession] = await Promise.all([
     listOrganizations(),
     getPlatformStats(),
+    getPlatformSession(),
   ])
+
+  const isSuperAdmin = platformSession?.platformRole === "super_admin"
 
   const tableData: OrganizationItem[] = (organizations as OrganizationItem[]).map(
     (org) => ({
@@ -124,7 +128,7 @@ export default async function OrganizationsPage() {
       </div>
 
       {/* ── Real TanStack Table with filtering, search & custom status dropdown ── */}
-      <OrganizationsTable data={tableData} />
+      <OrganizationsTable data={tableData} isSuperAdmin={isSuperAdmin} />
     </AdminDashboardShell>
   )
 }

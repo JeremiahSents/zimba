@@ -42,6 +42,8 @@ import { AdminDashboardShell } from "@/components/dashboard-shell"
 import { OrganizationStatusButtons } from "@/components/org-status-buttons"
 import { StatCard } from "@/components/stat-card"
 import { StatusBadge } from "@/components/status-badge"
+import { VisitOrganizationButton } from "@/components/visit-organization-button"
+import { getPlatformSession } from "@/core/auth/service"
 import {
   getOrganizationDetail,
   getOrganizationStats,
@@ -86,10 +88,13 @@ export default async function OrganizationDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const [org, stats] = await Promise.all([
+  const [org, stats, platformSession] = await Promise.all([
     getOrganizationDetail(id),
     getOrganizationStats(id),
+    getPlatformSession(),
   ])
+
+  const isSuperAdmin = platformSession?.platformRole === "super_admin"
 
   if (!org) {
     notFound()
@@ -132,6 +137,9 @@ export default async function OrganizationDetailPage({
         </div>
 
         <div className="flex items-center gap-2">
+          {isSuperAdmin && (
+            <VisitOrganizationButton organizationId={org.id} />
+          )}
           <OrganizationStatusButtons
             organizationId={org.id}
             currentStatus={org.status}

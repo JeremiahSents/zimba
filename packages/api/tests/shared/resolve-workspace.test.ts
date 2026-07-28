@@ -6,6 +6,10 @@ vi.mock("@workspace/db/organizations", () => ({
   findMembershipByUserAndOrganization: vi.fn(),
 }))
 
+vi.mock("@workspace/db/platform", () => ({
+  findActiveGrantForUserAndOrg: vi.fn(),
+}))
+
 const dbMock = vi.hoisted(() => ({
   transaction: vi.fn(
     async <Result>(
@@ -18,6 +22,7 @@ vi.mock("@workspace/db", () => ({ db: dbMock }))
 
 const { findWorkspaceBySlug, findMembershipByUserAndOrganization } =
   await import("@workspace/db/organizations")
+const { findActiveGrantForUserAndOrg } = await import("@workspace/db/platform")
 const { resolveWorkspace } = await import("../../src/shared/resolve-workspace")
 
 describe("resolveWorkspace", () => {
@@ -55,6 +60,7 @@ describe("resolveWorkspace", () => {
       status: "active",
     })
     vi.mocked(findMembershipByUserAndOrganization).mockResolvedValue(null)
+    vi.mocked(findActiveGrantForUserAndOrg).mockResolvedValue([])
     await expect(resolveWorkspace("user-1", "acme-ltd")).rejects.toThrow(
       ApplicationError
     )
@@ -85,6 +91,53 @@ describe("resolveWorkspace", () => {
     })
     await expect(resolveWorkspace("user-1", "acme-ltd")).rejects.toThrow(
       ApplicationError
+    )
+  })
+
+  it("resolves workspace via grant when no member row exists", async () => {
+    vi.mocked(findWorkspaceBySlug).mockResolvedValue({
+      id: "org-1",
+      name: "Acme Ltd",
+      slug: "acme-ltd",
+      status: "active",
+    })
+    vi.mocked(findMembershipByUserAndOrganization).mockResolvedValue(null)
+    vi.mocked(findActiveGrantForUserAndOrg).mockResolvedValue([
+      {
+        id: "grant-1",
+        userId: "user-1",
+        organizationId: "org-1",
+        organizationName: "Acme Ltd",
+        slug: "acme-ltd",
+        role: "owner",
+        expiresAt: new Date(Date.now() + 60_000),
+        createdAt: new Date(),
+      },
+    ])
+    const ctx = await resolveWorkspace("user-1", "acme-ltd")
+    expect(ctx.organizationId).toBe("org-1")
+    expect(ctx.role).toBe("owner")
+    // Marks the context as staff access so tenant audit rows can say so.
+    expect(ctx.viaGrantId).toBe("grant-1")
+  })
+
+  it("only ever asks for a grant scoped to the workspace being opened", async () => {
+    vi.mocked(findWorkspaceBySlug).mockResolvedValue({
+      id: "org-1",
+      name: "Acme Ltd",
+      slug: "acme-ltd",
+      status: "active",
+    })
+    vi.mocked(findMembershipByUserAndOrganization).mockResolvedValue(null)
+    vi.mocked(findActiveGrantForUserAndOrg).mockResolvedValue([])
+
+    await expect(resolveWorkspace("user-1", "acme-ltd")).rejects.toThrow(
+      ApplicationError
+    )
+    expect(findActiveGrantForUserAndOrg).toHaveBeenCalledWith(
+      dbMock,
+      "user-1",
+      "org-1"
     )
   })
 })

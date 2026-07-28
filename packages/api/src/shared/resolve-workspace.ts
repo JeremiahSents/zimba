@@ -1,5 +1,6 @@
 import { db } from "@workspace/db"
 import { findMembershipByUserAndOrganization, findWorkspaceBySlug } from "@workspace/db/organizations"
+import { findActiveGrantForUserAndOrg } from "@workspace/db/platform"
 import type { ResolvedWorkspaceContext, WorkspaceRole } from "../schemas"
 import { workspaceSlugSchema } from "../schemas"
 import { notFoundError } from "../shared/application-error"
@@ -35,13 +36,28 @@ export async function resolveWorkspace(
     userId,
     workspace.id
   )
-  if (!membership) notFoundError("Workspace not found.")
-
-  return {
-    organizationId: workspace.id,
-    organizationName: workspace.name,
-    slug: workspace.slug,
-    userId,
-    role: parseRole(membership.role),
+  if (membership) {
+    return {
+      organizationId: workspace.id,
+      organizationName: workspace.name,
+      slug: workspace.slug,
+      userId,
+      role: parseRole(membership.role),
+    }
   }
+
+  const [grant] = await findActiveGrantForUserAndOrg(db, userId, workspace.id)
+  if (grant) {
+    return {
+      organizationId: workspace.id,
+      organizationName: workspace.name,
+      slug: workspace.slug,
+      userId,
+      role: parseRole(grant.role),
+      viaGrantId: grant.id,
+      grantExpiresAt: grant.expiresAt,
+    }
+  }
+
+  notFoundError("Workspace not found.")
 }

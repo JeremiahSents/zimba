@@ -18,11 +18,13 @@ import { authClient } from "@/lib/auth-client"
 export function LoginForm({
   className,
   oauthError = false,
+  accessExpired = false,
   callbackUrl = "/workspace",
   invitation,
   ...props
 }: React.ComponentProps<"div"> & {
   oauthError?: boolean
+  accessExpired?: boolean
   callbackUrl?: string
   invitation?: {
     organizationName: string
@@ -32,7 +34,9 @@ export function LoginForm({
   const [error, setError] = useState<string | null>(
     oauthError
       ? "Google sign-in could not be completed. Please try again."
-      : null
+      : accessExpired
+        ? "Your workspace access has ended. Sign in again, or reopen the workspace from the admin console."
+        : null
   )
   const [isPending, setIsPending] = useState(false)
   const [mode, setMode] = useState<"signin" | "signup">(

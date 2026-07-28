@@ -21,5 +21,11 @@ export const auditLog = pgTable("audit_log", {
   entityType: varchar("entity_type").notNull(),
   entityId: varchar("entity_id").notNull(),
   changes: jsonb("changes").$type<Record<string, unknown>>(),
+  /**
+   * Set when the actor was platform staff acting through a workspace grant
+   * rather than a real member. Deliberately not a foreign key: the audit trail
+   * has to outlive the grant row it refers to.
+   */
+  viaGrantId: varchar("via_grant_id"),
   createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
 })
