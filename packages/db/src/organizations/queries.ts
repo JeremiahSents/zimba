@@ -413,7 +413,7 @@ export async function findWorkspaceBySlug(
   executor: DatabaseExecutor,
   slug: string
 ) {
-  const [row] = await executor
+  const rows = await executor
     .select({
       id: organization.id,
       name: organization.name,
@@ -423,7 +423,7 @@ export async function findWorkspaceBySlug(
     .from(organization)
     .where(eq(organization.slug, slug))
     .limit(1)
-  return row ?? null
+  return rows.at(0) ?? null
 }
 
 export async function findMembershipByUserAndOrganization(
@@ -431,7 +431,7 @@ export async function findMembershipByUserAndOrganization(
   userId: string,
   organizationId: string
 ) {
-  const [row] = await executor
+  const rows = await executor
     .select({
       id: member.id,
       role: member.role,
@@ -441,7 +441,7 @@ export async function findMembershipByUserAndOrganization(
       and(eq(member.userId, userId), eq(member.organizationId, organizationId))
     )
     .limit(1)
-  return row ?? null
+  return rows.at(0) ?? null
 }
 
 export async function isSlugAvailable(
