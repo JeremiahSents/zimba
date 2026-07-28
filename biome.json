@@ -13,6 +13,7 @@
       "!**/dist",
       "!**/.turbo",
       "!**/pnpm-lock.yaml",
+      "!packages/db/drizzle",
       "!apps/web/app/icon0.svg",
       "!apps/admin/app/icon0.svg"
     ]
