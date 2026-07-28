@@ -36,12 +36,6 @@ export function ExpenseTable({
   const columns = useMemo<ColumnDef<ExpenseTableRow>[]>(
     () => [
       {
-        id: "number",
-        header: "#",
-        cell: ({ row }) => row.index + 1,
-        enableSorting: false,
-      },
-      {
         accessorKey: "date",
         header: "Date",
         cell: ({ getValue }) => formatShortDate(getValue<string>()),
@@ -55,7 +49,7 @@ export function ExpenseTable({
         cell: ({ getValue, row }) => (
           <Link
             href={`/${slug}/expenses/receipts/${row.original.receipt_id ?? row.original.id}`}
-            >
+          >
             {getValue<string>()}
           </Link>
         ),
@@ -69,8 +63,7 @@ export function ExpenseTable({
         accessorKey: "amount",
         header: "Amount",
         cell: ({ getValue }) => formatCurrency(getValue<number>()),
-        meta: {          cellClassName: "tabular-nums whitespace-nowrap",
-        },
+        meta: { cellClassName: "tabular-nums whitespace-nowrap" },
       },
     ],
     [slug]
@@ -95,6 +88,7 @@ export function ExpenseTable({
     <DataTable
       table={table}
       title={title}
+      rowNumbers
       search={{
         value: globalFilter,
         onChange: setGlobalFilter,

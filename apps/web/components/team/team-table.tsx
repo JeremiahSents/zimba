@@ -68,6 +68,7 @@ export function TeamTable({
     <DataTable
       table={table}
       title={title}
+      rowNumbers
       search={{
         value: filter,
         onChange: setFilter,

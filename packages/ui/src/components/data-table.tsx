@@ -70,6 +70,11 @@ export type DataTableProps<TData> = {
   mobile?: ReactNode
   /** Makes rows clickable, with matching keyboard activation. */
   onRowClick?: (row: Row<TData>) => void
+  /**
+   * Prepends a narrow ordinal column. Numbering follows the filtered and
+   * sorted order, so it stays continuous across pages.
+   */
+  rowNumbers?: boolean
   /** Replaces the page counter at the left of the footer. */
   footerNote?: ReactNode
   /** `auto` (default) hides the footer entirely while everything fits one page. */
@@ -91,13 +96,14 @@ export function DataTable<TData>({
   renderMobileRow,
   mobile,
   onRowClick,
+  rowNumbers = false,
   footerNote,
   pagination = "auto",
   className,
   tableClassName,
 }: DataTableProps<TData>) {
   const rows = table.getRowModel().rows
-  const columnCount = table.getAllLeafColumns().length
+  const columnCount = table.getAllLeafColumns().length + (rowNumbers ? 1 : 0)
   const pageCount = Math.max(table.getPageCount(), 1)
 
   const hasMobileCards = Boolean(renderMobileRow || mobile)
@@ -176,6 +182,9 @@ export function DataTable<TData>({
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id} className="hover:bg-transparent">
+                {rowNumbers ? (
+                  <TableHead className="w-10 tabular-nums">#</TableHead>
+                ) : null}
                 {headerGroup.headers.map((header) => {
                   const meta = header.column.columnDef.meta
                   const align = meta?.align ?? "left"
@@ -247,6 +256,11 @@ export function DataTable<TData>({
                       : undefined
                   }
                 >
+                  {rowNumbers ? (
+                    <TableCell className="w-10 tabular-nums">
+                      {row.index + 1}
+                    </TableCell>
+                  ) : null}
                   {row.getVisibleCells().map((cell) => {
                     const meta = cell.column.columnDef.meta
                     return (

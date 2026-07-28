@@ -47,22 +47,19 @@ export function ProjectBudgetTable({
         accessorKey: "budget",
         header: "Allocated",
         cell: ({ getValue }) => formatCurrency(getValue<number>()),
-        meta: {          cellClassName: "tabular-nums whitespace-nowrap",
-        },
+        meta: { cellClassName: "tabular-nums whitespace-nowrap" },
       },
       {
         accessorKey: "spent",
         header: "Spent",
         cell: ({ getValue }) => formatCurrency(getValue<number>()),
-        meta: {          cellClassName: "tabular-nums whitespace-nowrap",
-        },
+        meta: { cellClassName: "tabular-nums whitespace-nowrap" },
       },
       {
         accessorKey: "remaining",
         header: "Remaining",
         cell: ({ getValue }) => formatCurrency(getValue<number>()),
-        meta: {          cellClassName: "tabular-nums whitespace-nowrap",
-        },
+        meta: { cellClassName: "tabular-nums whitespace-nowrap" },
       },
       {
         accessorKey: "pct",
@@ -93,6 +90,7 @@ export function ProjectBudgetTable({
     <DataTable
       table={table}
       title={title}
+      rowNumbers
       pagination="never"
       toolbar={action}
       search={{

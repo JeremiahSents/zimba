@@ -55,15 +55,13 @@ export function ReportsTable({
         accessorKey: "budget",
         header: "Budget",
         cell: ({ getValue }) => formatCurrency(getValue<number>()),
-        meta: {          cellClassName: "tabular-nums whitespace-nowrap",
-        },
+        meta: { cellClassName: "tabular-nums whitespace-nowrap" },
       },
       {
         accessorKey: "remaining",
         header: "Remaining",
         cell: ({ getValue }) => formatCurrency(getValue<number>()),
-        meta: {          cellClassName: "tabular-nums whitespace-nowrap",
-        },
+        meta: { cellClassName: "tabular-nums whitespace-nowrap" },
       },
       {
         accessorKey: "pct",
@@ -95,7 +93,8 @@ export function ReportsTable({
             />
             <span>Export PDF</span>
           </Button>
-        ),      },
+        ),
+      },
     ],
     []
   )
@@ -119,6 +118,7 @@ export function ReportsTable({
     <DataTable
       table={table}
       title={title}
+      rowNumbers
       search={{
         value: filter,
         onChange: setFilter,

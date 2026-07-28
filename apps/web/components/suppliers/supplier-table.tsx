@@ -85,8 +85,7 @@ export function SupplierTable({
         accessorKey: "value",
         header: "Receipt value",
         cell: ({ getValue }) => formatCurrency(getValue<number>()),
-        meta: {          cellClassName: "tabular-nums whitespace-nowrap",
-        },
+        meta: { cellClassName: "tabular-nums whitespace-nowrap" },
       },
       {
         accessorKey: "status",
@@ -122,7 +121,8 @@ export function SupplierTable({
             strokeWidth={1.8}
             className="size-4 text-muted-foreground"
           />
-        ),      },
+        ),
+      },
     ],
     [suppliers]
   )
@@ -145,6 +145,7 @@ export function SupplierTable({
       <DataTable
         table={table}
         title={title}
+        rowNumbers
         pagination="never"
         search={{
           value: globalFilter,

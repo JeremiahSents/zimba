@@ -104,6 +104,7 @@ export function ProjectExpensesTable({
     <DataTable
       table={table}
       title={title}
+      rowNumbers
       search={{
         value: globalFilter,
         onChange: setGlobalFilter,
