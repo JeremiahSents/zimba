@@ -6,7 +6,7 @@ vi.mock("@workspace/api", () => ({
   listArchivedProjectSummariesUseCase: vi.fn(),
   listFinancialExpenseRowsUseCase: vi.fn(),
   listProjectAllocationsUseCase: vi.fn(),
-  listProjectAttachmentsUseCase: vi.fn(),
+  listProjectFilesUseCase: vi.fn(),
   listProjectSummariesUseCase: vi.fn(),
 }))
 
@@ -24,7 +24,7 @@ describe("Projects Service", () => {
     vi.mocked(api.listProjectSummariesUseCase).mockResolvedValue([])
     vi.mocked(api.listArchivedProjectSummariesUseCase).mockResolvedValue([])
     vi.mocked(api.listProjectAllocationsUseCase).mockResolvedValue([])
-    vi.mocked(api.listProjectAttachmentsUseCase).mockResolvedValue([])
+    vi.mocked(api.listProjectFilesUseCase).mockResolvedValue([])
     vi.mocked(authService.requireSession).mockResolvedValue({
       user: {
         id: "user-1",

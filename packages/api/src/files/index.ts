@@ -1,6 +1,6 @@
 import { db } from "@workspace/db"
 
-import { createUploadedFile, listProjectAttachments } from "@workspace/db/files"
+import { createUploadedFile, listProjectFiles } from "@workspace/db/files"
 import { z } from "zod"
 import { validationError } from "../shared/application-error"
 import type { WorkspaceContext } from "../shared/workspace-context"
@@ -34,10 +34,10 @@ export async function recordUploadedFileUseCase(
   })
 }
 
-export function listProjectAttachmentsUseCase(
+export function listProjectFilesUseCase(
   ctx: Pick<WorkspaceContext, "organizationId">,
   projectId: string
 ) {
   if (!projectId.trim()) validationError("Project id is required.")
-  return listProjectAttachments(db, ctx.organizationId, projectId)
+  return listProjectFiles(db, ctx.organizationId, projectId)
 }

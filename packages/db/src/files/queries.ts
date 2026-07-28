@@ -68,21 +68,47 @@ export async function createProjectAttachment(
   return attachment
 }
 
-export function listProjectAttachments(
+/**
+ * Every file belonging to a project, from both places a file can arrive:
+ * uploaded onto the project itself, and photographed onto one of its receipts.
+ * Callers tell the two apart by file.purpose.
+ */
+export async function listProjectFiles(
   executor: DatabaseExecutor,
   organizationId: string,
   projectId: string
 ) {
-  return executor
-    .select({ file: file })
-    .from(projectAttachment)
-    .innerJoin(file, eq(file.id, projectAttachment.fileId))
-    .where(
-      and(
-        eq(projectAttachment.organizationId, organizationId),
-        eq(projectAttachment.projectId, projectId)
-      )
-    )
+  const [attachments, receiptFiles] = await Promise.all([
+    executor
+      .select({ file: file })
+      .from(projectAttachment)
+      .innerJoin(file, eq(file.id, projectAttachment.fileId))
+      .where(
+        and(
+          eq(projectAttachment.organizationId, organizationId),
+          eq(projectAttachment.projectId, projectId)
+        )
+      ),
+    executor
+      .select({ file: file })
+      .from(expense)
+      .innerJoin(file, eq(file.id, expense.receiptFileId))
+      .where(
+        and(
+          eq(expense.organizationId, organizationId),
+          eq(expense.projectId, projectId)
+        )
+      ),
+  ])
+
+  // A file attached to the project and also filed on one of its receipts would
+  // otherwise appear twice.
+  const seen = new Set<string>()
+  return [...attachments, ...receiptFiles].filter(({ file: row }) => {
+    if (seen.has(row.id)) return false
+    seen.add(row.id)
+    return true
+  })
 }
 
 export async function findCompletedFile(

@@ -1,13 +1,18 @@
+import { Card, CardContent } from "@workspace/ui/components/card"
 import type { PayableExpenseResponse } from "@/lib/types"
 
 type ReceiptFile = NonNullable<PayableExpenseResponse["attachments"]>[number]
 
 export function ReceiptFiles({ files }: { files: ReceiptFile[] }) {
+  if (!files.length) return null
+
   return (
-    <section className="mt-6 rounded-2xl border bg-card p-5 print:hidden">
-      <h2 className="font-heading font-semibold">Receipt files</h2>
-      {files.length ? (
-        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+    <Card className="print:hidden">
+      <CardContent>
+        <p className="font-medium text-muted-foreground text-xs uppercase tracking-wider">
+          Receipt files
+        </p>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
           {files.map((file) =>
             file.content_type.startsWith("image/") ? (
               <a
@@ -15,14 +20,14 @@ export function ReceiptFiles({ files }: { files: ReceiptFile[] }) {
                 href={file.url}
                 target="_blank"
                 rel="noreferrer"
-                className="overflow-hidden rounded-xl border bg-muted/20"
+                className="overflow-hidden rounded-2xl border bg-muted/20"
               >
                 <img
                   src={file.url}
                   alt={file.filename}
-                  className="h-48 w-full object-cover"
+                  className="h-40 w-full object-cover"
                 />
-                <p className="truncate px-3 py-2 font-medium text-sm">
+                <p className="truncate px-3 py-2 font-medium text-xs">
                   {file.filename}
                 </p>
               </a>
@@ -32,18 +37,14 @@ export function ReceiptFiles({ files }: { files: ReceiptFile[] }) {
                 href={file.url}
                 target="_blank"
                 rel="noreferrer"
-                className="rounded-xl border p-4 font-medium text-primary hover:underline"
+                className="flex items-center rounded-2xl border p-4 font-medium text-primary text-sm hover:underline"
               >
                 Open {file.filename}
               </a>
             )
           )}
         </div>
-      ) : (
-        <p className="mt-2 text-muted-foreground text-sm">
-          No receipt images or documents are attached.
-        </p>
-      )}
-    </section>
+      </CardContent>
+    </Card>
   )
 }

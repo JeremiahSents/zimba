@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 
 const repo = vi.hoisted(() => ({
   createUploadedFile: vi.fn(),
-  listProjectAttachments: vi.fn(),
+  listProjectFiles: vi.fn(),
 }))
 
 vi.mock("@workspace/db/files", () => repo)
@@ -18,7 +18,7 @@ const dbMock = vi.hoisted(() => ({
 vi.mock("@workspace/db", () => ({ db: dbMock }))
 
 import {
-  listProjectAttachmentsUseCase,
+  listProjectFilesUseCase,
   recordUploadedFileUseCase,
 } from "../../src/files/index"
 
@@ -32,7 +32,7 @@ describe("file use cases", () => {
   beforeEach(() => {
     vi.resetAllMocks()
     repo.createUploadedFile.mockResolvedValue({ id: "file-1" })
-    repo.listProjectAttachments.mockResolvedValue([{ file: { id: "file-1" } }])
+    repo.listProjectFiles.mockResolvedValue([{ file: { id: "file-1" } }])
   })
 
   it("records completed uploads for the current workspace and uploader", async () => {
@@ -74,11 +74,11 @@ describe("file use cases", () => {
   })
 
   it("lists project attachments within the current workspace", async () => {
-    await expect(
-      listProjectAttachmentsUseCase(ctx, "project-1")
-    ).resolves.toEqual([{ file: { id: "file-1" } }])
+    await expect(listProjectFilesUseCase(ctx, "project-1")).resolves.toEqual([
+      { file: { id: "file-1" } },
+    ])
 
-    expect(repo.listProjectAttachments).toHaveBeenCalledWith(
+    expect(repo.listProjectFiles).toHaveBeenCalledWith(
       dbMock,
       "org-1",
       "project-1"
@@ -87,11 +87,11 @@ describe("file use cases", () => {
 
   it("rejects blank project ids", async () => {
     try {
-      listProjectAttachmentsUseCase(ctx, " ")
+      listProjectFilesUseCase(ctx, " ")
       throw new Error("Expected validation to fail.")
     } catch (error) {
       expect(error).toMatchObject({ code: "VALIDATION_FAILED" })
     }
-    expect(repo.listProjectAttachments).not.toHaveBeenCalled()
+    expect(repo.listProjectFiles).not.toHaveBeenCalled()
   })
 })

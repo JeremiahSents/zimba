@@ -5,7 +5,7 @@ import {
   listArchivedProjectSummariesUseCase,
   listFinancialExpenseRowsUseCase,
   listProjectAllocationsUseCase,
-  listProjectAttachmentsUseCase,
+  listProjectFilesUseCase,
   listProjectSummariesUseCase,
 } from "@workspace/api"
 import type {
@@ -58,7 +58,7 @@ export async function getProjectDetail(
       { organizationId: organization.organizationId },
       projectId
     ),
-    listProjectAttachmentsUseCase(
+    listProjectFilesUseCase(
       { organizationId: organization.organizationId },
       projectId
     ),
