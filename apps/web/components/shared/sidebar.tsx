@@ -36,6 +36,7 @@ import {
   getWorkspaceSlug,
   isDashboardRouteActive,
 } from "@/components/shared/dashboard-navigation"
+import { GrantBanner } from "@/components/shared/grant-banner"
 import {
   formatRole,
   getInitials,
@@ -88,6 +89,7 @@ export function DashboardSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="p-3 pt-2 group-data-[collapsible=icon]:px-0">
+        <GrantBanner />
         <UserProfileCard />
       </SidebarFooter>
     </Sidebar>

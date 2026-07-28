@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 import { ApplicationError } from "../../src/shared/application-error"
 
 vi.mock("@workspace/db/organizations", () => ({
@@ -26,6 +26,10 @@ const { findActiveGrantForUserAndOrg } = await import("@workspace/db/platform")
 const { resolveWorkspace } = await import("../../src/shared/resolve-workspace")
 
 describe("resolveWorkspace", () => {
+  beforeEach(() => {
+    vi.resetAllMocks()
+  })
+
   it("resolves workspace context for a member", async () => {
     vi.mocked(findWorkspaceBySlug).mockResolvedValue({
       id: "org-1",
@@ -60,7 +64,7 @@ describe("resolveWorkspace", () => {
       status: "active",
     })
     vi.mocked(findMembershipByUserAndOrganization).mockResolvedValue(null)
-    vi.mocked(findActiveGrantForUserAndOrg).mockResolvedValue([])
+    vi.mocked(findActiveGrantForUserAndOrg).mockResolvedValueOnce([])
     await expect(resolveWorkspace("user-1", "acme-ltd")).rejects.toThrow(
       ApplicationError
     )
@@ -102,7 +106,8 @@ describe("resolveWorkspace", () => {
       status: "active",
     })
     vi.mocked(findMembershipByUserAndOrganization).mockResolvedValue(null)
-    vi.mocked(findActiveGrantForUserAndOrg).mockResolvedValue([
+    // The query returns rows, and resolveWorkspace destructures the first one.
+    vi.mocked(findActiveGrantForUserAndOrg).mockResolvedValueOnce([
       {
         id: "grant-1",
         userId: "user-1",
@@ -129,7 +134,7 @@ describe("resolveWorkspace", () => {
       status: "active",
     })
     vi.mocked(findMembershipByUserAndOrganization).mockResolvedValue(null)
-    vi.mocked(findActiveGrantForUserAndOrg).mockResolvedValue([])
+    vi.mocked(findActiveGrantForUserAndOrg).mockResolvedValueOnce([])
 
     await expect(resolveWorkspace("user-1", "acme-ltd")).rejects.toThrow(
       ApplicationError

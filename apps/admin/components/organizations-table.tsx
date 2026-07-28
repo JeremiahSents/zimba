@@ -59,9 +59,12 @@ function getOrdinalSuffix(day: number): string {
 
 function formatCreatedDate(dateInput: Date | string) {
   const d = new Date(dateInput)
-  const day = d.getDate()
-  const month = d.toLocaleDateString("en-US", { month: "long" })
-  const year = d.getFullYear()
+  const day = d.getUTCDate()
+  const month = d.toLocaleDateString("en-US", {
+    month: "long",
+    timeZone: "UTC",
+  })
+  const year = d.getUTCFullYear()
 
   return `${day}${getOrdinalSuffix(day)} ${month}, ${year}`
 }
@@ -167,13 +170,12 @@ export function OrganizationsTable({ data }: OrganizationsTableProps) {
           <Button
             variant="outline"
             size="sm"
-            asChild
+            nativeButton={false}
+            render={<Link href={`/organizations/${row.original.id}`} />}
             className="h-8 gap-1.5 rounded-lg px-2.5"
           >
-            <Link href={`/organizations/${row.original.id}`}>
-              <HugeiconsIcon icon={EyeIcon} className="size-3.5 text-primary" />
-              <span>View</span>
-            </Link>
+            <HugeiconsIcon icon={EyeIcon} className="size-3.5 text-primary" />
+            <span>View</span>
           </Button>
         </div>
       ),

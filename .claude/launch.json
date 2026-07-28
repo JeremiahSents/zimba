@@ -4,14 +4,33 @@
     {
       "name": "web",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["--filter", "web", "dev"],
+      "runtimeArgs": [
+        "--filter",
+        "web",
+        "dev"
+      ],
       "port": 3000
     },
     {
       "name": "admin",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["--filter", "admin", "dev"],
+      "runtimeArgs": [
+        "--filter",
+        "admin",
+        "dev"
+      ],
       "port": 4000
+    },
+    {
+      "name": "web-tmp",
+      "runtimeExecutable": "C:\\Users\\Jeremiah Sentomero\\Desktop\\zimba\\apps\\web\\node_modules\\.bin\\next.CMD",
+      "runtimeArgs": [
+        "dev",
+        "apps/web",
+        "--port",
+        "3001"
+      ],
+      "port": 3001
     }
   ]
 }
