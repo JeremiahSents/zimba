@@ -62,12 +62,10 @@ export const platformWorkspaceGrant = pgTable(
     /** Access dies at this instant even if nobody remembers to revoke it. */
     expiresAt: timestamp("expires_at", { mode: "date" }).notNull(),
     revokedAt: timestamp("revoked_at", { mode: "date" }),
-    createdAt: timestamp("created_at", { mode: "date" })
-      .defaultNow()
-      .notNull(),
+    createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
   },
   (table) => [
     index("platform_workspace_grant_user_idx").on(table.userId),
     index("platform_workspace_grant_expires_idx").on(table.expiresAt),
-  ],
+  ]
 )

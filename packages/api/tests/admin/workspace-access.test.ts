@@ -92,7 +92,8 @@ describe("grantWorkspaceAccessUseCase", () => {
 
     const revokeOrder =
       platformRepo.revokeGrantsForUser.mock.invocationCallOrder[0] ?? 0
-    const insertOrder = platformRepo.insertGrant.mock.invocationCallOrder[0] ?? 0
+    const insertOrder =
+      platformRepo.insertGrant.mock.invocationCallOrder[0] ?? 0
     expect(revokeOrder).toBeLessThan(insertOrder)
   })
 

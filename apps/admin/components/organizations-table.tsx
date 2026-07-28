@@ -5,12 +5,12 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import {
   type ColumnDef,
   type ColumnFiltersState,
-  type SortingState,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
+  type SortingState,
   useReactTable,
 } from "@tanstack/react-table"
 import { Button } from "@workspace/ui/components/button"
@@ -69,13 +69,9 @@ function formatCreatedDate(dateInput: Date | string) {
 
 interface OrganizationsTableProps {
   data: OrganizationItem[]
-  isSuperAdmin?: boolean
 }
 
-export function OrganizationsTable({
-  data,
-  isSuperAdmin = false,
-}: OrganizationsTableProps) {
+export function OrganizationsTable({ data }: OrganizationsTableProps) {
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [globalFilter, setGlobalFilter] = useState("")
@@ -86,7 +82,7 @@ export function OrganizationsTable({
       header: ({ column }) => (
         <button
           type="button"
-          className="font-semibold text-xs text-foreground tracking-tight hover:text-primary transition-colors cursor-pointer"
+          className="cursor-pointer font-semibold text-foreground text-xs tracking-tight transition-colors hover:text-primary"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Organization
@@ -103,7 +99,7 @@ export function OrganizationsTable({
       header: ({ column }) => (
         <button
           type="button"
-          className="font-semibold text-xs text-foreground tracking-tight hover:text-primary transition-colors cursor-pointer"
+          className="cursor-pointer font-semibold text-foreground text-xs tracking-tight transition-colors hover:text-primary"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Status
@@ -116,7 +112,7 @@ export function OrganizationsTable({
       header: ({ column }) => (
         <button
           type="button"
-          className="font-semibold text-xs text-foreground tracking-tight hover:text-primary transition-colors cursor-pointer"
+          className="cursor-pointer font-semibold text-foreground text-xs tracking-tight transition-colors hover:text-primary"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Users
@@ -133,7 +129,7 @@ export function OrganizationsTable({
       header: ({ column }) => (
         <button
           type="button"
-          className="font-semibold text-xs text-foreground tracking-tight hover:text-primary transition-colors cursor-pointer"
+          className="cursor-pointer font-semibold text-foreground text-xs tracking-tight transition-colors hover:text-primary"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Projects
@@ -150,7 +146,7 @@ export function OrganizationsTable({
       header: ({ column }) => (
         <button
           type="button"
-          className="font-semibold text-xs text-foreground tracking-tight hover:text-primary transition-colors cursor-pointer"
+          className="cursor-pointer font-semibold text-foreground text-xs tracking-tight transition-colors hover:text-primary"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Created
@@ -164,13 +160,17 @@ export function OrganizationsTable({
     },
     {
       id: "actions",
-      header: () => <div className="text-right font-semibold text-xs">Action</div>,
+      header: () => (
+        <div className="text-right font-semibold text-xs">Action</div>
+      ),
       cell: ({ row }) => (
-        <div className="flex items-center justify-end gap-2">
-          {isSuperAdmin && (
-            <VisitOrganizationButton organizationId={row.original.id} />
-          )}
-          <Button variant="outline" size="sm" asChild className="h-8 gap-1.5 rounded-lg px-2.5">
+        <div className="text-right">
+          <Button
+            variant="outline"
+            size="sm"
+            asChild
+            className="h-8 gap-1.5 rounded-lg px-2.5"
+          >
             <Link href={`/organizations/${row.original.id}`}>
               <HugeiconsIcon icon={EyeIcon} className="size-3.5 text-primary" />
               <span>View</span>
@@ -214,13 +214,13 @@ export function OrganizationsTable({
           <div className="relative min-w-48 max-w-sm flex-1">
             <HugeiconsIcon
               icon={Search01Icon}
-              className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+              className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
             />
             <Input
               placeholder="Search organizations…"
               value={globalFilter ?? ""}
               onChange={(e) => setGlobalFilter(e.target.value)}
-              className="h-9 pl-9 rounded-xl"
+              className="h-9 rounded-xl pl-9"
             />
           </div>
           <Select
@@ -243,8 +243,9 @@ export function OrganizationsTable({
           </Select>
         </div>
 
-        <div className="text-muted-foreground text-xs font-medium">
-          Showing {table.getFilteredRowModel().rows.length} of {data.length} organizations
+        <div className="font-medium text-muted-foreground text-xs">
+          Showing {table.getFilteredRowModel().rows.length} of {data.length}{" "}
+          organizations
         </div>
       </div>
 
@@ -311,7 +312,7 @@ export function OrganizationsTable({
           >
             Previous
           </Button>
-          <span className="text-muted-foreground text-xs font-medium px-2">
+          <span className="px-2 font-medium text-muted-foreground text-xs">
             Page {table.getState().pagination.pageIndex + 1} of{" "}
             {table.getPageCount()}
           </span>

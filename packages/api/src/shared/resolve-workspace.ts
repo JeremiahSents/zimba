@@ -1,5 +1,8 @@
 import { db } from "@workspace/db"
-import { findMembershipByUserAndOrganization, findWorkspaceBySlug } from "@workspace/db/organizations"
+import {
+  findMembershipByUserAndOrganization,
+  findWorkspaceBySlug,
+} from "@workspace/db/organizations"
 import { findActiveGrantForUserAndOrg } from "@workspace/db/platform"
 import type { ResolvedWorkspaceContext, WorkspaceRole } from "../schemas"
 import { workspaceSlugSchema } from "../schemas"

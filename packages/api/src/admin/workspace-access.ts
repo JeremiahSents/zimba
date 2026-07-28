@@ -1,4 +1,5 @@
 import { db } from "@workspace/db"
+import type { DatabaseExecutor } from "@workspace/db/executor"
 import { findOrganizationById } from "@workspace/db/organizations"
 import {
   appendPlatformAudit,
@@ -8,7 +9,6 @@ import {
   revokeGrantById,
   revokeGrantsForUser,
 } from "@workspace/db/platform"
-import type { DatabaseExecutor } from "@workspace/db/executor"
 import { forbidden, notFoundError } from "../shared/application-error"
 
 /** How long a super admin keeps access before it lapses on its own. */

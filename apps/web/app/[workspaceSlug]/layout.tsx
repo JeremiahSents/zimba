@@ -7,7 +7,10 @@ import { notFound, redirect } from "next/navigation"
 import { GrantBanner } from "@/components/shared/grant-banner"
 import { WorkspaceProvider } from "@/components/shared/workspace-provider"
 import { ACCESS_EXPIRED } from "@/core/auth/login-errors"
-import { isPlatformStaff, getSessionWithOrganization } from "@/core/auth/service"
+import {
+  getSessionWithOrganization,
+  isPlatformStaff,
+} from "@/core/auth/service"
 import { getWorkspaceContext } from "@/core/auth/workspace-context"
 import { getOnboardingApplicationForUser } from "@/core/organizations/onboarding-application"
 

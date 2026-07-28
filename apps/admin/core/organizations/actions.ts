@@ -5,14 +5,14 @@ import {
   organizationStatusInputSchema,
 } from "@workspace/api"
 import { revalidatePath } from "next/cache"
+import { getCustomerAppUrl } from "@/core/applications/customer-app-url"
 import { ensureActionSession } from "@/core/auth/action-session"
+import { getPlatformSession } from "@/core/auth/service"
 import {
   type ActionResult,
   expectedActionFailure,
 } from "@/core/shared/action-result"
 import { handleActionError } from "@/core/shared/handle-action-error"
-import { getCustomerAppUrl } from "@/core/applications/customer-app-url"
-import { getPlatformSession } from "@/core/auth/service"
 import { updateOrganizationStatus } from "./service"
 
 export async function updateOrganizationStatusAction(

@@ -5,7 +5,11 @@ import { project } from "../projects/schema"
 import { expense, expenseLine, payment } from "../receipts/schema"
 import type { DatabaseExecutor } from "../shared/executor"
 import { supplier } from "../suppliers/schema"
-import { platformAuditLog, platformUser, platformWorkspaceGrant } from "./schema"
+import {
+  platformAuditLog,
+  platformUser,
+  platformWorkspaceGrant,
+} from "./schema"
 
 export function findPlatformUserForUser(
   executor: DatabaseExecutor,
@@ -281,7 +285,10 @@ export function findActiveGrantForUser(
       organization,
       eq(organization.id, platformWorkspaceGrant.organizationId)
     )
-    .innerJoin(platformUser, eq(platformUser.userId, platformWorkspaceGrant.userId))
+    .innerJoin(
+      platformUser,
+      eq(platformUser.userId, platformWorkspaceGrant.userId)
+    )
     .where(activeGrantConditions(userId))
     .limit(1)
 }
@@ -298,7 +305,10 @@ export function findActiveGrantForUserAndOrg(
       organization,
       eq(organization.id, platformWorkspaceGrant.organizationId)
     )
-    .innerJoin(platformUser, eq(platformUser.userId, platformWorkspaceGrant.userId))
+    .innerJoin(
+      platformUser,
+      eq(platformUser.userId, platformWorkspaceGrant.userId)
+    )
     .where(
       and(
         activeGrantConditions(userId),
@@ -318,7 +328,10 @@ export function insertGrant(
   })
 }
 
-export function revokeGrantsForUser(executor: DatabaseExecutor, userId: string) {
+export function revokeGrantsForUser(
+  executor: DatabaseExecutor,
+  userId: string
+) {
   return executor
     .update(platformWorkspaceGrant)
     .set({ revokedAt: new Date() })

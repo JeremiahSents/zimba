@@ -6,7 +6,7 @@ import { requireSession } from "./service"
 
 export async function exitWorkspaceGrantAction() {
   const session = await requireSession()
-  if (session.viaGrant) {
+  if (session.organization.viaGrantId) {
     await revokeWorkspaceAccessUseCase({ actorId: session.user.id })
   }
   redirect("/")
