@@ -7,33 +7,29 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react"
 import { AdminDashboardShell } from "@/components/dashboard-shell"
 import {
-  OrganizationItem,
+  type OrganizationItem,
   OrganizationsTable,
 } from "@/components/organizations-table"
 import { StatCard } from "@/components/stat-card"
-import { getPlatformSession } from "@/core/auth/service"
 import { listOrganizations } from "@/core/organizations/service"
 import { getPlatformStats } from "@/core/platform/service"
 
 export default async function OrganizationsPage() {
-  const [organizations, stats, platformSession] = await Promise.all([
+  const [organizations, stats] = await Promise.all([
     listOrganizations(),
     getPlatformStats(),
-    getPlatformSession(),
   ])
 
-  const isSuperAdmin = platformSession?.platformRole === "super_admin"
-
-  const tableData: OrganizationItem[] = (organizations as OrganizationItem[]).map(
-    (org) => ({
-      id: org.id,
-      name: org.name,
-      status: org.status,
-      userCount: org.userCount ?? 0,
-      projectCount: org.projectCount ?? 0,
-      createdAt: org.createdAt,
-    })
-  )
+  const tableData: OrganizationItem[] = (
+    organizations as OrganizationItem[]
+  ).map((org) => ({
+    id: org.id,
+    name: org.name,
+    status: org.status,
+    userCount: org.userCount ?? 0,
+    projectCount: org.projectCount ?? 0,
+    createdAt: org.createdAt,
+  }))
 
   const activeRatio = stats.totalOrganizations
     ? Math.round((stats.activeOrganizations / stats.totalOrganizations) * 100)
@@ -128,7 +124,7 @@ export default async function OrganizationsPage() {
       </div>
 
       {/* ── Real TanStack Table with filtering, search & custom status dropdown ── */}
-      <OrganizationsTable data={tableData} isSuperAdmin={isSuperAdmin} />
+      <OrganizationsTable data={tableData} />
     </AdminDashboardShell>
   )
 }

@@ -33,7 +33,6 @@ import {
 import Link from "next/link"
 import { useState } from "react"
 import { StatusBadge } from "@/components/status-badge"
-import { VisitOrganizationButton } from "@/components/visit-organization-button"
 
 export type OrganizationItem = {
   id: string
