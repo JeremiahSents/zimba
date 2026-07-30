@@ -26,7 +26,6 @@ import {
   DashboardSidebar,
   DashboardSidebarToggle,
 } from "@/components/shared/sidebar"
-import { useWorkspace } from "@/components/shared/workspace-context"
 
 /**
  * The persistent workspace frame: sidebar, topbar, footer and mobile nav.
@@ -42,11 +41,17 @@ export function WorkspaceChrome({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-svh w-full bg-sidebar">
       <DashboardSidebar />
-      <SidebarInset className="relative z-10 flex min-w-0 flex-1 flex-col border-l bg-background">
+      {/*
+        No border and no z-index: the content pane is a raised sheet over the
+        sidebar plane, and `variant="inset"` on the sidebar is what gives it the
+        gutter, rounded corners and shadow. A seam here would flatten the two
+        surfaces back into one.
+      */}
+      <SidebarInset className="flex min-w-0 flex-1 flex-col overflow-hidden bg-background">
         <WorkspaceTopbar />
         {children}
         <footer
-          className={`mt-auto border-t px-4 text-center text-[10px] text-muted-foreground sm:px-7 lg:px-10 ${focusedTask ? "py-4" : "pt-4 pb-[calc(var(--mobile-bottom-space)+2rem)] md:py-4"}`}
+          className={`mt-auto px-4 text-center text-[10px] text-muted-foreground sm:px-7 lg:px-10 ${focusedTask ? "py-4" : "pt-4 pb-[calc(var(--mobile-bottom-space)+2rem)] md:py-4"}`}
         >
           Built with 💖.
         </footer>
@@ -101,23 +106,13 @@ function getPageTitle(pathname: string): string {
   return navItem?.title ?? EXTRA_TITLES[segment] ?? "Home"
 }
 
-function getGreeting() {
-  const hour = new Date().getHours()
-  if (hour < 12) return "Good morning"
-  if (hour < 17) return "Good afternoon"
-  return "Good evening"
-}
-
 function WorkspaceTopbar() {
-  const user = useWorkspace()
   const pathname = usePathname()
   const slug = getWorkspaceSlug(pathname) ?? ""
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const isMobile = useIsMobile()
 
   const title = getPageTitle(pathname)
-  // Home greets by name; every other route shows the section title.
-  const isHome = pathname === buildWorkspaceHref(slug, "home")
 
   useEffect(() => {
     const openNotifications = () => setNotificationsOpen(true)
@@ -126,29 +121,21 @@ function WorkspaceTopbar() {
       window.removeEventListener("zimba:open-notifications", openNotifications)
   }, [])
 
+  // A location strip, not a header: it answers "where am I" in a quiet voice
+  // and leaves "what is this" to the page's own h1. No bottom border — the
+  // sheet's rounded edge is already the separator.
   return (
-    <header className="flex min-h-14 shrink-0 flex-wrap items-center justify-between gap-3 bg-background px-4 py-2.5 sm:min-h-16 sm:px-7 sm:py-3 md:border-b lg:px-10">
+    <header className="flex min-h-12 shrink-0 flex-wrap items-center justify-between gap-3 bg-background px-4 py-2 sm:min-h-14 sm:px-7 sm:py-2.5 lg:px-10">
       <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-4 gap-y-2">
-        <div className="flex items-center gap-2">
+        <div className="flex min-w-0 items-center gap-1.5">
           <DashboardSidebarToggle
             aria-label="Toggle dashboard navigation"
-            className="-ml-1 hidden size-9 rounded-md hover:bg-muted hover:text-foreground md:inline-flex [&_svg]:size-5"
+            className="-ml-1.5 hidden size-8 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground md:inline-flex [&_svg]:size-4"
             icon="open"
           />
-          {isHome ? (
-            <div className="flex min-w-0 flex-col">
-              <span className="text-muted-foreground text-xs leading-4">
-                {getGreeting()}
-              </span>
-              <h1 className="truncate font-heading font-medium text-foreground text-lg leading-6 tracking-tight">
-                {user.name.trim().split(/\s+/)[0] || title}
-              </h1>
-            </div>
-          ) : (
-            <h1 className="font-heading font-medium text-foreground text-lg leading-6 tracking-tight">
-              {title}
-            </h1>
-          )}
+          <span className="truncate font-medium text-[13px] text-muted-foreground">
+            {title}
+          </span>
         </div>
       </div>
 

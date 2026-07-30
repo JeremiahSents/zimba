@@ -16,31 +16,57 @@ export function getRequestHostname(request: NextRequest) {
   return host.split(":").at(0)?.toLowerCase() ?? ""
 }
 
+/** Mirrors LAST_WORKSPACE_COOKIE in app/[workspaceSlug]/layout.tsx. */
+const LAST_WORKSPACE_COOKIE = "zimba_last_workspace"
+const LAST_WORKSPACE_MAX_AGE = 60 * 60 * 24 * 365
+
+const NON_WORKSPACE_SEGMENTS = [
+  "api",
+  "login",
+  "register",
+  "onboarding",
+  "invite",
+  "workspace",
+  "forgot-password",
+  "reset-password",
+  "verify-email",
+]
+
 export function proxy(request: NextRequest) {
   const requestHeaders = new Headers(request.headers)
   const firstSegment = request.nextUrl.pathname.split("/").filter(Boolean)[0]
-  if (
-    firstSegment &&
-    ![
-      "api",
-      "login",
-      "register",
-      "onboarding",
-      "invite",
-      "workspace",
-      "forgot-password",
-      "reset-password",
-      "verify-email",
-    ].includes(firstSegment)
-  ) {
-    requestHeaders.set("x-workspace-slug", firstSegment)
+  const workspaceSlug =
+    firstSegment && !NON_WORKSPACE_SEGMENTS.includes(firstSegment)
+      ? firstSegment
+      : null
+
+  if (workspaceSlug) {
+    requestHeaders.set("x-workspace-slug", workspaceSlug)
   }
 
-  if (getRequestHostname(request) !== APP_HOSTNAME) {
-    return NextResponse.next({ request: { headers: requestHeaders } })
+  const response = buildResponse(request, requestHeaders)
+
+  // Remembered here rather than in the layout because a Server Component
+  // cannot set cookies. With several workspaces the entry redirect would
+  // otherwise land on an arbitrary one.
+  if (workspaceSlug) {
+    response.cookies.set(LAST_WORKSPACE_COOKIE, workspaceSlug, {
+      path: "/",
+      maxAge: LAST_WORKSPACE_MAX_AGE,
+      sameSite: "lax",
+      httpOnly: false,
+    })
   }
 
-  if (request.nextUrl.pathname !== "/") {
+  return response
+}
+
+function buildResponse(request: NextRequest, requestHeaders: Headers) {
+  const isEntryRewrite =
+    getRequestHostname(request) === APP_HOSTNAME &&
+    request.nextUrl.pathname === "/"
+
+  if (!isEntryRewrite) {
     return NextResponse.next({ request: { headers: requestHeaders } })
   }
 

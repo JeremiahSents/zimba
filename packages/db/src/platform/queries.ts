@@ -312,6 +312,29 @@ export function findActiveGrantForUser(
     .limit(1)
 }
 
+/**
+ * Every active grant, not just the first. The workspace switcher lists them
+ * alongside real memberships, so `findActiveGrantForUser`'s limit(1) — right
+ * for resolving a single default — would hide the rest.
+ */
+export function listActiveGrantsForUser(
+  executor: DatabaseExecutor,
+  userId: string
+) {
+  return executor
+    .select(activeGrantColumns)
+    .from(platformWorkspaceGrant)
+    .innerJoin(
+      organization,
+      eq(organization.id, platformWorkspaceGrant.organizationId)
+    )
+    .innerJoin(
+      platformUser,
+      eq(platformUser.userId, platformWorkspaceGrant.userId)
+    )
+    .where(activeGrantConditions(userId))
+}
+
 export function findActiveGrantForUserAndOrg(
   executor: DatabaseExecutor,
   userId: string,

@@ -1,8 +1,9 @@
-import { headers } from "next/headers"
+import { listUserWorkspacesUseCase } from "@workspace/api"
+import { cookies, headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { auth } from "@/core/auth/auth"
 import { getOnboardingApplicationForUser } from "@/core/organizations/onboarding-application"
-import { getOrganizationMembership } from "@/core/organizations/service"
+import { LAST_WORKSPACE_COOKIE } from "@/lib/workspace-cookie"
 
 export const dynamic = "force-dynamic"
 
@@ -10,8 +11,9 @@ export default async function WorkspaceEntryPage() {
   const session = await auth.api.getSession({ headers: await headers() })
   if (!session) redirect("/login?callbackUrl=/workspace")
 
-  const membership = await getOrganizationMembership(session.user.id)
-  if (membership) redirect(`/${membership.slug}/home`)
+  const { workspaces } = await listUserWorkspacesUseCase(session.user.id)
+  const target = await pickWorkspace(workspaces)
+  if (target) redirect(`/${target}/home`)
 
   const application = await getOnboardingApplicationForUser(session.user.id)
   if (
@@ -21,4 +23,19 @@ export default async function WorkspaceEntryPage() {
     redirect("/pending-approval")
 
   redirect("/onboarding")
+}
+
+/**
+ * The cookie is a hint, not authority: it is honoured only when it still names
+ * a workspace the caller can actually reach, so a stale or hand-edited value
+ * falls back to their first membership rather than a 404.
+ */
+async function pickWorkspace(
+  workspaces: Array<{ slug: string }>
+): Promise<string | null> {
+  if (workspaces.length === 0) return null
+  const cookieStore = await cookies()
+  const remembered = cookieStore.get(LAST_WORKSPACE_COOKIE)?.value
+  const match = workspaces.find((workspace) => workspace.slug === remembered)
+  return (match ?? workspaces[0])?.slug ?? null
 }

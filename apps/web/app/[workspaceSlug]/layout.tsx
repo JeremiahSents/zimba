@@ -1,6 +1,9 @@
 import "server-only"
 
-import type { ResolvedWorkspaceContext } from "@workspace/api"
+import {
+  listUserWorkspacesUseCase,
+  type ResolvedWorkspaceContext,
+} from "@workspace/api"
 import { SidebarProvider } from "@workspace/ui/components/sidebar"
 import { cookies } from "next/headers"
 import { notFound, redirect } from "next/navigation"
@@ -78,8 +81,25 @@ export default async function WorkspaceLayout({
     viaGrant,
   }
 
+  const { workspaces, canCreateWorkspace } = await listUserWorkspacesUseCase(
+    session.user.id
+  )
+
   return (
-    <WorkspaceProvider user={user}>
+    <WorkspaceProvider
+      user={user}
+      workspaces={workspaces.map(
+        ({ organizationId, organizationName, slug, role, viaGrant: g }) => ({
+          organizationId,
+          organizationName,
+          slug,
+          role,
+          viaGrant: g,
+        })
+      )}
+      currentSlug={workspace.slug}
+      canCreateWorkspace={canCreateWorkspace}
+    >
       <SidebarProvider
         defaultOpen={defaultOpen}
         className="min-h-svh w-full bg-transparent"

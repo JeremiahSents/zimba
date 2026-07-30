@@ -8,6 +8,13 @@ export const organizationStatusSchema = z.enum([
   "pending_approval",
 ])
 export const organizationIdSchema = z.object({ organizationId: idSchema })
+export const createWorkspaceSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(2, "Workspace name must be at least 2 characters.")
+    .max(120, "Workspace name must be 120 characters or fewer."),
+})
 export const organizationInviteSchema = z.object({
   email: emailSchema,
   name: boundedNameSchema.max(120),

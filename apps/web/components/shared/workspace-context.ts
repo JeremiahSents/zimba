@@ -10,16 +10,47 @@ export type WorkspaceUser = {
   viaGrant?: boolean
 }
 
-export const WorkspaceContext = createContext<WorkspaceUser | null>(null)
+/** One entry in the switcher. Mirrors UserWorkspace from @workspace/api. */
+export type WorkspaceSummary = {
+  organizationId: string
+  organizationName: string
+  slug: string
+  role: string
+  viaGrant: boolean
+}
+
+export type WorkspaceContextValue = {
+  user: WorkspaceUser
+  /** Every workspace this person can reach, for the switcher. */
+  workspaces: WorkspaceSummary[]
+  /** Slug of the workspace currently being viewed. */
+  currentSlug: string
+  /** Owners only — the server re-checks this before creating anything. */
+  canCreateWorkspace: boolean
+}
+
+export const WorkspaceContext = createContext<WorkspaceContextValue | null>(
+  null
+)
+
+const FALLBACK_USER: WorkspaceUser = {
+  name: "Account",
+  image: null,
+  organizationName: "Workspace",
+  role: "member",
+}
 
 export function useWorkspace(): WorkspaceUser {
-  const context = useContext(WorkspaceContext)
+  return useContext(WorkspaceContext)?.user ?? FALLBACK_USER
+}
+
+export function useWorkspaceList(): WorkspaceContextValue {
   return (
-    context ?? {
-      name: "Account",
-      image: null,
-      organizationName: "Workspace",
-      role: "member",
+    useContext(WorkspaceContext) ?? {
+      user: FALLBACK_USER,
+      workspaces: [],
+      currentSlug: "",
+      canCreateWorkspace: false,
     }
   )
 }

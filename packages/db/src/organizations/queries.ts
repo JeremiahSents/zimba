@@ -487,6 +487,52 @@ export async function findUserMemberships(
 }
 
 /**
+ * Active workspaces the user belongs to, oldest first. Ordered because the
+ * switcher and the entry redirect both read this list, and an unordered
+ * result means "your workspace" moves around between renders.
+ */
+export async function findActiveUserMemberships(
+  executor: DatabaseExecutor,
+  userId: string
+) {
+  return executor
+    .select({
+      organizationId: organization.id,
+      organizationName: organization.name,
+      slug: organization.slug,
+      role: member.role,
+      joinedAt: member.createdAt,
+    })
+    .from(member)
+    .innerJoin(organization, eq(organization.id, member.organizationId))
+    .where(and(eq(member.userId, userId), eq(organization.status, "active")))
+    .orderBy(member.createdAt)
+}
+
+/**
+ * Whether the user owns a workspace anywhere. Creating an additional workspace
+ * is self-serve but gated on this: an existing owner has already been vetted
+ * through the approval queue, a site manager or viewer has not.
+ */
+export async function userOwnsAnyOrganization(
+  executor: DatabaseExecutor,
+  userId: string
+) {
+  const [row] = await executor
+    .select({ value: count() })
+    .from(member)
+    .innerJoin(organization, eq(organization.id, member.organizationId))
+    .where(
+      and(
+        eq(member.userId, userId),
+        eq(member.role, "owner"),
+        eq(organization.status, "active")
+      )
+    )
+  return Number(row?.value ?? 0) > 0
+}
+
+/**
  * Organizations this user owns and would leave ownerless. An organization with
  * a second owner is safe to walk away from; one without is the blocker that
  * stops an account from being deleted.
