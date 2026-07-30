@@ -8,6 +8,8 @@ import "../bones/registry"
 import { Toaster } from "@workspace/ui/components/sonner"
 import { TooltipProvider } from "@workspace/ui/components/tooltip"
 import { cn } from "@workspace/ui/lib/utils"
+import { ThemeProvider } from "@/components/shared/theme-provider"
+import { ThemeShortcut } from "@/components/shared/theme-shortcut"
 
 const publicSansHeading = Public_Sans({
   subsets: ["latin"],
@@ -36,21 +38,23 @@ export default function RootLayout({
       lang="en"
       suppressHydrationWarning
       className={cn(
-        "light font-sans antialiased",
+        "font-sans antialiased",
         geist.variable,
         inter.variable,
         "font-sans",
         roboto.variable,
         publicSansHeading.variable
       )}
-      style={{ colorScheme: "light" }}
     >
       <head>
         <meta name="apple-mobile-web-app-title" content="Zimba" />
       </head>
       <body suppressHydrationWarning>
-        <TooltipProvider>{children}</TooltipProvider>
-        <Toaster position="bottom-right" richColors />
+        <ThemeProvider>
+          <ThemeShortcut />
+          <TooltipProvider>{children}</TooltipProvider>
+          <Toaster position="bottom-right" richColors />
+        </ThemeProvider>
       </body>
     </html>
   )
