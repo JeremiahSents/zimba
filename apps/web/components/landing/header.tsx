@@ -44,8 +44,13 @@ export function Header() {
           >
             Sign in
           </Button>
-          <Button size="sm" className="hidden px-4 sm:inline-flex">
-            Learn more
+          <Button
+            size="sm"
+            nativeButton={false}
+            render={<Link href="/onboarding" />}
+            className="hidden px-4 sm:inline-flex"
+          >
+            Get started
           </Button>
         </div>
       </div>

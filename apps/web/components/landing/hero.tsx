@@ -1,3 +1,5 @@
+import Link from "next/link"
+
 import { Button } from "@workspace/ui/components/button"
 
 import { Header } from "@/components/landing/header"
@@ -18,8 +20,13 @@ export function Hero() {
         </p>
 
         <div className="mt-10">
-          <Button size="lg" className="px-6">
-            Learn more
+          <Button
+            size="lg"
+            nativeButton={false}
+            render={<Link href="/onboarding" />}
+            className="px-6"
+          >
+            Book a Demo
           </Button>
         </div>
       </div>
