@@ -2,8 +2,8 @@ import { TeamTable } from "@/components/org-detail/team-table"
 
 type Member = {
   id: string
+  userId: string
   role: string
-  responsibility: string | null
   createdAt: Date
   user: { name: string; email: string; image?: string | null }
 }
