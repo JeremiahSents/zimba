@@ -52,13 +52,16 @@ importers:
         version: 1.6.23(@prisma/client@5.22.0)(better-sqlite3@12.11.1)(drizzle-kit@0.31.10)(drizzle-orm@0.45.2(@prisma/client@5.22.0)(@types/pg@8.20.0)(better-sqlite3@12.11.1)(kysely@0.29.3)(pg@8.22.0))(next@16.2.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(pg@8.22.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@3.2.7(@types/node@20.19.41)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.1))
       boneyard-js:
         specifier: ^1.9.0
-        version: 1.9.0(react@19.2.4)(vite@8.1.5(@types/node@20.19.41)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.1))
+        version: 1.9.0(react@19.2.4)(vite@7.3.6(@types/node@20.19.41)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.1))
       drizzle-orm:
         specifier: ^0.45.2
         version: 0.45.2(@prisma/client@5.22.0)(@types/pg@8.20.0)(better-sqlite3@12.11.1)(kysely@0.29.3)(pg@8.22.0)
       next:
         specifier: 16.2.6
         version: 16.2.6(@babel/core@7.29.7)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      next-themes:
+        specifier: ^0.4.6
+        version: 0.4.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       react:
         specifier: 19.2.4
         version: 19.2.4
@@ -6824,6 +6827,14 @@ snapshots:
       type-is: 2.1.0
     transitivePeerDependencies:
       - supports-color
+
+  boneyard-js@1.9.0(react@19.2.4)(vite@7.3.6(@types/node@20.19.41)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.1)):
+    dependencies:
+      playwright: 1.62.0
+    optionalDependencies:
+      '@chenglou/pretext': 0.0.5
+      react: 19.2.4
+      vite: 7.3.6(@types/node@20.19.41)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.1)
 
   boneyard-js@1.9.0(react@19.2.4)(vite@8.1.5(@types/node@20.19.41)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.1)):
     dependencies:

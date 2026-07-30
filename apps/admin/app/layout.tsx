@@ -8,6 +8,8 @@ import { TooltipProvider } from "@workspace/ui/components/tooltip"
 import { cn } from "@workspace/ui/lib/utils"
 import type { Metadata } from "next"
 import { Geist, Public_Sans } from "next/font/google"
+import { ThemeProvider } from "@/components/theme-provider"
+import { ThemeShortcut } from "@/components/theme-shortcut"
 
 const publicSans = Public_Sans({
   subsets: ["latin"],
@@ -32,15 +34,19 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={cn(
-        "light min-h-full font-sans antialiased",
+        "min-h-full font-sans antialiased",
         geist.variable,
         publicSans.variable
       )}
     >
-      <body className="min-h-dvh bg-background">
-        <TooltipProvider>{children}</TooltipProvider>
-        <Toaster position="bottom-right" richColors />
+      <body className="min-h-dvh bg-background" suppressHydrationWarning>
+        <ThemeProvider>
+          <ThemeShortcut />
+          <TooltipProvider>{children}</TooltipProvider>
+          <Toaster position="bottom-right" richColors />
+        </ThemeProvider>
       </body>
     </html>
   )
