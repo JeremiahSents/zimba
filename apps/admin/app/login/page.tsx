@@ -2,7 +2,6 @@ import type { Metadata } from "next"
 import { headers } from "next/headers"
 import Link from "next/link"
 import { redirect } from "next/navigation"
-import { acceptSuperAdminInviteUseCase } from "@workspace/api"
 import { Button } from "@workspace/ui/components/button"
 import {
   Card,
@@ -13,6 +12,7 @@ import {
 } from "@workspace/ui/components/card"
 import { LoginForm } from "@/components/login-form"
 import { auth } from "@/core/auth/auth"
+import { claimSuperAdminInvite } from "@/core/users/accept-invite"
 
 export const metadata: Metadata = {
   title: "Sign in | Zimba Admin",
@@ -52,20 +52,19 @@ export default async function LoginPage({
   }
 
   if (session && inviteToken) {
-    try {
-      await acceptSuperAdminInviteUseCase(
-        { userId: session.user.id, email: session.user.email },
-        inviteToken
-      )
-      redirect("/")
-    } catch (error_) {
+    const failure = await claimSuperAdminInvite(
+      { userId: session.user.id, email: session.user.email },
+      inviteToken
+    )
+    if (failure) {
       return (
         <InviteStatusCard
           title="Could not accept this invitation"
-          message={error_ instanceof Error ? error_.message : "This invitation could not be completed."}
+          message={failure}
         />
       )
     }
+    redirect("/")
   }
 
   if (session) redirect(destination)
