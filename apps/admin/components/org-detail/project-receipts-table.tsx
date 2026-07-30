@@ -1,6 +1,6 @@
 "use client"
 
-import type { AdminRecentExpenseDto } from "@workspace/api"
+import type { AdminProjectReceiptDto } from "@workspace/api"
 import {
   type ColumnDef,
   getCoreRowModel,
@@ -12,7 +12,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table"
 import { DataTable } from "@workspace/ui/components/data-table"
-import { type ReactNode, useEffect, useMemo, useState } from "react"
+import { type ReactNode, useMemo, useState } from "react"
 import { StatusBadge } from "@/components/status-badge"
 import { formatCompactCurrency } from "@/lib/format-currency"
 
@@ -24,20 +24,12 @@ function formatShortDate(dateInput: Date | string) {
   })
 }
 
-function toTitleCase(value: string) {
-  return value
-    .trim()
-    .toLowerCase()
-    .replace(/[\s_-]+/g, " ")
-    .replace(/\b\p{L}/gu, (match) => match.toUpperCase())
-}
-
-export function RecentExpensesTable({
-  expenses,
+export function ProjectReceiptsTable({
+  receipts,
   currency,
   title,
 }: {
-  expenses: AdminRecentExpenseDto[]
+  receipts: AdminProjectReceiptDto[]
   currency: string
   title?: ReactNode
 }) {
@@ -48,44 +40,14 @@ export function RecentExpensesTable({
     pageSize: 8,
   })
 
-  useEffect(() => {
-    setPagination((current) =>
-      current.pageIndex === 0 ? current : { ...current, pageIndex: 0 }
-    )
-  }, [globalFilter])
-
-  const columns = useMemo<ColumnDef<AdminRecentExpenseDto>[]>(
+  const columns = useMemo<ColumnDef<AdminProjectReceiptDto>[]>(
     () => [
-      {
-        accessorKey: "date",
-        header: "Date",
-        accessorFn: (row) => row.expenseDate ?? row.createdAt,
-        cell: ({ getValue }) => formatShortDate(getValue<Date>()),
-        meta: { cellClassName: "whitespace-nowrap" },
-      },
-      {
-        accessorKey: "projectName",
-        header: "Project",
-        cell: ({ getValue }) => {
-          const value = getValue<string | null>()
-          return value ? toTitleCase(value) : "—"
-        },
-      },
       {
         accessorKey: "supplierName",
         header: "Supplier",
         cell: ({ getValue }) => {
           const value = getValue<string | null>()
-          return value ? toTitleCase(value) : "—"
-        },
-        meta: { cellClassName: "whitespace-nowrap" },
-      },
-      {
-        accessorKey: "itemCount",
-        header: "Receipt",
-        cell: ({ getValue }) => {
-          const count = getValue<number>()
-          return `${count} item${count === 1 ? "" : "s"}`
+          return value ?? "—"
         },
       },
       {
@@ -95,17 +57,31 @@ export function RecentExpensesTable({
       },
       {
         accessorKey: "totalCents",
-        header: "Amount",
+        header: "Total",
         cell: ({ getValue }) =>
           formatCompactCurrency(getValue<number>(), currency),
-        meta: { cellClassName: "whitespace-nowrap tabular-nums" },
+        meta: { align: "right", cellClassName: "whitespace-nowrap tabular-nums" },
+      },
+      {
+        accessorKey: "paidCents",
+        header: "Paid",
+        cell: ({ getValue }) =>
+          formatCompactCurrency(getValue<number>(), currency),
+        meta: { align: "right", cellClassName: "whitespace-nowrap tabular-nums" },
+      },
+      {
+        accessorKey: "date",
+        header: "Date",
+        accessorFn: (row) => row.expenseDate ?? row.createdAt,
+        cell: ({ getValue }) => formatShortDate(getValue<Date>()),
+        meta: { cellClassName: "whitespace-nowrap" },
       },
     ],
     [currency]
   )
 
   const table = useReactTable({
-    data: expenses,
+    data: receipts,
     columns,
     state: { globalFilter, sorting, pagination },
     onGlobalFilterChange: setGlobalFilter,
@@ -129,11 +105,11 @@ export function RecentExpensesTable({
       search={{
         value: globalFilter,
         onChange: setGlobalFilter,
-        placeholder: "Search expenses...",
-        label: "Search expenses",
+        placeholder: "Search receipts...",
+        label: "Search receipts",
       }}
-      emptyMessage="No expenses match your search."
-      footerNote={`${totalRows} ${totalRows === 1 ? "expense" : "expenses"}`}
+      emptyMessage="No receipts logged yet."
+      footerNote={`${totalRows} ${totalRows === 1 ? "receipt" : "receipts"}`}
     />
   )
 }

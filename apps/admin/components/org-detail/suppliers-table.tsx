@@ -1,6 +1,6 @@
 "use client"
 
-import type { AdminRecentExpenseDto } from "@workspace/api"
+import type { AdminSupplierWithStatsDto } from "@workspace/api"
 import {
   type ColumnDef,
   getCoreRowModel,
@@ -12,7 +12,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table"
 import { DataTable } from "@workspace/ui/components/data-table"
-import { type ReactNode, useEffect, useMemo, useState } from "react"
+import { type ReactNode, useMemo, useState } from "react"
 import { StatusBadge } from "@/components/status-badge"
 import { formatCompactCurrency } from "@/lib/format-currency"
 
@@ -32,12 +32,12 @@ function toTitleCase(value: string) {
     .replace(/\b\p{L}/gu, (match) => match.toUpperCase())
 }
 
-export function RecentExpensesTable({
-  expenses,
+export function SuppliersTable({
+  suppliers,
   currency,
   title,
 }: {
-  expenses: AdminRecentExpenseDto[]
+  suppliers: AdminSupplierWithStatsDto[]
   currency: string
   title?: ReactNode
 }) {
@@ -48,45 +48,47 @@ export function RecentExpensesTable({
     pageSize: 8,
   })
 
-  useEffect(() => {
-    setPagination((current) =>
-      current.pageIndex === 0 ? current : { ...current, pageIndex: 0 }
-    )
-  }, [globalFilter])
-
-  const columns = useMemo<ColumnDef<AdminRecentExpenseDto>[]>(
+  const columns = useMemo<ColumnDef<AdminSupplierWithStatsDto>[]>(
     () => [
       {
-        accessorKey: "date",
-        header: "Date",
-        accessorFn: (row) => row.expenseDate ?? row.createdAt,
-        cell: ({ getValue }) => formatShortDate(getValue<Date>()),
-        meta: { cellClassName: "whitespace-nowrap" },
-      },
-      {
-        accessorKey: "projectName",
-        header: "Project",
-        cell: ({ getValue }) => {
-          const value = getValue<string | null>()
-          return value ? toTitleCase(value) : "—"
-        },
-      },
-      {
-        accessorKey: "supplierName",
+        accessorKey: "name",
         header: "Supplier",
-        cell: ({ getValue }) => {
-          const value = getValue<string | null>()
-          return value ? toTitleCase(value) : "—"
-        },
-        meta: { cellClassName: "whitespace-nowrap" },
+        cell: ({ getValue }) => (
+          <span className="font-medium text-foreground text-sm">
+            {toTitleCase(getValue<string>())}
+          </span>
+        ),
       },
       {
-        accessorKey: "itemCount",
-        header: "Receipt",
+        accessorKey: "category",
+        header: "Category",
         cell: ({ getValue }) => {
-          const count = getValue<number>()
-          return `${count} item${count === 1 ? "" : "s"}`
+          const value = getValue<string | null>()
+          return value ? (
+            <span className="capitalize">{toTitleCase(value)}</span>
+          ) : (
+            "—"
+          )
         },
+      },
+      {
+        accessorKey: "contact",
+        header: "Contact",
+        accessorFn: (row) => row.phone ?? row.email ?? "—",
+        cell: ({ row }) => row.original.phone ?? row.original.email ?? "—",
+      },
+      {
+        accessorKey: "paymentCount",
+        header: "Payments",
+        cell: ({ getValue }) => getValue<number>(),
+        meta: { align: "right", cellClassName: "tabular-nums" },
+      },
+      {
+        accessorKey: "totalPaidCents",
+        header: "Total Paid",
+        cell: ({ getValue }) =>
+          formatCompactCurrency(getValue<number>(), currency),
+        meta: { align: "right", cellClassName: "whitespace-nowrap tabular-nums" },
       },
       {
         accessorKey: "status",
@@ -94,18 +96,17 @@ export function RecentExpensesTable({
         cell: ({ row }) => <StatusBadge status={row.original.status} />,
       },
       {
-        accessorKey: "totalCents",
-        header: "Amount",
-        cell: ({ getValue }) =>
-          formatCompactCurrency(getValue<number>(), currency),
-        meta: { cellClassName: "whitespace-nowrap tabular-nums" },
+        accessorKey: "createdAt",
+        header: "Created",
+        cell: ({ getValue }) => formatShortDate(getValue<Date>()),
+        meta: { cellClassName: "whitespace-nowrap" },
       },
     ],
     [currency]
   )
 
   const table = useReactTable({
-    data: expenses,
+    data: suppliers,
     columns,
     state: { globalFilter, sorting, pagination },
     onGlobalFilterChange: setGlobalFilter,
@@ -129,11 +130,11 @@ export function RecentExpensesTable({
       search={{
         value: globalFilter,
         onChange: setGlobalFilter,
-        placeholder: "Search expenses...",
-        label: "Search expenses",
+        placeholder: "Search suppliers...",
+        label: "Search suppliers",
       }}
-      emptyMessage="No expenses match your search."
-      footerNote={`${totalRows} ${totalRows === 1 ? "expense" : "expenses"}`}
+      emptyMessage="No suppliers registered yet."
+      footerNote={`${totalRows} ${totalRows === 1 ? "supplier" : "suppliers"}`}
     />
   )
 }
