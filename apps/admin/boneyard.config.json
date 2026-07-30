@@ -25,10 +25,6 @@
     "admin-activity": { "route": "/activity" },
     "admin-applications": { "route": "/applications" },
     "admin-organizations": { "route": "/organizations" },
-    "admin-payments": { "route": "/payments" },
-    "admin-projects": { "route": "/projects" },
-    "admin-receipts": { "route": "/receipts" },
-    "admin-suppliers": { "route": "/suppliers" },
     "admin-users": { "route": "/users" }
   }
 }

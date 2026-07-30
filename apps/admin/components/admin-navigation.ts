@@ -1,14 +1,9 @@
 import {
   Activity01Icon,
   Alert01Icon,
-  BanknoteIcon,
   Building03Icon,
-  CreditCardIcon,
   DashboardSquare02Icon,
-  FactoryIcon,
   FileCheckIcon,
-  HeadphonesIcon,
-  Invoice01Icon,
   Settings02Icon,
   UserGroupIcon,
 } from "@hugeicons/core-free-icons"
@@ -22,7 +17,7 @@ export type AdminNavItem = {
   icon: typeof DashboardSquare02Icon
 }
 
-export const managementNav: readonly AdminNavItem[] = [
+export const mainNav: readonly AdminNavItem[] = [
   {
     name: "Overview",
     href: "/overview",
@@ -34,27 +29,22 @@ export const managementNav: readonly AdminNavItem[] = [
     href: "/organizations",
     icon: Building03Icon,
   },
-  { name: "Users", href: "/users", icon: UserGroupIcon },
   {
-    name: "Applications & Transfers",
-    dockName: "Requests",
+    name: "Applications",
     href: "/applications",
     icon: FileCheckIcon,
   },
-] as const
-
-export const operationsNav: readonly AdminNavItem[] = [
-  { name: "Projects", href: "/projects", icon: FactoryIcon },
-  { name: "Suppliers", href: "/suppliers", icon: UserGroupIcon },
-  { name: "Receipts", href: "/receipts", icon: Invoice01Icon },
-  { name: "Payments", href: "/payments", icon: BanknoteIcon },
+  {
+    name: "Activity log",
+    dockName: "Activity",
+    href: "/activity",
+    icon: Activity01Icon,
+  },
 ] as const
 
 export const platformNav: readonly AdminNavItem[] = [
-  { name: "Billing", href: "/billing", icon: CreditCardIcon },
-  { name: "Support", href: "/support", icon: HeadphonesIcon },
-  { name: "Activity Log", href: "/activity", icon: Activity01Icon },
-  { name: "System Health", href: "/system", icon: Alert01Icon },
+  { name: "Users", href: "/users", icon: UserGroupIcon },
+  { name: "System", href: "/system", icon: Alert01Icon },
 ] as const
 
 export const settingsNavItem: AdminNavItem = {
@@ -67,13 +57,12 @@ export const settingsNavItem: AdminNavItem = {
  * The four destinations that get a permanent slot in the mobile dock. The
  * remaining nine live behind the dock's "More" button.
  */
-export const dockPrimaryNavigation = managementNav
+export const dockPrimaryNavigation = mainNav
 
 export const dockMoreGroups: readonly {
   label: string
   items: readonly AdminNavItem[]
 }[] = [
-  { label: "Operations", items: operationsNav },
   { label: "Platform", items: platformNav },
   { label: "Account", items: [settingsNavItem] },
 ] as const

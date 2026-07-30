@@ -3,6 +3,8 @@ import "@workspace/ui/globals.css"
 // every <BoneSkeleton name="..."> can resolve them. Required — without it the
 // loading routes fall back to their static placeholders.
 import "../bones/registry"
+import { Toaster } from "@workspace/ui/components/sonner"
+import { TooltipProvider } from "@workspace/ui/components/tooltip"
 import { cn } from "@workspace/ui/lib/utils"
 import type { Metadata } from "next"
 import { Geist, Public_Sans } from "next/font/google"
@@ -36,7 +38,10 @@ export default async function RootLayout({
         publicSans.variable
       )}
     >
-      <body className="min-h-dvh bg-background">{children}</body>
+      <body className="min-h-dvh bg-background">
+        <TooltipProvider>{children}</TooltipProvider>
+        <Toaster position="bottom-right" richColors />
+      </body>
     </html>
   )
 }

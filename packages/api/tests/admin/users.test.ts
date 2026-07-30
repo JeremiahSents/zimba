@@ -3,13 +3,17 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 
 const repo = vi.hoisted(() => ({
   appendPlatformAudit: vi.fn(),
+  claimPlatformInvitation: vi.fn(),
   countSuperAdmins: vi.fn(),
   createPlatformAccess: vi.fn(),
+  createPlatformInvitation: vi.fn(),
   deletePlatformAccess: vi.fn(),
   findPlatformAccessForUser: vi.fn(),
+  findPlatformInvitationByTokenHash: vi.fn(),
   findPlatformUserForUser: vi.fn(),
   findUserByEmail: vi.fn(),
   findUserById: vi.fn(),
+  revokePendingPlatformInvitationsForEmail: vi.fn(),
   updatePlatformAccess: vi.fn(),
 }))
 
@@ -27,9 +31,10 @@ const dbMock = vi.hoisted(() => ({
 vi.mock("@workspace/db", () => ({ db: dbMock }))
 
 import {
+  acceptSuperAdminInviteUseCase,
+  createSuperAdminInviteUseCase,
   removePlatformUserUseCase,
   updatePlatformUserRoleUseCase,
-  validateSuperAdminInviteUseCase,
 } from "../../src/admin/users"
 
 describe("admin platform user use cases", () => {
@@ -44,6 +49,10 @@ describe("admin platform user use cases", () => {
     repo.findPlatformAccessForUser.mockImplementation((_, userId: string) =>
       userId === "actor-1" ? [{ id: "actor-access", role: "super_admin" }] : []
     )
+    repo.findPlatformUserForUser.mockResolvedValue([])
+    repo.findUserByEmail.mockResolvedValue([])
+    repo.createPlatformInvitation.mockResolvedValue([{ id: "invite-1" }])
+    repo.claimPlatformInvitation.mockResolvedValue([{ id: "invite-1" }])
   })
 
   it("rejects changing your own platform access", async () => {
@@ -104,25 +113,77 @@ describe("admin platform user use cases", () => {
     )
   })
 
-  it("removes support access and records the removal", async () => {
-    repo.findPlatformAccessForUser.mockImplementation((_, userId: string) =>
-      userId === "actor-1"
-        ? [{ id: "actor-access", role: "super_admin" }]
-        : [{ id: "platform-1", role: "support" }]
-    )
+  it("creates a super admin invite and revokes older pending invites", async () => {
+    repo.findUserByEmail.mockResolvedValue([{ id: "target-user" }])
 
-    await removePlatformUserUseCase("actor-1", "target-1")
+    const result = await createSuperAdminInviteUseCase("actor-1", {
+      email: "Person@Example.com",
+      name: "Person",
+    })
 
-    expect(repo.deletePlatformAccess).toHaveBeenCalledWith(
+    expect(result.normalizedEmail).toBe("person@example.com")
+    expect(result.token).toEqual(expect.any(String))
+    expect(repo.revokePendingPlatformInvitationsForEmail).toHaveBeenCalledWith(
       expect.anything(),
-      "platform-1"
+      "person@example.com"
+    )
+    expect(repo.createPlatformInvitation).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        email: "person@example.com",
+        name: "Person",
+        role: "super_admin",
+        invitedById: "actor-1",
+        tokenHash: expect.any(String),
+        expiresAt: expect.any(Date),
+      })
     )
     expect(repo.appendPlatformAudit).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
-        operation: "platform_access_removed",
-        oldRole: "support",
-        newRole: null,
+        actorId: "actor-1",
+        targetUserId: "target-user",
+        operation: "super_admin_invite_sent",
+      })
+    )
+  })
+
+  it("accepts a super admin invite and grants access", async () => {
+    repo.findPlatformInvitationByTokenHash.mockResolvedValue([
+      {
+        id: "invite-1",
+        email: "person@example.com",
+        name: "Person",
+        role: "super_admin",
+        tokenHash: "token-hash",
+        status: "pending",
+        invitedById: "actor-1",
+        expiresAt: new Date(Date.now() + 60_000),
+        acceptedAt: null,
+        createdAt: new Date(),
+      },
+    ])
+    repo.findPlatformAccessForUser.mockResolvedValue([])
+
+    await acceptSuperAdminInviteUseCase(
+      { userId: "target-user", email: "Person@Example.com" },
+      "x".repeat(32)
+    )
+
+    expect(repo.claimPlatformInvitation).toHaveBeenCalledWith(
+      expect.anything(),
+      "invite-1"
+    )
+    expect(repo.createPlatformAccess).toHaveBeenCalledWith(
+      expect.anything(),
+      "target-user",
+      "super_admin"
+    )
+    expect(repo.appendPlatformAudit).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        operation: "super_admin_invite_accepted",
+        targetUserId: "target-user",
       })
     )
   })
@@ -132,7 +193,7 @@ describe("admin platform user use cases", () => {
     repo.findPlatformUserForUser.mockResolvedValue([{ id: "platform-1" }])
 
     await expect(
-      validateSuperAdminInviteUseCase({
+      createSuperAdminInviteUseCase("actor-1", {
         email: "person@example.com",
         name: "Person",
       })

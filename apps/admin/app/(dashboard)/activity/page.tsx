@@ -29,25 +29,17 @@ export default async function ActivityPage() {
   const uniqueActions = new Set(logs.map((l) => l.action)).size
 
   return (
-    <AdminDashboardShell boneName="admin-activity">
-      {/* ── Subtitle header ── */}
-      <div className="flex items-center justify-between">
-        <p className="text-muted-foreground text-sm">
-          Platform-wide audit, user operations, and activity logs.
-        </p>
-      </div>
-
+    <AdminDashboardShell
+      boneName="admin-activity"
+      title="Activity log"
+      description="Platform-wide audit, user operations, and activity logs."
+    >
       {/* ── Top Activity Stats Cards Row ── */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard
           title="Total Events"
           value={logs.length}
           accent="blue"
-          trend={{
-            value: 15,
-            label: "vs last month",
-            isPositive: true,
-          }}
           icon={
             <HugeiconsIcon
               icon={ActivityIcon}
@@ -60,11 +52,6 @@ export default async function ActivityPage() {
           title="Active Actors"
           value={uniqueActors}
           accent="emerald"
-          trend={{
-            value: uniqueActors,
-            label: "active users",
-            isPositive: true,
-          }}
           icon={
             <HugeiconsIcon
               icon={UserGroupIcon}

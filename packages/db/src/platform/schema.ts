@@ -29,6 +29,27 @@ export const platformUser = pgTable(
   ]
 )
 
+export const platformInvitation = pgTable(
+  "platform_invitation",
+  {
+    id: varchar("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    email: varchar("email").notNull(),
+    name: text("name").notNull(),
+    role: varchar("role").notNull().default("super_admin"),
+    tokenHash: varchar("token_hash").notNull().unique(),
+    status: varchar("status").notNull().default("pending"),
+    invitedById: text("invited_by_id").references(() => user.id, {
+      onDelete: "set null",
+    }),
+    expiresAt: timestamp("expires_at", { mode: "date" }).notNull(),
+    acceptedAt: timestamp("accepted_at", { mode: "date" }),
+    createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+  },
+  (table) => [index("platform_invitation_status_email_idx").on(table.status, table.email)]
+)
+
 export const platformAuditLog = pgTable("platform_audit_log", {
   id: varchar("id")
     .primaryKey()

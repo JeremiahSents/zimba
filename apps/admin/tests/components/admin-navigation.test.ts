@@ -5,11 +5,12 @@ import {
   dockPrimaryNavigation,
   isAdminRouteActive,
   isMoreRouteActive,
-  managementNav,
-  operationsNav,
+  mainNav,
   platformNav,
   settingsNavItem,
 } from "@/components/admin-navigation"
+
+// mainNav is used in the "reaches every sidebar destination" test below.
 
 describe("isAdminRouteActive", () => {
   it("matches the exact route", () => {
@@ -35,7 +36,7 @@ describe("isAdminRouteActive", () => {
 
 describe("isMoreRouteActive", () => {
   it("is true for a route that only lives in the More sheet", () => {
-    expect(isMoreRouteActive("/receipts/r-1")).toBe(true)
+    expect(isMoreRouteActive("/users/u-1")).toBe(true)
     expect(isMoreRouteActive("/settings")).toBe(true)
   })
 
@@ -60,8 +61,7 @@ describe("dock composition", () => {
     ])
 
     const sidebarHrefs = [
-      ...managementNav,
-      ...operationsNav,
+      ...mainNav,
       ...platformNav,
       settingsNavItem,
     ].map((item) => item.href)

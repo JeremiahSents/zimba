@@ -1,12 +1,13 @@
-import { and, count, desc, eq, gt, isNull, sql } from "drizzle-orm"
+import { and, count, desc, eq, gt, isNull, or, sql } from "drizzle-orm"
 import { user } from "../auth/schema"
 import { member, organization } from "../organizations/schema"
-import { project } from "../projects/schema"
-import { expense, expenseLine, payment } from "../receipts/schema"
+import { budgetItem, project } from "../projects/schema"
+import { expense, expenseLine, payable, payment } from "../receipts/schema"
 import type { DatabaseExecutor } from "../shared/executor"
 import { supplier } from "../suppliers/schema"
 import {
   platformAuditLog,
+  platformInvitation,
   platformUser,
   platformWorkspaceGrant,
 } from "./schema"
@@ -166,7 +167,13 @@ export function createPlatformAccess(
   userId: string,
   role: string
 ) {
-  return executor.insert(platformUser).values({ userId, role })
+  return executor
+    .insert(platformUser)
+    .values({ userId, role })
+    .onConflictDoUpdate({
+      target: [platformUser.userId],
+      set: { role },
+    })
 }
 
 export function deletePlatformAccess(
@@ -176,6 +183,67 @@ export function deletePlatformAccess(
   return executor
     .delete(platformUser)
     .where(eq(platformUser.id, platformUserId))
+}
+
+export function createPlatformInvitation(
+  executor: DatabaseExecutor,
+  data: typeof platformInvitation.$inferInsert
+) {
+  return executor.insert(platformInvitation).values(data).returning()
+}
+
+export function findPlatformInvitationByTokenHash(
+  executor: DatabaseExecutor,
+  tokenHash: string
+) {
+  return executor
+    .select({
+      id: platformInvitation.id,
+      email: platformInvitation.email,
+      name: platformInvitation.name,
+      role: platformInvitation.role,
+      tokenHash: platformInvitation.tokenHash,
+      status: platformInvitation.status,
+      invitedById: platformInvitation.invitedById,
+      expiresAt: platformInvitation.expiresAt,
+      acceptedAt: platformInvitation.acceptedAt,
+      createdAt: platformInvitation.createdAt,
+    })
+    .from(platformInvitation)
+    .where(eq(platformInvitation.tokenHash, tokenHash))
+    .limit(1)
+}
+
+export function claimPlatformInvitation(
+  executor: DatabaseExecutor,
+  invitationId: string
+) {
+  const now = new Date()
+  return executor
+    .update(platformInvitation)
+    .set({ status: "accepted", acceptedAt: now })
+    .where(
+      and(
+        eq(platformInvitation.id, invitationId),
+        eq(platformInvitation.status, "pending")
+      )
+    )
+    .returning({ id: platformInvitation.id })
+}
+
+export function revokePendingPlatformInvitationsForEmail(
+  executor: DatabaseExecutor,
+  email: string
+) {
+  return executor
+    .update(platformInvitation)
+    .set({ status: "revoked" })
+    .where(
+      and(
+        eq(platformInvitation.email, email),
+        eq(platformInvitation.status, "pending")
+      )
+    )
 }
 
 export function appendPlatformAudit(
@@ -390,4 +458,395 @@ export function revokeGrantById(executor: DatabaseExecutor, grantId: string) {
     .update(platformWorkspaceGrant)
     .set({ revokedAt: new Date() })
     .where(eq(platformWorkspaceGrant.id, grantId))
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Org-scoped admin queries. Every function takes an explicit `organizationId`
+// so a super admin browsing a tenant can never accidentally cross tenant lines.
+// Use cases in packages/api/src/admin/org-detail.ts compose these.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type AdminProjectSummary = {
+  id: string
+  name: string
+  location: string
+  buildingType: string | null
+  status: string
+  currency: string
+  createdAt: Date
+  archivedAt: Date | null
+  budgetCents: number
+  spentCents: number
+  receiptCount: number
+}
+
+/**
+ * Every project for an org with its budget total (sum of budget_item.budget_cents)
+ * and actual spend rollup (sum of expense_line.amount_cents through the project's
+ * expenses). Mirrors the per-project numbers the web app shows, but read-only.
+ */
+export async function listProjectsForOrganizationAdmin(
+  executor: DatabaseExecutor,
+  organizationId: string
+): Promise<AdminProjectSummary[]> {
+  const projects = await executor
+    .select()
+    .from(project)
+    .where(eq(project.organizationId, organizationId))
+    .orderBy(desc(project.createdAt))
+
+  if (projects.length === 0) return []
+
+  const projectIds = projects.map((p) => p.id)
+
+  const [budgetRows, spendRows, receiptCounts] = await Promise.all([
+    executor
+      .select({
+        projectId: budgetItem.projectId,
+        total: sql<number>`coalesce(sum(${budgetItem.budgetCents}), 0)`,
+      })
+      .from(budgetItem)
+      .where(sql`${budgetItem.projectId} in ${projectIds}`)
+      .groupBy(budgetItem.projectId),
+    executor
+      .select({
+        projectId: expense.projectId,
+        total: sql<number>`coalesce(sum(${expenseLine.amountCents}), 0)`,
+      })
+      .from(expense)
+      .leftJoin(expenseLine, eq(expense.id, expenseLine.expenseId))
+      .where(
+        and(
+          eq(expense.organizationId, organizationId),
+          sql`${expense.projectId} in ${projectIds}`
+        )
+      )
+      .groupBy(expense.projectId),
+    executor
+      .select({
+        projectId: expense.projectId,
+        count: count(),
+      })
+      .from(expense)
+      .where(
+        and(
+          eq(expense.organizationId, organizationId),
+          sql`${expense.projectId} in ${projectIds}`
+        )
+      )
+      .groupBy(expense.projectId),
+  ])
+
+  const budgetMap = new Map(budgetRows.map((r) => [r.projectId, Number(r.total)]))
+  const spendMap = new Map(spendRows.map((r) => [r.projectId, Number(r.total)]))
+  const receiptMap = new Map(receiptCounts.map((r) => [r.projectId, r.count]))
+
+  return projects.map((p) => ({
+    id: p.id,
+    name: p.name,
+    location: p.location,
+    buildingType: p.buildingType,
+    status: p.status,
+    currency: p.currency,
+    createdAt: p.createdAt,
+    archivedAt: p.archivedAt,
+    budgetCents: budgetMap.get(p.id) ?? 0,
+    spentCents: spendMap.get(p.id) ?? 0,
+    receiptCount: receiptMap.get(p.id) ?? 0,
+  }))
+}
+
+export type AdminBudgetItemWithSpend = {
+  id: string
+  name: string
+  budgetCents: number
+  spentCents: number
+}
+
+/**
+ * Budget items for a project with actual spend per item. The shape mirrors the
+ * web app's project budget view: budget, spent, remaining, and pct are derived
+ * by the caller from budgetCents/spentCents.
+ */
+export async function listProjectBudgetItemsWithSpend(
+  executor: DatabaseExecutor,
+  organizationId: string,
+  projectId: string
+): Promise<AdminBudgetItemWithSpend[]> {
+  const items = await executor
+    .select()
+    .from(budgetItem)
+    .where(
+      and(
+        eq(budgetItem.organizationId, organizationId),
+        eq(budgetItem.projectId, projectId)
+      )
+    )
+    .orderBy(desc(budgetItem.createdAt))
+
+  if (items.length === 0) return []
+
+  const itemIds = items.map((i) => i.id)
+  const spendRows = await executor
+    .select({
+      budgetItemId: expenseLine.budgetItemId,
+      total: sql<number>`coalesce(sum(${expenseLine.amountCents}), 0)`,
+    })
+    .from(expenseLine)
+    .where(
+      and(
+        eq(expenseLine.organizationId, organizationId),
+        sql`${expenseLine.budgetItemId} in ${itemIds}`
+      )
+    )
+    .groupBy(expenseLine.budgetItemId)
+
+  const spendMap = new Map(spendRows.map((r) => [r.budgetItemId, Number(r.total)]))
+
+  return items.map((i) => ({
+    id: i.id,
+    name: i.name,
+    budgetCents: i.budgetCents,
+    spentCents: spendMap.get(i.id) ?? 0,
+  }))
+}
+
+export type AdminProjectReceipt = {
+  id: string
+  status: string
+  expenseDate: Date | null
+  createdAt: Date
+  supplierName: string | null
+  totalCents: number
+  paidCents: number
+}
+
+/** Receipts (expenses) for a project with their line totals and paid totals. */
+export async function listReceiptsForProjectAdmin(
+  executor: DatabaseExecutor,
+  organizationId: string,
+  projectId: string
+): Promise<AdminProjectReceipt[]> {
+  const receipts = await executor
+    .select({
+      id: expense.id,
+      status: expense.status,
+      expenseDate: expense.expenseDate,
+      createdAt: expense.createdAt,
+      supplierName: supplier.name,
+    })
+    .from(expense)
+    .leftJoin(
+      supplier,
+      and(
+        eq(supplier.id, expense.supplierId),
+        eq(supplier.organizationId, expense.organizationId)
+      )
+    )
+    .where(
+      and(
+        eq(expense.organizationId, organizationId),
+        eq(expense.projectId, projectId)
+      )
+    )
+    .orderBy(desc(expense.createdAt))
+
+  if (receipts.length === 0) return []
+
+  const receiptIds = receipts.map((r) => r.id)
+  const [lineTotals, paymentTotals] = await Promise.all([
+    executor
+      .select({
+        expenseId: expenseLine.expenseId,
+        total: sql<number>`coalesce(sum(${expenseLine.amountCents}), 0)`,
+      })
+      .from(expenseLine)
+      .where(
+        and(
+          eq(expenseLine.organizationId, organizationId),
+          sql`${expenseLine.expenseId} in ${receiptIds}`
+        )
+      )
+      .groupBy(expenseLine.expenseId),
+    executor
+      .select({
+        expenseId: payment.expenseId,
+        total: sql<number>`coalesce(sum(${payment.amountCents}), 0)`,
+      })
+      .from(payment)
+      .where(
+        and(
+          eq(payment.organizationId, organizationId),
+          sql`${payment.expenseId} in ${receiptIds}`
+        )
+      )
+      .groupBy(payment.expenseId),
+  ])
+
+  const lineMap = new Map(lineTotals.map((r) => [r.expenseId, Number(r.total)]))
+  const paidMap = new Map(paymentTotals.map((r) => [r.expenseId, Number(r.total)]))
+
+  return receipts.map((r) => ({
+    id: r.id,
+    status: r.status,
+    expenseDate: r.expenseDate,
+    createdAt: r.createdAt,
+    supplierName: r.supplierName,
+    totalCents: lineMap.get(r.id) ?? 0,
+    paidCents: paidMap.get(r.id) ?? 0,
+  }))
+}
+
+export type AdminProjectPayment = {
+  id: string
+  amountCents: number
+  currency: string
+  paymentDate: Date | null
+  method: string | null
+  reference: string | null
+  createdAt: Date
+  supplierName: string | null
+  expenseId: string | null
+}
+
+/** Payments settling receipts or payables attached to a project. */
+export async function listPaymentsForProjectAdmin(
+  executor: DatabaseExecutor,
+  organizationId: string,
+  projectId: string
+): Promise<AdminProjectPayment[]> {
+  return executor
+    .select({
+      id: payment.id,
+      amountCents: payment.amountCents,
+      currency: payment.currency,
+      paymentDate: payment.paymentDate,
+      method: payment.method,
+      reference: payment.reference,
+      createdAt: payment.createdAt,
+      supplierName: supplier.name,
+      expenseId: payment.expenseId,
+    })
+    .from(payment)
+    .leftJoin(
+      supplier,
+      and(
+        eq(supplier.id, payment.supplierId),
+        eq(supplier.organizationId, payment.organizationId)
+      )
+    )
+    .leftJoin(expense, eq(expense.id, payment.expenseId))
+    .leftJoin(payable, eq(payable.id, payment.payableId))
+    .where(
+      and(
+        eq(payment.organizationId, organizationId),
+        or(
+          eq(expense.projectId, projectId),
+          eq(payable.projectId, projectId)
+        )
+      )
+    )
+    .orderBy(desc(payment.createdAt))
+}
+
+export type AdminSupplierWithStats = {
+  id: string
+  name: string
+  phone: string | null
+  email: string | null
+  category: string | null
+  status: string
+  createdAt: Date
+  paymentCount: number
+  totalPaidCents: number
+}
+
+/** Suppliers for an org with payment aggregates. */
+export async function listSuppliersWithPaymentStatsForOrganization(
+  executor: DatabaseExecutor,
+  organizationId: string
+): Promise<AdminSupplierWithStats[]> {
+  const suppliers = await executor
+    .select()
+    .from(supplier)
+    .where(eq(supplier.organizationId, organizationId))
+    .orderBy(desc(supplier.createdAt))
+
+  if (suppliers.length === 0) return []
+
+  const supplierIds = suppliers.map((s) => s.id)
+  const statsRows = await executor
+    .select({
+      supplierId: payment.supplierId,
+      paymentCount: count(),
+      totalPaidCents: sql<number>`coalesce(sum(${payment.amountCents}), 0)`,
+    })
+    .from(payment)
+    .where(
+      and(
+        eq(payment.organizationId, organizationId),
+        sql`${payment.supplierId} in ${supplierIds}`
+      )
+    )
+    .groupBy(payment.supplierId)
+
+  const statsMap = new Map(
+    statsRows.map((r) => [
+      r.supplierId,
+      { count: r.paymentCount, total: Number(r.totalPaidCents) },
+    ])
+  )
+
+  return suppliers.map((s) => {
+    const stats = s.id ? statsMap.get(s.id) : undefined
+    return {
+      id: s.id,
+      name: s.name,
+      phone: s.phone,
+      email: s.email,
+      category: s.category,
+      status: s.status,
+      createdAt: s.createdAt,
+      paymentCount: stats?.count ?? 0,
+      totalPaidCents: stats?.total ?? 0,
+    }
+  })
+}
+
+export type AdminSupplierPayment = {
+  id: string
+  amountCents: number
+  currency: string
+  paymentDate: Date | null
+  method: string | null
+  reference: string | null
+  createdAt: Date
+  expenseId: string | null
+}
+
+/** Payment history for a single supplier within an org. */
+export function listPaymentsForSupplierAdmin(
+  executor: DatabaseExecutor,
+  organizationId: string,
+  supplierId: string
+) {
+  return executor
+    .select({
+      id: payment.id,
+      amountCents: payment.amountCents,
+      currency: payment.currency,
+      paymentDate: payment.paymentDate,
+      method: payment.method,
+      reference: payment.reference,
+      createdAt: payment.createdAt,
+      expenseId: payment.expenseId,
+    })
+    .from(payment)
+    .where(
+      and(
+        eq(payment.organizationId, organizationId),
+        eq(payment.supplierId, supplierId)
+      )
+    )
+    .orderBy(desc(payment.createdAt))
 }

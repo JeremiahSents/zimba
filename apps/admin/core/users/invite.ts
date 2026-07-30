@@ -1,15 +1,13 @@
 import "server-only"
 
-import { validateSuperAdminInviteUseCase } from "@workspace/api"
+import { createSuperAdminInviteUseCase } from "@workspace/api"
 import { sendSuperAdminInviteEmail } from "@workspace/transactional"
+import { env } from "@/core/shared/env"
 import { requirePlatformRole } from "../auth/service"
 
 function buildAdminInviteUrl(token: string): string {
-  const base =
-    process.env.APP_URL ??
-    process.env.BETTER_AUTH_URL ??
-    "http://localhost:4000"
-  return `${base.replace(/\/+$/, "")}/settings?invite=${token}`
+  const base = env.BETTER_AUTH_URL ?? "http://localhost:4000"
+  return `${base.replace(/\/+$/, "")}/accept-invite?token=${encodeURIComponent(token)}`
 }
 
 export async function sendSuperAdminInvite(input: {
@@ -17,13 +15,9 @@ export async function sendSuperAdminInvite(input: {
   name: string
 }): Promise<void> {
   const session = await requirePlatformRole(["super_admin"])
-  const invite = await validateSuperAdminInviteUseCase(input)
+  const invite = await createSuperAdminInviteUseCase(session.user.id, input)
 
-  const inviteToken = `${invite.existingUserId ?? "new"}:${Buffer.from(
-    invite.normalizedEmail
-  ).toString("base64url")}:${crypto.randomUUID()}`
-
-  const inviteUrl = buildAdminInviteUrl(inviteToken)
+  const inviteUrl = buildAdminInviteUrl(invite.token)
 
   await sendSuperAdminInviteEmail({
     to: invite.normalizedEmail,

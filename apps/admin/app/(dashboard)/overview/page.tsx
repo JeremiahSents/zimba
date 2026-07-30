@@ -89,7 +89,11 @@ export default async function OverviewPage() {
   ).length
 
   return (
-    <AdminDashboardShell boneName="admin-dashboard">
+    <AdminDashboardShell
+      boneName="admin-dashboard"
+      title="Overview"
+      description="Live platform snapshot, health, and workflow queue."
+    >
       {/* ── Top stats (even 4-column grid) ── */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard

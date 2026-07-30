@@ -1,3 +1,4 @@
+import { createHash, randomBytes } from "node:crypto"
 import { db } from "@workspace/db"
 import {
   findAccountStatus,
@@ -7,14 +8,18 @@ import {
 import type { DatabaseExecutor } from "@workspace/db/executor"
 import {
   appendPlatformAudit,
+  claimPlatformInvitation,
   countSuperAdmins,
   createPlatformAccess,
+  createPlatformInvitation,
   deletePlatformAccess,
   findPlatformAccessForUser,
+  findPlatformInvitationByTokenHash,
   findPlatformUserDetailRows,
   findPlatformUserForUser,
   listPlatformUserRows,
   listSuperAdminRecipients,
+  revokePendingPlatformInvitationsForEmail,
   updatePlatformAccess,
 } from "@workspace/db/platform"
 import type { PlatformUserDetailDto, PlatformUserListDto } from "../schemas"
@@ -161,15 +166,23 @@ export async function removePlatformUserUseCase(
   })
 }
 
-export async function validateSuperAdminInviteUseCase(input: {
+function validateSuperAdminInviteInput(input: {
   email: string
   name: string
 }) {
   const normalizedEmail = input.email.trim().toLowerCase()
-  if (!input.name.trim() || !normalizedEmail.includes("@")) {
+  const name = input.name.trim()
+  if (!name || !normalizedEmail.includes("@")) {
     validationError("Enter a name and valid email address.")
   }
+  return { name, normalizedEmail }
+}
 
+export async function createSuperAdminInviteUseCase(
+  actorId: string,
+  input: { email: string; name: string }
+): Promise<{ token: string; normalizedEmail: string }> {
+  const { name, normalizedEmail } = validateSuperAdminInviteInput(input)
   const [existingUser] = await findUserByEmail(db, normalizedEmail)
   if (existingUser) {
     const [existingPlatform] = await findPlatformUserForUser(
@@ -180,10 +193,72 @@ export async function validateSuperAdminInviteUseCase(input: {
       conflictError("This user already has platform access.")
   }
 
-  return {
-    normalizedEmail,
-    existingUserId: existingUser?.id ?? null,
+  const token = randomBytes(32).toString("base64url")
+  const tokenHash = createHash("sha256").update(token).digest("hex")
+  const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000)
+
+  await db.transaction(async (tx) => {
+    await revokePendingPlatformInvitationsForEmail(tx, normalizedEmail)
+    await createPlatformInvitation(tx, {
+      email: normalizedEmail,
+      name,
+      role: "super_admin",
+      tokenHash,
+      invitedById: actorId,
+      expiresAt,
+    })
+    await appendPlatformAudit(tx, {
+      actorId,
+      targetUserId: existingUser?.id ?? null,
+      operation: "super_admin_invite_sent",
+      metadata: { email: normalizedEmail, name, role: "super_admin" },
+    })
+  })
+
+  return { token, normalizedEmail }
+}
+
+export async function acceptSuperAdminInviteUseCase(
+  ctx: { userId: string; email: string },
+  rawToken: unknown
+): Promise<void> {
+  if (typeof rawToken !== "string" || rawToken.length < 20) {
+    validationError("This invitation link is invalid.")
   }
+
+  const tokenHash = createHash("sha256").update(rawToken).digest("hex")
+  const [invite] = await findPlatformInvitationByTokenHash(db, tokenHash)
+  if (!invite || invite.expiresAt <= new Date()) {
+    notFoundError("This invitation is invalid or expired.")
+  }
+
+  if (invite.email.trim().toLowerCase() !== ctx.email.trim().toLowerCase()) {
+    forbidden("This invitation is for a different account.")
+  }
+
+  if (invite.status !== "pending") {
+    conflictError("This invitation has already been used.")
+  }
+
+  const claimed = await db.transaction(async (tx) => {
+    const [result] = await claimPlatformInvitation(tx, invite.id)
+    if (!result) return false
+    const existing = await findPlatformAccessForUser(tx, ctx.userId)
+    if (existing[0]) {
+      await updatePlatformAccess(tx, existing[0].id, invite.role)
+    } else {
+      await createPlatformAccess(tx, ctx.userId, invite.role)
+    }
+    await appendPlatformAudit(tx, {
+      actorId: ctx.userId,
+      targetUserId: ctx.userId,
+      operation: "super_admin_invite_accepted",
+      metadata: { email: invite.email, invitationId: invite.id, role: invite.role },
+    })
+    return true
+  })
+
+  if (!claimed) conflictError("This invitation has already been used.")
 }
 
 async function assertUsersExist(

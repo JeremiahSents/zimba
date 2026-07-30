@@ -5,7 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components/card"
-import { PageHeader } from "@/components/page-header"
+import { AdminDashboardShell } from "@/components/dashboard-shell"
 import { getSystemHealth, getSystemMetrics } from "@/core/system/service"
 
 export default async function SystemPage() {
@@ -34,12 +34,10 @@ export default async function SystemPage() {
   }
 
   return (
-    <div className="flex-1 p-6 lg:p-8">
-      <PageHeader
-        title="System Health"
-        description="Monitor platform infrastructure and operational metrics."
-      />
-
+    <AdminDashboardShell
+      title="System"
+      description="Monitor platform infrastructure and operational metrics."
+    >
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardHeader className="pb-2">
@@ -109,6 +107,6 @@ export default async function SystemPage() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </AdminDashboardShell>
   )
 }

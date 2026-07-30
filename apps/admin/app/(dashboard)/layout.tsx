@@ -1,8 +1,6 @@
-import { SidebarInset, SidebarProvider } from "@workspace/ui/components/sidebar"
+import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
-import { DashboardTopbar } from "@/components/dashboard-topbar"
-import { MobileAdminNav } from "@/components/mobile-admin-nav"
-import { SuperAdminSidebar } from "@/components/sidebar"
+import { AdminChrome } from "@/components/admin-chrome"
 import { getPlatformSession } from "@/core/auth/service"
 
 export default async function DashboardLayout({
@@ -11,6 +9,7 @@ export default async function DashboardLayout({
   children: React.ReactNode
 }>) {
   const session = await getPlatformSession()
+  const sidebarState = (await cookies()).get("sidebar_state")?.value !== "false"
 
   if (!session) redirect("/login")
   if (
@@ -21,18 +20,15 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="flex min-h-dvh bg-sidebar">
-      <SidebarProvider>
-        <SuperAdminSidebar />
-        <SidebarInset className="flex w-full min-w-0 flex-col bg-background pb-[calc(var(--mobile-bottom-space)+1rem)] md:pb-0">
-          <DashboardTopbar
-            userName={session.user.name ?? "Admin"}
-            userImage={session.user.image ?? null}
-          />
-          {children}
-        </SidebarInset>
-        <MobileAdminNav />
-      </SidebarProvider>
-    </div>
+    <AdminChrome
+      defaultOpen={sidebarState}
+      user={{
+        name: session.user.name ?? "Admin",
+        image: session.user.image ?? null,
+        platformRole: session.platformRole ?? null,
+      }}
+    >
+      {children}
+    </AdminChrome>
   )
 }

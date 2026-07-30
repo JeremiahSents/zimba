@@ -33,25 +33,17 @@ export default async function UsersPage() {
   const standardUsersCount = users.filter((u) => !u.platformRole).length
 
   return (
-    <AdminDashboardShell boneName="admin-users">
-      {/* ── Subtitle header ── */}
-      <div className="flex items-center justify-between">
-        <p className="text-muted-foreground text-sm">
-          Platform-wide user management, roles, and organization assignments.
-        </p>
-      </div>
-
-      {/* ── Top user stats cards row with trend lines ── */}
+    <AdminDashboardShell
+      boneName="admin-users"
+      title="Users"
+      description="Platform-wide user management, roles, and organization assignments."
+    >
+      {/* ── Top user stats cards row ── */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard
           title="Total Users"
           value={users.length}
           accent="blue"
-          trend={{
-            value: 15,
-            label: "vs last month",
-            isPositive: true,
-          }}
           icon={
             <HugeiconsIcon
               icon={UserGroupIcon}
@@ -64,11 +56,6 @@ export default async function UsersPage() {
           title="Super Admins"
           value={superAdminsCount}
           accent="emerald"
-          trend={{
-            value: superAdminsCount,
-            label: "platform admins",
-            isPositive: true,
-          }}
           icon={
             <HugeiconsIcon
               icon={ShieldKeyIcon}
@@ -82,11 +69,6 @@ export default async function UsersPage() {
           title="Support Staff"
           value={supportCount}
           accent="amber"
-          trend={{
-            value: supportCount,
-            label: "active support",
-            isPositive: true,
-          }}
           icon={
             <HugeiconsIcon
               icon={UserIcon}
@@ -100,11 +82,6 @@ export default async function UsersPage() {
           title="Standard Users"
           value={standardUsersCount}
           accent="default"
-          trend={{
-            value: standardUsersCount,
-            label: "tenant members",
-            isPositive: true,
-          }}
           icon={
             <HugeiconsIcon
               icon={CheckmarkCircle02Icon}

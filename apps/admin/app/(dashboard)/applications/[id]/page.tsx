@@ -9,7 +9,7 @@ import {
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { ApplicationActions } from "@/components/application-actions"
-import { PageHeader } from "@/components/page-header"
+import { AdminDashboardShell } from "@/components/dashboard-shell"
 import { requirePlatformSession } from "@/core/auth/service"
 
 export const metadata: Metadata = {
@@ -32,12 +32,10 @@ export default async function ApplicationDetailPage({
   const isPending = application.status === "pending"
 
   return (
-    <div className="flex flex-col gap-6 p-6">
-      <PageHeader
-        title="Application Review"
-        description={`${application.companyName} — ${application.fullName}`}
-      />
-
+    <AdminDashboardShell
+      title="Application Review"
+      description={`${application.companyName} — ${application.fullName}`}
+    >
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
@@ -170,6 +168,6 @@ export default async function ApplicationDetailPage({
           {isPending && <ApplicationActions applicationId={application.id} />}
         </CardContent>
       </Card>
-    </div>
+    </AdminDashboardShell>
   )
 }

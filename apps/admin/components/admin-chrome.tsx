@@ -13,10 +13,52 @@ import {
   AvatarImage,
 } from "@workspace/ui/components/avatar"
 import { Button } from "@workspace/ui/components/button"
-import { useSidebar } from "@workspace/ui/components/sidebar"
+import {
+  SidebarInset,
+  SidebarProvider,
+  useSidebar,
+} from "@workspace/ui/components/sidebar"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
+import { type ReactNode } from "react"
+import { MobileAdminNav } from "@/components/mobile-admin-nav"
+import {
+  type AdminSidebarUser,
+  SuperAdminSidebar,
+} from "@/components/sidebar"
 import { authClient } from "@/lib/auth-client"
+
+/**
+ * The persistent admin frame: sidebar, topbar, and mobile nav. Modeled on the
+ * web app's WorkspaceChrome — the sidebar is `variant="inset"` so the content
+ * pane reads as a raised sheet, and the topbar is a quiet location strip that
+ * leaves "what is this" to each page's own h1 (rendered via AdminDashboardShell).
+ *
+ * Lives in the layout so it survives navigation; putting it in a page would
+ * unmount the whole shell on every route change.
+ */
+export function AdminChrome({
+  user,
+  defaultOpen,
+  children,
+}: {
+  user: AdminSidebarUser
+  defaultOpen: boolean
+  children: ReactNode
+}) {
+  return (
+    <div className="flex min-h-dvh bg-sidebar">
+      <SidebarProvider defaultOpen={defaultOpen}>
+        <SuperAdminSidebar user={user} />
+        <SidebarInset className="flex w-full min-w-0 flex-col overflow-hidden bg-background pb-[calc(var(--mobile-bottom-space)+1rem)] md:pb-0">
+          <AdminTopbar userName={user.name} userImage={user.image} />
+          {children}
+        </SidebarInset>
+        <MobileAdminNav />
+      </SidebarProvider>
+    </div>
+  )
+}
 
 function getInitials(name: string) {
   return name
@@ -43,39 +85,28 @@ function getPageTitle(pathname: string): string {
     case "users":
       return isDetail ? "User Details" : "Users"
     case "applications":
-      return isDetail ? "Application Details" : "Applications & Transfers"
+      return isDetail ? "Application Details" : "Applications"
     case "transfers":
-      return "Applications & Transfers"
-    case "suppliers":
-      return "Suppliers"
-    case "projects":
-      return "Projects"
-    case "receipts":
-      return "Receipts"
-    case "payments":
-      return "Payments"
+      return "Applications"
     case "activity":
-      return "Activity Log"
+      return "Activity log"
     case "system":
-      return "System Health"
+      return "System"
     case "settings":
       return "Settings"
-    case "billing":
-      return "Billing"
-    case "support":
-      return "Support"
     default: {
       return root.charAt(0).toUpperCase() + root.slice(1).replace(/-/g, " ")
     }
   }
 }
 
-type DashboardTopbarProps = {
+function AdminTopbar({
+  userName,
+  userImage,
+}: {
   userName: string
-  userImage?: string | null
-}
-
-export function DashboardTopbar({ userName, userImage }: DashboardTopbarProps) {
+  userImage: string | null
+}) {
   const { toggleSidebar } = useSidebar()
   const router = useRouter()
   const pathname = usePathname()
@@ -89,7 +120,7 @@ export function DashboardTopbar({ userName, userImage }: DashboardTopbarProps) {
   }
 
   return (
-    <header className="flex min-h-14 shrink-0 flex-wrap items-center justify-between gap-3 bg-background px-4 py-2.5 sm:min-h-16 sm:px-7 sm:py-3 md:border-b lg:px-10">
+    <header className="flex min-h-12 shrink-0 flex-wrap items-center justify-between gap-3 bg-background px-4 py-2 sm:min-h-14 sm:px-7 sm:py-2.5 lg:px-10">
       <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-4 gap-y-2">
         <div className="flex items-center gap-2">
           <Button
@@ -98,13 +129,13 @@ export function DashboardTopbar({ userName, userImage }: DashboardTopbarProps) {
             size="icon-sm"
             onClick={toggleSidebar}
             aria-label="Toggle dashboard navigation"
-            className="-ml-1 hidden size-9 rounded-md hover:bg-muted hover:text-foreground md:inline-flex [&_svg]:size-5"
+            className="-ml-1 hidden size-8 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground md:inline-flex [&_svg]:size-4"
           >
             <HugeiconsIcon icon={LayoutAlignRightIcon} strokeWidth={2} />
           </Button>
-          <h1 className="font-heading font-medium text-foreground text-lg leading-6 tracking-tight">
+          <span className="truncate text-[13px] font-medium text-muted-foreground">
             {title}
-          </h1>
+          </span>
         </div>
       </div>
 
@@ -122,10 +153,13 @@ export function DashboardTopbar({ userName, userImage }: DashboardTopbarProps) {
             className="size-4"
           />
         </Button>
+        {/* The sidebar footer owns the account menu on md+. The sidebar sheet
+            is unreachable below md (its toggle is desktop-only), so the topbar
+            keeps an avatar there to preserve access to sign out. */}
         <Menu.Root>
           <Menu.Trigger
             aria-label={`Open account menu for ${userName}`}
-            className="rounded-full outline-none ring-offset-background transition-shadow focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            className="rounded-full outline-none ring-offset-background transition-shadow focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 md:hidden"
           >
             <Avatar className="size-8">
               {userImage ? (

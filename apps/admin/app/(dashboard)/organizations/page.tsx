@@ -31,30 +31,18 @@ export default async function OrganizationsPage() {
     createdAt: org.createdAt,
   }))
 
-  const activeRatio = stats.totalOrganizations
-    ? Math.round((stats.activeOrganizations / stats.totalOrganizations) * 100)
-    : 0
-
   return (
-    <AdminDashboardShell boneName="admin-organizations">
-      {/* ── Subtitle header ── */}
-      <div className="flex items-center justify-between">
-        <p className="text-muted-foreground text-sm">
-          Manage, monitor, and update status for all tenant organizations.
-        </p>
-      </div>
-
-      {/* ── Top stats row for organizations with trend lines ── */}
+    <AdminDashboardShell
+      boneName="admin-organizations"
+      title="Organizations"
+      description="Manage, monitor, and update status for all tenant organizations."
+    >
+      {/* ── Top stats row for organizations ── */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard
           title="Total Organizations"
           value={stats.totalOrganizations}
           accent="blue"
-          trend={{
-            value: 12,
-            label: "vs last month",
-            isPositive: true,
-          }}
           icon={
             <HugeiconsIcon
               icon={Building03Icon}
@@ -67,11 +55,6 @@ export default async function OrganizationsPage() {
           title="Active Organizations"
           value={stats.activeOrganizations}
           accent="emerald"
-          trend={{
-            value: activeRatio,
-            label: "active rate",
-            isPositive: true,
-          }}
           icon={
             <HugeiconsIcon
               icon={CheckmarkCircle02Icon}
@@ -85,11 +68,6 @@ export default async function OrganizationsPage() {
           title="Trial Organizations"
           value={stats.trialOrganizations}
           accent="amber"
-          trend={{
-            value: 5,
-            label: "new trial users",
-            isPositive: true,
-          }}
           icon={
             <HugeiconsIcon
               icon={Clock01Icon}
@@ -103,11 +81,6 @@ export default async function OrganizationsPage() {
           title="Suspended / Attention"
           value={stats.suspendedOrganizations}
           accent={stats.suspendedOrganizations > 0 ? "rose" : "default"}
-          trend={{
-            value: stats.suspendedOrganizations,
-            label: "flagged tenants",
-            isPositive: false,
-          }}
           icon={
             <HugeiconsIcon
               icon={AlertCircleIcon}

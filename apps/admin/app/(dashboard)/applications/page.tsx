@@ -117,26 +117,17 @@ export default async function ApplicationsPage({
   ).length
 
   return (
-    <AdminDashboardShell boneName="admin-applications">
-      {/* ── Subtitle header ── */}
-      <div className="flex items-center justify-between">
-        <p className="text-muted-foreground text-sm">
-          Review onboarding applications and manage organization ownership
-          transfer requests.
-        </p>
-      </div>
-
+    <AdminDashboardShell
+      boneName="admin-applications"
+      title="Applications"
+      description="Review onboarding applications and ownership transfer requests."
+    >
       {/* ── Top Stats Cards Row for Applications & Transfers ── */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard
           title="Total Applications"
           value={applications.length}
           accent="blue"
-          trend={{
-            value: 12,
-            label: "vs last month",
-            isPositive: true,
-          }}
           icon={
             <HugeiconsIcon
               icon={FileCheckIcon}
@@ -149,11 +140,6 @@ export default async function ApplicationsPage({
           title="Pending Applications"
           value={pendingApps}
           accent={pendingApps > 0 ? "amber" : "emerald"}
-          trend={{
-            value: pendingApps,
-            label: "awaiting review",
-            isPositive: pendingApps === 0,
-          }}
           icon={
             <HugeiconsIcon
               icon={Clock01Icon}
@@ -167,11 +153,6 @@ export default async function ApplicationsPage({
           title="Ownership Transfers"
           value={transfers.length}
           accent="default"
-          trend={{
-            value: pendingTransfers,
-            label: "pending approval",
-            isPositive: pendingTransfers === 0,
-          }}
           icon={
             <HugeiconsIcon
               icon={BanknoteIcon}
@@ -185,11 +166,6 @@ export default async function ApplicationsPage({
           title="Total Approved"
           value={approvedApps + approvedTransfers}
           accent="emerald"
-          trend={{
-            value: approvedApps + approvedTransfers,
-            label: "completed requests",
-            isPositive: true,
-          }}
           icon={
             <HugeiconsIcon
               icon={CheckmarkCircle02Icon}
