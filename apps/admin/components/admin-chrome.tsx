@@ -21,6 +21,7 @@ import {
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { type ReactNode } from "react"
+import { AdminBreadcrumbs, BreadcrumbProvider } from "@/components/breadcrumb-context"
 import { MobileAdminNav } from "@/components/mobile-admin-nav"
 import {
   type AdminSidebarUser,
@@ -49,12 +50,14 @@ export function AdminChrome({
   return (
     <div className="flex min-h-dvh bg-sidebar">
       <SidebarProvider defaultOpen={defaultOpen}>
-        <SuperAdminSidebar user={user} />
-        <SidebarInset className="flex w-full min-w-0 flex-col overflow-hidden bg-background pb-[calc(var(--mobile-bottom-space)+1rem)] md:pb-0">
-          <AdminTopbar userName={user.name} userImage={user.image} />
-          {children}
-        </SidebarInset>
-        <MobileAdminNav />
+        <BreadcrumbProvider>
+          <SuperAdminSidebar user={user} />
+          <SidebarInset className="flex w-full min-w-0 flex-col overflow-hidden bg-background pb-[calc(var(--mobile-bottom-space)+1rem)] md:pb-0">
+            <AdminTopbar userName={user.name} userImage={user.image} />
+            {children}
+          </SidebarInset>
+          <MobileAdminNav />
+        </BreadcrumbProvider>
       </SidebarProvider>
     </div>
   )
@@ -110,8 +113,8 @@ function AdminTopbar({
   const { toggleSidebar } = useSidebar()
   const router = useRouter()
   const pathname = usePathname()
-  const title = getPageTitle(pathname)
   const initials = getInitials(userName)
+  const title = getPageTitle(pathname)
 
   async function handleSignOut() {
     await authClient.signOut()
@@ -133,7 +136,8 @@ function AdminTopbar({
           >
             <HugeiconsIcon icon={LayoutAlignRightIcon} strokeWidth={2} />
           </Button>
-          <span className="truncate text-[13px] font-medium text-muted-foreground">
+          <AdminBreadcrumbs />
+          <span className="truncate text-[13px] font-medium text-muted-foreground md:hidden">
             {title}
           </span>
         </div>

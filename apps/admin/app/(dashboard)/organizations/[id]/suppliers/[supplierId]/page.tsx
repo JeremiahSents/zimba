@@ -1,18 +1,18 @@
 import {
   getAdminSupplierDetailUseCase,
   getAdminSupplierPaymentsUseCase,
+  getOrganizationDetailUseCase,
 } from "@workspace/api"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
-  Call02Icon,
   Coins01Icon,
-  Mail01Icon,
   ReceiptTextIcon,
   UserGroupIcon,
   Wallet01Icon,
 } from "@hugeicons/core-free-icons"
 import { notFound } from "next/navigation"
 import { AdminDashboardShell } from "@/components/dashboard-shell"
+import { BreadcrumbSetter } from "@/components/breadcrumb-context"
 import { SupplierPaymentsTable } from "@/components/org-detail/supplier-payments-table"
 import { StatCard } from "@/components/stat-card"
 import { StatusBadge } from "@/components/status-badge"
@@ -56,8 +56,12 @@ export default async function SupplierDetailPage({
   const { id: organizationId, supplierId } = await params
 
   let supplier
+  let orgName: string
   try {
-    supplier = await getAdminSupplierDetailUseCase(organizationId, supplierId)
+    ;[supplier, orgName] = await Promise.all([
+      getAdminSupplierDetailUseCase(organizationId, supplierId),
+      getOrganizationDetailUseCase(organizationId).then((o) => o?.name ?? "Organization"),
+    ])
   } catch {
     notFound()
   }
@@ -70,13 +74,22 @@ export default async function SupplierDetailPage({
   const totalPaid = payments.reduce((sum, p) => sum + p.amountCents, 0)
 
   return (
-    <AdminDashboardShell
-      title={
-        <span className="flex flex-wrap items-center gap-2.5">
-          {toTitleCase(supplier.name)}
-          <StatusBadge status={supplier.status} />
-        </span>
-      }
+    <>
+      <BreadcrumbSetter
+        items={[
+          { label: "Organizations", href: "/organizations" },
+          { label: orgName, href: `/organizations/${organizationId}` },
+          { label: "Suppliers", href: `/organizations/${organizationId}?tab=suppliers` },
+          { label: toTitleCase(supplier.name) },
+        ]}
+      />
+      <AdminDashboardShell
+        title={
+          <span className="flex flex-wrap items-center gap-2.5">
+            {toTitleCase(supplier.name)}
+            <StatusBadge status={supplier.status} />
+          </span>
+        }
       description={`Created ${formatDate(supplier.createdAt)}`}
     >
       <div className="mt-4 flex flex-col gap-4">
@@ -139,24 +152,6 @@ export default async function SupplierDetailPage({
           />
         </div>
 
-        {/* ── Contact details ── */}
-        {(supplier.phone || supplier.email) && (
-          <div className="flex flex-wrap gap-x-6 gap-y-2 text-muted-foreground text-sm">
-            {supplier.phone && (
-              <span className="inline-flex items-center gap-1.5">
-                <HugeiconsIcon icon={Call02Icon} className="size-4" />
-                {supplier.phone}
-              </span>
-            )}
-            {supplier.email && (
-              <span className="inline-flex items-center gap-1.5">
-                <HugeiconsIcon icon={Mail01Icon} className="size-4" />
-                {supplier.email}
-              </span>
-            )}
-          </div>
-        )}
-
         {/* ── Payment history ── */}
         <SupplierPaymentsTable
           payments={payments}
@@ -165,5 +160,6 @@ export default async function SupplierDetailPage({
         />
       </div>
     </AdminDashboardShell>
+    </>
   )
 }

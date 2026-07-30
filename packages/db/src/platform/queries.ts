@@ -840,6 +840,7 @@ export type AdminSupplierPayment = {
   reference: string | null
   createdAt: Date
   expenseId: string | null
+  itemDescription: string | null
   receiptFileUrl: string | null
   receiptFileName: string | null
   receiptContentType: string | null
@@ -861,6 +862,14 @@ export function listPaymentsForSupplierAdmin(
       reference: payment.reference,
       createdAt: payment.createdAt,
       expenseId: payment.expenseId,
+      itemDescription: sql<string | null>`(
+        select ${expenseLine.itemDescription}
+        from ${expenseLine}
+        where ${expenseLine.expenseId} = ${payment.expenseId}
+          and ${expenseLine.organizationId} = ${payment.organizationId}
+        order by ${expenseLine.createdAt}
+        limit 1
+      )`.as("item_description"),
       receiptFileUrl: file.url,
       receiptFileName: file.filename,
       receiptContentType: file.contentType,

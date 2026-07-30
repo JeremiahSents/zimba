@@ -13,6 +13,7 @@ import {
 } from "@workspace/ui/components/tabs"
 import { notFound } from "next/navigation"
 import { AdminDashboardShell } from "@/components/dashboard-shell"
+import { BreadcrumbSetter } from "@/components/breadcrumb-context"
 import { OrgDetailOverviewTab } from "@/components/org-detail/overview-tab"
 import { OrgDetailProjectsTab } from "@/components/org-detail/projects-tab"
 import { OrgDetailSuppliersTab } from "@/components/org-detail/suppliers-tab"
@@ -81,15 +82,22 @@ export default async function OrganizationDetailPage({
   }
 
   return (
-    <AdminDashboardShell
-      title={
-        <span className="flex flex-wrap items-center gap-2.5">
-          {org.name}
-          <StatusBadge status={org.status} />
-        </span>
-      }
-      description={`Created ${formatDate(org.createdAt)}`}
-      action={
+    <>
+      <BreadcrumbSetter
+        items={[
+          { label: "Organizations", href: "/organizations" },
+          { label: org.name },
+        ]}
+      />
+      <AdminDashboardShell
+        title={
+          <span className="flex flex-wrap items-center gap-2.5">
+            {org.name}
+            <StatusBadge status={org.status} />
+          </span>
+        }
+        description={`Created ${formatDate(org.createdAt)}`}
+        action={
         <div className="flex flex-wrap items-center gap-2">
           {isSuperAdmin ? (
             <VisitOrganizationButton organizationId={org.id} />
@@ -160,5 +168,6 @@ export default async function OrganizationDetailPage({
         </TabsContent>
       </Tabs>
     </AdminDashboardShell>
+    </>
   )
 }

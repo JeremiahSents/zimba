@@ -6,6 +6,7 @@ import {
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { AdminDashboardShell } from "@/components/dashboard-shell"
+import { BreadcrumbSetter } from "@/components/breadcrumb-context"
 import {
   type OrganizationItem,
   OrganizationsTable,
@@ -32,11 +33,13 @@ export default async function OrganizationsPage() {
   }))
 
   return (
-    <AdminDashboardShell
-      boneName="admin-organizations"
-      title="Organizations"
-      description="Manage, monitor, and update status for all tenant organizations."
-    >
+    <>
+      <BreadcrumbSetter items={[{ label: "Organizations" }]} />
+      <AdminDashboardShell
+        boneName="admin-organizations"
+        title="Organizations"
+        description="Manage, monitor, and update status for all tenant organizations."
+      >
       {/* ── Top stats row for organizations ── */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard
@@ -99,5 +102,6 @@ export default async function OrganizationsPage() {
       {/* ── Real TanStack Table with filtering, search & custom status dropdown ── */}
       <OrganizationsTable data={tableData} />
     </AdminDashboardShell>
+    </>
   )
 }

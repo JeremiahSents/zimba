@@ -1,4 +1,8 @@
-import { getAdminProjectDetailUseCase, type AdminProjectDetailDto } from "@workspace/api"
+import {
+  getAdminProjectDetailUseCase,
+  getOrganizationDetailUseCase,
+  type AdminProjectDetailDto,
+} from "@workspace/api"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
   BanknoteIcon,
@@ -8,6 +12,7 @@ import {
 } from "@hugeicons/core-free-icons"
 import { notFound } from "next/navigation"
 import { AdminDashboardShell } from "@/components/dashboard-shell"
+import { BreadcrumbSetter } from "@/components/breadcrumb-context"
 import { BudgetItemsTable } from "@/components/org-detail/budget-items-table"
 import { ProjectPaymentsTable } from "@/components/org-detail/project-payments-table"
 import { ProjectReceiptsTable } from "@/components/org-detail/project-receipts-table"
@@ -53,8 +58,12 @@ export default async function ProjectDetailPage({
   const { id: organizationId, projectId } = await params
 
   let project: AdminProjectDetailDto
+  let orgName: string
   try {
-    project = await getAdminProjectDetailUseCase(organizationId, projectId)
+    ;[project, orgName] = await Promise.all([
+      getAdminProjectDetailUseCase(organizationId, projectId),
+      getOrganizationDetailUseCase(organizationId).then((o) => o?.name ?? "Organization"),
+    ])
   } catch {
     notFound()
   }
@@ -74,15 +83,24 @@ export default async function ProjectDetailPage({
       : 0
 
   return (
-    <AdminDashboardShell
-      title={
-        <span className="flex flex-wrap items-center gap-2.5">
-          {toTitleCase(project.name)}
-          <StatusBadge status={project.status} />
-        </span>
-      }
-      description={`Created ${formatDate(project.createdAt)}`}
-    >
+    <>
+      <BreadcrumbSetter
+        items={[
+          { label: "Organizations", href: "/organizations" },
+          { label: orgName, href: `/organizations/${organizationId}` },
+          { label: "Projects", href: `/organizations/${organizationId}?tab=projects` },
+          { label: toTitleCase(project.name) },
+        ]}
+      />
+      <AdminDashboardShell
+        title={
+          <span className="flex flex-wrap items-center gap-2.5">
+            {toTitleCase(project.name)}
+            <StatusBadge status={project.status} />
+          </span>
+        }
+        description={`Created ${formatDate(project.createdAt)}`}
+      >
       <div className="mt-4 flex flex-col gap-4">
         {/* ── Budget analytics header ── */}
         <section>
@@ -167,5 +185,6 @@ export default async function ProjectDetailPage({
         />
       </div>
     </AdminDashboardShell>
+    </>
   )
 }

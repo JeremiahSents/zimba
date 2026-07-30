@@ -24,6 +24,13 @@ function formatShortDate(dateInput: Date | string) {
   })
 }
 
+function formatTime(dateInput: Date | string) {
+  return new Date(dateInput).toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+  })
+}
+
 export function SupplierPaymentsTable({
   payments,
   organizationId,
@@ -44,6 +51,18 @@ export function SupplierPaymentsTable({
   const columns = useMemo<ColumnDef<AdminSupplierPaymentDto>[]>(
     () => [
       {
+        accessorKey: "itemDescription",
+        header: "Item",
+        cell: ({ getValue }) => {
+          const value = getValue<string | null>()
+          return value ? (
+            <span className="font-medium text-foreground text-sm">{value}</span>
+          ) : (
+            "—"
+          )
+        },
+      },
+      {
         accessorKey: "amountCents",
         header: "Amount",
         cell: ({ row }) =>
@@ -62,15 +81,20 @@ export function SupplierPaymentsTable({
         },
       },
       {
-        accessorKey: "reference",
-        header: "Reference",
-        cell: ({ getValue }) => getValue<string | null>() ?? "—",
-      },
-      {
-        accessorKey: "date",
+        id: "dateTime",
         header: "Date",
         accessorFn: (row) => row.paymentDate ?? row.createdAt,
-        cell: ({ getValue }) => formatShortDate(getValue<Date>()),
+        cell: ({ getValue }) => {
+          const date = getValue<Date>()
+          return (
+            <div className="flex flex-col leading-tight whitespace-nowrap">
+              <span>{formatShortDate(date)}</span>
+              <span className="text-muted-foreground text-xs">
+                {formatTime(date)}
+              </span>
+            </div>
+          )
+        },
         meta: { cellClassName: "whitespace-nowrap" },
       },
     ],

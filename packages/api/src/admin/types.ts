@@ -166,6 +166,7 @@ export type AdminSupplierPaymentDto = {
   reference: string | null
   createdAt: Date
   expenseId: string | null
+  itemDescription: string | null
   receiptFileUrl: string | null
   receiptFileName: string | null
   receiptContentType: string | null

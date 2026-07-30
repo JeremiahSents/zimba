@@ -1,9 +1,11 @@
 import {
   getAdminBudgetItemReceiptsUseCase,
   getAdminProjectDetailUseCase,
+  getOrganizationDetailUseCase,
 } from "@workspace/api"
 import { notFound } from "next/navigation"
 import { AdminDashboardShell } from "@/components/dashboard-shell"
+import { BreadcrumbSetter } from "@/components/breadcrumb-context"
 import { BudgetItemReceiptCards } from "@/components/org-detail/budget-item-receipt-cards"
 import { StatCard } from "@/components/stat-card"
 import { formatCompactCurrency } from "@/lib/format-currency"
@@ -30,13 +32,15 @@ export default async function BudgetItemDetailPage({
 }) {
   const { id: organizationId, projectId, budgetItemId } = await params
 
-  const [project, receipts] = await Promise.all([
+  const [project, receipts, org] = await Promise.all([
     getAdminProjectDetailUseCase(organizationId, projectId),
     getAdminBudgetItemReceiptsUseCase(organizationId, projectId, budgetItemId),
+    getOrganizationDetailUseCase(organizationId),
   ])
 
   const budgetItem = project.budgetItems.find((item) => item.id === budgetItemId)
   if (!budgetItem) notFound()
+  const orgName = org?.name ?? "Organization"
 
   const totalSpent = receipts.reduce((sum, r) => sum + r.totalCents, 0)
   const totalPaid = receipts.reduce((sum, r) => sum + r.paidCents, 0)
@@ -47,10 +51,23 @@ export default async function BudgetItemDetailPage({
       : 0
 
   return (
-    <AdminDashboardShell
-      title={toTitleCase(budgetItem.name)}
-      description={`${toTitleCase(project.name)} · Budget item`}
-    >
+    <>
+      <BreadcrumbSetter
+        items={[
+          { label: "Organizations", href: "/organizations" },
+          { label: orgName, href: `/organizations/${organizationId}` },
+          { label: "Projects", href: `/organizations/${organizationId}?tab=projects` },
+          {
+            label: toTitleCase(project.name),
+            href: `/organizations/${organizationId}/projects/${projectId}`,
+          },
+          { label: toTitleCase(budgetItem.name) },
+        ]}
+      />
+      <AdminDashboardShell
+        title={toTitleCase(budgetItem.name)}
+        description={`${toTitleCase(project.name)} · Budget item`}
+      >
       <div className="mt-4 flex flex-col gap-4">
         <section>
           <p className="mb-2 font-semibold text-[10px] text-primary uppercase tracking-[0.16em]">
@@ -118,5 +135,6 @@ export default async function BudgetItemDetailPage({
         />
       </div>
     </AdminDashboardShell>
+    </>
   )
 }

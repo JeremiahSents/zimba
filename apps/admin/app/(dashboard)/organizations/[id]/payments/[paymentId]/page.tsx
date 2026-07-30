@@ -1,4 +1,7 @@
-import { getAdminPaymentDetailUseCase } from "@workspace/api"
+import {
+  getAdminPaymentDetailUseCase,
+  getOrganizationDetailUseCase,
+} from "@workspace/api"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
   ArrowUpRight01Icon,
@@ -16,6 +19,7 @@ import { Card, CardContent } from "@workspace/ui/components/card"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { AdminDashboardShell } from "@/components/dashboard-shell"
+import { BreadcrumbSetter } from "@/components/breadcrumb-context"
 import { StatCard } from "@/components/stat-card"
 import { StatusBadge } from "@/components/status-badge"
 import { formatCompactCurrency } from "@/lib/format-currency"
@@ -58,8 +62,12 @@ export default async function PaymentDetailPage({
   const { id: organizationId, paymentId } = await params
 
   let payment
+  let orgName: string
   try {
-    payment = await getAdminPaymentDetailUseCase(organizationId, paymentId)
+    ;[payment, orgName] = await Promise.all([
+      getAdminPaymentDetailUseCase(organizationId, paymentId),
+      getOrganizationDetailUseCase(organizationId).then((o) => o?.name ?? "Organization"),
+    ])
   } catch {
     notFound()
   }
@@ -68,15 +76,24 @@ export default async function PaymentDetailPage({
   const hasReceipt = Boolean(payment.receiptFileUrl)
 
   return (
-    <AdminDashboardShell
-      title={
-        <span className="flex flex-wrap items-center gap-2.5">
-          {formatCompactCurrency(payment.amountCents, payment.currency)}
-          <StatusBadge status="paid" />
-        </span>
-      }
-      description={`Payment recorded ${formatDate(payment.paymentDate ?? payment.createdAt)}`}
-    >
+    <>
+      <BreadcrumbSetter
+        items={[
+          { label: "Organizations", href: "/organizations" },
+          { label: orgName, href: `/organizations/${organizationId}` },
+          { label: "Payments" },
+          { label: formatCompactCurrency(payment.amountCents, payment.currency) },
+        ]}
+      />
+      <AdminDashboardShell
+        title={
+          <span className="flex flex-wrap items-center gap-2.5">
+            {formatCompactCurrency(payment.amountCents, payment.currency)}
+            <StatusBadge status="paid" />
+          </span>
+        }
+        description={`Payment recorded ${formatDate(payment.paymentDate ?? payment.createdAt)}`}
+      >
       <div className="mt-4 flex flex-col gap-4">
         {/* ── Payment analytics header ── */}
         <section>
@@ -249,6 +266,7 @@ export default async function PaymentDetailPage({
         </div>
       </div>
     </AdminDashboardShell>
+    </>
   )
 }
 
