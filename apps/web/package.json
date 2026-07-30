@@ -8,6 +8,7 @@
     "db:migrate": "pnpm --filter @workspace/db db:migrate",
     "db:seed": "pnpm --filter @workspace/db db:seed",
     "db:reset": "pnpm --filter @workspace/db db:reset",
+    "bones": "node --env-file-if-exists=.env.local ./node_modules/boneyard-js/bin/cli.js build http://localhost:3000",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",

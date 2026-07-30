@@ -20,7 +20,11 @@ import {
 } from "@/components/shared/mobile-data-card"
 import { ExpenseStatusBadge } from "@/components/shared/status-badges"
 import { useWorkspaceSlug } from "@/components/shared/use-workspace-slug"
-import { formatCurrency, formatShortDate } from "@/lib/format"
+import {
+  formatCurrency,
+  formatShortDate,
+  formatTitleCase,
+} from "@/lib/format"
 import type { ExpenseResponse, ExpenseStatus } from "@/lib/types"
 
 function statusLabel(status: ExpenseStatus) {
@@ -44,6 +48,7 @@ export function ProjectExpensesTable({
       {
         accessorKey: "item_description",
         header: "Item",
+        cell: ({ getValue }) => formatTitleCase(getValue<string>()),
       },
       {
         accessorKey: "task_name",
@@ -125,7 +130,7 @@ export function ProjectExpensesTable({
               eyebrow={expense.task_name}
               title={
                 <span className="font-medium text-primary">
-                  {expense.item_description}
+                  {formatTitleCase(expense.item_description)}
                 </span>
               }
               value={formatCurrency(expense.amount)}

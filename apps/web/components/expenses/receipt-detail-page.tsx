@@ -42,7 +42,7 @@ import {
   recordReceiptPaymentAction,
 } from "@/core/payments/actions"
 import type { PublicError } from "@/core/shared/errors"
-import { formatCurrency, formatShortDate } from "@/lib/format"
+import { formatCurrency, formatShortDate, formatTitleCase } from "@/lib/format"
 import type {
   ExpenseTableRow,
   PayableExpenseResponse,
@@ -220,7 +220,7 @@ export function ReceiptDetailPage({
                   >
                     <div className="min-w-0">
                       <p className="font-medium text-foreground text-sm">
-                        {item.item_description}
+                        {formatTitleCase(item.item_description)}
                       </p>
                       <p className="mt-0.5 text-muted-foreground text-xs">
                         {item.task_name}

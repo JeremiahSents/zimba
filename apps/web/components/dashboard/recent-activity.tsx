@@ -19,7 +19,11 @@ import {
 } from "@/components/shared/mobile-data-card"
 import { ExpenseStatusBadge } from "@/components/shared/status-badges"
 import { useWorkspaceSlug } from "@/components/shared/use-workspace-slug"
-import { formatCurrency, formatShortDate } from "@/lib/format"
+import {
+  formatCurrency,
+  formatShortDate,
+  formatTitleCase,
+} from "@/lib/format"
 import type { DashboardOverviewData, ExpenseTableRow } from "@/lib/types"
 
 export function RecentActivity({
@@ -38,16 +42,21 @@ export function RecentActivity({
         accessorKey: "project_name",
         header: "Project",
         cell: ({ row }) => (
-          <span className="font-medium">{row.original.project_name}</span>
+          <span className="font-medium">
+            {formatTitleCase(row.original.project_name)}
+          </span>
         ),
       },
       {
         accessorKey: "item_description",
         header: "Expense",
+        cell: ({ getValue }) => formatTitleCase(getValue<string>()),
       },
       {
         accessorKey: "supplier_name",
         header: "Supplier",
+        cell: ({ getValue }) => formatTitleCase(getValue<string>()),
+        meta: { cellClassName: "whitespace-nowrap" },
       },
       {
         accessorKey: "task_name",
@@ -112,10 +121,10 @@ export function RecentActivity({
               className="block transition-transform active:scale-[0.99]"
             >
               <MobileDataCard
-                eyebrow={expense.project_name}
+                eyebrow={formatTitleCase(expense.project_name)}
                 title={
                   <span className="font-medium text-primary">
-                    {expense.item_description}
+                    {formatTitleCase(expense.item_description)}
                   </span>
                 }
                 value={formatCurrency(expense.amount)}
@@ -123,7 +132,7 @@ export function RecentActivity({
               >
                 <dl className="grid grid-cols-2 gap-x-4 gap-y-3">
                   <MobileDataMeta label="Supplier">
-                    {expense.supplier_name}
+                    {formatTitleCase(expense.supplier_name)}
                   </MobileDataMeta>
                   <MobileDataMeta label="Date">
                     {formatShortDate(expense.date)}

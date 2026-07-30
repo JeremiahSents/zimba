@@ -10,7 +10,7 @@ import {
 import { Progress } from "@workspace/ui/components/progress"
 import Link from "next/link"
 import { useWorkspaceSlug } from "@/components/shared/use-workspace-slug"
-import { formatCurrency } from "@/lib/format"
+import { formatCurrency, formatTitleCase } from "@/lib/format"
 import type { ProjectDashboardResponse } from "@/lib/types"
 
 export function ProjectsSection({
@@ -104,7 +104,7 @@ export function ProjectRow({ project }: { project: ProjectDashboardResponse }) {
             href={`/${slug}/projects/${project.id}`}
             className="truncate font-semibold text-sm hover:text-primary"
           >
-            {project.name}
+            {formatTitleCase(project.name)}
           </Link>
         </div>
         <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-muted-foreground text-xs">

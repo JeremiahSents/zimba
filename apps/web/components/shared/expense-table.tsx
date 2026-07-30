@@ -20,7 +20,11 @@ import {
 } from "@/components/shared/mobile-data-card"
 import { ExpenseStatusBadge } from "@/components/shared/status-badges"
 import { useWorkspaceSlug } from "@/components/shared/use-workspace-slug"
-import { formatCurrency, formatShortDate } from "@/lib/format"
+import {
+  formatCurrency,
+  formatShortDate,
+  formatTitleCase,
+} from "@/lib/format"
 import type { ExpenseTableRow } from "@/lib/types"
 
 export function ExpenseTable({
@@ -56,9 +60,18 @@ export function ExpenseTable({
         header: "Date",
         cell: ({ getValue }) => formatShortDate(getValue<string>()),
       },
-      { accessorKey: "project_name", header: "Project" },
+      {
+        accessorKey: "project_name",
+        header: "Project",
+        cell: ({ getValue }) => formatTitleCase(getValue<string>()),
+      },
       { accessorKey: "task_name", header: "Task" },
-      { accessorKey: "supplier_name", header: "Supplier" },
+      {
+        accessorKey: "supplier_name",
+        header: "Supplier",
+        cell: ({ getValue }) => formatTitleCase(getValue<string>()),
+        meta: { cellClassName: "whitespace-nowrap" },
+      },
       {
         accessorKey: "item_description",
         header: "Receipt",
@@ -120,7 +133,7 @@ export function ExpenseTable({
             className="block transition-transform active:scale-[0.99]"
           >
             <MobileDataCard
-              eyebrow={expense.project_name}
+              eyebrow={formatTitleCase(expense.project_name)}
               title={
                 <span className="font-medium text-primary">
                   {expense.item_description}
@@ -138,7 +151,7 @@ export function ExpenseTable({
                 </MobileDataMeta>
                 <div className="col-span-2">
                   <MobileDataMeta label="Supplier">
-                    {expense.supplier_name}
+                    {formatTitleCase(expense.supplier_name)}
                   </MobileDataMeta>
                 </div>
               </dl>

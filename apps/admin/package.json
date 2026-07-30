@@ -4,6 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
+    "bones": "node --env-file-if-exists=.env.local ./node_modules/boneyard-js/bin/cli.js build http://localhost:4000",
     "dev": "next dev --port 4000",
     "build": "next build",
     "start": "next start --port 4000",
