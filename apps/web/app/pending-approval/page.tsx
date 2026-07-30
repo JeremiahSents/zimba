@@ -62,12 +62,12 @@ export default async function PendingApprovalPage({
               />
             </div>
             <CardTitle className="mt-2">
-              {isPending && "Demo Request Under Review"}
-              {isRejected && "Demo Request Declined"}
+              {isPending && "Access Request Under Review"}
+              {isRejected && "Access Request Declined"}
             </CardTitle>
             <CardDescription>
               {isPending &&
-                "Thanks for booking a demo. A Zimba super admin is reviewing your request."}
+                "Thanks for booking a demo. Zimba team will review your request."}
               {isRejected &&
                 "Your request was declined. You're welcome to submit a new one."}
             </CardDescription>
@@ -78,7 +78,7 @@ export default async function PendingApprovalPage({
                 <p className="font-medium text-sm">Check your email</p>
                 <p className="mt-1 text-sm">
                   We sent a welcome message to{" "}
-                  <strong>{application.email}</strong>. A super admin will
+                  <strong>{application.email}</strong>.The team will
                   review your details and get in touch.
                 </p>
               </div>

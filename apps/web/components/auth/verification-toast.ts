@@ -22,7 +22,7 @@ export function showVerificationToast(
     duration: Number.POSITIVE_INFINITY,
     description:
       note ??
-      `We sent a confirmation link to ${email}. Open it and you'll be signed in — after that, Google sign-in works on this account too.`,
+      `We sent a confirmation link to ${email}.Google sign-in works later.`,
     action: {
       label: "Send it again",
       onClick: () => {
