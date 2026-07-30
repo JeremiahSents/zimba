@@ -5,12 +5,12 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import {
   type ColumnDef,
   type ColumnFiltersState,
-  type SortingState,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
+  type SortingState,
   useReactTable,
 } from "@tanstack/react-table"
 import {
@@ -49,6 +49,7 @@ export type UserItem = {
   primaryOrganization?: string | null
   organizationName?: string | null
   createdAt: Date | string
+  deactivatedAt?: Date | string | null
 }
 
 function getInitials(name: string) {
@@ -99,7 +100,7 @@ export function UsersTable({ data }: UsersTableProps) {
       header: ({ column }) => (
         <button
           type="button"
-          className="font-semibold text-xs text-foreground tracking-tight hover:text-primary transition-colors cursor-pointer"
+          className="cursor-pointer font-semibold text-foreground text-xs tracking-tight transition-colors hover:text-primary"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           User
@@ -111,13 +112,18 @@ export function UsersTable({ data }: UsersTableProps) {
             {row.original.image ? (
               <AvatarImage src={row.original.image} alt={row.original.name} />
             ) : null}
-            <AvatarFallback className="bg-primary/10 text-primary font-medium text-xs">
+            <AvatarFallback className="bg-primary/10 font-medium text-primary text-xs">
               {getInitials(row.original.name)}
             </AvatarFallback>
           </Avatar>
           <span className="font-semibold text-foreground text-sm">
             {row.original.name}
           </span>
+          {row.original.deactivatedAt ? (
+            <span className="rounded-full bg-red-500/15 px-2 py-0.5 font-medium text-red-700 text-xs dark:text-red-400">
+              Deactivated
+            </span>
+          ) : null}
         </div>
       ),
     },
@@ -126,14 +132,14 @@ export function UsersTable({ data }: UsersTableProps) {
       header: ({ column }) => (
         <button
           type="button"
-          className="font-semibold text-xs text-foreground tracking-tight hover:text-primary transition-colors cursor-pointer"
+          className="cursor-pointer font-semibold text-foreground text-xs tracking-tight transition-colors hover:text-primary"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Email
         </button>
       ),
       cell: ({ row }) => (
-        <span className="text-muted-foreground text-sm font-medium">
+        <span className="font-medium text-muted-foreground text-sm">
           {row.original.email}
         </span>
       ),
@@ -143,7 +149,7 @@ export function UsersTable({ data }: UsersTableProps) {
       header: ({ column }) => (
         <button
           type="button"
-          className="font-semibold text-xs text-foreground tracking-tight hover:text-primary transition-colors cursor-pointer"
+          className="cursor-pointer font-semibold text-foreground text-xs tracking-tight transition-colors hover:text-primary"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Role
@@ -153,20 +159,26 @@ export function UsersTable({ data }: UsersTableProps) {
         const role = row.original.platformRole
         if (role === "super_admin") {
           return (
-            <Badge variant="outline" className="bg-emerald-500/15 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 border-emerald-500/20 capitalize font-medium text-xs">
+            <Badge
+              variant="outline"
+              className="border-emerald-500/20 bg-emerald-500/15 font-medium text-emerald-700 text-xs capitalize dark:bg-emerald-500/10 dark:text-emerald-400"
+            >
               Super Admin
             </Badge>
           )
         }
         if (role === "support") {
           return (
-            <Badge variant="outline" className="bg-amber-500/15 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400 border-amber-500/20 capitalize font-medium text-xs">
+            <Badge
+              variant="outline"
+              className="border-amber-500/20 bg-amber-500/15 font-medium text-amber-700 text-xs capitalize dark:bg-amber-500/10 dark:text-amber-400"
+            >
               Support
             </Badge>
           )
         }
         return (
-          <Badge variant="secondary" className="capitalize font-medium text-xs">
+          <Badge variant="secondary" className="font-medium text-xs capitalize">
             User
           </Badge>
         )
@@ -177,16 +189,17 @@ export function UsersTable({ data }: UsersTableProps) {
       header: ({ column }) => (
         <button
           type="button"
-          className="font-semibold text-xs text-foreground tracking-tight hover:text-primary transition-colors cursor-pointer"
+          className="cursor-pointer font-semibold text-foreground text-xs tracking-tight transition-colors hover:text-primary"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Organization
         </button>
       ),
       cell: ({ row }) => {
-        const org = row.original.organizationName || row.original.primaryOrganization
+        const org =
+          row.original.organizationName || row.original.primaryOrganization
         return (
-          <span className="text-muted-foreground text-xs sm:text-sm font-medium">
+          <span className="font-medium text-muted-foreground text-xs sm:text-sm">
             {org || "Unassigned"}
           </span>
         )
@@ -197,7 +210,7 @@ export function UsersTable({ data }: UsersTableProps) {
       header: ({ column }) => (
         <button
           type="button"
-          className="font-semibold text-xs text-foreground tracking-tight hover:text-primary transition-colors cursor-pointer"
+          className="cursor-pointer font-semibold text-foreground text-xs tracking-tight transition-colors hover:text-primary"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Created
@@ -211,10 +224,17 @@ export function UsersTable({ data }: UsersTableProps) {
     },
     {
       id: "actions",
-      header: () => <div className="text-right font-semibold text-xs">Action</div>,
+      header: () => (
+        <div className="text-right font-semibold text-xs">Action</div>
+      ),
       cell: ({ row }) => (
         <div className="text-right">
-          <Button variant="outline" size="sm" asChild className="h-8 gap-1.5 rounded-lg px-2.5">
+          <Button
+            variant="outline"
+            size="sm"
+            asChild
+            className="h-8 gap-1.5 rounded-lg px-2.5"
+          >
             <Link href={`/users/${row.original.id}`}>
               <HugeiconsIcon icon={EyeIcon} className="size-3.5 text-primary" />
               <span>View</span>
@@ -258,13 +278,13 @@ export function UsersTable({ data }: UsersTableProps) {
           <div className="relative min-w-48 max-w-sm flex-1">
             <HugeiconsIcon
               icon={Search01Icon}
-              className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+              className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
             />
             <Input
               placeholder="Search users by name or email…"
               value={globalFilter ?? ""}
               onChange={(e) => setGlobalFilter(e.target.value)}
-              className="h-9 pl-9 rounded-xl"
+              className="h-9 rounded-xl pl-9"
             />
           </div>
           <Select
@@ -286,8 +306,9 @@ export function UsersTable({ data }: UsersTableProps) {
           </Select>
         </div>
 
-        <div className="text-muted-foreground text-xs font-medium">
-          Showing {table.getFilteredRowModel().rows.length} of {data.length} users
+        <div className="font-medium text-muted-foreground text-xs">
+          Showing {table.getFilteredRowModel().rows.length} of {data.length}{" "}
+          users
         </div>
       </div>
 
@@ -354,7 +375,7 @@ export function UsersTable({ data }: UsersTableProps) {
           >
             Previous
           </Button>
-          <span className="text-muted-foreground text-xs font-medium px-2">
+          <span className="px-2 font-medium text-muted-foreground text-xs">
             Page {table.getState().pagination.pageIndex + 1} of{" "}
             {table.getPageCount()}
           </span>

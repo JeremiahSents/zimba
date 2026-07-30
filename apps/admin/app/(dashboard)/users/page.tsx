@@ -7,7 +7,7 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react"
 import { AdminDashboardShell } from "@/components/dashboard-shell"
 import { StatCard } from "@/components/stat-card"
-import { UserItem, UsersTable } from "@/components/users-table"
+import { type UserItem, UsersTable } from "@/components/users-table"
 import { listPlatformUsers } from "@/core/users/service"
 
 export default async function UsersPage() {
@@ -23,6 +23,7 @@ export default async function UsersPage() {
     primaryOrganization: u.primaryOrganization,
     organizationName: u.organizationName,
     createdAt: u.createdAt,
+    deactivatedAt: u.deactivatedAt,
   }))
 
   const superAdminsCount = users.filter(

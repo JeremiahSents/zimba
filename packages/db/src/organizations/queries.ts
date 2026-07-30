@@ -1,4 +1,15 @@
-import { and, count, desc, eq, gt, isNotNull, sql } from "drizzle-orm"
+import {
+  and,
+  count,
+  desc,
+  eq,
+  gt,
+  isNotNull,
+  ne,
+  notExists,
+  sql,
+} from "drizzle-orm"
+import { alias } from "drizzle-orm/pg-core"
 import { user } from "../auth/schema"
 import { project } from "../projects/schema"
 import { expense, expenseLine, payment } from "../receipts/schema"
@@ -473,6 +484,59 @@ export async function findUserMemberships(
     .from(member)
     .innerJoin(organization, eq(organization.id, member.organizationId))
     .where(eq(member.userId, userId))
+}
+
+/**
+ * Organizations this user owns and would leave ownerless. An organization with
+ * a second owner is safe to walk away from; one without is the blocker that
+ * stops an account from being deleted.
+ */
+export function findSoleOwnerOrganizationsForUser(
+  executor: DatabaseExecutor,
+  userId: string
+) {
+  const otherOwner = alias(member, "other_owner")
+  return executor
+    .select({
+      organizationId: organization.id,
+      organizationName: organization.name,
+      slug: organization.slug,
+      status: organization.status,
+    })
+    .from(member)
+    .innerJoin(organization, eq(organization.id, member.organizationId))
+    .where(
+      and(
+        eq(member.userId, userId),
+        eq(member.role, "owner"),
+        notExists(
+          executor
+            .select({ one: sql`1` })
+            .from(otherOwner)
+            .where(
+              and(
+                eq(otherOwner.organizationId, member.organizationId),
+                eq(otherOwner.role, "owner"),
+                ne(otherOwner.userId, userId)
+              )
+            )
+        )
+      )
+    )
+}
+
+/** Live invitations the user sent, which survive them as the organization's. */
+export async function countPendingInvitationsFromUser(
+  executor: DatabaseExecutor,
+  userId: string
+) {
+  const [row] = await executor
+    .select({ value: count() })
+    .from(invitation)
+    .where(
+      and(eq(invitation.invitedBy, userId), eq(invitation.status, "pending"))
+    )
+  return Number(row?.value ?? 0)
 }
 
 export async function updateMemberRole(

@@ -9,3 +9,15 @@ export const platformRoleUpdateSchema = z.object({
   userId: idSchema,
   role: platformRoleSchema,
 })
+export const accountDeactivationSchema = z.object({
+  userId: idSchema,
+  reason: z.string().trim().max(2000).optional().or(z.literal("")),
+})
+/**
+ * `confirmEmail` is the deliberate friction on an irreversible action: the
+ * admin retypes the address, and the use case rejects any mismatch.
+ */
+export const accountDeletionSchema = z.object({
+  userId: idSchema,
+  confirmEmail: emailSchema,
+})

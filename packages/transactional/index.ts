@@ -1,19 +1,26 @@
 export type {
+  FanOutEmailResult,
   SendApplicationApprovedEmailProps,
   SendApplicationRejectedEmailProps,
   SendApplicationSubmittedEmailProps,
+  SendEmailVerificationEmailProps,
   SendMagicLinkEmailProps,
   SendMemberInviteEmailProps,
+  SendOnboardingRequestEmailProps,
   SendOwnershipTransferEmailProps,
+  SendResetPasswordEmailProps,
   SendSuperAdminInviteEmailProps,
 } from "./email"
 export {
   sendApplicationApprovedEmail,
   sendApplicationRejectedEmail,
   sendApplicationSubmittedEmail,
+  sendEmailVerificationEmail,
   sendMagicLinkEmail,
   sendMemberInviteEmail,
+  sendOnboardingRequestEmail,
   sendOwnershipTransferEmail,
+  sendResetPasswordEmail,
   sendSuperAdminInviteEmail,
 } from "./email"
 export {
@@ -28,15 +35,27 @@ export {
   ApplicationSubmittedEmail,
   type ApplicationSubmittedEmailProps,
 } from "./emails/application-submitted"
+export {
+  EmailVerificationEmail,
+  type EmailVerificationEmailProps,
+} from "./emails/email-verification"
 export { MagicLinkEmail, type MagicLinkEmailProps } from "./emails/magic-link"
 export {
   MemberInviteEmail,
   type MemberInviteEmailProps,
 } from "./emails/member-invite"
 export {
+  OnboardingRequestEmail,
+  type OnboardingRequestEmailProps,
+} from "./emails/onboarding-request"
+export {
   OwnershipTransferEmail,
   type OwnershipTransferEmailProps,
 } from "./emails/ownership-transfer"
+export {
+  ResetPasswordEmail,
+  type ResetPasswordEmailProps,
+} from "./emails/reset-password"
 export {
   SuperAdminInviteEmail,
   type SuperAdminInviteEmailProps,

@@ -12,6 +12,8 @@ const envSchema = z.object({
   RESEND_API_KEY: z.string().optional(),
   RESEND_FROM: z.string().optional(),
   APP_URL: z.url().optional(),
+  /** Only used to deep-link super admins to a demo request they must review. */
+  ADMIN_APP_URL: z.url().optional(),
 })
 
 export const env = envSchema.parse({
@@ -26,4 +28,5 @@ export const env = envSchema.parse({
   RESEND_API_KEY: process.env.RESEND_API_KEY,
   RESEND_FROM: process.env.RESEND_FROM,
   APP_URL: process.env.APP_URL,
+  ADMIN_APP_URL: process.env.ADMIN_APP_URL,
 })

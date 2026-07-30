@@ -14,17 +14,21 @@ import Link from "next/link"
 import { useState } from "react"
 import { Google } from "@/components/svgs/google"
 import { authClient } from "@/lib/auth-client"
+import { AuthHeader } from "./auth-header"
+import { VerificationPendingNotice } from "./verification-pending-notice"
 
 export function LoginForm({
   className,
   oauthError = false,
   accessExpired = false,
+  passwordReset = false,
   callbackUrl = "/workspace",
   invitation,
   ...props
 }: React.ComponentProps<"div"> & {
   oauthError?: boolean
   accessExpired?: boolean
+  passwordReset?: boolean
   callbackUrl?: string
   invitation?: {
     organizationName: string
@@ -45,9 +49,15 @@ export function LoginForm({
   const [email, setEmail] = useState(invitation?.email ?? "")
   const [password, setPassword] = useState("")
   const [name, setName] = useState("")
+  const [verificationSentTo, setVerificationSentTo] = useState<string | null>(
+    null
+  )
   const newUserCallbackUrl = callbackUrl.startsWith("/invite/")
     ? callbackUrl
     : "/onboarding"
+  // Confirmation links come back through /verify-email, which reports a bad
+  // token instead of dumping the visitor on a page that cannot explain itself.
+  const verifyCallbackUrl = `/verify-email?next=${encodeURIComponent(newUserCallbackUrl)}`
 
   async function continueWithGoogle() {
     setError(null)
@@ -91,7 +101,7 @@ export function LoginForm({
         email,
         password,
         name: name.trim(),
-        callbackURL: newUserCallbackUrl,
+        callbackURL: verifyCallbackUrl,
       })
       setIsPending(false)
       if (result?.error) {
@@ -100,6 +110,10 @@ export function LoginForm({
         )
         return
       }
+      // Sign-up does not sign them in while verification is required, so tell
+      // them where to go next rather than leaving the form looking idle.
+      setVerificationSentTo(email)
+      setPassword("")
     } else {
       const result = await authClient.signIn.email({
         email,
@@ -108,6 +122,11 @@ export function LoginForm({
       })
       setIsPending(false)
       if (result?.error) {
+        // The server has already re-sent the link at this point.
+        if (result.error.code === "EMAIL_NOT_VERIFIED") {
+          setVerificationSentTo(email)
+          return
+        }
         setError(result.error.message || "Could not sign in. Please try again.")
         return
       }
@@ -117,38 +136,35 @@ export function LoginForm({
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <FieldGroup>
-        <div className="flex flex-col items-center gap-2 text-center">
-          <Link
-            href="/"
-            className="flex flex-col items-center gap-2 font-medium"
-          >
-            <div className="flex size-8 items-center justify-center rounded-md">
-              <Image
-                src="/logo-landing.png"
-                alt="Zimba logo"
-                width={28}
-                height={28}
-                style={{ width: "auto", height: "auto" }}
-                className="size-7"
-              />
-            </div>
-            <span className="sr-only">Zimba</span>
-          </Link>
-          <h1 className="font-bold text-xl">
-            {invitation
+        <AuthHeader
+          title={
+            invitation
               ? `Join ${invitation.organizationName}`
               : mode === "signin"
                 ? "Welcome to Zimba"
-                : "Create your account"}
-          </h1>
-          <FieldDescription>
-            {invitation
+                : "Create your account"
+          }
+          description={
+            invitation
               ? `You've been invited to join ${invitation.organizationName} as ${invitation.email}. Sign in or create an account to accept.`
               : mode === "signin"
                 ? "Sign in with email and password or Google."
-                : "Sign up with email and password or Google."}
-          </FieldDescription>
-        </div>
+                : "Sign up with email and password or Google."
+          }
+        />
+
+        {passwordReset ? (
+          <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-emerald-950 text-sm">
+            Your password was changed. Sign in with your new password.
+          </div>
+        ) : null}
+
+        {verificationSentTo ? (
+          <VerificationPendingNotice
+            email={verificationSentTo}
+            callbackUrl={verifyCallbackUrl}
+          />
+        ) : null}
 
         <form onSubmit={continueWithPassword} className="flex flex-col gap-3">
           {mode === "signup" ? (
@@ -178,7 +194,17 @@ export function LoginForm({
             />
           </Field>
           <Field>
-            <Label htmlFor="auth-password">Password</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="auth-password">Password</Label>
+              {mode === "signin" ? (
+                <Link
+                  href="/forgot-password"
+                  className="text-muted-foreground text-xs hover:text-foreground"
+                >
+                  Forgot password?
+                </Link>
+              ) : null}
+            </div>
             <Input
               id="auth-password"
               type="password"

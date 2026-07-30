@@ -22,6 +22,21 @@ export function findPlatformUserForUser(
     .limit(1)
 }
 
+/**
+ * Every super admin who can be emailed. Deactivated accounts are excluded:
+ * they cannot sign in to act on what they would be told about.
+ */
+export function listSuperAdminRecipients(executor: DatabaseExecutor) {
+  return executor
+    .select({ id: user.id, name: user.name, email: user.email })
+    .from(platformUser)
+    .innerJoin(user, eq(user.id, platformUser.userId))
+    .where(
+      and(eq(platformUser.role, "super_admin"), isNull(user.deactivatedAt))
+    )
+    .orderBy(user.name)
+}
+
 export async function readPlatformStats(executor: DatabaseExecutor) {
   const [
     total,
@@ -78,6 +93,7 @@ export function listPlatformUserRows(executor: DatabaseExecutor) {
       emailVerified: user.emailVerified,
       image: user.image,
       createdAt: user.createdAt,
+      deactivatedAt: user.deactivatedAt,
       platformRole: platformUser.role,
       organizationName: organization.name,
     })
@@ -100,6 +116,9 @@ export function findPlatformUserDetailRows(
       emailVerified: user.emailVerified,
       image: user.image,
       createdAt: user.createdAt,
+      deactivatedAt: user.deactivatedAt,
+      deactivatedBy: user.deactivatedBy,
+      deactivationReason: user.deactivationReason,
       platformRole: platformUser.role,
       organizationId: organization.id,
       organizationName: organization.name,

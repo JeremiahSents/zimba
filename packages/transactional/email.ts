@@ -132,6 +132,132 @@ export async function sendApplicationSubmittedEmail(
   })
 }
 
+export interface SendOnboardingRequestEmailProps {
+  /** Every super admin who should review this request. */
+  to: string[]
+  fullName: string
+  companyName: string
+  personalEmail: string
+  reviewUrl: string
+  submittedAt: Date
+  companyWebsite?: string | null
+  industry?: string | null
+  country?: string | null
+  phone?: string | null
+  teamSize?: string | null
+  useCase?: string | null
+}
+
+export type FanOutEmailResult = {
+  sent: string[]
+  failed: Array<{ to: string; error: string }>
+}
+
+/**
+ * Fans the request out to every super admin. One bad address must not stop the
+ * others from being told, so failures are collected instead of thrown — the
+ * caller decides how loudly to complain.
+ */
+export async function sendOnboardingRequestEmail(
+  props: SendOnboardingRequestEmailProps
+): Promise<FanOutEmailResult> {
+  const recipients = [...new Set(props.to.filter(Boolean))]
+  if (!recipients.length) return { sent: [], failed: [] }
+
+  const { default: OnboardingRequestEmail } = await import(
+    "./emails/onboarding-request"
+  )
+  const html = await render(
+    createElement(OnboardingRequestEmail, {
+      fullName: props.fullName,
+      companyName: props.companyName,
+      personalEmail: props.personalEmail,
+      reviewUrl: props.reviewUrl,
+      submittedAt: props.submittedAt.toUTCString(),
+      companyWebsite: props.companyWebsite,
+      industry: props.industry,
+      country: props.country,
+      phone: props.phone,
+      teamSize: props.teamSize,
+      useCase: props.useCase,
+    })
+  )
+  const subject = `New demo request — ${props.companyName}`
+
+  const outcomes = await Promise.allSettled(
+    recipients.map((to) => sendEmail({ to, subject, html }))
+  )
+
+  const result: FanOutEmailResult = { sent: [], failed: [] }
+  outcomes.forEach((outcome, index) => {
+    const to = recipients[index] as string
+    if (outcome.status === "fulfilled") result.sent.push(to)
+    else
+      result.failed.push({
+        to,
+        error:
+          outcome.reason instanceof Error
+            ? outcome.reason.message
+            : "Unknown error",
+      })
+  })
+  return result
+}
+
+export interface SendEmailVerificationEmailProps {
+  to: string
+  verifyUrl: string
+  email: string
+  expiresIn?: string
+}
+
+export async function sendEmailVerificationEmail(
+  props: SendEmailVerificationEmailProps
+): Promise<SendEmailResult> {
+  const { default: EmailVerificationEmail } = await import(
+    "./emails/email-verification"
+  )
+  const html = await render(
+    createElement(EmailVerificationEmail, {
+      verifyUrl: props.verifyUrl,
+      email: props.email,
+      expiresIn: props.expiresIn,
+    })
+  )
+  return sendEmail({
+    to: props.to,
+    subject: "Confirm your Zimba email address",
+    html,
+  })
+}
+
+export interface SendResetPasswordEmailProps {
+  to: string
+  resetUrl: string
+  email: string
+  expiresIn?: string
+}
+
+export async function sendResetPasswordEmail(
+  props: SendResetPasswordEmailProps
+): Promise<SendEmailResult> {
+  const { default: ResetPasswordEmail } = await import(
+    "./emails/reset-password"
+  )
+  const html = await render(
+    createElement(ResetPasswordEmail, {
+      resetUrl: props.resetUrl,
+      email: props.email,
+      expiresIn: props.expiresIn,
+    })
+  )
+  return sendEmail({
+    to: props.to,
+    subject: "Reset your Zimba password",
+    html,
+  })
+}
+
 export interface SendApplicationApprovedEmailProps {
   to: string
   companyName: string

@@ -33,9 +33,13 @@ export const platformAuditLog = pgTable("platform_audit_log", {
   id: varchar("id")
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
-  actorId: text("actor_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
+  /**
+   * Nullable on purpose. Cascading here would let a deleted super admin erase
+   * their own history, which is the one thing an audit log may not do.
+   */
+  actorId: text("actor_id").references(() => user.id, {
+    onDelete: "set null",
+  }),
   targetUserId: text("target_user_id").references(() => user.id, {
     onDelete: "set null",
   }),

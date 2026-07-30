@@ -6,6 +6,19 @@ export const user = pgTable("user", {
   email: text("email").notNull().unique(),
   emailVerified: boolean("email_verified").default(false).notNull(),
   image: text("image"),
+  /**
+   * Set when a super admin disables the account. The row stays, so every
+   * organization, receipt and audit trail the person touched keeps its author.
+   * Session resolution treats a stamped account as signed out.
+   */
+  deactivatedAt: timestamp("deactivated_at", { mode: "date" }),
+  /**
+   * Deliberately not a foreign key, for the same reason as
+   * `audit_log.via_grant_id`: the record of who disabled an account has to
+   * outlive the account that did it.
+   */
+  deactivatedBy: text("deactivated_by"),
+  deactivationReason: text("deactivation_reason"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()

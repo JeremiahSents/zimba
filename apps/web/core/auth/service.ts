@@ -1,6 +1,7 @@
 import "server-only"
 
 import {
+  isAccountDeactivatedUseCase,
   isPlatformStaffUseCase,
   type WorkspaceContext,
   type WorkspaceRole,
@@ -34,6 +35,13 @@ export const getSessionWithOrganization = cache(
     const authSession = await auth.api.getSession({ headers: requestHeaders })
 
     if (!authSession?.session) {
+      return null
+    }
+
+    // A deactivated account reads as signed out. Deactivation deletes live
+    // sessions, so this only catches a cookie already in flight — but it is the
+    // difference between "locked out now" and "locked out on next sign-in".
+    if (await isAccountDeactivatedUseCase(authSession.user.id)) {
       return null
     }
 

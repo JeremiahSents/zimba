@@ -62,13 +62,14 @@ export default async function PendingApprovalPage({
               />
             </div>
             <CardTitle className="mt-2">
-              {isPending && "Application Under Review"}
-              {isRejected && "Application Not Approved"}
+              {isPending && "Demo Request Under Review"}
+              {isRejected && "Demo Request Declined"}
             </CardTitle>
             <CardDescription>
               {isPending &&
-                "Thank you for applying. Our team is reviewing your application."}
-              {isRejected && "Your application was not approved at this time."}
+                "Thanks for booking a demo. A Zimba super admin is reviewing your request."}
+              {isRejected &&
+                "Your request was declined. You're welcome to submit a new one."}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -77,8 +78,8 @@ export default async function PendingApprovalPage({
                 <p className="font-medium text-sm">Check your email</p>
                 <p className="mt-1 text-sm">
                   We sent a welcome message to{" "}
-                  <strong>{session.user.email}</strong>. Our team will review
-                  your details and contact you soon.
+                  <strong>{application.email}</strong>. A super admin will
+                  review your details and get in touch.
                 </p>
               </div>
             )}
@@ -107,7 +108,7 @@ export default async function PendingApprovalPage({
               >
                 {application.status === "pending" && "Pending"}
                 {application.status === "approved" && "Approved"}
-                {application.status === "rejected" && "Rejected"}
+                {application.status === "rejected" && "Declined"}
               </Badge>
             </div>
             {application.industry && (
@@ -129,7 +130,7 @@ export default async function PendingApprovalPage({
             {isPending && (
               <p className="text-center text-muted-foreground text-xs">
                 You&apos;ll receive an email at{" "}
-                <strong>{session.user.email}</strong> once your application is
+                <strong>{application.email}</strong> once your request is
                 reviewed. This usually takes 1-2 business days.
               </p>
             )}
@@ -140,7 +141,7 @@ export default async function PendingApprovalPage({
                   render={<Link href="/onboarding?reapply=1" />}
                   className="w-full"
                 >
-                  Submit a new application
+                  Book another demo
                 </Button>
                 <Button
                   variant="ghost"

@@ -8,34 +8,20 @@ import {
   FieldLabel,
 } from "@workspace/ui/components/field"
 import { Input } from "@workspace/ui/components/input"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@workspace/ui/components/select"
-import Image from "next/image"
-import Link from "next/link"
 import { useActionState } from "react"
 import {
   completeOnboarding,
   type OnboardingState,
 } from "@/app/onboarding/actions"
+import { AuthHeader } from "./auth-header"
+import { OnboardingOptionalFields } from "./onboarding-optional-fields"
 
 const initialState: OnboardingState = {}
 
-const industries = [
-  "Construction",
-  "Real Estate",
-  "Engineering",
-  "Architecture",
-  "Project Management",
-  "Other",
-]
-
-const teamSizes = ["1-5", "6-20", "21-50", "51-200", "200+"]
-
+/**
+ * Requesting a demo, not creating a workspace: submitting sends the details to
+ * the super admins and nothing is provisioned until one of them approves.
+ */
 export function OnboardingForm({
   defaultName,
   email,
@@ -52,28 +38,10 @@ export function OnboardingForm({
     <div className="flex flex-col gap-6">
       <form action={formAction}>
         <FieldGroup>
-          <div className="flex flex-col items-center gap-2 text-center">
-            <Link
-              href="/"
-              className="flex flex-col items-center gap-2 font-medium"
-            >
-              <div className="flex size-8 items-center justify-center rounded-md">
-                <Image
-                  src="/logo-landing.png"
-                  alt="Zimba logo"
-                  width={28}
-                  height={28}
-                  className="size-7"
-                />
-              </div>
-              <span className="sr-only">Zimba</span>
-            </Link>
-            <h1 className="font-bold text-xl">Set up your workspace</h1>
-            <FieldDescription>
-              Signed in as {email}. Tell us about you and your company to get
-              started.
-            </FieldDescription>
-          </div>
+          <AuthHeader
+            title="Book your Zimba demo"
+            description="Tell us who you are and we'll be in touch. A Zimba super admin reviews every request before a workspace is created."
+          />
 
           <Field data-invalid={Boolean(state.fieldErrors?.fullName)}>
             <FieldLabel htmlFor="full-name">Full name</FieldLabel>
@@ -81,7 +49,7 @@ export function OnboardingForm({
               id="full-name"
               name="fullName"
               autoComplete="name"
-              defaultValue={defaultName}
+              defaultValue={state.values?.fullName ?? defaultName}
               aria-invalid={Boolean(state.fieldErrors?.fullName)}
               required
             />
@@ -99,6 +67,7 @@ export function OnboardingForm({
               name="companyName"
               autoComplete="organization"
               placeholder="Zimba Consultants"
+              defaultValue={state.values?.companyName ?? ""}
               aria-invalid={Boolean(state.fieldErrors?.companyName)}
               required
             />
@@ -109,75 +78,30 @@ export function OnboardingForm({
             ) : null}
           </Field>
 
-          <Field>
-            <FieldLabel htmlFor="company-website">Company website</FieldLabel>
+          <Field data-invalid={Boolean(state.fieldErrors?.email)}>
+            <FieldLabel htmlFor="personal-email">Personal email</FieldLabel>
             <Input
-              id="company-website"
-              name="companyWebsite"
-              type="url"
-              placeholder="https://example.com"
+              id="personal-email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              placeholder="you@example.com"
+              defaultValue={state.values?.email ?? email}
+              aria-invalid={Boolean(state.fieldErrors?.email)}
+              required
             />
+            <FieldDescription>
+              Where we&apos;ll send your demo details. Change it if you&apos;d
+              rather we used a different address than {email}.
+            </FieldDescription>
+            {state.fieldErrors?.email ? (
+              <p className="text-destructive text-sm">
+                {state.fieldErrors.email}
+              </p>
+            ) : null}
           </Field>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field>
-              <FieldLabel htmlFor="industry">Industry</FieldLabel>
-              <Select name="industry">
-                <SelectTrigger id="industry" className="w-full">
-                  <SelectValue placeholder="Select industry" />
-                </SelectTrigger>
-                <SelectContent>
-                  {industries.map((ind) => (
-                    <SelectItem key={ind} value={ind}>
-                      {ind}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </Field>
-
-            <Field>
-              <FieldLabel htmlFor="country">Country</FieldLabel>
-              <Input id="country" name="country" placeholder="Uganda" />
-            </Field>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field>
-              <FieldLabel htmlFor="phone">Phone number</FieldLabel>
-              <Input
-                id="phone"
-                name="phone"
-                type="tel"
-                placeholder="+256 700 000 000"
-              />
-            </Field>
-
-            <Field>
-              <FieldLabel htmlFor="team-size">Team size</FieldLabel>
-              <Select name="teamSize">
-                <SelectTrigger id="team-size" className="w-full">
-                  <SelectValue placeholder="Select team size" />
-                </SelectTrigger>
-                <SelectContent>
-                  {teamSizes.map((size) => (
-                    <SelectItem key={size} value={size}>
-                      {size}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </Field>
-          </div>
-
-          <Field>
-            <FieldLabel htmlFor="use-case">How will you use Zimba?</FieldLabel>
-            <Input
-              id="use-case"
-              name="useCase"
-              placeholder="Track project expenses, manage supplier payments..."
-            />
-          </Field>
+          <OnboardingOptionalFields />
 
           {state.error ? (
             <p role="alert" className="text-center text-destructive text-sm">
@@ -187,15 +111,15 @@ export function OnboardingForm({
 
           <Field>
             <Button type="submit" disabled={isPending}>
-              {isPending ? "Submitting application…" : "Submit application"}
+              {isPending ? "Sending request…" : "Book Demo"}
             </Button>
           </Field>
         </FieldGroup>
       </form>
 
       <FieldDescription className="px-6 text-center">
-        Your application will be reviewed by our team. You&apos;ll receive an
-        email once approved.
+        We&apos;ll email you a confirmation right away, and again once a super
+        admin has reviewed your request.
       </FieldDescription>
     </div>
   )

@@ -21,9 +21,17 @@ export function proxy(request: NextRequest) {
   const firstSegment = request.nextUrl.pathname.split("/").filter(Boolean)[0]
   if (
     firstSegment &&
-    !["api", "login", "register", "onboarding", "invite", "workspace"].includes(
-      firstSegment
-    )
+    ![
+      "api",
+      "login",
+      "register",
+      "onboarding",
+      "invite",
+      "workspace",
+      "forgot-password",
+      "reset-password",
+      "verify-email",
+    ].includes(firstSegment)
   ) {
     requestHeaders.set("x-workspace-slug", firstSegment)
   }

@@ -11,9 +11,14 @@ export const file = pgTable("file", {
   organizationId: varchar("organization_id")
     .notNull()
     .references(() => organization.id, { onDelete: "cascade" }),
-  uploaderId: text("uploader_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
+  /**
+   * Nullable on purpose: the file belongs to the organization, not the person
+   * who uploaded it. Deleting the uploader's account must not take the
+   * organization's receipts and attachments with it.
+   */
+  uploaderId: text("uploader_id").references(() => user.id, {
+    onDelete: "set null",
+  }),
   key: varchar("key").notNull().unique(),
   url: varchar("url").notNull(),
   filename: text("filename").notNull(),

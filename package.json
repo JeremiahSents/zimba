@@ -9,6 +9,7 @@
     "admin": "pnpm --filter admin dev",
     "generate": "pnpm --filter @workspace/db db:generate",
     "migrate": "pnpm --filter @workspace/db db:migrate",
+    "db:reset-data": "pnpm --filter @workspace/db db:reset-data",
     "lint": "turbo lint",
     "test": "turbo test",
     "format": "turbo format",

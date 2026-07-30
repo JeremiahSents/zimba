@@ -1,6 +1,7 @@
 import "server-only"
 
 export { checkDatabaseHealth } from "@workspace/db"
+export * from "./admin/account-removal"
 export * from "./admin/audit"
 export * from "./admin/organizations"
 export * from "./admin/platform"

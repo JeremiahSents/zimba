@@ -1,7 +1,21 @@
 import { db } from "@workspace/db"
 import { updateUserName } from "@workspace/db/auth"
-import { countPendingOnboardingApplications, createOnboardingApplication, findOnboardingApplicationById, findPendingOnboardingApplication, listOnboardingApplicationsWithUser, updateOnboardingApplicationStatus } from "@workspace/db/onboarding"
-import { createOrganization, createOrganizationMember, findMembershipByUser, findOrganizationBySlug } from "@workspace/db/organizations"
+import {
+  countPendingOnboardingApplications,
+  createOnboardingApplication,
+  findOnboardingApplicationById,
+  findPendingOnboardingApplication,
+  listOnboardingApplicationsWithUser,
+  updateOnboardingApplicationStatus,
+} from "@workspace/db/onboarding"
+import type { onboardingApplication } from "@workspace/db/onboarding/schema"
+import {
+  createOrganization,
+  createOrganizationMember,
+  findMembershipByUser,
+  findOrganizationBySlug,
+} from "@workspace/db/organizations"
+import type { z } from "zod"
 import type {
   OnboardingApplicationDto,
   OnboardingApplicationListDto,
@@ -11,6 +25,32 @@ import {
   notFoundError,
   validationError,
 } from "../shared/application-error"
+import { onboardingApplicationSchema } from "./onboarding-schemas"
+
+function toApplicationDto(
+  row: typeof onboardingApplication.$inferSelect
+): OnboardingApplicationDto {
+  return {
+    id: row.id,
+    userId: row.userId,
+    fullName: row.fullName,
+    email: row.email,
+    companyName: row.companyName,
+    companyWebsite: row.companyWebsite,
+    industry: row.industry,
+    country: row.country,
+    phone: row.phone,
+    teamSize: row.teamSize,
+    useCase: row.useCase,
+    status: row.status as OnboardingApplicationDto["status"],
+    organizationId: row.organizationId,
+    reviewedBy: row.reviewedBy,
+    reviewedAt: row.reviewedAt,
+    rejectionReason: row.rejectionReason,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  }
+}
 
 function slugify(name: string) {
   return (
@@ -24,46 +64,56 @@ function slugify(name: string) {
   )
 }
 
+/**
+ * A demo request, not a workspace. Nothing is provisioned here — a super admin
+ * has to approve the request before an organization exists.
+ */
 export async function submitOnboardingApplicationUseCase(
   ctx: { userId: string },
-  input: {
-    fullName: string
-    email: string
-    companyName: string
-    companyWebsite?: string
-    industry?: string
-    country?: string
-    phone?: string
-    teamSize?: string
-    useCase?: string
+  input: unknown
+): Promise<OnboardingApplicationDto> {
+  const parsed = onboardingApplicationSchema.safeParse(input)
+  if (!parsed.success) {
+    validationError(
+      "Check the highlighted details and try again.",
+      fieldErrorsOf(parsed.error)
+    )
   }
-): Promise<void> {
-  const fullName = input.fullName.trim()
-  const email = input.email.trim().toLowerCase()
-  const companyName = input.companyName.trim()
-  if (fullName.length < 2 || fullName.length > 100)
-    validationError("Enter a valid full name.")
-  if (!email.includes("@")) validationError("Enter a valid email address.")
-  if (companyName.length < 2 || companyName.length > 120)
-    validationError("Enter a valid company name.")
+
+  const fullName = parsed.data.fullName
+  const email = parsed.data.email.toLowerCase()
+  const companyName = parsed.data.companyName
 
   const [existing] = await findPendingOnboardingApplication(db, ctx.userId)
   if (existing && existing.status === "pending")
-    conflictError("You already have a pending application.")
+    conflictError("You already have a pending request.")
 
-  await createOnboardingApplication(db, {
+  const created = await createOnboardingApplication(db, {
     userId: ctx.userId,
     fullName,
     email,
     companyName,
-    companyWebsite: input.companyWebsite || null,
-    industry: input.industry || null,
-    country: input.country || null,
-    phone: input.phone || null,
-    teamSize: input.teamSize || null,
-    useCase: input.useCase || null,
+    companyWebsite: parsed.data.companyWebsite || null,
+    industry: parsed.data.industry || null,
+    country: parsed.data.country || null,
+    phone: parsed.data.phone || null,
+    teamSize: parsed.data.teamSize || null,
+    useCase: parsed.data.useCase || null,
     status: "pending",
   })
+  if (!created) conflictError("We could not record your request.")
+
+  return toApplicationDto(created)
+}
+
+function fieldErrorsOf(error: z.ZodError): Record<string, string[]> {
+  const fieldErrors: Record<string, string[]> = {}
+  for (const issue of error.issues) {
+    const key = issue.path[0]
+    if (typeof key !== "string") continue
+    fieldErrors[key] = [...(fieldErrors[key] ?? []), issue.message]
+  }
+  return fieldErrors
 }
 
 export async function listOnboardingApplicationsUseCase(): Promise<
@@ -87,26 +137,7 @@ export async function getOnboardingApplicationDetailUseCase(
 ): Promise<OnboardingApplicationDto | null> {
   const [app] = await findOnboardingApplicationById(db, id)
   if (!app) return null
-  return {
-    id: app.id,
-    userId: app.userId,
-    fullName: app.fullName,
-    email: app.email,
-    companyName: app.companyName,
-    companyWebsite: app.companyWebsite,
-    industry: app.industry,
-    country: app.country,
-    phone: app.phone,
-    teamSize: app.teamSize,
-    useCase: app.useCase,
-    status: app.status as OnboardingApplicationDto["status"],
-    organizationId: app.organizationId,
-    reviewedBy: app.reviewedBy,
-    reviewedAt: app.reviewedAt,
-    rejectionReason: app.rejectionReason,
-    createdAt: app.createdAt,
-    updatedAt: app.updatedAt,
-  }
+  return toApplicationDto(app)
 }
 
 export async function approveOnboardingApplicationUseCase(
@@ -181,24 +212,5 @@ export async function getOnboardingApplicationForUserUseCase(
 ): Promise<OnboardingApplicationDto | null> {
   const [app] = await findPendingOnboardingApplication(db, userId)
   if (!app) return null
-  return {
-    id: app.id,
-    userId: app.userId,
-    fullName: app.fullName,
-    email: app.email,
-    companyName: app.companyName,
-    companyWebsite: app.companyWebsite,
-    industry: app.industry,
-    country: app.country,
-    phone: app.phone,
-    teamSize: app.teamSize,
-    useCase: app.useCase,
-    status: app.status as OnboardingApplicationDto["status"],
-    organizationId: app.organizationId,
-    reviewedBy: app.reviewedBy,
-    reviewedAt: app.reviewedAt,
-    rejectionReason: app.rejectionReason,
-    createdAt: app.createdAt,
-    updatedAt: app.updatedAt,
-  }
+  return toApplicationDto(app)
 }

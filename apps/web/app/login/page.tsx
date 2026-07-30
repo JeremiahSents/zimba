@@ -19,10 +19,14 @@ export const dynamic = "force-dynamic"
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; callbackUrl?: string }>
+  searchParams: Promise<{
+    error?: string
+    callbackUrl?: string
+    reset?: string
+  }>
 }) {
   const session = await auth.api.getSession({ headers: await headers() })
-  const { error, callbackUrl } = await searchParams
+  const { error, callbackUrl, reset } = await searchParams
   const destination = callbackUrl?.startsWith("/") ? callbackUrl : "/workspace"
   const demoEnabled = isDemoMode()
   const accessExpired = error === ACCESS_EXPIRED
@@ -59,6 +63,7 @@ export default async function LoginPage({
         <LoginForm
           oauthError={error === "oauth"}
           accessExpired={accessExpired}
+          passwordReset={reset === "1"}
           callbackUrl={destination}
           invitation={invitation}
         />

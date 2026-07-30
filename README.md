@@ -34,6 +34,8 @@ A pnpm monorepo built with Next.js 16, React 19, Drizzle ORM, and Better Auth.
    | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Google OAuth credentials |
    | `UPLOADTHING_TOKEN` | UploadThing API token |
    | `RESEND_API_KEY` / `RESEND_FROM` | Resend email credentials |
+   | `ADMIN_APP_URL` | Admin console URL (web app only) — deep-links super admins to a demo request awaiting review |
+   | `CUSTOMER_APP_URL` | Customer app URL (admin app only) — used in approval emails |
 
 3. **Generate and run database migrations**
 
@@ -89,6 +91,7 @@ zimba/
 | `pnpm test` | Run tests (Vitest) |
 | `pnpm generate` | Generate Drizzle migrations |
 | `pnpm migrate` | Run Drizzle migrations |
+| `pnpm db:reset-data` | Empty every table in the dev database, keeping the schema and migration history |
 | `pnpm check` | Run boundary checks + CI checks |
 
 ## Adding UI Components

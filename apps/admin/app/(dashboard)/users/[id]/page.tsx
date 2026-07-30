@@ -30,12 +30,17 @@ import {
 } from "@workspace/ui/components/table"
 import Link from "next/link"
 import { notFound } from "next/navigation"
+import { AccountRemovalPanel } from "@/components/account-removal-panel"
 import { AdminDashboardShell } from "@/components/dashboard-shell"
 import {
   PlatformRoleSelect,
   RemovePlatformAccessButton,
 } from "@/components/platform-role-select"
-import { getPlatformUserDetail } from "@/core/users/service"
+import { requirePlatformSession } from "@/core/auth/service"
+import {
+  getAccountRemovalPreview,
+  getPlatformUserDetail,
+} from "@/core/users/service"
 
 function getInitials(name: string) {
   return name
@@ -74,6 +79,7 @@ export default async function UserDetailPage({
 }: {
   params: Promise<{ id: string }>
 }) {
+  const session = await requirePlatformSession()
   const { id } = await params
   const u = await getPlatformUserDetail(id)
 
@@ -81,12 +87,24 @@ export default async function UserDetailPage({
     notFound()
   }
 
+  // Support staff can read this page; only super admins may remove an account,
+  // so the preview (and the panel) is skipped entirely for everyone else.
+  const isSuperAdmin = session.platformRole === "super_admin"
+  const removal = isSuperAdmin
+    ? await getAccountRemovalPreview(session.user.id, u.id)
+    : null
+
   return (
     <AdminDashboardShell>
       {/* ── Top Navigation Bar ── */}
       <div className="flex flex-wrap items-center justify-between gap-4 border-b pb-4">
         <div className="flex items-center gap-3">
-          <Button variant="outline" size="icon-sm" asChild className="rounded-xl">
+          <Button
+            variant="outline"
+            size="icon-sm"
+            asChild
+            className="rounded-xl"
+          >
             <Link href="/users" aria-label="Back to users">
               <HugeiconsIcon icon={ArrowLeft02Icon} className="size-4" />
             </Link>
@@ -96,19 +114,24 @@ export default async function UserDetailPage({
               <h2 className="font-heading font-semibold text-xl tracking-tight">
                 {u.name}
               </h2>
+              {u.deactivatedAt ? (
+                <Badge variant="destructive" className="text-xs">
+                  Deactivated
+                </Badge>
+              ) : null}
               {u.platformRole ? (
                 <Badge
                   variant="outline"
                   className={
                     u.platformRole === "super_admin"
-                      ? "bg-emerald-500/15 text-emerald-700 border-emerald-500/20 capitalize text-xs"
-                      : "bg-amber-500/15 text-amber-700 border-amber-500/20 capitalize text-xs"
+                      ? "border-emerald-500/20 bg-emerald-500/15 text-emerald-700 text-xs capitalize"
+                      : "border-amber-500/20 bg-amber-500/15 text-amber-700 text-xs capitalize"
                   }
                 >
                   {u.platformRole.replace("_", " ")}
                 </Badge>
               ) : (
-                <Badge variant="secondary" className="capitalize text-xs">
+                <Badge variant="secondary" className="text-xs capitalize">
                   User
                 </Badge>
               )}
@@ -123,7 +146,7 @@ export default async function UserDetailPage({
       {/* ── User Profile Header Card ── */}
       <Card className="overflow-hidden border bg-gradient-to-r from-card via-card to-muted/20">
         <CardHeader className="pb-3">
-          <CardTitle className="font-semibold text-xs uppercase tracking-wider text-muted-foreground">
+          <CardTitle className="font-semibold text-muted-foreground text-xs uppercase tracking-wider">
             User Profile
           </CardTitle>
         </CardHeader>
@@ -131,19 +154,22 @@ export default async function UserDetailPage({
           <div className="flex flex-wrap items-center gap-4 sm:gap-6">
             <Avatar className="size-16 border-2 border-primary/20 shadow-xs">
               {u.image ? <AvatarImage src={u.image} alt={u.name} /> : null}
-              <AvatarFallback className="bg-primary text-primary-foreground font-semibold text-xl">
+              <AvatarFallback className="bg-primary font-semibold text-primary-foreground text-xl">
                 {getInitials(u.name)}
               </AvatarFallback>
             </Avatar>
 
-            <div className="space-y-1 min-w-48 flex-1">
+            <div className="min-w-48 flex-1 space-y-1">
               <div className="flex items-center gap-2">
                 <h3 className="font-heading font-semibold text-xl leading-tight">
                   {u.name}
                 </h3>
                 {u.emailVerified && (
-                  <span className="inline-flex items-center gap-1 text-emerald-600 text-xs font-medium bg-emerald-500/10 px-2 py-0.5 rounded-full">
-                    <HugeiconsIcon icon={CheckmarkCircle02Icon} className="size-3.5" />
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 font-medium text-emerald-600 text-xs">
+                    <HugeiconsIcon
+                      icon={CheckmarkCircle02Icon}
+                      className="size-3.5"
+                    />
                     Verified
                   </span>
                 )}
@@ -155,13 +181,16 @@ export default async function UserDetailPage({
                 </span>
                 <span className="flex items-center gap-1.5">
                   <HugeiconsIcon icon={Building03Icon} className="size-3.5" />
-                  {u.memberships.length} Organization{u.memberships.length !== 1 ? "s" : ""}
+                  {u.memberships.length} Organization
+                  {u.memberships.length !== 1 ? "s" : ""}
                 </span>
               </div>
             </div>
 
             <div className="flex flex-col gap-2 border-l pl-6 text-xs">
-              <span className="text-muted-foreground font-medium">Platform Role</span>
+              <span className="font-medium text-muted-foreground">
+                Platform Role
+              </span>
               <PlatformRoleSelect
                 userId={u.id}
                 currentRole={u.platformRole ?? "none"}
@@ -175,7 +204,7 @@ export default async function UserDetailPage({
       <div className="grid gap-6 md:grid-cols-3">
         <Card className="md:col-span-2">
           <CardHeader className="pb-3">
-            <CardTitle className="text-base font-semibold">
+            <CardTitle className="font-semibold text-base">
               Organization Memberships
             </CardTitle>
             <CardDescription>
@@ -211,9 +240,10 @@ export default async function UserDetailPage({
                         <Badge
                           variant="outline"
                           className={
-                            mem.role.toLowerCase() === "owner" || mem.role.toLowerCase() === "admin"
-                              ? "bg-emerald-500/15 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 border-emerald-500/20 capitalize font-semibold text-xs"
-                              : "bg-blue-500/15 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400 border-blue-500/20 capitalize font-medium text-xs"
+                            mem.role.toLowerCase() === "owner" ||
+                            mem.role.toLowerCase() === "admin"
+                              ? "border-emerald-500/20 bg-emerald-500/15 font-semibold text-emerald-700 text-xs capitalize dark:bg-emerald-500/10 dark:text-emerald-400"
+                              : "border-blue-500/20 bg-blue-500/15 font-medium text-blue-700 text-xs capitalize dark:bg-blue-500/10 dark:text-blue-400"
                           }
                         >
                           {mem.role}
@@ -222,7 +252,7 @@ export default async function UserDetailPage({
                       <TableCell className="text-right">
                         <Link
                           href={`/organizations/${mem.organizationId}`}
-                          className="text-primary font-medium text-xs underline hover:opacity-80 transition-opacity"
+                          className="font-medium text-primary text-xs underline transition-opacity hover:opacity-80"
                         >
                           View Org
                         </Link>
@@ -238,8 +268,11 @@ export default async function UserDetailPage({
         {/* ── Platform Access Actions ── */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base font-semibold flex items-center gap-2">
-              <HugeiconsIcon icon={ShieldKeyIcon} className="size-4 text-primary" />
+            <CardTitle className="flex items-center gap-2 font-semibold text-base">
+              <HugeiconsIcon
+                icon={ShieldKeyIcon}
+                className="size-4 text-primary"
+              />
               Access Settings
             </CardTitle>
             <CardDescription>
@@ -247,15 +280,29 @@ export default async function UserDetailPage({
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              Super admins have complete access to the administrative dashboard, system health monitors, and tenant data across the entire platform.
+            <p className="text-muted-foreground text-xs leading-relaxed">
+              Super admins have complete access to the administrative dashboard,
+              system health monitors, and tenant data across the entire
+              platform.
             </p>
-            <div className="pt-2 border-t">
+            <div className="border-t pt-2">
               <RemovePlatformAccessButton userId={u.id} />
             </div>
           </CardContent>
         </Card>
       </div>
+
+      {removal ? (
+        <AccountRemovalPanel
+          userId={u.id}
+          name={u.name}
+          email={u.email}
+          deactivatedAt={removal.deactivatedAt}
+          deactivationReason={removal.deactivationReason}
+          blockers={removal.blockers}
+          canDelete={removal.canDelete}
+        />
+      ) : null}
     </AdminDashboardShell>
   )
 }

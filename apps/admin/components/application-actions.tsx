@@ -59,16 +59,16 @@ export function ApplicationActions({
         <DialogTrigger
           render={
             <Button variant="destructive" disabled={isApproving || isRejecting}>
-              Reject
+              Decline
             </Button>
           }
         />
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Reject application</DialogTitle>
+            <DialogTitle>Decline demo request</DialogTitle>
             <DialogDescription>
-              Provide a reason for rejecting this application. The applicant
-              will see this message.
+              Give a reason for declining. It is emailed to the applicant, and
+              they can submit a new request afterwards.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
@@ -87,7 +87,7 @@ export function ApplicationActions({
               onClick={handleReject}
               disabled={isRejecting}
             >
-              {isRejecting ? "Rejecting…" : "Reject application"}
+              {isRejecting ? "Declining…" : "Decline request"}
             </Button>
           </DialogFooter>
         </DialogContent>

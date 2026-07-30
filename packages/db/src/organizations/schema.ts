@@ -65,9 +65,14 @@ export const invitation = pgTable(
     organizationId: varchar("organization_id")
       .notNull()
       .references(() => organization.id, { onDelete: "cascade" }),
-    invitedBy: text("invited_by")
-      .notNull()
-      .references(() => user.id, { onDelete: "cascade" }),
+    /**
+     * Nullable on purpose: a pending invitation is the organization's, not the
+     * inviter's. Deleting the inviter's account must not silently retract
+     * invitations other people are about to accept.
+     */
+    invitedBy: text("invited_by").references(() => user.id, {
+      onDelete: "set null",
+    }),
     name: text("name").notNull(),
     email: varchar("email").notNull(),
     role: varchar("role").notNull(),

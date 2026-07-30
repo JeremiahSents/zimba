@@ -143,7 +143,10 @@ export default async function ApplicationDetailPage({
                     : "destructive"
               }
             >
-              {application.status}
+              {/* Stored as "rejected"; shown as "declined" throughout the UI. */}
+              {application.status === "rejected"
+                ? "declined"
+                : application.status}
             </Badge>
           </div>
 
@@ -156,7 +159,7 @@ export default async function ApplicationDetailPage({
           {application.rejectionReason && (
             <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4">
               <p className="font-medium text-destructive text-sm">
-                Rejection reason
+                Reason for declining
               </p>
               <p className="mt-1 text-muted-foreground text-sm">
                 {application.rejectionReason}

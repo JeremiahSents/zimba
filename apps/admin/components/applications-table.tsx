@@ -5,12 +5,12 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import {
   type ColumnDef,
   type ColumnFiltersState,
-  type SortingState,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
+  type SortingState,
   useReactTable,
 } from "@tanstack/react-table"
 import { Button } from "@workspace/ui/components/button"
@@ -83,7 +83,7 @@ export function ApplicationsTable({ data }: ApplicationsTableProps) {
       header: ({ column }) => (
         <button
           type="button"
-          className="font-semibold text-xs text-foreground tracking-tight hover:text-primary transition-colors cursor-pointer"
+          className="cursor-pointer font-semibold text-foreground text-xs tracking-tight transition-colors hover:text-primary"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Company
@@ -105,7 +105,7 @@ export function ApplicationsTable({ data }: ApplicationsTableProps) {
       header: ({ column }) => (
         <button
           type="button"
-          className="font-semibold text-xs text-foreground tracking-tight hover:text-primary transition-colors cursor-pointer"
+          className="cursor-pointer font-semibold text-foreground text-xs tracking-tight transition-colors hover:text-primary"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Applicant
@@ -127,14 +127,14 @@ export function ApplicationsTable({ data }: ApplicationsTableProps) {
       header: ({ column }) => (
         <button
           type="button"
-          className="font-semibold text-xs text-foreground tracking-tight hover:text-primary transition-colors cursor-pointer"
+          className="cursor-pointer font-semibold text-foreground text-xs tracking-tight transition-colors hover:text-primary"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Country
         </button>
       ),
       cell: ({ row }) => (
-        <span className="text-muted-foreground text-xs sm:text-sm font-medium">
+        <span className="font-medium text-muted-foreground text-xs sm:text-sm">
           {row.original.country || "—"}
         </span>
       ),
@@ -144,20 +144,29 @@ export function ApplicationsTable({ data }: ApplicationsTableProps) {
       header: ({ column }) => (
         <button
           type="button"
-          className="font-semibold text-xs text-foreground tracking-tight hover:text-primary transition-colors cursor-pointer"
+          className="cursor-pointer font-semibold text-foreground text-xs tracking-tight transition-colors hover:text-primary"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Status
         </button>
       ),
-      cell: ({ row }) => <StatusBadge status={row.original.status} />,
+      cell: ({ row }) => (
+        // Stored as "rejected"; a declined request is what admins call it.
+        <StatusBadge
+          status={
+            row.original.status === "rejected"
+              ? "declined"
+              : row.original.status
+          }
+        />
+      ),
     },
     {
       accessorKey: "createdAt",
       header: ({ column }) => (
         <button
           type="button"
-          className="font-semibold text-xs text-foreground tracking-tight hover:text-primary transition-colors cursor-pointer"
+          className="cursor-pointer font-semibold text-foreground text-xs tracking-tight transition-colors hover:text-primary"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Submitted
@@ -171,10 +180,17 @@ export function ApplicationsTable({ data }: ApplicationsTableProps) {
     },
     {
       id: "actions",
-      header: () => <div className="text-right font-semibold text-xs">Action</div>,
+      header: () => (
+        <div className="text-right font-semibold text-xs">Action</div>
+      ),
       cell: ({ row }) => (
         <div className="text-right">
-          <Button variant="outline" size="sm" asChild className="h-8 gap-1.5 rounded-lg px-2.5">
+          <Button
+            variant="outline"
+            size="sm"
+            asChild
+            className="h-8 gap-1.5 rounded-lg px-2.5"
+          >
             <Link href={`/applications/${row.original.id}`}>
               <HugeiconsIcon icon={EyeIcon} className="size-3.5 text-primary" />
               <span>Review</span>
@@ -218,13 +234,13 @@ export function ApplicationsTable({ data }: ApplicationsTableProps) {
           <div className="relative min-w-48 max-w-sm flex-1">
             <HugeiconsIcon
               icon={Search01Icon}
-              className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+              className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
             />
             <Input
               placeholder="Search applications by company or name…"
               value={globalFilter ?? ""}
               onChange={(e) => setGlobalFilter(e.target.value)}
-              className="h-9 pl-9 rounded-xl"
+              className="h-9 rounded-xl pl-9"
             />
           </div>
           <Select
@@ -242,13 +258,15 @@ export function ApplicationsTable({ data }: ApplicationsTableProps) {
               <SelectItem value="all">All Statuses</SelectItem>
               <SelectItem value="pending">Pending</SelectItem>
               <SelectItem value="approved">Approved</SelectItem>
-              <SelectItem value="rejected">Rejected</SelectItem>
+              {/* Value stays "rejected" — that is what the column holds. */}
+              <SelectItem value="rejected">Declined</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
-        <div className="text-muted-foreground text-xs font-medium">
-          Showing {table.getFilteredRowModel().rows.length} of {data.length} applications
+        <div className="font-medium text-muted-foreground text-xs">
+          Showing {table.getFilteredRowModel().rows.length} of {data.length}{" "}
+          applications
         </div>
       </div>
 
@@ -315,7 +333,7 @@ export function ApplicationsTable({ data }: ApplicationsTableProps) {
           >
             Previous
           </Button>
-          <span className="text-muted-foreground text-xs font-medium px-2">
+          <span className="px-2 font-medium text-muted-foreground text-xs">
             Page {table.getState().pagination.pageIndex + 1} of{" "}
             {table.getPageCount()}
           </span>

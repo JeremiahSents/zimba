@@ -1,7 +1,22 @@
 import { db } from "@workspace/db"
+import {
+  findAccountStatus,
+  findUserByEmail,
+  findUserById,
+} from "@workspace/db/auth"
 import type { DatabaseExecutor } from "@workspace/db/executor"
-import { findUserByEmail, findUserById } from "@workspace/db/auth"
-import { appendPlatformAudit, countSuperAdmins, createPlatformAccess, deletePlatformAccess, findPlatformAccessForUser, findPlatformUserDetailRows, findPlatformUserForUser, listPlatformUserRows, updatePlatformAccess } from "@workspace/db/platform"
+import {
+  appendPlatformAudit,
+  countSuperAdmins,
+  createPlatformAccess,
+  deletePlatformAccess,
+  findPlatformAccessForUser,
+  findPlatformUserDetailRows,
+  findPlatformUserForUser,
+  listPlatformUserRows,
+  listSuperAdminRecipients,
+  updatePlatformAccess,
+} from "@workspace/db/platform"
 import type { PlatformUserDetailDto, PlatformUserListDto } from "../schemas"
 import {
   conflictError,
@@ -18,6 +33,18 @@ export async function getPlatformAccessForUserUseCase(
 ): Promise<PlatformAccess> {
   const [platformUser] = await findPlatformUserForUser(db, userId)
   return normalizePlatformRole(platformUser?.role)
+}
+
+/**
+ * True once a super admin has deactivated the account. Both apps check this
+ * while resolving a session, so a cookie issued before the decision stops
+ * working on the next request.
+ */
+export async function isAccountDeactivatedUseCase(
+  userId: string
+): Promise<boolean> {
+  const [account] = await findAccountStatus(db, userId)
+  return Boolean(account?.deactivatedAt)
 }
 
 export async function listPlatformUsersUseCase(): Promise<
@@ -37,12 +64,20 @@ export async function listPlatformUsersUseCase(): Promise<
       email: row.email,
       image: row.image,
       createdAt: row.createdAt,
+      deactivatedAt: row.deactivatedAt,
       platformRole: normalizePlatformRole(row.platformRole),
       membershipsCount: row.organizationName ? 1 : 0,
       primaryOrganization: row.organizationName,
     })
   }
   return [...result.values()]
+}
+
+/** Recipients for anything super admins must action, e.g. a new client request. */
+export async function listSuperAdminRecipientsUseCase(): Promise<
+  Array<{ id: string; name: string; email: string }>
+> {
+  return listSuperAdminRecipients(db)
 }
 
 export async function getPlatformUserDetailUseCase(
@@ -58,6 +93,8 @@ export async function getPlatformUserDetailUseCase(
     emailVerified: first.emailVerified,
     image: first.image,
     createdAt: first.createdAt,
+    deactivatedAt: first.deactivatedAt,
+    deactivationReason: first.deactivationReason,
     platformRole: normalizePlatformRole(first.platformRole),
     membershipsCount: rows.filter((row) => row.organizationId).length,
     primaryOrganization: first.organizationName,

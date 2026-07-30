@@ -1,13 +1,17 @@
 import { count, desc, eq } from "drizzle-orm"
-import { onboardingApplication } from "./schema"
 import { organization } from "../organizations/schema"
 import type { DatabaseExecutor } from "../shared/executor"
+import { onboardingApplication } from "./schema"
 
-export function createOnboardingApplication(
+export async function createOnboardingApplication(
   executor: DatabaseExecutor,
   data: typeof onboardingApplication.$inferInsert
 ) {
-  return executor.insert(onboardingApplication).values(data)
+  const [created] = await executor
+    .insert(onboardingApplication)
+    .values(data)
+    .returning()
+  return created ?? null
 }
 
 export function findPendingOnboardingApplication(

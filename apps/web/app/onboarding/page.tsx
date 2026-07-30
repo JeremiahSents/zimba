@@ -7,8 +7,8 @@ import { getOnboardingApplicationForUser } from "@/core/organizations/onboarding
 import { getOrganizationMembership } from "@/core/organizations/service"
 
 export const metadata: Metadata = {
-  title: "Set up your workspace | Zimba",
-  description: "Create your Zimba company workspace.",
+  title: "Book a demo | Zimba",
+  description: "Request a Zimba demo for your company.",
 }
 
 export default async function OnboardingPage({

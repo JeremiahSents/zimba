@@ -1,6 +1,9 @@
 import "server-only"
 
-import { getPlatformAccessForUserUseCase } from "@workspace/api"
+import {
+  getPlatformAccessForUserUseCase,
+  isAccountDeactivatedUseCase,
+} from "@workspace/api"
 import { headers } from "next/headers"
 import { cache } from "react"
 import { forbidden, unauthorized } from "../shared/errors"
@@ -23,6 +26,12 @@ export const getPlatformSession = cache(
     })
 
     if (!authSession?.session) {
+      return null
+    }
+
+    // Same rule as the customer app: a deactivated account has no session,
+    // whatever cookie it is holding.
+    if (await isAccountDeactivatedUseCase(authSession.user.id)) {
       return null
     }
 
