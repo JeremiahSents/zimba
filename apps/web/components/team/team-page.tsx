@@ -67,10 +67,7 @@ export function TeamPage({
     ],
   ]
   return (
-    <DashboardShell
-      title="Team"
-      subtitle="Manage project roles, approvals, and access levels."
-    >
+    <DashboardShell>
       <Card className="gap-0 py-0">
         <div className="grid grid-cols-2 md:grid-cols-3 [&>*:first-child]:col-span-2 md:[&>*:first-child]:col-span-1">
           {stats.map(([label, value, detail]) => (

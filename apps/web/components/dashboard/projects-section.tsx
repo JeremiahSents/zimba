@@ -3,6 +3,10 @@
 import { Building01Icon, Location01Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Button } from "@workspace/ui/components/button"
+import {
+  EmptyState,
+  EmptyStateRows,
+} from "@workspace/ui/components/empty-state"
 import { Progress } from "@workspace/ui/components/progress"
 import Link from "next/link"
 import { useWorkspaceSlug } from "@/components/shared/use-workspace-slug"
@@ -51,10 +55,12 @@ export function ProjectsList({
       ))}
     </div>
   ) : (
-    <div className="rounded-xl border border-dashed p-8 text-center">
-      <p className="font-medium">{emptyTitle}</p>
-      <p className="mt-1 text-muted-foreground text-xs">{emptyDescription}</p>
-    </div>
+    <EmptyState
+      title={emptyTitle}
+      description={emptyDescription}
+      preview={<EmptyStateRows />}
+      className="min-h-[18rem] sm:min-h-[20rem]"
+    />
   )
 }
 

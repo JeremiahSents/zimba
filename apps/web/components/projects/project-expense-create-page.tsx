@@ -19,6 +19,11 @@ import {
   ReceiptLineItems,
 } from "@/components/expenses/receipt-line-items"
 import { ReceiptPreview } from "@/components/expenses/receipt-preview"
+import {
+  deleteReceiptDraft,
+  readReceiptDraft,
+  writeReceiptDraft,
+} from "@/components/projects/receipt-draft"
 import { UploadZone } from "@/components/projects/upload-zone"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { DatePicker } from "@/components/shared/date-picker"
@@ -29,11 +34,6 @@ import { createPayableExpenseAction } from "@/core/expenses/actions"
 import { validateReceiptFile } from "@/core/expenses/receipt-file"
 import { createProjectTaskAction } from "@/core/projects/actions"
 import { ApplicationError, type PublicError } from "@/core/shared/errors"
-import {
-  deleteReceiptDraft,
-  readReceiptDraft,
-  writeReceiptDraft,
-} from "@/components/projects/receipt-draft"
 import type {
   ProjectDetailResponse,
   SupplierResponse,
@@ -431,7 +431,7 @@ export function ProjectExpenseCreatePage({ project, vendors }: Props) {
   }
 
   return (
-    <DashboardShell title="New receipt" subtitle={project.name} focusedTask>
+    <DashboardShell>
       <div className="flex items-center justify-between gap-4">
         <div>
           <div className="mb-2 flex items-center gap-2 text-muted-foreground text-xs">

@@ -84,18 +84,14 @@ export function ProjectDetailPage({
   })
 
   return (
-    <DashboardShell
-      title={
-        <Link
-          href={`/${slug}/projects`}
-          aria-label="Back to projects"
-          className="inline-flex items-center gap-1.5 text-primary text-sm hover:underline"
-        >
-          ← <span>Back</span>
-        </Link>
-      }
-      subtitle="Project financial position and delivery tracking."
-    >
+    <DashboardShell>
+      <Link
+        href={`/${slug}/projects`}
+        aria-label="Back to projects"
+        className="inline-flex items-center gap-1.5 text-primary text-sm hover:underline"
+      >
+        ← <span>Back</span>
+      </Link>
       <div className="mb-5">
         <div className="flex items-start justify-between gap-4">
           <h2

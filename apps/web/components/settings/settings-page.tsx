@@ -23,10 +23,7 @@ export function SettingsPage({
   teamMembers?: TeamMember[]
 }) {
   return (
-    <DashboardShell
-      title="Settings"
-      subtitle="Configure company profile, notifications, and permissions."
-    >
+    <DashboardShell>
       <div className="grid gap-6 xl:grid-cols-[1fr_22rem]">
         <section className="space-y-6">
           <Card>

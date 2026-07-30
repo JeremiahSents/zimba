@@ -1,7 +1,6 @@
 "use client"
 
 import {
-  Building01Icon,
   FolderKanbanIcon,
   MoneyBag02Icon,
   PlusSignIcon,
@@ -10,6 +9,10 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Button } from "@workspace/ui/components/button"
 import { Card } from "@workspace/ui/components/card"
+import {
+  EmptyState,
+  EmptyStateCards,
+} from "@workspace/ui/components/empty-state"
 import Link from "next/link"
 
 import { ProjectsSection } from "@/components/dashboard/projects-section"
@@ -19,20 +22,13 @@ import { useWorkspaceSlug } from "@/components/shared/use-workspace-slug"
 import { formatCurrency } from "@/lib/format"
 import type { DashboardOverviewData } from "@/lib/types"
 
-function getGreeting() {
-  const hour = new Date().getHours()
-  if (hour < 12) return "Good morning"
-  if (hour < 17) return "Good afternoon"
-  return "Good evening"
-}
-
 export function DashboardPage({ data }: { data: DashboardOverviewData }) {
   const slug = useWorkspaceSlug()
   const projects = data.projects
 
   if (projects.length === 0) {
     return (
-      <DashboardShell title="Home" headerGreeting={getGreeting()} subtitle="">
+      <DashboardShell>
         <FirstProjectEmptyState slug={slug} />
       </DashboardShell>
     )
@@ -59,7 +55,7 @@ export function DashboardPage({ data }: { data: DashboardOverviewData }) {
   ]
 
   return (
-    <DashboardShell title="Home" headerGreeting={getGreeting()} subtitle="">
+    <DashboardShell>
       <section className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
         <h2 className="font-heading font-semibold text-base text-foreground tracking-tight">
           Overview
@@ -109,22 +105,11 @@ export function DashboardPage({ data }: { data: DashboardOverviewData }) {
 
 function FirstProjectEmptyState({ slug }: { slug: string }) {
   return (
-    <section className="relative isolate flex min-h-[20rem] items-center justify-center overflow-hidden rounded-2xl px-6 py-12 text-center sm:min-h-[28rem] sm:px-10 sm:py-16">
-      <div aria-hidden className="absolute inset-0 -z-20 opacity-45" />
-      <div
-        aria-hidden
-        className="absolute top-0 left-1/2 -z-10 h-64 w-[36rem] -translate-x-1/2 rounded-full"
-      />
-
-      <div className="flex flex-col items-center gap-8">
-        <div className="relative flex size-20 items-center justify-center">
-          <HugeiconsIcon
-            icon={Building01Icon}
-            strokeWidth={1.45}
-            className="size-9 text-primary"
-          />
-        </div>
-
+    <EmptyState
+      title="Start your first project"
+      description="Track budgets, receipts and supplier payments in one place. Create a project and the dashboard fills in from there."
+      preview={<EmptyStateCards />}
+      action={
         <Button
           className="min-w-40"
           size="lg"
@@ -134,7 +119,7 @@ function FirstProjectEmptyState({ slug }: { slug: string }) {
           <HugeiconsIcon icon={PlusSignIcon} strokeWidth={2} />
           Create project
         </Button>
-      </div>
-    </section>
+      }
+    />
   )
 }

@@ -76,7 +76,12 @@ function BoneSkeleton({
   return (
     // w-full min-w-0 for the same reason as BoneCapture: the loading route often
     // renders as a direct flex child of SidebarProvider.
-    <div role="status" aria-busy="true" aria-label={label} className="w-full min-w-0">
+    <div
+      role="status"
+      aria-busy="true"
+      aria-label={label}
+      className="w-full min-w-0"
+    >
       <Bones
         name={name}
         loading

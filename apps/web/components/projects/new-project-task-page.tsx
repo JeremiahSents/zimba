@@ -32,7 +32,7 @@ export function NewProjectTaskPage({
   const [saving, setSaving] = useState(false)
 
   return (
-    <DashboardShell title="New project task" subtitle="" focusedTask>
+    <DashboardShell>
       <div className="mx-auto w-full max-w-2xl">
         <Card>
           <CardHeader>

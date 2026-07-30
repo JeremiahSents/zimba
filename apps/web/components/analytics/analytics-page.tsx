@@ -1,5 +1,9 @@
 import { Button } from "@workspace/ui/components/button"
 import { Card } from "@workspace/ui/components/card"
+import {
+  EmptyState,
+  EmptyStateCards,
+} from "@workspace/ui/components/empty-state"
 import { SpendBarChart } from "@/components/dashboard/spend-bar-chart"
 import { UtilizationAreaChart } from "@/components/dashboard/utilization-area-chart"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
@@ -8,6 +12,18 @@ import { formatCurrency, formatPercent } from "@/lib/format"
 import type { DashboardOverviewData } from "@/lib/types"
 
 export function AnalyticsPage({ data }: { data: DashboardOverviewData }) {
+  if (data.projects.length === 0) {
+    return (
+      <DashboardShell>
+        <EmptyState
+          title="Nothing to analyse yet"
+          description="Budget health, spend trends and project comparisons appear here once you have a project with recorded costs."
+          preview={<EmptyStateCards />}
+        />
+      </DashboardShell>
+    )
+  }
+
   const totalBudget = data.projects.reduce(
     (sum, project) => sum + project.budget,
     0
@@ -19,7 +35,7 @@ export function AnalyticsPage({ data }: { data: DashboardOverviewData }) {
   const utilization = totalBudget ? (totalSpent / totalBudget) * 100 : 0
 
   return (
-    <DashboardShell title="Analytics" subtitle="">
+    <DashboardShell>
       <section className="flex flex-col gap-4 border-b pb-6 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="mb-2 font-semibold text-[10px] text-primary uppercase tracking-[0.16em]">

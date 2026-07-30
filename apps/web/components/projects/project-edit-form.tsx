@@ -60,11 +60,7 @@ export function ProjectEditForm({
   }
 
   return (
-    <DashboardShell
-      title="Edit project"
-      subtitle="Update project details and category budgets."
-      focusedTask
-    >
+    <DashboardShell>
       <form
         className="mx-auto grid w-full max-w-6xl gap-6"
         action={async (formData) => {

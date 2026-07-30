@@ -4,6 +4,7 @@ import type { ResolvedWorkspaceContext } from "@workspace/api"
 import { SidebarProvider } from "@workspace/ui/components/sidebar"
 import { cookies } from "next/headers"
 import { notFound, redirect } from "next/navigation"
+import { WorkspaceChrome } from "@/components/shared/workspace-chrome"
 import { WorkspaceProvider } from "@/components/shared/workspace-provider"
 import { ACCESS_EXPIRED } from "@/core/auth/login-errors"
 import {
@@ -83,7 +84,7 @@ export default async function WorkspaceLayout({
         defaultOpen={defaultOpen}
         className="min-h-svh w-full bg-transparent"
       >
-        {children}
+        <WorkspaceChrome>{children}</WorkspaceChrome>
         {modal}
       </SidebarProvider>
     </WorkspaceProvider>

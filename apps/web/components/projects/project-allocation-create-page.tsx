@@ -23,12 +23,6 @@ import {
 } from "@workspace/ui/components/table"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
-import { DashboardShell } from "@/components/shared/dashboard-shell"
-import { ErrorNotice } from "@/components/shared/error-notice"
-import { useWorkspaceSlug } from "@/components/shared/use-workspace-slug"
-import { createProjectAction } from "@/core/projects/actions"
-import type { PublicError } from "@/core/shared/errors"
-import { formatCurrency } from "@/lib/format"
 import {
   clearProjectCreateDraft,
   defaultInitialAllocations,
@@ -37,6 +31,12 @@ import {
   readProjectCreateDraft,
   writeProjectCreateDraft,
 } from "@/components/projects/project-create-draft"
+import { DashboardShell } from "@/components/shared/dashboard-shell"
+import { ErrorNotice } from "@/components/shared/error-notice"
+import { useWorkspaceSlug } from "@/components/shared/use-workspace-slug"
+import { createProjectAction } from "@/core/projects/actions"
+import type { PublicError } from "@/core/shared/errors"
+import { formatCurrency } from "@/lib/format"
 
 function persistRows(rows: InitialAllocation[]) {
   const draft = readProjectCreateDraft()
@@ -211,7 +211,7 @@ export function ProjectAllocationCreatePage() {
   if (!ready) return null
 
   return (
-    <DashboardShell title="New project" subtitle="" focusedTask>
+    <DashboardShell>
       <div className="grid gap-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>

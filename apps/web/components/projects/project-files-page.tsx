@@ -33,10 +33,7 @@ export function ProjectFilesPage({
     (file) => !file.content_type.startsWith("image/")
   )
   return (
-    <DashboardShell
-      title="Project files"
-      subtitle={`Files and images for ${project.name}.`}
-    >
+    <DashboardShell>
       <div className="mb-6 grid gap-3">
         <Link
           href={`/${slug}/projects/${project.id}`}

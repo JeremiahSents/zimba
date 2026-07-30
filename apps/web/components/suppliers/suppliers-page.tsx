@@ -9,6 +9,10 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import type { SupplierListItem } from "@workspace/api"
 import { Button } from "@workspace/ui/components/button"
 import { Card } from "@workspace/ui/components/card"
+import {
+  EmptyState,
+  EmptyStateRows,
+} from "@workspace/ui/components/empty-state"
 import Link from "next/link"
 import { useMemo } from "react"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
@@ -23,6 +27,28 @@ export function SuppliersPage({ data }: { data: DashboardOverviewData }) {
     () => getSupplierListItems(data.suppliers, data.expenses),
     [data.suppliers, data.expenses]
   )
+  if (suppliers.length === 0) {
+    return (
+      <DashboardShell>
+        <EmptyState
+          title="No suppliers yet"
+          description="Suppliers appear here once you record a receipt against one, with what you have spent and what is still owed."
+          preview={<EmptyStateRows />}
+          action={
+            <Button
+              size="lg"
+              className="min-w-40"
+              nativeButton={false}
+              render={<Link href={`/${slug}/suppliers/new`} />}
+            >
+              Add supplier
+            </Button>
+          }
+        />
+      </DashboardShell>
+    )
+  }
+
   const totalReceiptValue = suppliers.reduce(
     (sum, supplier) => sum + supplier.amount,
     0
@@ -53,7 +79,7 @@ export function SuppliersPage({ data }: { data: DashboardOverviewData }) {
   ]
 
   return (
-    <DashboardShell title="Suppliers" subtitle="">
+    <DashboardShell>
       <Card className="gap-0 overflow-hidden py-0">
         <div className="grid grid-cols-2 md:grid-cols-4">
           {stats.map((stat) => (

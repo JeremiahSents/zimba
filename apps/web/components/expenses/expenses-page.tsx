@@ -32,10 +32,7 @@ export function ExpensesPage({ data }: { data: DashboardOverviewData }) {
   )
 
   return (
-    <DashboardShell
-      title="Expenses"
-      subtitle="Review payments, tasks, suppliers, and site spend."
-    >
+    <DashboardShell>
       <div className="min-w-0 pb-2">
         <Tabs defaultValue={expenseFilters[0]} className="min-w-0">
           <div className="overflow-x-auto pb-2">

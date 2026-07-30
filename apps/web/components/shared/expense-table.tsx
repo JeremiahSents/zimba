@@ -6,13 +6,14 @@ import {
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
+  type PaginationState,
   type SortingState,
   useReactTable,
 } from "@tanstack/react-table"
 import { DataTable } from "@workspace/ui/components/data-table"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { type ReactNode, useMemo, useState } from "react"
+import { type ReactNode, useEffect, useMemo, useState } from "react"
 import {
   MobileDataCard,
   MobileDataMeta,
@@ -37,6 +38,16 @@ export function ExpenseTable({
   )
   const [globalFilter, setGlobalFilter] = useState("")
   const [sorting, setSorting] = useState<SortingState>([])
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: 5,
+  })
+
+  useEffect(() => {
+    setPagination((current) =>
+      current.pageIndex === 0 ? current : { ...current, pageIndex: 0 }
+    )
+  }, [globalFilter])
 
   const columns = useMemo<ColumnDef<ExpenseTableRow>[]>(
     () => [
@@ -70,14 +81,15 @@ export function ExpenseTable({
   const table = useReactTable({
     data: receiptRows,
     columns,
-    state: { globalFilter, sorting },
+    state: { globalFilter, sorting, pagination },
     onGlobalFilterChange: setGlobalFilter,
     onSortingChange: setSorting,
+    onPaginationChange: setPagination,
+    autoResetPageIndex: false,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    initialState: { pagination: { pageSize: 5 } },
   })
 
   const totalRows = table.getFilteredRowModel().rows.length

@@ -96,17 +96,13 @@ export function ReceiptDetailPage({
   })
 
   return (
-    <DashboardShell
-      title={
-        <Link
-          href={`/${slug}/projects`}
-          className="inline-flex items-center gap-1.5 text-primary text-sm hover:underline"
-        >
-          <HugeiconsIcon icon={ArrowLeft01Icon} size={16} /> Back
-        </Link>
-      }
-      subtitle="Review the items and payments recorded on this receipt."
-    >
+    <DashboardShell>
+      <Link
+        href={`/${slug}/projects`}
+        className="inline-flex items-center gap-1.5 text-primary text-sm hover:underline"
+      >
+        <HugeiconsIcon icon={ArrowLeft01Icon} size={16} /> Back
+      </Link>
       <div className="mb-6 flex flex-wrap justify-end gap-2 print:hidden">
         <Button
           variant="outline"

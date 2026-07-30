@@ -36,7 +36,7 @@ export function NewSupplierPage({
   const [error, setError] = useState<PublicError | string>("")
   const [submitting, setSubmitting] = useState(false)
   return (
-    <DashboardShell title="New supplier" subtitle="" focusedTask>
+    <DashboardShell>
       <div className="grid gap-6">
         <div className="flex items-center justify-between gap-4">
           <div>

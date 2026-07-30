@@ -12,6 +12,13 @@ import { Button } from "@workspace/ui/components/button"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import {
+  clearProjectCreateDraft,
+  defaultInitialAllocations,
+  initialAllocationTotal,
+  readProjectCreateDraft,
+  writeProjectCreateDraft,
+} from "@/components/projects/project-create-draft"
+import {
   type ProjectDetails,
   ProjectDetailsCard,
 } from "@/components/projects/project-details-card"
@@ -20,13 +27,6 @@ import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { ErrorNotice } from "@/components/shared/error-notice"
 import { useWorkspaceSlug } from "@/components/shared/use-workspace-slug"
 import { ApplicationError, type PublicError } from "@/core/shared/errors"
-import {
-  clearProjectCreateDraft,
-  defaultInitialAllocations,
-  initialAllocationTotal,
-  readProjectCreateDraft,
-  writeProjectCreateDraft,
-} from "@/components/projects/project-create-draft"
 import { uploadZimbaFile } from "@/lib/upload-file"
 
 const emptyDetails: ProjectDetails = {
@@ -103,7 +103,7 @@ export function ProjectCreatePage() {
   }
 
   return (
-    <DashboardShell title="New project" subtitle="" focusedTask>
+    <DashboardShell>
       <form onSubmit={goToAllocation} className="grid gap-6">
         <PageHeader
           slug={slug}

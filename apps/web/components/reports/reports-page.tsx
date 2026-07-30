@@ -4,12 +4,28 @@ import {
   FileCheckIcon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
+import {
+  EmptyState,
+  EmptyStateRows,
+} from "@workspace/ui/components/empty-state"
 import { ReportsTable } from "@/components/reports/reports-table"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { formatPercent } from "@/lib/format"
 import type { DashboardOverviewData } from "@/lib/types"
 
 export function ReportsPage({ data }: { data: DashboardOverviewData }) {
+  if (data.projects.length === 0) {
+    return (
+      <DashboardShell>
+        <EmptyState
+          title="No reports yet"
+          description="Once projects have budgets and receipts, you can summarise performance here and export a report per project."
+          preview={<EmptyStateRows />}
+        />
+      </DashboardShell>
+    )
+  }
+
   const average = data.projects.length
     ? Math.round(
         data.projects.reduce((sum, project) => sum + project.pct, 0) /
@@ -22,10 +38,7 @@ export function ReportsPage({ data }: { data: DashboardOverviewData }) {
   ).length
 
   return (
-    <DashboardShell
-      title="Reports"
-      subtitle="Summarize budget performance and export individual project reports."
-    >
+    <DashboardShell>
       {/* ── Top Summary Stats Grid ── */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <div className="rounded-xl border border-border bg-card p-5 shadow-xs transition-colors">

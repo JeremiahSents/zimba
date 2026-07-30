@@ -71,10 +71,7 @@ export function SupplierDetailPage({
     .join("")
     .toUpperCase()
   return (
-    <DashboardShell
-      title={supplier.name}
-      subtitle="Supplier profile and account summary."
-    >
+    <DashboardShell>
       <div className="flex items-center justify-between gap-4">
         <div>
           <Breadcrumb>

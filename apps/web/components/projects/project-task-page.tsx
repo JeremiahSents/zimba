@@ -30,18 +30,14 @@ export function ProjectTaskPage({
   const usedPct = task.budget ? (task.spent / task.budget) * 100 : 0
 
   return (
-    <DashboardShell
-      title={
-        <Link
-          href={`/${slug}/projects/${project.id}`}
-          aria-label={`Back to ${project.name}`}
-          className="inline-flex items-center gap-1.5 text-primary text-sm hover:underline"
-        >
-          ← <span>Back</span>
-        </Link>
-      }
-      subtitle="Budget and receipts recorded against this category."
-    >
+    <DashboardShell>
+      <Link
+        href={`/${slug}/projects/${project.id}`}
+        aria-label={`Back to ${project.name}`}
+        className="inline-flex items-center gap-1.5 text-primary text-sm hover:underline"
+      >
+        ← <span>Back</span>
+      </Link>
       <div className="mb-5">
         <h2 className="break-words font-heading font-semibold text-2xl tracking-tight">
           {formatTitleCase(task.name)}
