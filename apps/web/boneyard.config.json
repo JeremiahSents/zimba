@@ -21,11 +21,11 @@
     ]
   },
   "skeletons": {
-    "web-home": { "route": "/zimba-dev/home" },
-    "web-expenses": { "route": "/zimba-dev/expenses" },
-    "web-projects": { "route": "/zimba-dev/projects" },
-    "web-reports": { "route": "/zimba-dev/reports" },
-    "web-settings": { "route": "/zimba-dev/settings" },
-    "web-shell": { "route": "/zimba-dev/team" }
+    "web-home": { "route": "/zimba/home" },
+    "web-expenses": { "route": "/zimba/expenses" },
+    "web-projects": { "route": "/zimba/projects" },
+    "web-reports": { "route": "/zimba/reports" },
+    "web-settings": { "route": "/zimba/settings" },
+    "web-shell": { "route": "/zimba/team" }
   }
 }
