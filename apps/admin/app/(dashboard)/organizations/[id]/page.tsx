@@ -1,19 +1,16 @@
 import {
+  getAdminOrgAnalyticsUseCase,
   getAdminOrgProjectsUseCase,
   getAdminOrgSuppliersUseCase,
   getOrganizationDetailUseCase,
   getOrganizationStatsUseCase,
 } from "@workspace/api"
-import { Button } from "@workspace/ui/components/button"
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
 } from "@workspace/ui/components/tabs"
-import { ArrowLeft02Icon } from "@hugeicons/core-free-icons"
-import { HugeiconsIcon } from "@hugeicons/react"
-import Link from "next/link"
 import { notFound } from "next/navigation"
 import { AdminDashboardShell } from "@/components/dashboard-shell"
 import { OrgDetailOverviewTab } from "@/components/org-detail/overview-tab"
@@ -67,13 +64,15 @@ export default async function OrganizationDetailPage({
   const { tab } = await searchParams
   const activeTab = resolveTab(tab)
 
-  const [org, stats, projects, suppliers, platformSession] = await Promise.all([
-    getOrganizationDetailUseCase(id),
-    getOrganizationStatsUseCase(id),
-    getAdminOrgProjectsUseCase(id),
-    getAdminOrgSuppliersUseCase(id),
-    getPlatformSession(),
-  ])
+  const [org, stats, projects, suppliers, analytics, platformSession] =
+    await Promise.all([
+      getOrganizationDetailUseCase(id),
+      getOrganizationStatsUseCase(id),
+      getAdminOrgProjectsUseCase(id),
+      getAdminOrgSuppliersUseCase(id),
+      getAdminOrgAnalyticsUseCase(id),
+      getPlatformSession(),
+    ])
 
   const isSuperAdmin = platformSession?.platformRole === "super_admin"
 
@@ -83,9 +82,18 @@ export default async function OrganizationDetailPage({
 
   return (
     <AdminDashboardShell
+      title={
+        <span className="flex flex-wrap items-center gap-2.5">
+          {org.name}
+          <StatusBadge status={org.status} />
+        </span>
+      }
+      description={`Created ${formatDate(org.createdAt)}`}
       action={
         <div className="flex flex-wrap items-center gap-2">
-          {isSuperAdmin ? <VisitOrganizationButton organizationId={org.id} /> : null}
+          {isSuperAdmin ? (
+            <VisitOrganizationButton organizationId={org.id} />
+          ) : null}
           <OrganizationStatusButtons
             organizationId={org.id}
             currentStatus={org.status}
@@ -93,36 +101,9 @@ export default async function OrganizationDetailPage({
         </div>
       }
     >
-      {/* ── Header: back link, org name, status ── */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b pb-4">
-        <div className="flex items-center gap-3">
-          <Button
-            variant="outline"
-            size="icon-sm"
-            asChild
-            className="rounded-xl"
-          >
-            <Link href="/organizations" aria-label="Back to organizations">
-              <HugeiconsIcon icon={ArrowLeft02Icon} className="size-4" />
-            </Link>
-          </Button>
-          <div>
-            <div className="flex items-center gap-2.5">
-              <h2 className="font-heading font-semibold text-xl tracking-tight">
-                {org.name}
-              </h2>
-              <StatusBadge status={org.status} />
-            </div>
-            <p className="mt-0.5 text-muted-foreground text-xs">
-              Created {formatDate(org.createdAt)}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* ── Scrollable mini tabs ── */}
+      {/* ── Compact mini tabs, left-aligned ── */}
       <Tabs defaultValue={activeTab} className="w-full">
-        <TabsList className="w-full justify-start overflow-x-auto rounded-xl bg-muted/50 p-1">
+        <TabsList className="w-fit justify-start overflow-x-auto rounded-xl bg-muted/50 p-1">
           <TabsTrigger
             value="overview"
             className="rounded-lg font-semibold text-xs"
@@ -155,6 +136,7 @@ export default async function OrganizationDetailPage({
             stats={stats}
             projects={projects}
             suppliers={suppliers}
+            analytics={analytics}
           />
         </TabsContent>
 

@@ -6,10 +6,13 @@ import {
   listProjectBudgetItemsWithSpend,
   listProjectsForOrganizationAdmin,
   listReceiptsForProjectAdmin,
+  listRecentExpensesForOrganizationAdmin,
   listSuppliersWithPaymentStatsForOrganization,
+  readOrgTrendStatsAdmin,
 } from "@workspace/db/platform"
 import { notFoundError } from "../shared/application-error"
 import type {
+  AdminOrgAnalyticsDto,
   AdminProjectDetailDto,
   AdminProjectPaymentDto,
   AdminProjectReceiptDto,
@@ -20,10 +23,13 @@ import type {
 
 export type {
   AdminBudgetItemDto,
+  AdminOrgAnalyticsDto,
+  AdminOrgTrendDto,
   AdminProjectDetailDto,
   AdminProjectPaymentDto,
   AdminProjectReceiptDto,
   AdminProjectSummaryDto,
+  AdminRecentExpenseDto,
   AdminSupplierPaymentDto,
   AdminSupplierWithStatsDto,
 } from "./types"
@@ -75,4 +81,15 @@ export function getAdminSupplierPaymentsUseCase(
   supplierId: string
 ): Promise<AdminSupplierPaymentDto[]> {
   return listPaymentsForSupplierAdmin(db, organizationId, supplierId)
+}
+
+/** Recent receipts plus 30-day spend/payment trend for the org analytics view. */
+export async function getAdminOrgAnalyticsUseCase(
+  organizationId: string
+): Promise<AdminOrgAnalyticsDto> {
+  const [recentExpenses, trend] = await Promise.all([
+    listRecentExpensesForOrganizationAdmin(db, organizationId),
+    readOrgTrendStatsAdmin(db, organizationId),
+  ])
+  return { recentExpenses, trend }
 }

@@ -1,0 +1,131 @@
+"use client"
+
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@workspace/ui/components/card"
+import {
+  type ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@workspace/ui/components/chart"
+import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
+
+export type AdminUtilizationChartPoint = {
+  month: string
+  utilization: number
+}
+
+const chartConfig = {
+  utilization: {
+    color: "var(--primary)",
+    label: "Utilization",
+  },
+} satisfies ChartConfig
+
+function formatPercent(value: number) {
+  return `${Math.round(value)}%`
+}
+
+export function UtilizationAreaChart({
+  data,
+}: {
+  data: AdminUtilizationChartPoint[]
+}) {
+  const currentUtilization = data.at(-1)?.utilization ?? 0
+  const startingUtilization = data[0]?.utilization ?? 0
+  const utilizationChange = currentUtilization - startingUtilization
+  const highestUtilization = Math.max(
+    0,
+    ...data.map((point) => point.utilization)
+  )
+
+  return (
+    <Card size="sm" className="flex h-full flex-col">
+      <CardHeader className="pb-2">
+        <div className="flex items-center justify-between">
+          <CardTitle className="font-medium text-muted-foreground text-xs">
+            Budget utilization
+          </CardTitle>
+          <span className="inline-flex h-8 items-center rounded-md border bg-muted/50 px-3 font-medium text-[10px] text-muted-foreground">
+            Current period
+          </span>
+        </div>
+        <div className="mt-2 space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="font-heading font-semibold text-base text-primary">
+              {formatPercent(currentUtilization)}
+            </span>
+          </div>
+          <span className="font-medium text-[10px] text-primary">
+            Average project budget used
+          </span>
+        </div>
+        <div className="mt-4 grid grid-cols-2 divide-x border-y py-3">
+          <MicroMetric
+            label="Period change"
+            value={`${utilizationChange >= 0 ? "+" : ""}${formatPercent(utilizationChange)}`}
+          />
+          <MicroMetric
+            label="Period high"
+            value={formatPercent(highestUtilization)}
+          />
+        </div>
+      </CardHeader>
+      <CardContent className="mt-auto pb-4">
+        <ChartContainer config={chartConfig} className="h-[200px] w-full">
+          <AreaChart
+            accessibilityLayer
+            data={data}
+            margin={{ left: 12, right: 12, top: 20 }}
+          >
+            <CartesianGrid vertical={false} strokeDasharray="3 3" />
+            <XAxis
+              dataKey="month"
+              tickLine={false}
+              axisLine={false}
+              tickMargin={8}
+            />
+            <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+            <defs>
+              <linearGradient id="fillUtilization" x1="0" y1="0" x2="0" y2="1">
+                <stop
+                  offset="5%"
+                  stopColor="var(--color-utilization)"
+                  stopOpacity={0.8}
+                />
+                <stop
+                  offset="95%"
+                  stopColor="var(--color-utilization)"
+                  stopOpacity={0.1}
+                />
+              </linearGradient>
+            </defs>
+            <Area
+              dataKey="utilization"
+              type="linear"
+              fill="url(#fillUtilization)"
+              fillOpacity={0.4}
+              stroke="var(--color-utilization)"
+              strokeWidth={2}
+              activeDot={{ r: 6 }}
+              dot={{ r: 4, fill: "var(--background)", strokeWidth: 2 }}
+            />
+          </AreaChart>
+        </ChartContainer>
+      </CardContent>
+    </Card>
+  )
+}
+
+function MicroMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="px-3 first:pl-0 last:pr-0">
+      <p className="font-medium text-[10px] text-muted-foreground">{label}</p>
+      <p className="mt-1 font-semibold text-foreground text-xs">{value}</p>
+    </div>
+  )
+}

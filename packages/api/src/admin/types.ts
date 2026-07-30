@@ -134,3 +134,26 @@ export type AdminSupplierPaymentDto = {
   createdAt: Date
   expenseId: string | null
 }
+
+export type AdminRecentExpenseDto = {
+  id: string
+  status: string
+  expenseDate: Date | null
+  createdAt: Date
+  projectName: string | null
+  supplierName: string | null
+  totalCents: number
+  itemCount: number
+}
+
+export type AdminOrgTrendDto = {
+  spendCurrentCents: number
+  spendPreviousCents: number
+  paidCurrentCents: number
+  paidPreviousCents: number
+}
+
+export type AdminOrgAnalyticsDto = {
+  recentExpenses: AdminRecentExpenseDto[]
+  trend: AdminOrgTrendDto
+}

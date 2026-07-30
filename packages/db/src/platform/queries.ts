@@ -1,4 +1,4 @@
-import { and, count, desc, eq, gt, isNull, or, sql } from "drizzle-orm"
+import { and, count, desc, eq, gt, gte, isNull, lt, or, sql } from "drizzle-orm"
 import { user } from "../auth/schema"
 import { member, organization } from "../organizations/schema"
 import { budgetItem, project } from "../projects/schema"
@@ -849,4 +849,147 @@ export function listPaymentsForSupplierAdmin(
       )
     )
     .orderBy(desc(payment.createdAt))
+}
+
+export type AdminRecentExpense = {
+  id: string
+  status: string
+  expenseDate: Date | null
+  createdAt: Date
+  projectName: string | null
+  supplierName: string | null
+  totalCents: number
+  itemCount: number
+}
+
+/** Most recent receipts across an org, with line totals and item counts. */
+export async function listRecentExpensesForOrganizationAdmin(
+  executor: DatabaseExecutor,
+  organizationId: string,
+  limit = 12
+): Promise<AdminRecentExpense[]> {
+  const expenses = await executor
+    .select({
+      id: expense.id,
+      status: expense.status,
+      expenseDate: expense.expenseDate,
+      createdAt: expense.createdAt,
+      projectName: project.name,
+      supplierName: supplier.name,
+    })
+    .from(expense)
+    .leftJoin(
+      project,
+      and(
+        eq(project.id, expense.projectId),
+        eq(project.organizationId, expense.organizationId)
+      )
+    )
+    .leftJoin(
+      supplier,
+      and(
+        eq(supplier.id, expense.supplierId),
+        eq(supplier.organizationId, expense.organizationId)
+      )
+    )
+    .where(eq(expense.organizationId, organizationId))
+    .orderBy(desc(expense.createdAt))
+    .limit(limit)
+
+  if (expenses.length === 0) return []
+
+  const expenseIds = expenses.map((e) => e.id)
+  const totals = await executor
+    .select({
+      expenseId: expenseLine.expenseId,
+      total: sql<number>`coalesce(sum(${expenseLine.amountCents}), 0)`,
+      itemCount: count(),
+    })
+    .from(expenseLine)
+    .where(
+      and(
+        eq(expenseLine.organizationId, organizationId),
+        sql`${expenseLine.expenseId} in ${expenseIds}`
+      )
+    )
+    .groupBy(expenseLine.expenseId)
+
+  const totalMap = new Map(
+    totals.map((t) => [
+      t.expenseId,
+      { totalCents: Number(t.total), itemCount: t.itemCount },
+    ])
+  )
+
+  return expenses.map((e) => {
+    const line = totalMap.get(e.id)
+    return {
+      ...e,
+      totalCents: line?.totalCents ?? 0,
+      itemCount: line?.itemCount ?? 0,
+    }
+  })
+}
+
+export type AdminOrgTrendStats = {
+  spendCurrentCents: number
+  spendPreviousCents: number
+  paidCurrentCents: number
+  paidPreviousCents: number
+}
+
+/**
+ * Last-30-day vs previous-30-day spend and payment totals. Feeds the trend
+ * micro-indicators on the org analytics stat cards.
+ */
+export async function readOrgTrendStatsAdmin(
+  executor: DatabaseExecutor,
+  organizationId: string
+): Promise<AdminOrgTrendStats> {
+  const now = new Date()
+  const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000
+  const currentStart = new Date(now.getTime() - thirtyDaysMs)
+  const previousStart = new Date(now.getTime() - 2 * thirtyDaysMs)
+
+  const spendWindow = (from: Date, to: Date) =>
+    executor
+      .select({
+        total: sql<number>`coalesce(sum(${expenseLine.amountCents}), 0)`,
+      })
+      .from(expense)
+      .innerJoin(expenseLine, eq(expense.id, expenseLine.expenseId))
+      .where(
+        and(
+          eq(expense.organizationId, organizationId),
+          gte(expense.createdAt, from),
+          lt(expense.createdAt, to)
+        )
+      )
+
+  const paidWindow = (from: Date, to: Date) =>
+    executor
+      .select({ total: sql<number>`coalesce(sum(${payment.amountCents}), 0)` })
+      .from(payment)
+      .where(
+        and(
+          eq(payment.organizationId, organizationId),
+          gte(payment.createdAt, from),
+          lt(payment.createdAt, to)
+        )
+      )
+
+  const [spendCurrent, spendPrevious, paidCurrent, paidPrevious] =
+    await Promise.all([
+      spendWindow(currentStart, now),
+      spendWindow(previousStart, currentStart),
+      paidWindow(currentStart, now),
+      paidWindow(previousStart, currentStart),
+    ])
+
+  return {
+    spendCurrentCents: Number(spendCurrent[0]?.total ?? 0),
+    spendPreviousCents: Number(spendPrevious[0]?.total ?? 0),
+    paidCurrentCents: Number(paidCurrent[0]?.total ?? 0),
+    paidPreviousCents: Number(paidPrevious[0]?.total ?? 0),
+  }
 }
