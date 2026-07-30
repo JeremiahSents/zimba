@@ -138,6 +138,7 @@ export default async function PendingApprovalPage({
               <div className="flex flex-col gap-2">
                 <Button
                   variant="outline"
+                  nativeButton={false}
                   render={<Link href="/onboarding?reapply=1" />}
                   className="w-full"
                 >
@@ -145,6 +146,7 @@ export default async function PendingApprovalPage({
                 </Button>
                 <Button
                   variant="ghost"
+                  nativeButton={false}
                   render={<Link href="/login" />}
                   className="w-full"
                 >

@@ -134,6 +134,13 @@
       "when": 1785383656777,
       "tag": "0018_account_deactivation",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1785383656778,
+      "tag": "0019_drop_duplicate_platform_audit_fks",
+      "breakpoints": true
     }
   ]
 }

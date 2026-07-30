@@ -95,7 +95,11 @@ export function VerifyEmailNotice({
           </p>
         ) : null}
 
-        <Button variant="ghost" render={<Link href="/login" />}>
+        <Button
+          variant="ghost"
+          nativeButton={false}
+          render={<Link href="/login" />}
+        >
           Back to sign in
         </Button>
       </FieldGroup>

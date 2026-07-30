@@ -122,6 +122,7 @@ export function ResetPasswordForm({
           <Button
             size="lg"
             className="h-11 w-full"
+            nativeButton={false}
             render={<Link href="/forgot-password" />}
           >
             Request a new link
@@ -134,7 +135,11 @@ export function ResetPasswordForm({
           </p>
         ) : null}
 
-        <Button variant="ghost" render={<Link href="/login" />}>
+        <Button
+          variant="ghost"
+          nativeButton={false}
+          render={<Link href="/login" />}
+        >
           Back to sign in
         </Button>
       </FieldGroup>
