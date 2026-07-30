@@ -2,6 +2,25 @@ import type { NextRequest } from "next/server"
 import { NextResponse } from "next/server"
 
 const APP_HOSTNAME = "app.zimba.digital"
+const ROOT_DOMAIN = "zimba.digital"
+const APP_ORIGIN = `https://${APP_HOSTNAME}`
+
+/**
+ * Better Auth trusts the app subdomain and nothing else, so a sign-up posted
+ * from www.zimba.digital is rejected with "Invalid origin". Anyone who reaches
+ * an auth page on a marketing host — an old link, a search result — is sent to
+ * the app host before they can fill in a form.
+ */
+const AUTH_SEGMENTS = [
+  "login",
+  "register",
+  "onboarding",
+  "invite",
+  "forgot-password",
+  "reset-password",
+  "verify-email",
+  "pending-approval",
+]
 
 export function getRequestHostname(request: NextRequest) {
   const forwardedHost = request.headers
@@ -33,6 +52,9 @@ const NON_WORKSPACE_SEGMENTS = [
 ]
 
 export function proxy(request: NextRequest) {
+  const authRedirect = buildAuthRedirect(request)
+  if (authRedirect) return authRedirect
+
   const requestHeaders = new Headers(request.headers)
   const firstSegment = request.nextUrl.pathname.split("/").filter(Boolean)[0]
   const workspaceSlug =
@@ -59,6 +81,26 @@ export function proxy(request: NextRequest) {
   }
 
   return response
+}
+
+/**
+ * Only production zimba.digital hosts are moved. Localhost and preview
+ * deployments serve auth on whatever host they run on, and that host is the one
+ * their own BETTER_AUTH_URL names.
+ */
+function buildAuthRedirect(request: NextRequest) {
+  const hostname = getRequestHostname(request)
+  const isZimbaHost =
+    hostname === ROOT_DOMAIN || hostname.endsWith(`.${ROOT_DOMAIN}`)
+
+  if (!isZimbaHost || hostname === APP_HOSTNAME) return null
+
+  const firstSegment = request.nextUrl.pathname.split("/").filter(Boolean)[0]
+  if (!firstSegment || !AUTH_SEGMENTS.includes(firstSegment)) return null
+
+  return NextResponse.redirect(
+    new URL(`${request.nextUrl.pathname}${request.nextUrl.search}`, APP_ORIGIN)
+  )
 }
 
 function buildResponse(request: NextRequest, requestHeaders: Headers) {

@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest"
-import { APP_ORIGIN, getLoginHref } from "@/components/landing/urls"
+import {
+  APP_ORIGIN,
+  getLoginHref,
+  getOnboardingHref,
+} from "@/components/landing/urls"
 
 describe("getLoginHref", () => {
   it("points production sign-in to the app subdomain", () => {
@@ -8,5 +12,15 @@ describe("getLoginHref", () => {
 
   it("keeps local development sign-in relative", () => {
     expect(getLoginHref("development")).toBe("/login")
+  })
+})
+
+describe("getOnboardingHref", () => {
+  it("points production sign-up to the app subdomain", () => {
+    expect(getOnboardingHref("production")).toBe(`${APP_ORIGIN}/onboarding`)
+  })
+
+  it("keeps local development sign-up relative", () => {
+    expect(getOnboardingHref("development")).toBe("/onboarding")
   })
 })

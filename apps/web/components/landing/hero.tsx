@@ -1,8 +1,10 @@
+import { Button } from "@workspace/ui/components/button"
 import Link from "next/link"
 
-import { Button } from "@workspace/ui/components/button"
-
 import { Header } from "@/components/landing/header"
+import { getOnboardingHref } from "@/components/landing/urls"
+
+const onboardingHref = getOnboardingHref()
 
 export function Hero() {
   return (
@@ -23,7 +25,7 @@ export function Hero() {
           <Button
             size="lg"
             nativeButton={false}
-            render={<Link href="/onboarding" />}
+            render={<Link href={onboardingHref} />}
             className="px-6"
           >
             Book a Demo

@@ -1,10 +1,11 @@
 import { Button } from "@workspace/ui/components/button"
 import Image from "next/image"
 import Link from "next/link"
-import { getLoginHref } from "./urls"
+import { getLoginHref, getOnboardingHref } from "./urls"
 
 const navItems = ["Product", "Industries", "Customers", "Company"]
 const loginHref = getLoginHref()
+const onboardingHref = getOnboardingHref()
 
 export function Header() {
   return (
@@ -47,7 +48,7 @@ export function Header() {
           <Button
             size="sm"
             nativeButton={false}
-            render={<Link href="/onboarding" />}
+            render={<Link href={onboardingHref} />}
             className="hidden px-4 sm:inline-flex"
           >
             Get started
