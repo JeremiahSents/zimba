@@ -1,5 +1,6 @@
 import { and, count, desc, eq, gt, gte, isNull, lt, or, sql } from "drizzle-orm"
 import { user } from "../auth/schema"
+import { file } from "../files/schema"
 import { member, organization } from "../organizations/schema"
 import { budgetItem, project } from "../projects/schema"
 import { expense, expenseLine, payable, payment } from "../receipts/schema"
@@ -619,6 +620,9 @@ export type AdminProjectReceipt = {
   supplierName: string | null
   totalCents: number
   paidCents: number
+  receiptFileUrl: string | null
+  receiptFileName: string | null
+  receiptContentType: string | null
 }
 
 /** Receipts (expenses) for a project with their line totals and paid totals. */
@@ -634,6 +638,9 @@ export async function listReceiptsForProjectAdmin(
       expenseDate: expense.expenseDate,
       createdAt: expense.createdAt,
       supplierName: supplier.name,
+      receiptFileUrl: file.url,
+      receiptFileName: file.filename,
+      receiptContentType: file.contentType,
     })
     .from(expense)
     .leftJoin(
@@ -643,6 +650,7 @@ export async function listReceiptsForProjectAdmin(
         eq(supplier.organizationId, expense.organizationId)
       )
     )
+    .leftJoin(file, eq(file.id, expense.receiptFileId))
     .where(
       and(
         eq(expense.organizationId, organizationId),
@@ -694,6 +702,9 @@ export async function listReceiptsForProjectAdmin(
     supplierName: r.supplierName,
     totalCents: lineMap.get(r.id) ?? 0,
     paidCents: paidMap.get(r.id) ?? 0,
+    receiptFileUrl: r.receiptFileUrl,
+    receiptFileName: r.receiptFileName,
+    receiptContentType: r.receiptContentType,
   }))
 }
 
@@ -707,6 +718,9 @@ export type AdminProjectPayment = {
   createdAt: Date
   supplierName: string | null
   expenseId: string | null
+  receiptFileUrl: string | null
+  receiptFileName: string | null
+  receiptContentType: string | null
 }
 
 /** Payments settling receipts or payables attached to a project. */
@@ -726,6 +740,9 @@ export async function listPaymentsForProjectAdmin(
       createdAt: payment.createdAt,
       supplierName: supplier.name,
       expenseId: payment.expenseId,
+      receiptFileUrl: file.url,
+      receiptFileName: file.filename,
+      receiptContentType: file.contentType,
     })
     .from(payment)
     .leftJoin(
@@ -736,6 +753,7 @@ export async function listPaymentsForProjectAdmin(
       )
     )
     .leftJoin(expense, eq(expense.id, payment.expenseId))
+    .leftJoin(file, eq(file.id, expense.receiptFileId))
     .leftJoin(payable, eq(payable.id, payment.payableId))
     .where(
       and(
@@ -822,6 +840,9 @@ export type AdminSupplierPayment = {
   reference: string | null
   createdAt: Date
   expenseId: string | null
+  receiptFileUrl: string | null
+  receiptFileName: string | null
+  receiptContentType: string | null
 }
 
 /** Payment history for a single supplier within an org. */
@@ -840,8 +861,13 @@ export function listPaymentsForSupplierAdmin(
       reference: payment.reference,
       createdAt: payment.createdAt,
       expenseId: payment.expenseId,
+      receiptFileUrl: file.url,
+      receiptFileName: file.filename,
+      receiptContentType: file.contentType,
     })
     .from(payment)
+    .leftJoin(expense, eq(expense.id, payment.expenseId))
+    .leftJoin(file, eq(file.id, expense.receiptFileId))
     .where(
       and(
         eq(payment.organizationId, organizationId),
@@ -992,4 +1018,178 @@ export async function readOrgTrendStatsAdmin(
     paidCurrentCents: Number(paidCurrent[0]?.total ?? 0),
     paidPreviousCents: Number(paidPrevious[0]?.total ?? 0),
   }
+}
+
+export type AdminBudgetItemReceipt = {
+  id: string
+  status: string
+  expenseDate: Date | null
+  createdAt: Date
+  supplierName: string | null
+  totalCents: number
+  paidCents: number
+  itemCount: number
+  receiptFileUrl: string | null
+  receiptFileName: string | null
+  receiptContentType: string | null
+}
+
+/**
+ * Receipts (expenses) that have at least one line charged to a given budget
+ * item. Used by the admin budget-item detail page, which shows them as cards.
+ */
+export async function listReceiptsForBudgetItemAdmin(
+  executor: DatabaseExecutor,
+  organizationId: string,
+  projectId: string,
+  budgetItemId: string
+): Promise<AdminBudgetItemReceipt[]> {
+  const lines = await executor
+    .select({ expenseId: expenseLine.expenseId })
+    .from(expenseLine)
+    .innerJoin(expense, eq(expense.id, expenseLine.expenseId))
+    .where(
+      and(
+        eq(expenseLine.organizationId, organizationId),
+        eq(expenseLine.budgetItemId, budgetItemId),
+        eq(expense.projectId, projectId)
+      )
+    )
+    .groupBy(expenseLine.expenseId)
+
+  const expenseIds = lines.map((l) => l.expenseId)
+  if (expenseIds.length === 0) return []
+
+  const receipts = await executor
+    .select({
+      id: expense.id,
+      status: expense.status,
+      expenseDate: expense.expenseDate,
+      createdAt: expense.createdAt,
+      supplierName: supplier.name,
+      receiptFileUrl: file.url,
+      receiptFileName: file.filename,
+      receiptContentType: file.contentType,
+    })
+    .from(expense)
+    .leftJoin(
+      supplier,
+      and(
+        eq(supplier.id, expense.supplierId),
+        eq(supplier.organizationId, expense.organizationId)
+      )
+    )
+    .leftJoin(file, eq(file.id, expense.receiptFileId))
+    .where(
+      and(
+        eq(expense.organizationId, organizationId),
+        sql`${expense.id} in ${expenseIds}`
+      )
+    )
+    .orderBy(desc(expense.createdAt))
+
+  const [lineTotals, paymentTotals, itemCounts] = await Promise.all([
+    executor
+      .select({
+        expenseId: expenseLine.expenseId,
+        total: sql<number>`coalesce(sum(${expenseLine.amountCents}), 0)`,
+      })
+      .from(expenseLine)
+      .where(
+        and(
+          eq(expenseLine.organizationId, organizationId),
+          eq(expenseLine.budgetItemId, budgetItemId),
+          sql`${expenseLine.expenseId} in ${expenseIds}`
+        )
+      )
+      .groupBy(expenseLine.expenseId),
+    executor
+      .select({
+        expenseId: payment.expenseId,
+        total: sql<number>`coalesce(sum(${payment.amountCents}), 0)`,
+      })
+      .from(payment)
+      .where(
+        and(
+          eq(payment.organizationId, organizationId),
+          sql`${payment.expenseId} in ${expenseIds}`
+        )
+      )
+      .groupBy(payment.expenseId),
+    executor
+      .select({
+        expenseId: expenseLine.expenseId,
+        count: count(),
+      })
+      .from(expenseLine)
+      .where(
+        and(
+          eq(expenseLine.organizationId, organizationId),
+          eq(expenseLine.budgetItemId, budgetItemId),
+          sql`${expenseLine.expenseId} in ${expenseIds}`
+        )
+      )
+      .groupBy(expenseLine.expenseId),
+  ])
+
+  const totalMap = new Map(lineTotals.map((r) => [r.expenseId, Number(r.total)]))
+  const paidMap = new Map(paymentTotals.map((r) => [r.expenseId, Number(r.total)]))
+  const countMap = new Map(itemCounts.map((r) => [r.expenseId, r.count]))
+
+  return receipts.map((r) => ({
+    id: r.id,
+    status: r.status,
+    expenseDate: r.expenseDate,
+    createdAt: r.createdAt,
+    supplierName: r.supplierName,
+    totalCents: totalMap.get(r.id) ?? 0,
+    paidCents: paidMap.get(r.id) ?? 0,
+    itemCount: countMap.get(r.id) ?? 0,
+    receiptFileUrl: r.receiptFileUrl,
+    receiptFileName: r.receiptFileName,
+    receiptContentType: r.receiptContentType,
+  }))
+}
+
+export type AdminSupplierDetail = {
+  id: string
+  name: string
+  phone: string | null
+  email: string | null
+  category: string | null
+  status: string
+  notes: string | null
+  companyContact: string | null
+  contactName: string | null
+  createdAt: Date
+}
+
+/** Single supplier within an org, for the admin supplier detail page. */
+export async function findSupplierForOrganizationAdmin(
+  executor: DatabaseExecutor,
+  organizationId: string,
+  supplierId: string
+): Promise<AdminSupplierDetail | undefined> {
+  const rows = await executor
+    .select({
+      id: supplier.id,
+      name: supplier.name,
+      phone: supplier.phone,
+      email: supplier.email,
+      category: supplier.category,
+      status: supplier.status,
+      notes: supplier.notes,
+      companyContact: supplier.companyContact,
+      contactName: supplier.contactName,
+      createdAt: supplier.createdAt,
+    })
+    .from(supplier)
+    .where(
+      and(
+        eq(supplier.id, supplierId),
+        eq(supplier.organizationId, organizationId)
+      )
+    )
+    .limit(1)
+  return rows[0]
 }

@@ -1,6 +1,6 @@
 "use client"
 
-import type { AdminProjectPaymentDto } from "@workspace/api"
+import type { AdminSupplierPaymentDto } from "@workspace/api"
 import {
   type ColumnDef,
   getCoreRowModel,
@@ -23,11 +23,11 @@ function formatShortDate(dateInput: Date | string) {
   })
 }
 
-export function ProjectPaymentsTable({
+export function SupplierPaymentsTable({
   payments,
   title,
 }: {
-  payments: AdminProjectPaymentDto[]
+  payments: AdminSupplierPaymentDto[]
   title?: ReactNode
 }) {
   const [globalFilter, setGlobalFilter] = useState("")
@@ -37,16 +37,8 @@ export function ProjectPaymentsTable({
     pageSize: 8,
   })
 
-  const columns = useMemo<ColumnDef<AdminProjectPaymentDto>[]>(
+  const columns = useMemo<ColumnDef<AdminSupplierPaymentDto>[]>(
     () => [
-      {
-        accessorKey: "supplierName",
-        header: "Supplier",
-        cell: ({ getValue }) => {
-          const value = getValue<string | null>()
-          return value ?? "—"
-        },
-      },
       {
         accessorKey: "amountCents",
         header: "Amount",
@@ -62,11 +54,7 @@ export function ProjectPaymentsTable({
         header: "Method",
         cell: ({ getValue }) => {
           const value = getValue<string | null>()
-          return value ? (
-            <span className="capitalize">{value}</span>
-          ) : (
-            "—"
-          )
+          return value ? <span className="capitalize">{value}</span> : "—"
         },
       },
       {
@@ -117,7 +105,7 @@ export function ProjectPaymentsTable({
         placeholder: "Search payments...",
         label: "Search payments",
       }}
-      emptyMessage="No payments recorded yet."
+      emptyMessage="No payments recorded for this supplier yet."
       footerNote={`${totalRows} ${totalRows === 1 ? "payment" : "payments"}`}
     />
   )

@@ -147,6 +147,8 @@ export default async function ProjectDetailPage({
         <BudgetItemsTable
           items={project.budgetItems}
           currency={project.currency}
+          organizationId={organizationId}
+          projectId={projectId}
           title="Budget items"
         />
 

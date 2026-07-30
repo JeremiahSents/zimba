@@ -151,6 +151,7 @@ export default async function OrganizationDetailPage({
           <OrgDetailSuppliersTab
             suppliers={suppliers}
             currency={org.currency}
+            organizationId={org.id}
           />
         </TabsContent>
 

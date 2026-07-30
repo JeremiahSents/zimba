@@ -14,17 +14,23 @@ import {
 import { DataTable } from "@workspace/ui/components/data-table"
 import { Progress } from "@workspace/ui/components/progress"
 import { type ReactNode, useMemo, useState } from "react"
+import { useRouter } from "next/navigation"
 import { formatCompactCurrency } from "@/lib/format-currency"
 
 export function BudgetItemsTable({
   items,
   currency,
+  organizationId,
+  projectId,
   title,
 }: {
   items: AdminBudgetItemDto[]
   currency: string
+  organizationId: string
+  projectId: string
   title?: ReactNode
 }) {
+  const router = useRouter()
   const [globalFilter, setGlobalFilter] = useState("")
   const [sorting, setSorting] = useState<SortingState>([])
   const [pagination, setPagination] = useState<PaginationState>({
@@ -109,6 +115,11 @@ export function BudgetItemsTable({
       title={title}
       rowNumbers
       pagination="always"
+      onRowClick={(row) =>
+        router.push(
+          `/organizations/${organizationId}/projects/${projectId}/budget-items/${row.original.id}`
+        )
+      }
       search={{
         value: globalFilter,
         onChange: setGlobalFilter,

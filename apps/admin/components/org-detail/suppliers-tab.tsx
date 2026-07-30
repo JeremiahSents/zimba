@@ -4,9 +4,11 @@ import { SuppliersTable } from "@/components/org-detail/suppliers-table"
 export function OrgDetailSuppliersTab({
   suppliers,
   currency,
+  organizationId,
 }: {
   suppliers: AdminSupplierWithStatsDto[]
   currency: string
+  organizationId: string
 }) {
   return (
     <div className="mt-4 flex flex-col gap-4">
@@ -19,6 +21,7 @@ export function OrgDetailSuppliersTab({
       <SuppliersTable
         suppliers={suppliers}
         currency={currency}
+        organizationId={organizationId}
         title="Suppliers"
       />
     </div>

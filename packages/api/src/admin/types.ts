@@ -82,6 +82,9 @@ export type AdminProjectReceiptDto = {
   supplierName: string | null
   totalCents: number
   paidCents: number
+  receiptFileUrl: string | null
+  receiptFileName: string | null
+  receiptContentType: string | null
 }
 
 export type AdminProjectPaymentDto = {
@@ -94,6 +97,9 @@ export type AdminProjectPaymentDto = {
   createdAt: Date
   supplierName: string | null
   expenseId: string | null
+  receiptFileUrl: string | null
+  receiptFileName: string | null
+  receiptContentType: string | null
 }
 
 export type AdminProjectDetailDto = {
@@ -124,6 +130,33 @@ export type AdminSupplierWithStatsDto = {
   totalPaidCents: number
 }
 
+export type AdminSupplierDetailDto = {
+  id: string
+  name: string
+  phone: string | null
+  email: string | null
+  category: string | null
+  status: string
+  notes: string | null
+  companyContact: string | null
+  contactName: string | null
+  createdAt: Date
+}
+
+export type AdminBudgetItemReceiptDto = {
+  id: string
+  status: string
+  expenseDate: Date | null
+  createdAt: Date
+  supplierName: string | null
+  totalCents: number
+  paidCents: number
+  itemCount: number
+  receiptFileUrl: string | null
+  receiptFileName: string | null
+  receiptContentType: string | null
+}
+
 export type AdminSupplierPaymentDto = {
   id: string
   amountCents: number
@@ -133,6 +166,9 @@ export type AdminSupplierPaymentDto = {
   reference: string | null
   createdAt: Date
   expenseId: string | null
+  receiptFileUrl: string | null
+  receiptFileName: string | null
+  receiptContentType: string | null
 }
 
 export type AdminRecentExpenseDto = {

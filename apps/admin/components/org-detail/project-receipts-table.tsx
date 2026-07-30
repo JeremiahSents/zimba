@@ -102,6 +102,10 @@ export function ProjectReceiptsTable({
       title={title}
       rowNumbers
       pagination="always"
+      onRowClick={(row) => {
+        const url = row.original.receiptFileUrl
+        if (url) window.open(url, "_blank", "noopener,noreferrer")
+      }}
       search={{
         value: globalFilter,
         onChange: setGlobalFilter,

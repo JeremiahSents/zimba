@@ -13,6 +13,7 @@ import {
 } from "@tanstack/react-table"
 import { DataTable } from "@workspace/ui/components/data-table"
 import { type ReactNode, useMemo, useState } from "react"
+import { useRouter } from "next/navigation"
 import { StatusBadge } from "@/components/status-badge"
 import { formatCompactCurrency } from "@/lib/format-currency"
 
@@ -35,12 +36,15 @@ function toTitleCase(value: string) {
 export function SuppliersTable({
   suppliers,
   currency,
+  organizationId,
   title,
 }: {
   suppliers: AdminSupplierWithStatsDto[]
   currency: string
+  organizationId: string
   title?: ReactNode
 }) {
+  const router = useRouter()
   const [globalFilter, setGlobalFilter] = useState("")
   const [sorting, setSorting] = useState<SortingState>([])
   const [pagination, setPagination] = useState<PaginationState>({
@@ -127,6 +131,11 @@ export function SuppliersTable({
       title={title}
       rowNumbers
       pagination="always"
+      onRowClick={(row) =>
+        router.push(
+          `/organizations/${organizationId}/suppliers/${row.original.id}`
+        )
+      }
       search={{
         value: globalFilter,
         onChange: setGlobalFilter,

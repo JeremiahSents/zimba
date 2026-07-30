@@ -1,10 +1,12 @@
 import { db } from "@workspace/db"
 import { findProjectForOrganization } from "@workspace/db/projects"
 import {
+  findSupplierForOrganizationAdmin,
   listPaymentsForProjectAdmin,
   listPaymentsForSupplierAdmin,
   listProjectBudgetItemsWithSpend,
   listProjectsForOrganizationAdmin,
+  listReceiptsForBudgetItemAdmin,
   listReceiptsForProjectAdmin,
   listRecentExpensesForOrganizationAdmin,
   listSuppliersWithPaymentStatsForOrganization,
@@ -12,17 +14,20 @@ import {
 } from "@workspace/db/platform"
 import { notFoundError } from "../shared/application-error"
 import type {
+  AdminBudgetItemReceiptDto,
   AdminOrgAnalyticsDto,
   AdminProjectDetailDto,
   AdminProjectPaymentDto,
   AdminProjectReceiptDto,
   AdminProjectSummaryDto,
+  AdminSupplierDetailDto,
   AdminSupplierPaymentDto,
   AdminSupplierWithStatsDto,
 } from "./types"
 
 export type {
   AdminBudgetItemDto,
+  AdminBudgetItemReceiptDto,
   AdminOrgAnalyticsDto,
   AdminOrgTrendDto,
   AdminProjectDetailDto,
@@ -30,6 +35,7 @@ export type {
   AdminProjectReceiptDto,
   AdminProjectSummaryDto,
   AdminRecentExpenseDto,
+  AdminSupplierDetailDto,
   AdminSupplierPaymentDto,
   AdminSupplierWithStatsDto,
 } from "./types"
@@ -92,4 +98,27 @@ export async function getAdminOrgAnalyticsUseCase(
     readOrgTrendStatsAdmin(db, organizationId),
   ])
   return { recentExpenses, trend }
+}
+
+/** Receipts charged to a specific budget item, for the budget-item detail page. */
+export async function getAdminBudgetItemReceiptsUseCase(
+  organizationId: string,
+  projectId: string,
+  budgetItemId: string
+): Promise<AdminBudgetItemReceiptDto[]> {
+  return listReceiptsForBudgetItemAdmin(db, organizationId, projectId, budgetItemId)
+}
+
+/** Single supplier detail within an org, for the supplier detail page. */
+export async function getAdminSupplierDetailUseCase(
+  organizationId: string,
+  supplierId: string
+): Promise<AdminSupplierDetailDto> {
+  const supplier = await findSupplierForOrganizationAdmin(
+    db,
+    organizationId,
+    supplierId
+  )
+  if (!supplier) notFoundError("Supplier not found in this organization.")
+  return supplier
 }
