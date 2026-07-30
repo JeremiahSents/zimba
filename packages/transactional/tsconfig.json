@@ -5,6 +5,14 @@
     "moduleResolution": "Bundler",
     "noEmit": true
   },
-  "include": ["index.ts", "email.ts", "resend.ts", "emails/**/*"],
+  "include": [
+    "index.ts",
+    "email.ts",
+    "resend.ts",
+    "emails/**/*",
+    "pdf/**/*",
+    "tests/**/*",
+    "vitest.config.ts"
+  ],
   "exclude": ["node_modules", "dist", ".turbo", ".react-email"]
 }

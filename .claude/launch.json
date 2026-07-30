@@ -3,11 +3,12 @@
   "configurations": [
     {
       "name": "web",
-      "runtimeExecutable": "pnpm",
+      "runtimeExecutable": "C:\\Users\\Jeremiah Sentomero\\Desktop\\zimba\\apps\\web\\node_modules\\.bin\\next.CMD",
       "runtimeArgs": [
-        "--filter",
-        "web",
-        "dev"
+        "dev",
+        "apps/web",
+        "--port",
+        "3000"
       ],
       "port": 3000
     },

@@ -26,8 +26,10 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { ReceiptCategoryDialog } from "@/components/expenses/receipt-category-dialog"
+import { ReceiptDocumentActions } from "@/components/expenses/receipt-document-actions"
 import { ReceiptFiles } from "@/components/expenses/receipt-files"
 import { formatReceiptNumber } from "@/components/expenses/receipt-number"
+import { ReceiptPaymentHistory } from "@/components/expenses/receipt-payment-history"
 import { DashboardShell } from "@/components/shared/dashboard-shell"
 import { DatePicker } from "@/components/shared/date-picker"
 import { ErrorNotice } from "@/components/shared/error-notice"
@@ -54,11 +56,14 @@ export function ReceiptDetailPage({
   supplier,
   payable,
   allocations = [],
+  userEmail,
 }: {
   items: ExpenseTableRow[]
   supplier?: SupplierResponse
   payable?: PayableExpenseResponse
   allocations?: Array<{ id: string; name: string; budget: number }>
+  /** Resolved on the server so "email myself" needs no round trip to learn it. */
+  userEmail: string
 }) {
   const router = useRouter()
   const workspace = useWorkspace()
@@ -122,6 +127,15 @@ export function ReceiptDetailPage({
             </a>
           </Button>
         )}
+        <ReceiptDocumentActions
+          receiptId={payable?.id ?? first.id}
+          projectId={payable?.project_id ?? ""}
+          documentUrl={payable?.document_url}
+          documentNumber={receiptNumber}
+          supplierName={first.supplier_name}
+          supplierEmail={payable?.supplier_email ?? supplier?.email}
+          userEmail={userEmail}
+        />
         <Button
           variant="outline"
           size="icon-sm"
@@ -309,42 +323,15 @@ export function ReceiptDetailPage({
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent>
-              <p className="font-medium text-muted-foreground text-xs uppercase tracking-wider">
-                Payment history
-              </p>
-              {payable?.payments.length ? (
-                <ol className="mt-4 space-y-4">
-                  {payable.payments.map((payment, idx) => (
-                    <li key={payment.id} className="relative flex gap-3">
-                      {idx !== payable.payments.length - 1 && (
-                        <span className="absolute top-5 bottom-[-16px] left-[5px] w-px bg-border" />
-                      )}
-                      <span className="relative mt-1.5 flex size-2.5 shrink-0 items-center justify-center rounded-full bg-primary" />
-                      <div className="flex flex-1 items-start justify-between gap-3 text-sm">
-                        <div>
-                          <p className="font-medium text-foreground">
-                            {formatShortDate(payment.payment_date)}
-                          </p>
-                          <p className="mt-0.5 text-muted-foreground text-xs capitalize">
-                            {payment.method.replace(/_/g, " ")}
-                          </p>
-                        </div>
-                        <span className="font-medium text-foreground tabular-nums">
-                          {formatCurrency(payment.amount)}
-                        </span>
-                      </div>
-                    </li>
-                  ))}
-                </ol>
-              ) : (
-                <p className="mt-3 text-muted-foreground text-sm">
-                  No payments recorded yet.
-                </p>
-              )}
-            </CardContent>
-          </Card>
+          <ReceiptPaymentHistory
+            payments={payable?.payments ?? []}
+            receiptId={payable?.id ?? first.id}
+            projectId={payable?.project_id ?? ""}
+            documentNumber={receiptNumber}
+            supplierName={first.supplier_name}
+            supplierEmail={payable?.supplier_email ?? supplier?.email}
+            userEmail={userEmail}
+          />
         </div>
       </div>
       {payable && (

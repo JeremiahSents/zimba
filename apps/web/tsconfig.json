@@ -6,6 +6,9 @@
     "paths": {
       "@/*": ["./*"],
       "@workspace/transactional": ["../../packages/transactional/index.ts"],
+      "@workspace/transactional/pdf": [
+        "../../packages/transactional/pdf/index.ts"
+      ],
       "@workspace/transactional/*": ["../../packages/transactional/*"],
       "@workspace/ui/*": ["../../packages/ui/src/*"]
     },

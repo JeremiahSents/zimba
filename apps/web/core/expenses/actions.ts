@@ -10,6 +10,8 @@ import { revalidatePath } from "next/cache"
 import { ensureActionSession } from "@/core/auth/action-session"
 import { getWorkspaceContext } from "@/core/auth/workspace-context"
 import { getWorkspaceSlug } from "@/core/auth/workspace-slug"
+import { generateDocumentsInBackground } from "@/core/documents/service"
+import { hasValidPayableLines } from "@/core/expenses/receipt-validation"
 import {
   correctReceiptCategory,
   deleteReceipt,
@@ -21,7 +23,6 @@ import {
   expectedActionFailure,
 } from "@/core/shared/action-result"
 import { handleActionError } from "@/core/shared/handle-action-error"
-import { hasValidPayableLines } from "@/core/expenses/receipt-validation"
 import type {
   ExpenseStatus,
   PayableExpenseCreate,
@@ -79,6 +80,14 @@ export async function createPayableExpenseAction(
             reference: expense.payment_reference,
           }
         : undefined,
+    })
+    // After the commit, deliberately: a storage or rendering failure must not
+    // take the receipt down with it. Awaited before the read below so the
+    // response already carries the document URL and the user lands on a detail
+    // page with the PDF present rather than having to refresh.
+    await generateDocumentsInBackground({
+      receiptId: created.id,
+      paymentId: created.paymentId,
     })
     const payable = await getPayableExpense(created.id)
     revalidateConnectedRoutes(undefined, workspaceSlug)

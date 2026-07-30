@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { ReceiptDetailPage } from "@/components/expenses/receipt-detail-page"
+import { requireSession } from "@/core/auth/service"
 import { getDashboardOverviewData } from "@/core/dashboard/service"
 import { getPayableExpense } from "@/core/expenses/service"
 import { getProjectDetail } from "@/core/projects/service"
@@ -24,11 +25,12 @@ export default async function Page({
       notFound()
     throw error
   }
-  const [dashboard, project] = await Promise.all([
+  const [dashboard, project, session] = await Promise.all([
     getDashboardOverviewData(),
     payable.project_id
       ? getProjectDetail(payable.project_id)
       : Promise.resolve(null),
+    requireSession(),
   ])
   const items = payable.lines.map((line) => ({
     id: line.id,
@@ -59,6 +61,7 @@ export default async function Page({
       supplier={supplier}
       payable={payable}
       allocations={project?.tasks ?? []}
+      userEmail={session.user.email}
     />
   )
 }

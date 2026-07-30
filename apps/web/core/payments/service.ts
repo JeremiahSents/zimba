@@ -77,7 +77,7 @@ export async function createLedgerPayment(data: {
 }) {
   const { user, organization } = await requireSession()
   const receiptId = data.allocations[0]?.expense_id
-  return recordReceiptPaymentUseCase(
+  const payment = await recordReceiptPaymentUseCase(
     {
       userId: user.id,
       organizationId: organization.organizationId,
@@ -93,6 +93,9 @@ export async function createLedgerPayment(data: {
       reference: data.reference,
     }
   )
+  // Narrowed to the id: the caller needs it to generate a voucher, and a raw
+  // database row has no business escaping into a Server Action.
+  return { paymentId: payment?.id ?? null }
 }
 
 export async function markExpenseFullyPaid(
@@ -100,7 +103,7 @@ export async function markExpenseFullyPaid(
   idempotencyKey: string
 ) {
   const { user, organization } = await requireSession()
-  return markReceiptFullyPaidUseCase(
+  const payment = await markReceiptFullyPaidUseCase(
     {
       userId: user.id,
       organizationId: organization.organizationId,
@@ -109,4 +112,5 @@ export async function markExpenseFullyPaid(
     expenseId,
     idempotencyKey
   )
+  return { paymentId: payment?.id ?? null }
 }

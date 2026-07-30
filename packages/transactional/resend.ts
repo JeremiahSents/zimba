@@ -25,6 +25,26 @@ export type SendEmailResult = {
   error: string | null
 }
 
+export type EmailAttachment = {
+  filename: string
+  /**
+   * A URL Resend fetches for itself. Preferred: generated documents already
+   * live in object storage, so pulling the bytes back through this process only
+   * to base64 them — a third larger again — buys nothing.
+   */
+  path?: string
+  /** Raw bytes, for the rarer case where the caller already holds them. */
+  content?: Buffer
+  contentType?: string
+}
+
+/**
+ * Resend allows roughly 40 MB per message and base64 inflates by a third. No
+ * document this system generates comes close, so this is a guard against a
+ * runaway table rather than a real limit.
+ */
+const MAX_INLINE_ATTACHMENT_BYTES = 8 * 1024 * 1024
+
 /**
  * Local development should not depend on a verified domain, DNS, or a real
  * inbox. When the console transport is on, mail is printed to the terminal with
@@ -71,8 +91,22 @@ function logEmail(params: {
   to: string
   subject: string
   html: string
+  attachments?: EmailAttachment[]
 }): SendEmailResult {
   const links = extractLinks(params.html)
+  // Printed explicitly: without it the console transport gives no signal about
+  // whether an attachment was actually wired up, which is the one thing worth
+  // checking when developing a document email.
+  const attachments = (params.attachments ?? []).map(
+    (attachment) =>
+      `  ${attachment.filename}${
+        attachment.path
+          ? ` -> ${attachment.path}`
+          : attachment.content
+            ? ` (${attachment.content.byteLength} bytes inline)`
+            : " (empty)"
+      }`
+  )
   console.info(
     [
       "",
@@ -81,6 +115,7 @@ function logEmail(params: {
       `from:    ${getFromAddress()}`,
       `subject: ${params.subject}`,
       ...(links.length ? ["links:", ...links.map((url) => `  ${url}`)] : []),
+      ...(attachments.length ? ["attachments:", ...attachments] : []),
       "──────────────────────────────────────────",
       "",
     ].join("\n")
@@ -92,7 +127,22 @@ export async function sendEmail(params: {
   to: string
   subject: string
   html: string
+  attachments?: EmailAttachment[]
 }): Promise<SendEmailResult> {
+  for (const attachment of params.attachments ?? []) {
+    if (
+      attachment.content &&
+      attachment.content.byteLength > MAX_INLINE_ATTACHMENT_BYTES
+    ) {
+      throw Object.assign(
+        new Error(
+          `Attachment ${attachment.filename} is too large to send inline.`
+        ),
+        { code: "EMAIL_SERVICE_ERROR" }
+      )
+    }
+  }
+
   if (usesConsoleTransport()) return logEmail(params)
 
   const client = getResend()
@@ -103,6 +153,9 @@ export async function sendEmail(params: {
       to: params.to,
       subject: params.subject,
       html: params.html,
+      ...(params.attachments?.length
+        ? { attachments: params.attachments }
+        : {}),
     })
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error"

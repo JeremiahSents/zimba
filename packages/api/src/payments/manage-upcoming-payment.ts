@@ -1,6 +1,9 @@
 import { db } from "@workspace/db"
 
-import { deletePayableForOrganization, updatePayableForOrganization } from "@workspace/db/receipts"
+import {
+  deletePayableForOrganization,
+  updatePayableForOrganization,
+} from "@workspace/db/receipts"
 import { z } from "zod"
 import { notFoundError, validationError } from "../shared/application-error"
 import type { WorkspaceContext } from "../shared/workspace-context"

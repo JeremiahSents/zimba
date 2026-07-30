@@ -10,25 +10,32 @@
     "check:ci": "biome check .",
     "check": "biome check --write .",
     "typecheck": "tsc --noEmit",
-    "build": "tsc --noEmit"
+    "build": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests",
+    "pdfx:fix": "node scripts/fix-pdfx-imports.mjs"
   },
   "dependencies": {
     "@react-email/components": "^1.0.1",
+    "@react-pdf/renderer": "^4.5.1",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "resend": "^6.5.2"
+    "resend": "^6.5.2",
+    "server-only": "^0.0.1"
   },
   "devDependencies": {
+    "@react-pdf/types": "^2.11.1",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@workspace/typescript-config": "workspace:*",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.10"
   },
   "exports": {
     ".": "./index.ts",
     "./email": "./email.ts",
     "./resend": "./resend.ts",
+    "./pdf": "./pdf/index.ts",
     "./emails/*": "./emails/*.tsx"
   }
 }

@@ -35,6 +35,15 @@ export const expense = pgTable(
     receiptFileId: varchar("receipt_file_id").references(() => file.id, {
       onDelete: "set null",
     }),
+    /**
+     * The PDF Zimba generates for this receipt — not to be confused with
+     * `receiptFileId` above, which is the photo of the supplier's paper receipt
+     * that someone uploaded. The line is uploaded evidence vs. generated
+     * document; "document" is the word the UI uses for the latter.
+     */
+    documentFileId: varchar("document_file_id").references(() => file.id, {
+      onDelete: "set null",
+    }),
     expenseDate: timestamp("expense_date", { mode: "date" }),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
@@ -125,6 +134,10 @@ export const payment = pgTable(
     method: varchar("method"),
     reference: text("reference"),
     idempotencyKey: varchar("idempotency_key"),
+    /** The payment voucher Zimba generates for this payment row. */
+    documentFileId: varchar("document_file_id").references(() => file.id, {
+      onDelete: "set null",
+    }),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
       .defaultNow()

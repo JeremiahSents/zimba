@@ -18,6 +18,8 @@ export type ReceiptDto = {
 }
 export type ReceiptCreateOutputDto = {
   id: string
+  /** The payment recorded alongside the receipt, when one was. */
+  paymentId: string | null
   paymentStatus: string
   totalCents: number
   paidCents: number

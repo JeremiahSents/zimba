@@ -3,6 +3,7 @@ export type {
   SendApplicationApprovedEmailProps,
   SendApplicationRejectedEmailProps,
   SendApplicationSubmittedEmailProps,
+  SendDocumentShareEmailProps,
   SendEmailVerificationEmailProps,
   SendMagicLinkEmailProps,
   SendMemberInviteEmailProps,
@@ -15,6 +16,7 @@ export {
   sendApplicationApprovedEmail,
   sendApplicationRejectedEmail,
   sendApplicationSubmittedEmail,
+  sendDocumentShareEmail,
   sendEmailVerificationEmail,
   sendMagicLinkEmail,
   sendMemberInviteEmail,
@@ -35,6 +37,10 @@ export {
   ApplicationSubmittedEmail,
   type ApplicationSubmittedEmailProps,
 } from "./emails/application-submitted"
+export {
+  DocumentShareEmail,
+  type DocumentShareEmailProps,
+} from "./emails/document-share"
 export {
   EmailVerificationEmail,
   type EmailVerificationEmailProps,
@@ -61,6 +67,7 @@ export {
   type SuperAdminInviteEmailProps,
 } from "./emails/super-admin-invite"
 export {
+  type EmailAttachment,
   getFromAddress,
   getResend,
   type SendEmailResult,

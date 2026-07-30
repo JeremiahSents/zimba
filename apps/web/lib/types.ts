@@ -100,7 +100,12 @@ export type PayableExpenseResponse = {
     | "refunded"
   project_name?: string | null
   supplier_name?: string | null
+  supplier_email?: string | null
+  /** The photo of the paper receipt someone uploaded. */
   receipt_file_url?: string | null
+  /** The PDF Zimba generated. Null until it has been. */
+  document_url?: string | null
+  document_filename?: string | null
   attachments?: ProjectAttachment[]
   category_state?: "assigned" | "uncategorized"
   lines: Array<{
@@ -120,6 +125,9 @@ export type PayableExpenseResponse = {
     method: string
     reference?: string | null
     status: string
+    /** The voucher PDF for this payment. Null until it has been generated. */
+    document_url?: string | null
+    document_filename?: string | null
   }>
 }
 

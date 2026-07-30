@@ -164,7 +164,10 @@ export async function getPayableExpense(
           : "unpaid",
     project_name: result.projectName,
     supplier_name: result.supplierName,
+    supplier_email: result.supplierEmail ?? null,
     receipt_file_url: result.receiptFile?.url ?? null,
+    document_url: result.documentFile?.url ?? null,
+    document_filename: result.documentFile?.filename ?? null,
     attachments: result.receiptFile
       ? [
           {
@@ -200,6 +203,8 @@ export async function getPayableExpense(
       method: payment.method ?? "Other",
       reference: payment.reference,
       status: "posted",
+      document_url: payment.documentUrl ?? null,
+      document_filename: payment.documentFilename ?? null,
     })),
   }
 }

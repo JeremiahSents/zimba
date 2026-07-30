@@ -123,8 +123,14 @@ async function createReceiptInTransaction(
     })
   }
 
-  if (input.payment && paidCents > 0) {
+  // Minted here rather than left to the column default so the caller can go on
+  // to generate this payment's voucher — `insertReceiptPayment` does not return
+  // the row it wrote.
+  const paymentId = input.payment && paidCents > 0 ? crypto.randomUUID() : null
+
+  if (input.payment && paymentId) {
     await insertReceiptPayment(executor, {
+      id: paymentId,
       organizationId,
       expenseId,
       supplierId: input.supplierId,
@@ -144,6 +150,7 @@ async function createReceiptInTransaction(
 
   return {
     id: expenseId,
+    paymentId,
     paymentStatus,
     totalCents,
     paidCents,

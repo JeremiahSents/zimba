@@ -1,6 +1,7 @@
 import { render } from "@react-email/components"
 import { createElement } from "react"
-import { type SendEmailResult, sendEmail } from "./resend"
+import type { DocumentShareEmailProps } from "./emails/document-share"
+import { type EmailAttachment, type SendEmailResult, sendEmail } from "./resend"
 
 export interface SendSuperAdminInviteEmailProps {
   to: string
@@ -345,4 +346,69 @@ export async function sendOwnershipTransferEmail(
     subject: `Ownership transfer for ${props.organizationName} — ${props.status}`,
     html,
   })
+}
+
+export interface SendDocumentShareEmailProps extends DocumentShareEmailProps {
+  to: string
+  attachment?: EmailAttachment
+}
+
+/**
+ * Sends a generated receipt or payment voucher, either back to the person who
+ * asked for it or out to the supplier.
+ *
+ * Wrapped in the same rethrow-if-already-tagged handling as the invite email.
+ * It matters more here: this one can leave the organisation, so a caller
+ * showing the user a failure needs a code it can rely on.
+ */
+export async function sendDocumentShareEmail(
+  props: SendDocumentShareEmailProps
+): Promise<SendEmailResult> {
+  try {
+    const { default: DocumentShareEmail } = await import(
+      "./emails/document-share"
+    )
+    const html = await render(
+      createElement(DocumentShareEmail, {
+        documentKind: props.documentKind,
+        recipientKind: props.recipientKind,
+        organizationName: props.organizationName,
+        supplierName: props.supplierName,
+        projectName: props.projectName,
+        documentNumber: props.documentNumber,
+        documentUrl: props.documentUrl,
+        totalFormatted: props.totalFormatted,
+        outstandingFormatted: props.outstandingFormatted,
+        settlementLabel: props.settlementLabel,
+        senderName: props.senderName,
+      })
+    )
+    const label =
+      props.documentKind === "receipt" ? "Receipt" : "Payment voucher"
+    const subject =
+      props.recipientKind === "supplier"
+        ? `${props.organizationName} — ${label} ${props.documentNumber}`
+        : `${label} ${props.documentNumber} — ${props.supplierName}`
+
+    return sendEmail({
+      to: props.to,
+      subject,
+      html,
+      ...(props.attachment ? { attachments: [props.attachment] } : {}),
+    })
+  } catch (error) {
+    if (
+      error &&
+      typeof error === "object" &&
+      "code" in error &&
+      error.code === "EMAIL_SERVICE_ERROR"
+    ) {
+      throw error
+    }
+    const message = error instanceof Error ? error.message : "Unknown error"
+    throw Object.assign(new Error(`Document share email failed: ${message}`), {
+      code: "EMAIL_SERVICE_ERROR",
+      cause: error,
+    })
+  }
 }

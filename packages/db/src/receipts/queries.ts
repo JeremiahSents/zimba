@@ -1,4 +1,5 @@
-import { and, desc, eq, inArray, or, sql } from "drizzle-orm"
+import { and, desc, eq, getTableColumns, inArray, or, sql } from "drizzle-orm"
+import { alias } from "drizzle-orm/pg-core"
 import { file } from "../files/schema"
 import { budgetItem, project } from "../projects/schema"
 import type { DatabaseExecutor } from "../shared/executor"
@@ -138,12 +139,18 @@ export async function findExpenseForOrganization(
   organizationId: string,
   expenseId: string
 ) {
+  // `file` is joined twice — once for the uploaded photo, once for the PDF we
+  // generated — so the second join needs an alias.
+  const documentFile = alias(file, "expense_document_file")
   const [row] = await executor
     .select({
       expense,
       projectName: project.name,
       supplierName: supplier.name,
+      supplierEmail: supplier.email,
+      supplierPhone: supplier.phone,
       receiptFile: file,
+      documentFile,
     })
     .from(expense)
     .leftJoin(
@@ -167,6 +174,13 @@ export async function findExpenseForOrganization(
         eq(file.organizationId, expense.organizationId)
       )
     )
+    .leftJoin(
+      documentFile,
+      and(
+        eq(documentFile.id, expense.documentFileId),
+        eq(documentFile.organizationId, expense.organizationId)
+      )
+    )
     .where(
       and(eq(expense.id, expenseId), eq(expense.organizationId, organizationId))
     )
@@ -188,9 +202,23 @@ export async function findExpenseForOrganization(
         eq(expenseLine.organizationId, organizationId)
       )
     )
+  // Flat shape preserved — callers read `payment.amountCents` directly — with
+  // each row's own generated voucher joined on.
+  const paymentDocumentFile = alias(file, "payment_document_file")
   const payments = await executor
-    .select()
+    .select({
+      ...getTableColumns(payment),
+      documentUrl: paymentDocumentFile.url,
+      documentFilename: paymentDocumentFile.filename,
+    })
     .from(payment)
+    .leftJoin(
+      paymentDocumentFile,
+      and(
+        eq(paymentDocumentFile.id, payment.documentFileId),
+        eq(paymentDocumentFile.organizationId, payment.organizationId)
+      )
+    )
     .where(
       and(
         eq(payment.organizationId, organizationId),
@@ -529,4 +557,135 @@ export async function updateReceiptPaymentStatus(
     )
     .returning()
   return updated
+}
+
+export async function attachReceiptDocument(
+  executor: DatabaseExecutor,
+  organizationId: string,
+  expenseId: string,
+  fileId: string
+) {
+  const [updated] = await executor
+    .update(expense)
+    .set({ documentFileId: fileId, updatedAt: new Date() })
+    .where(
+      and(eq(expense.id, expenseId), eq(expense.organizationId, organizationId))
+    )
+    .returning()
+  return updated
+}
+
+export async function attachPaymentDocument(
+  executor: DatabaseExecutor,
+  organizationId: string,
+  paymentId: string,
+  fileId: string
+) {
+  const [updated] = await executor
+    .update(payment)
+    .set({ documentFileId: fileId, updatedAt: new Date() })
+    .where(
+      and(eq(payment.id, paymentId), eq(payment.organizationId, organizationId))
+    )
+    .returning()
+  return updated
+}
+
+/**
+ * A payment settles an expense or a payable, never both, and both branches are
+ * reachable — `recordReceiptPaymentUseCase` and `markReceiptFullyPaidUseCase`
+ * each fall back to a payable. The voucher has to name whichever parent is set,
+ * so both are joined and the caller reads the one that came back.
+ */
+export async function findPaymentForOrganization(
+  executor: DatabaseExecutor,
+  organizationId: string,
+  paymentId: string
+) {
+  const documentFile = alias(file, "payment_document_file")
+  const [row] = await executor
+    .select({
+      payment,
+      expense,
+      payable,
+      projectName: project.name,
+      supplierName: supplier.name,
+      supplierEmail: supplier.email,
+      supplierPhone: supplier.phone,
+      documentFile,
+    })
+    .from(payment)
+    .leftJoin(
+      expense,
+      and(
+        eq(expense.id, payment.expenseId),
+        eq(expense.organizationId, payment.organizationId)
+      )
+    )
+    .leftJoin(
+      payable,
+      and(
+        eq(payable.id, payment.payableId),
+        eq(payable.organizationId, payment.organizationId)
+      )
+    )
+    // The project hangs off whichever parent this payment settles.
+    .leftJoin(
+      project,
+      and(
+        or(
+          eq(project.id, expense.projectId),
+          eq(project.id, payable.projectId)
+        ),
+        eq(project.organizationId, payment.organizationId)
+      )
+    )
+    .leftJoin(
+      supplier,
+      and(
+        eq(supplier.id, payment.supplierId),
+        eq(supplier.organizationId, payment.organizationId)
+      )
+    )
+    .leftJoin(
+      documentFile,
+      and(
+        eq(documentFile.id, payment.documentFileId),
+        eq(documentFile.organizationId, payment.organizationId)
+      )
+    )
+    .where(
+      and(eq(payment.id, paymentId), eq(payment.organizationId, organizationId))
+    )
+    .limit(1)
+  if (!row) return null
+
+  // The voucher shows what this payment did to the parent's balance, which
+  // means every sibling payment against the same parent, not just this one.
+  const targetId = row.payment.expenseId ?? row.payment.payableId
+  const siblings = targetId
+    ? await executor
+        .select({ amountCents: payment.amountCents })
+        .from(payment)
+        .where(
+          and(
+            eq(payment.organizationId, organizationId),
+            sql`(${payment.expenseId} = ${targetId} OR ${payment.payableId} = ${targetId})`
+          )
+        )
+    : []
+
+  const lines = row.payment.expenseId
+    ? await executor
+        .select({ amountCents: expenseLine.amountCents })
+        .from(expenseLine)
+        .where(
+          and(
+            eq(expenseLine.expenseId, row.payment.expenseId),
+            eq(expenseLine.organizationId, organizationId)
+          )
+        )
+    : []
+
+  return { ...row, siblings, lines }
 }

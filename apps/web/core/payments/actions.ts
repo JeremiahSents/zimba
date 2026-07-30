@@ -4,6 +4,7 @@ import { idSchema } from "@workspace/api"
 import { revalidatePath } from "next/cache"
 import { ensureActionSession } from "@/core/auth/action-session"
 import { getWorkspaceSlug } from "@/core/auth/workspace-slug"
+import { generateDocumentsInBackground } from "@/core/documents/service"
 import {
   createLedgerPayment,
   createUpcomingPayment,
@@ -116,7 +117,7 @@ export async function recordReceiptPaymentAction(input: {
   }
 
   try {
-    await createLedgerPayment({
+    const { paymentId } = await createLedgerPayment({
       supplier_id: input.supplierId,
       amount: input.amount,
       currency: input.currency,
@@ -124,6 +125,13 @@ export async function recordReceiptPaymentAction(input: {
       method: input.method,
       reference: input.reference?.trim() || undefined,
       allocations: [{ expense_id: input.expenseId, amount: input.amount }],
+    })
+    // The new payment needs a voucher, and the receipt's paid and outstanding
+    // figures just changed — its stored PDF is now wrong, hence `force`.
+    await generateDocumentsInBackground({
+      receiptId: input.expenseId,
+      paymentId,
+      force: true,
     })
     revalidateConnectedRoutes(input.projectId)
     revalidatePath(
@@ -143,7 +151,12 @@ export async function markReceiptFullyPaidAction(
   const authFailure = await ensureActionSession("payments.mark-receipt-paid")
   if (authFailure) return authFailure
   try {
-    await markExpenseFullyPaid(expenseId, idempotencyKey)
+    const { paymentId } = await markExpenseFullyPaid(expenseId, idempotencyKey)
+    await generateDocumentsInBackground({
+      receiptId: expenseId,
+      paymentId,
+      force: true,
+    })
     revalidateConnectedRoutes(projectId)
     revalidatePath(
       `/${await getWorkspaceSlug()}/expenses/receipts/${expenseId}`
