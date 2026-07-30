@@ -1,7 +1,3 @@
-import type { Metadata } from "next"
-import { headers } from "next/headers"
-import Link from "next/link"
-import { redirect } from "next/navigation"
 import { Button } from "@workspace/ui/components/button"
 import {
   Card,
@@ -10,6 +6,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components/card"
+import type { Metadata } from "next"
+import { headers } from "next/headers"
+import Link from "next/link"
+import { redirect } from "next/navigation"
 import { LoginForm } from "@/components/login-form"
 import { auth } from "@/core/auth/auth"
 import { claimSuperAdminInvite } from "@/core/users/accept-invite"
@@ -33,9 +33,7 @@ export default async function LoginPage({
   const session = await auth.api.getSession({ headers: await headers() })
   const { error, callbackUrl, token } = await searchParams
   const inviteToken =
-    typeof token === "string" && token.trim().length >= 20
-      ? token.trim()
-      : null
+    typeof token === "string" && token.trim().length >= 20 ? token.trim() : null
   const destination = callbackUrl?.startsWith("/")
     ? callbackUrl
     : inviteToken

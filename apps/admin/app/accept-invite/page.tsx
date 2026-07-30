@@ -1,7 +1,3 @@
-import type { Metadata } from "next"
-import { headers } from "next/headers"
-import Link from "next/link"
-import { redirect } from "next/navigation"
 import { Button } from "@workspace/ui/components/button"
 import {
   Card,
@@ -10,12 +6,17 @@ import {
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components/card"
+import type { Metadata } from "next"
+import { headers } from "next/headers"
+import Link from "next/link"
+import { redirect } from "next/navigation"
 import { auth } from "@/core/auth/auth"
 import { claimSuperAdminInvite } from "@/core/users/accept-invite"
 
 export const metadata: Metadata = {
   title: "Accept invitation | Zimba Admin",
-  description: "Accept your super-admin invitation to the Zimba admin dashboard.",
+  description:
+    "Accept your super-admin invitation to the Zimba admin dashboard.",
 }
 
 export const dynamic = "force-dynamic"
@@ -27,9 +28,7 @@ export default async function AcceptInvitePage({
 }) {
   const { token } = await searchParams
   const inviteToken =
-    typeof token === "string" && token.trim().length >= 20
-      ? token.trim()
-      : null
+    typeof token === "string" && token.trim().length >= 20 ? token.trim() : null
 
   // 1. Missing/malformed token → error card.
   if (!inviteToken) {

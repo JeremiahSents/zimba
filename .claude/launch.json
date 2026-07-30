@@ -22,6 +22,17 @@
       "port": 4000
     },
     {
+      "name": "admin-direct",
+      "runtimeExecutable": "C:\\Users\\Jeremiah Sentomero\\Desktop\\zimba\\apps\\admin\\node_modules\\.bin\\next.CMD",
+      "runtimeArgs": [
+        "dev",
+        "apps/admin",
+        "--port",
+        "4000"
+      ],
+      "port": 4000
+    },
+    {
       "name": "web-tmp",
       "runtimeExecutable": "C:\\Users\\Jeremiah Sentomero\\Desktop\\zimba\\apps\\web\\node_modules\\.bin\\next.CMD",
       "runtimeArgs": [
