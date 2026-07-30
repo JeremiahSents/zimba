@@ -1,0 +1,31 @@
+{
+  "breakpoints": [375, 768, 1280],
+  "out": "./bones",
+  "wait": 2000,
+  "color": "rgba(0, 0, 0, 0.06)",
+  "darkColor": "rgba(255, 255, 255, 0.06)",
+  "animate": "shimmer",
+  "shimmerColor": "rgba(255, 255, 255, 0.28)",
+  "darkShimmerColor": "rgba(255, 255, 255, 0.1)",
+  "speed": "2s",
+  "shimmerAngle": 110,
+  "resolveEnvVars": true,
+  "auth": {
+    "cookies": [
+      {
+        "name": "better-auth.session_token",
+        "value": "env[ZIMBA_BONES_SESSION]",
+        "domain": "localhost",
+        "path": "/"
+      }
+    ]
+  },
+  "skeletons": {
+    "web-home": { "route": "/zimba-dev/home" },
+    "web-expenses": { "route": "/zimba-dev/expenses" },
+    "web-projects": { "route": "/zimba-dev/projects" },
+    "web-reports": { "route": "/zimba-dev/reports" },
+    "web-settings": { "route": "/zimba-dev/settings" },
+    "web-shell": { "route": "/zimba-dev/team" }
+  }
+}

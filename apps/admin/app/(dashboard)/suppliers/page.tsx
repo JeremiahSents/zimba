@@ -7,7 +7,7 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react"
 import { AdminDashboardShell } from "@/components/dashboard-shell"
 import { StatCard } from "@/components/stat-card"
-import { SupplierItem, SuppliersTable } from "@/components/suppliers-table"
+import { type SupplierItem, SuppliersTable } from "@/components/suppliers-table"
 import { listPlatformSuppliers } from "@/core/finance/service"
 
 export default async function SuppliersPage() {
@@ -31,7 +31,7 @@ export default async function SuppliersPage() {
   const orgsCount = new Set(suppliers.map((s) => s.organizationName)).size
 
   return (
-    <AdminDashboardShell>
+    <AdminDashboardShell boneName="admin-suppliers">
       {/* ── Subtitle header ── */}
       <div className="flex items-center justify-between">
         <p className="text-muted-foreground text-sm">

@@ -36,7 +36,7 @@ export default async function OrganizationsPage() {
     : 0
 
   return (
-    <AdminDashboardShell>
+    <AdminDashboardShell boneName="admin-organizations">
       {/* ── Subtitle header ── */}
       <div className="flex items-center justify-between">
         <p className="text-muted-foreground text-sm">

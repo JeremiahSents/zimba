@@ -5,7 +5,7 @@ import {
   UserGroupIcon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { ActivityItem, ActivityTable } from "@/components/activity-table"
+import { type ActivityItem, ActivityTable } from "@/components/activity-table"
 import { AdminDashboardShell } from "@/components/dashboard-shell"
 import { StatCard } from "@/components/stat-card"
 import { listPlatformAuditLogs } from "@/core/audit/service"
@@ -29,7 +29,7 @@ export default async function ActivityPage() {
   const uniqueActions = new Set(logs.map((l) => l.action)).size
 
   return (
-    <AdminDashboardShell>
+    <AdminDashboardShell boneName="admin-activity">
       {/* ── Subtitle header ── */}
       <div className="flex items-center justify-between">
         <p className="text-muted-foreground text-sm">

@@ -2,49 +2,103 @@
 
 ## Purpose
 
-Standardize loading states across the user-facing web and admin applications without replacing each route's page-specific loading structure. Use one repository-level Boneyard configuration and one shared wrapper so skeleton behavior, colors, animation, and accessibility remain consistent.
+Replace the hand-written placeholder markup in every `loading.tsx` with a
+skeleton measured from the page it actually stands in for, so the loading state
+and the loaded page share a silhouette instead of only a colour scheme.
 
-## Scope
+## How Boneyard works
 
-- Install `boneyard-js` with pnpm in the workspace packages that render React UI.
-- Add one root `boneyard.config.json` shared by both apps.
-- Add a reusable wrapper in `packages/ui` around Boneyard's React `Skeleton`.
-- Register generated bones once from each app's root layout.
-- Wire the wrapper into existing `loading.tsx` screens in `apps/web` and `apps/admin`.
-- Use fixture-based generation; do not configure real authentication or credentials for capture.
-- Preserve route-specific loading layouts and provide a fallback when generated bones are unavailable.
+Boneyard is a build-time tool, not a runtime one. A headless browser visits the
+real application, measures the DOM inside each marked element, and writes the
+box geometry to a `.bones.json` file. At runtime the skeleton component replays
+that geometry — it never measures anything itself, so there is no layout shift
+and no hydration dependency.
+
+The consequence that shapes this design: **bones must be captured from the real
+page, not from a placeholder.** Wrapping a `loading.tsx` in the capture
+component produces a skeleton of a skeleton, and Next's `loading.tsx` is a
+transient Suspense fallback that a crawler never sees in the DOM at all.
+
+## Shape of the integration
+
+`packages/ui/src/components/bones.tsx` exposes the two halves of one contract,
+joined by a shared `name`:
+
+- `BoneCapture` sits in `page.tsx` around the real content. At runtime it
+  renders children untouched; only the CLI's browser reads the marker.
+- `BoneSkeleton` sits in `loading.tsx`. It resolves bones for that name and
+  falls back to its children when the name has no bones yet.
+
+`BoneSkeleton` passes `select="viewport"`. Bones are keyed by the viewport width
+the CLI captured at, while these skeletons render inside a sidebar shell whose
+container is narrower — matching on container width picks the wrong breakpoint.
+
+The plain `Skeleton` primitive stays a server component; only `bones.tsx` is
+`"use client"`.
+
+### Where the wrappers sit
+
+`BoneCapture` wraps the outermost element the matching `loading.tsx` replaces,
+so the captured container and the replay container are the same width.
+
+- Admin: `AdminDashboardShell` takes a `boneName` prop and wraps itself, so each
+  page opts in with one attribute.
+- Web: the sidebar and topbar live inside the page's `DashboardShell`, not in
+  the segment layout, so `loading.tsx` replaces the entire shell. `BoneCapture`
+  therefore wraps at the `page.tsx` root, and the captured bones include the
+  sidebar and topbar the old placeholders dropped entirely.
+
+## Captured names
+
+Web (`apps/web/boneyard.config.json`): `web-home`, `web-expenses`,
+`web-projects`, `web-reports`, `web-settings`, and `web-shell` — the last
+captured from `/team` and replayed by the segment-level `[workspaceSlug]`
+loading route that covers every child route without one of its own.
+
+Admin (`apps/admin/boneyard.config.json`): `admin-dashboard` (captured from
+`/overview`, replayed by the `(dashboard)` group loading route), plus
+`admin-activity`, `admin-applications`, `admin-organizations`, `admin-payments`,
+`admin-projects`, `admin-receipts`, `admin-suppliers`, `admin-users`.
+
+Two loading routes stay static, with no bones and no capture point:
+
+- `invite/[token]` — keyed by a single-use token, so there is no stable URL.
+- admin `transfers` — the page only redirects, so nothing renders to measure.
 
 ## Configuration
 
-The root config owns responsive breakpoints, output location, capture wait time, light/dark colors, animation mode, animation speed, and shimmer settings. The chosen defaults should produce a restrained loading state that does not wash out the whole page. Both apps use the same runtime defaults and generated registry convention.
+One config per app, because the CLI reads `boneyard.config.json` from its
+working directory and resolves `out` relative to it. Each config owns the
+breakpoints, output directory, capture wait, and the runtime colour and
+animation defaults that the generated registry applies via `configureBoneyard`.
 
-## Shared wrapper
-
-`packages/ui` exposes a client-compatible `BoneyardSkeleton` component. It accepts a unique name, loading state, children, optional fixture, and optional class name. It applies the global visual defaults and accessibility metadata. When `loading` is false it renders children. When loading is true but generated bones are unavailable, it renders the existing children-based fallback rather than leaving a blank page.
-
-The wrapper must not contain application-specific data fetching or authentication logic. Loading routes remain responsible for their static placeholder composition.
-
-## App integration
-
-Each application root layout imports its generated Boneyard registry once. Route loading files wrap their existing placeholder composition with a unique name. Names must be stable and unique within the app. Existing semantic `aria-busy`, `aria-label`, and screen-reader text are retained.
-
-The first migration covers the existing web workspace, settings, and admin loading routes discovered during implementation. Any additional loading routes found in the route tree are wired using the same pattern.
+Routes are declared under `skeletons` as a guided crawl. Filesystem discovery
+cannot reach these pages: the web routes are all under a dynamic
+`[workspaceSlug]` segment, which the CLI skips.
 
 ## Generation
 
-Bones are generated from the running development app using Boneyard's CLI at the configured breakpoints. Authenticated pages use representative fixture content or their static loading composition; no production data, session cookies, or secrets are used. Generated output is checked into the repository if required by the package's normal import flow, and the registry import must resolve in production builds.
+`pnpm bones:web` and `pnpm bones:admin` run the CLI against a dev server on
+port 3000 and 4000 respectively. Every capture target is behind authentication,
+so the CLI needs a session cookie: `ZIMBA_BONES_SESSION` for web and
+`ZIMBA_BONES_ADMIN_SESSION` for admin, read from each app's `.env.local`. These
+hold a developer's own dev session token — never a production session.
+
+Generated `bones/` output is committed. The registry is a side-effect import in
+each root layout and must resolve in production builds; a placeholder registry
+is committed so that import resolves before the first capture run.
+
+Re-run after any layout change — bones are a snapshot, and stale bones show the
+old silhouette.
 
 ## Verification
 
-- Install dependencies with pnpm and verify the lockfile changes are limited to the requested dependency.
-- Run the Boneyard generation command against the development server where supported.
-- Run workspace typecheck, lint, and relevant tests.
-- Verify both apps compile with registry imports.
-- Manually inspect representative loading routes at narrow and wide viewport sizes.
-- Confirm the no-bones fallback remains visible and accessible.
+- `pnpm typecheck` and Biome across the changed files.
+- Both apps compile and serve with the registry import in place.
+- Capture runs reach the configured routes and report per-name bone counts.
+- With no bones for a name, the loading route still renders its placeholder.
 
 ## Deferred
 
-- Capturing real authenticated application pages.
-- Reworking the actual page layouts or data-fetching behavior.
-- Replacing all static placeholder markup with a single generic global skeleton.
+- Capturing dynamic detail routes (`projects/[id]`, `users/[id]`, …).
+- Replacing the remaining static placeholders on routes with no capture point.

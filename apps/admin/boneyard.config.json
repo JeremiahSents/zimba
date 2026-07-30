@@ -1,0 +1,34 @@
+{
+  "breakpoints": [375, 768, 1280],
+  "out": "./bones",
+  "wait": 2000,
+  "color": "rgba(0, 0, 0, 0.06)",
+  "darkColor": "rgba(255, 255, 255, 0.06)",
+  "animate": "shimmer",
+  "shimmerColor": "rgba(255, 255, 255, 0.28)",
+  "darkShimmerColor": "rgba(255, 255, 255, 0.1)",
+  "speed": "2s",
+  "shimmerAngle": 110,
+  "resolveEnvVars": true,
+  "auth": {
+    "cookies": [
+      {
+        "name": "better-auth.session_token",
+        "value": "env[ZIMBA_BONES_ADMIN_SESSION]",
+        "domain": "localhost",
+        "path": "/"
+      }
+    ]
+  },
+  "skeletons": {
+    "admin-dashboard": { "route": "/overview" },
+    "admin-activity": { "route": "/activity" },
+    "admin-applications": { "route": "/applications" },
+    "admin-organizations": { "route": "/organizations" },
+    "admin-payments": { "route": "/payments" },
+    "admin-projects": { "route": "/projects" },
+    "admin-receipts": { "route": "/receipts" },
+    "admin-suppliers": { "route": "/suppliers" },
+    "admin-users": { "route": "/users" }
+  }
+}

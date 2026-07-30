@@ -5,7 +5,7 @@ import {
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { AdminDashboardShell } from "@/components/dashboard-shell"
-import { ProjectItem, ProjectsTable } from "@/components/projects-table"
+import { type ProjectItem, ProjectsTable } from "@/components/projects-table"
 import { StatCard } from "@/components/stat-card"
 import { listPlatformProjects } from "@/core/organizations/projects"
 import { formatCompactCurrency } from "@/lib/format-currency"
@@ -38,7 +38,7 @@ export default async function ProjectsPage() {
   const primaryCurrency = projects[0]?.currency || "UGX"
 
   return (
-    <AdminDashboardShell>
+    <AdminDashboardShell boneName="admin-projects">
       {/* ── Subtitle header ── */}
       <div className="flex items-center justify-between">
         <p className="text-muted-foreground text-sm">

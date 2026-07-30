@@ -33,7 +33,7 @@ export default async function UsersPage() {
   const standardUsersCount = users.filter((u) => !u.platformRole).length
 
   return (
-    <AdminDashboardShell>
+    <AdminDashboardShell boneName="admin-users">
       {/* ── Subtitle header ── */}
       <div className="flex items-center justify-between">
         <p className="text-muted-foreground text-sm">

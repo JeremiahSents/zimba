@@ -1,22 +1,24 @@
-import { AppSkeleton, Skeleton } from "@workspace/ui/components/skeleton"
+import { BoneSkeleton } from "@workspace/ui/components/bones"
+import { Skeleton } from "@workspace/ui/components/skeleton"
+import { AdminDashboardShell } from "@/components/dashboard-shell"
 
-const statSkeletons = ["users", "organizations", "applications", "transfers"]
+const statSlots = ["users", "organizations", "applications", "transfers"]
 
 export default function AdminLoading() {
   return (
-    <main aria-busy="true" aria-label="Loading admin console" className="p-6">
-      <AppSkeleton name="admin-dashboard">
+    <BoneSkeleton name="admin-dashboard" label="Loading admin console">
+      <AdminDashboardShell>
         <Skeleton className="h-8 w-48" />
-        <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
-          {statSkeletons.map((key) => (
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          {statSlots.map((key) => (
             <Skeleton key={key} className="h-28 w-full" />
           ))}
         </div>
-        <div className="mt-6 grid gap-6 md:grid-cols-2">
+        <div className="grid gap-6 md:grid-cols-2">
           <Skeleton className="h-64 w-full" />
           <Skeleton className="h-64 w-full" />
         </div>
-      </AppSkeleton>
-    </main>
+      </AdminDashboardShell>
+    </BoneSkeleton>
   )
 }

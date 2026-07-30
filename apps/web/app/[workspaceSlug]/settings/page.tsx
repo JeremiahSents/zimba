@@ -1,3 +1,4 @@
+import { BoneCapture } from "@workspace/ui/components/bones"
 import type { Metadata } from "next"
 
 import { SettingsPage } from "@/components/settings/settings-page"
@@ -17,11 +18,13 @@ export default async function Page() {
     : []
 
   return (
-    <SettingsPage
-      company={organization.organizationName}
-      role={organization.role}
-      isOwner={isOwner}
-      teamMembers={members}
-    />
+    <BoneCapture name="web-settings">
+      <SettingsPage
+        company={organization.organizationName}
+        role={organization.role}
+        isOwner={isOwner}
+        teamMembers={members}
+      />
+    </BoneCapture>
   )
 }

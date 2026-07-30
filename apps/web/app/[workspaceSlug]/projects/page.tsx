@@ -1,3 +1,4 @@
+import { BoneCapture } from "@workspace/ui/components/bones"
 import type { Metadata } from "next"
 
 import { ProjectsPage } from "@/components/projects/projects-page"
@@ -17,5 +18,9 @@ export default async function Page() {
     getArchivedProjectsList(),
   ])
 
-  return <ProjectsPage data={data} archivedProjects={archivedProjects} />
+  return (
+    <BoneCapture name="web-projects">
+      <ProjectsPage data={data} archivedProjects={archivedProjects} />
+    </BoneCapture>
+  )
 }

@@ -14,7 +14,9 @@
     "test": "turbo test",
     "format": "turbo format",
     "format:check": "turbo format:check",
-    "bones:build": "pnpm --filter @workspace/ui exec boneyard build --out ./apps/web/bones",
+    "bones": "pnpm bones:web && pnpm bones:admin",
+    "bones:web": "pnpm --filter web exec boneyard-js build http://localhost:3000 --env-file .env.local",
+    "bones:admin": "pnpm --filter admin exec boneyard-js build http://localhost:4000 --env-file .env.local",
     "check": "pnpm check:boundaries && turbo check:ci",
     "check:boundaries": "node scripts/check-boundaries.mjs",
     "typecheck": "turbo typecheck"

@@ -14,6 +14,8 @@
       "!**/.turbo",
       "!**/pnpm-lock.yaml",
       "!packages/db/drizzle",
+      "!apps/web/bones",
+      "!apps/admin/bones",
       "!apps/web/app/icon0.svg",
       "!apps/admin/app/icon0.svg"
     ]

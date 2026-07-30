@@ -6,7 +6,7 @@ import {
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { AdminDashboardShell } from "@/components/dashboard-shell"
-import { PaymentItem, PaymentsTable } from "@/components/payments-table"
+import { type PaymentItem, PaymentsTable } from "@/components/payments-table"
 import { StatCard } from "@/components/stat-card"
 import { listPlatformPayments } from "@/core/finance/service"
 import { formatCompactCurrency } from "@/lib/format-currency"
@@ -33,11 +33,12 @@ export default async function PaymentsPage() {
   const primaryCurrency = payments[0]?.currency || "UGX"
 
   return (
-    <AdminDashboardShell>
+    <AdminDashboardShell boneName="admin-payments">
       {/* ── Subtitle header ── */}
       <div className="flex items-center justify-between">
         <p className="text-muted-foreground text-sm">
-          Platform-wide payment transactions, settlement methods, and volume tracking.
+          Platform-wide payment transactions, settlement methods, and volume
+          tracking.
         </p>
       </div>
 

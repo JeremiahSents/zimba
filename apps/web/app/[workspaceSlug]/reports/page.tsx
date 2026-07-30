@@ -1,3 +1,4 @@
+import { BoneCapture } from "@workspace/ui/components/bones"
 import type { Metadata } from "next"
 
 import { ReportsPage } from "@/components/reports/reports-page"
@@ -12,5 +13,9 @@ export const metadata: Metadata = {
 
 export default async function Page() {
   const data = await getDashboardOverviewData()
-  return <ReportsPage data={data} />
+  return (
+    <BoneCapture name="web-reports">
+      <ReportsPage data={data} />
+    </BoneCapture>
+  )
 }

@@ -1,17 +1,19 @@
-import { AppSkeleton, Skeleton } from "@workspace/ui/components/skeleton"
+import { BoneSkeleton } from "@workspace/ui/components/bones"
+import { Skeleton } from "@workspace/ui/components/skeleton"
+import { AdminDashboardShell } from "@/components/dashboard-shell"
 
 const rows = ["one", "two", "three", "four", "five", "six"]
 
-export default function AdminTableLoading() {
+export default function OrganizationsLoading() {
   return (
-    <main aria-busy="true" aria-label="Loading" className="p-6">
-            <AppSkeleton name="admin-organizations"><Skeleton className="h-8 w-48" />
-      <div className="mt-6 flex gap-3">
-        <Skeleton className="h-9 w-64" />
-        <Skeleton className="h-9 w-40" />
-      </div>
-      <div className="mt-4 rounded-lg border">
-        <div className="space-y-0">
+    <BoneSkeleton name="admin-organizations" label="Loading organizations">
+      <AdminDashboardShell>
+        <Skeleton className="h-8 w-48" />
+        <div className="flex gap-3">
+          <Skeleton className="h-9 w-64" />
+          <Skeleton className="h-9 w-40" />
+        </div>
+        <div className="rounded-lg border">
           {rows.map((row) => (
             <div
               key={row}
@@ -25,7 +27,7 @@ export default function AdminTableLoading() {
             </div>
           ))}
         </div>
-      </div>\n      </AppSkeleton>
-    </main>
+      </AdminDashboardShell>
+    </BoneSkeleton>
   )
 }

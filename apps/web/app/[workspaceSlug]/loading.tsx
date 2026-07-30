@@ -1,12 +1,10 @@
-import { AppSkeleton } from "@workspace/ui/components/skeleton"
+import { BoneSkeleton } from "@workspace/ui/components/bones"
 import { DashboardPageSkeleton } from "@/components/shared/dashboard-page-skeleton"
 
 export default function WorkspaceLoading() {
   return (
-    <main aria-busy="true" aria-label="Loading workspace">
-      <AppSkeleton name="web-workspace">
-        <DashboardPageSkeleton />
-      </AppSkeleton>
-    </main>
+    <BoneSkeleton name="web-shell" label="Loading workspace">
+      <DashboardPageSkeleton />
+    </BoneSkeleton>
   )
 }

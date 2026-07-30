@@ -117,7 +117,7 @@ export default async function ApplicationsPage({
   ).length
 
   return (
-    <AdminDashboardShell>
+    <AdminDashboardShell boneName="admin-applications">
       {/* ── Subtitle header ── */}
       <div className="flex items-center justify-between">
         <p className="text-muted-foreground text-sm">

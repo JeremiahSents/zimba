@@ -1,3 +1,4 @@
+import { BoneCapture } from "@workspace/ui/components/bones"
 import type { Metadata } from "next"
 
 import { ExpensesPage } from "@/components/expenses/expenses-page"
@@ -7,5 +8,9 @@ export const dynamic = "force-dynamic"
 export const metadata: Metadata = { title: "Expenses | Zimba" }
 
 export default async function Page() {
-  return <ExpensesPage data={await getDashboardOverviewData()} />
+  return (
+    <BoneCapture name="web-expenses">
+      <ExpensesPage data={await getDashboardOverviewData()} />
+    </BoneCapture>
+  )
 }

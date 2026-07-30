@@ -2,18 +2,48 @@ import { Skeleton } from "@workspace/ui/components/skeleton"
 
 const metricSlots = ["metric-1", "metric-2", "metric-3", "metric-4"]
 const rowSlots = [
-  { id: "row-1", nameWidth: "w-36", val1: "w-24", val2: "w-20", badgeWidth: "w-16" },
-  { id: "row-2", nameWidth: "w-44", val1: "w-20", val2: "w-24", badgeWidth: "w-14" },
-  { id: "row-3", nameWidth: "w-32", val1: "w-28", val2: "w-16", badgeWidth: "w-16" },
-  { id: "row-4", nameWidth: "w-40", val1: "w-20", val2: "w-20", badgeWidth: "w-12" },
-  { id: "row-5", nameWidth: "w-28", val1: "w-24", val2: "w-24", badgeWidth: "w-16" },
+  {
+    id: "row-1",
+    nameWidth: "w-36",
+    val1: "w-24",
+    val2: "w-20",
+    badgeWidth: "w-16",
+  },
+  {
+    id: "row-2",
+    nameWidth: "w-44",
+    val1: "w-20",
+    val2: "w-24",
+    badgeWidth: "w-14",
+  },
+  {
+    id: "row-3",
+    nameWidth: "w-32",
+    val1: "w-28",
+    val2: "w-16",
+    badgeWidth: "w-16",
+  },
+  {
+    id: "row-4",
+    nameWidth: "w-40",
+    val1: "w-20",
+    val2: "w-20",
+    badgeWidth: "w-12",
+  },
+  {
+    id: "row-5",
+    nameWidth: "w-28",
+    val1: "w-24",
+    val2: "w-24",
+    badgeWidth: "w-16",
+  },
 ]
 
 export function DashboardPageSkeleton() {
   return (
-    <div aria-busy="true" aria-live="polite" className="grid gap-6 md:gap-8 animate-fade-in">
-      <span className="sr-only">Loading dashboard content</span>
-
+    // Mirrors the content container in DashboardShell so the fallback lines up
+    // with the real page when no bones have been captured yet.
+    <div className="mx-auto grid w-full max-w-7xl animate-fade-in gap-6 px-4 py-5 sm:px-7 sm:py-6 md:gap-8 lg:px-10 lg:py-8">
       {/* Header Skeleton */}
       <div className="flex items-end justify-between gap-4">
         <div className="grid gap-2">
@@ -50,7 +80,7 @@ export function DashboardPageSkeleton() {
           <Skeleton className="h-9 w-32 rounded-xl bg-muted/80" />
         </div>
 
-        <div className="p-5 space-y-5">
+        <div className="space-y-5 p-5">
           <Skeleton className="h-9 w-full max-w-sm rounded-xl bg-muted/70" />
 
           {/* Table Header Row */}
@@ -59,7 +89,7 @@ export function DashboardPageSkeleton() {
             <Skeleton className="h-3.5 w-16 rounded-md bg-muted/70" />
             <Skeleton className="h-3.5 w-20 rounded-md bg-muted/70" />
             <Skeleton className="h-3.5 w-16 rounded-md bg-muted/70" />
-            <Skeleton className="h-3.5 w-12 rounded-md bg-muted/70 ml-auto" />
+            <Skeleton className="ml-auto h-3.5 w-12 rounded-md bg-muted/70" />
           </div>
 
           {/* Table Data Rows */}
@@ -67,16 +97,26 @@ export function DashboardPageSkeleton() {
             {rowSlots.map((row) => (
               <div
                 key={row.id}
-                className="grid gap-3 border-b border-border/50 pb-3.5 last:border-0 md:grid-cols-[1.5fr_1fr_1fr_1fr_0.8fr] md:items-center md:gap-6"
+                className="grid gap-3 border-border/50 border-b pb-3.5 last:border-0 md:grid-cols-[1.5fr_1fr_1fr_1fr_0.8fr] md:items-center md:gap-6"
               >
                 <div className="flex items-center gap-3">
-                  <Skeleton className="size-8 rounded-full bg-muted/80 shrink-0" />
-                  <Skeleton className={`h-4 ${row.nameWidth} rounded-md bg-muted/90`} />
+                  <Skeleton className="size-8 shrink-0 rounded-full bg-muted/80" />
+                  <Skeleton
+                    className={`h-4 ${row.nameWidth} rounded-md bg-muted/90`}
+                  />
                 </div>
-                <Skeleton className={`h-4 ${row.val1} rounded-md bg-muted/70`} />
-                <Skeleton className={`h-4 ${row.val2} rounded-md bg-muted/70`} />
-                <Skeleton className={`h-4 ${row.val1} rounded-md bg-muted/70`} />
-                <Skeleton className={`h-6 ${row.badgeWidth} rounded-full bg-muted/80 md:ml-auto`} />
+                <Skeleton
+                  className={`h-4 ${row.val1} rounded-md bg-muted/70`}
+                />
+                <Skeleton
+                  className={`h-4 ${row.val2} rounded-md bg-muted/70`}
+                />
+                <Skeleton
+                  className={`h-4 ${row.val1} rounded-md bg-muted/70`}
+                />
+                <Skeleton
+                  className={`h-6 ${row.badgeWidth} rounded-full bg-muted/80 md:ml-auto`}
+                />
               </div>
             ))}
           </div>

@@ -30,7 +30,7 @@ export default async function ReceiptsPage() {
   const orgsCount = new Set(receipts.map((r) => r.organizationName)).size
 
   return (
-    <AdminDashboardShell>
+    <AdminDashboardShell boneName="admin-receipts">
       {/* ── Subtitle header ── */}
       <div className="flex items-center justify-between">
         <p className="text-muted-foreground text-sm">

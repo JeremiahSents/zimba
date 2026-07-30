@@ -1,12 +1,10 @@
-import { AppSkeleton } from "@workspace/ui/components/skeleton"
+import { BoneSkeleton } from "@workspace/ui/components/bones"
 import { DashboardPageSkeleton } from "@/components/shared/dashboard-page-skeleton"
 
 export default function ExpensesLoading() {
   return (
-    <main aria-busy="true" aria-label="Loading expenses">
-      <AppSkeleton name="web-expenses">
-        <DashboardPageSkeleton />
-      </AppSkeleton>
-    </main>
+    <BoneSkeleton name="web-expenses" label="Loading expenses">
+      <DashboardPageSkeleton />
+    </BoneSkeleton>
   )
 }
