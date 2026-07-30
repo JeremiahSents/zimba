@@ -39,6 +39,14 @@ function formatDate(dateInput: Date | string) {
   return `${day}${getOrdinalSuffix(day)} ${month}, ${year}`
 }
 
+function toTitleCase(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[\s_-]+/g, " ")
+    .replace(/\b\p{L}/gu, (match) => match.toUpperCase())
+}
+
 export function OrgDetailSuppliersTab({
   suppliers,
   currency,
@@ -82,25 +90,25 @@ export function OrgDetailSuppliersTab({
             ) : (
               suppliers.map((sup) => (
                 <TableRow key={sup.id}>
-                  <TableCell className="font-semibold text-foreground text-sm">
-                    {sup.name}
+                  <TableCell className="font-medium text-foreground text-sm">
+                    {toTitleCase(sup.name)}
                   </TableCell>
-                  <TableCell className="text-muted-foreground text-xs capitalize">
-                    {sup.category || "Other"}
+                  <TableCell className="text-foreground/80 text-sm capitalize">
+                    {toTitleCase(sup.category || "Other")}
                   </TableCell>
-                  <TableCell className="text-muted-foreground text-xs">
+                  <TableCell className="text-foreground text-sm">
                     {sup.phone || sup.email || "—"}
                   </TableCell>
-                  <TableCell className="tabular-nums text-muted-foreground text-xs">
+                  <TableCell className="tabular-nums text-foreground text-sm">
                     {sup.paymentCount}
                   </TableCell>
-                  <TableCell className="tabular-nums text-muted-foreground text-xs whitespace-nowrap">
+                  <TableCell className="whitespace-nowrap text-foreground text-sm tabular-nums">
                     {formatCompactCurrency(sup.totalPaidCents, currency)}
                   </TableCell>
                   <TableCell>
                     <StatusBadge status={sup.status} />
                   </TableCell>
-                  <TableCell className="text-muted-foreground text-xs">
+                  <TableCell className="text-foreground text-sm">
                     {formatDate(sup.createdAt)}
                   </TableCell>
                 </TableRow>

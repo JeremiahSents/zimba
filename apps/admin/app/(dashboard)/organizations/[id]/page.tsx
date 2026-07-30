@@ -11,9 +11,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@workspace/ui/components/tabs"
-import {
-  ArrowLeft02Icon,
-} from "@hugeicons/core-free-icons"
+import { ArrowLeft02Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import Link from "next/link"
 import { notFound } from "next/navigation"
@@ -22,7 +20,9 @@ import { OrgDetailOverviewTab } from "@/components/org-detail/overview-tab"
 import { OrgDetailProjectsTab } from "@/components/org-detail/projects-tab"
 import { OrgDetailSuppliersTab } from "@/components/org-detail/suppliers-tab"
 import { OrgDetailTeamTab } from "@/components/org-detail/team-tab"
+import { OrganizationStatusButtons } from "@/components/org-status-buttons"
 import { StatusBadge } from "@/components/status-badge"
+import { VisitOrganizationButton } from "@/components/visit-organization-button"
 import { getPlatformSession } from "@/core/auth/service"
 
 function getOrdinalSuffix(day: number): string {
@@ -82,7 +82,17 @@ export default async function OrganizationDetailPage({
   }
 
   return (
-    <AdminDashboardShell>
+    <AdminDashboardShell
+      action={
+        <div className="flex flex-wrap items-center gap-2">
+          {isSuperAdmin ? <VisitOrganizationButton organizationId={org.id} /> : null}
+          <OrganizationStatusButtons
+            organizationId={org.id}
+            currentStatus={org.status}
+          />
+        </div>
+      }
+    >
       {/* ── Header: back link, org name, status ── */}
       <div className="flex flex-wrap items-center justify-between gap-4 border-b pb-4">
         <div className="flex items-center gap-3">
@@ -143,7 +153,8 @@ export default async function OrganizationDetailPage({
           <OrgDetailOverviewTab
             org={org}
             stats={stats}
-            isSuperAdmin={isSuperAdmin}
+            projects={projects}
+            suppliers={suppliers}
           />
         </TabsContent>
 

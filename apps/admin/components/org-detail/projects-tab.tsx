@@ -41,6 +41,14 @@ function formatDate(dateInput: Date | string) {
   return `${day}${getOrdinalSuffix(day)} ${month}, ${year}`
 }
 
+function toTitleCase(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[\s_-]+/g, " ")
+    .replace(/\b\p{L}/gu, (match) => match.toUpperCase())
+}
+
 export function OrgDetailProjectsTab({
   organizationId,
   projects,
@@ -92,33 +100,33 @@ export function OrgDetailProjectsTab({
                     : 0
                 return (
                   <TableRow key={proj.id}>
-                    <TableCell className="font-semibold text-foreground text-sm">
+                    <TableCell className="font-medium text-foreground text-sm">
                       <Link
                         href={`/organizations/${organizationId}/projects/${proj.id}`}
                         className="outline-none transition-colors hover:text-primary focus-visible:underline"
                       >
-                        {proj.name}
+                        {toTitleCase(proj.name)}
                       </Link>
-                      <p className="text-muted-foreground text-xs">
-                        {proj.location}
+                      <p className="text-foreground/80 text-sm">
+                        {toTitleCase(proj.location)}
                       </p>
                     </TableCell>
-                    <TableCell className="tabular-nums text-muted-foreground text-xs whitespace-nowrap">
+                    <TableCell className="whitespace-nowrap text-sm tabular-nums text-foreground">
                       {formatCompactCurrency(proj.budgetCents, proj.currency)}
                     </TableCell>
-                    <TableCell className="tabular-nums text-muted-foreground text-xs whitespace-nowrap">
+                    <TableCell className="whitespace-nowrap text-sm tabular-nums text-foreground">
                       {formatCompactCurrency(proj.spentCents, proj.currency)}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <Progress value={pct} className="w-28 shrink-0" />
-                        <span className="text-xs tabular-nums">{pct}%</span>
+                        <span className="text-sm tabular-nums">{pct}%</span>
                       </div>
                     </TableCell>
                     <TableCell>
                       <StatusBadge status={proj.status} />
                     </TableCell>
-                    <TableCell className="text-muted-foreground text-xs">
+                    <TableCell className="text-foreground text-sm">
                       {formatDate(proj.createdAt)}
                     </TableCell>
                   </TableRow>

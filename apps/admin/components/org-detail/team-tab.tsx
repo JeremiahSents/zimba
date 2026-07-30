@@ -103,15 +103,15 @@ export function OrgDetailTeamTab({ members }: { members: Member[] }) {
                             alt={member.user.name}
                           />
                         ) : null}
-                        <AvatarFallback className="bg-primary/10 font-medium text-primary text-xs">
+                        <AvatarFallback className="bg-primary/10 font-medium text-primary text-sm">
                           {getInitials(member.user.name)}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex flex-col">
-                        <span className="font-semibold text-foreground text-sm">
+                        <span className="font-medium text-foreground text-sm">
                           {member.user.name}
                         </span>
-                        <span className="text-muted-foreground text-xs">
+                        <span className="text-muted-foreground text-sm">
                           {member.user.email}
                         </span>
                       </div>
@@ -130,10 +130,10 @@ export function OrgDetailTeamTab({ members }: { members: Member[] }) {
                       {member.role}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-muted-foreground text-xs">
+                  <TableCell className="text-muted-foreground text-sm">
                     {member.responsibility || "—"}
                   </TableCell>
-                  <TableCell className="text-muted-foreground text-xs">
+                  <TableCell className="text-muted-foreground text-sm">
                     {formatDate(member.createdAt)}
                   </TableCell>
                 </TableRow>
