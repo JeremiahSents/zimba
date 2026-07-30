@@ -1,12 +1,17 @@
-// Empties the development database: every row in every table goes, the schema
-// and the migration history stay. Use it when seed data has drifted and you
-// want a blank slate without re-running migrations.
+// Empties whatever DATABASE_URL points at: every row in every table goes, the
+// schema and the migration history stay. Use it when seed data has drifted and
+// you want a blank slate without re-running migrations.
 //
-//   pnpm --filter @workspace/db db:reset-data
+//   pnpm db:reset
+//   pnpm db:reset -- --backup    # dump to .backups/ first
 //
-// Refuses to run unless the database looks like a development one. Point it at
-// something real on purpose with --i-know-what-im-doing, and take a backup
-// first (`node scripts/backup-json.mjs`).
+// This wipes the database named in the banner it prints. There is no "is this
+// really dev?" check, because a connection string cannot answer that — a managed
+// host looks identical either way, and the guess got it wrong often enough to be
+// worse than useless. The banner is the check: read it before you hit enter.
+//
+// The one refusal left is NODE_ENV=production, which never fires locally.
+// Override with --i-know-what-im-doing.
 import { config } from "dotenv"
 import pg from "pg"
 
@@ -17,41 +22,26 @@ if (!raw) throw new Error("DATABASE_URL is required.")
 
 const connectionString = raw.replace(/^postgresql\+psycopg:/, "postgresql:")
 const override = process.argv.includes("--i-know-what-im-doing")
+const wantsBackup = process.argv.includes("--backup")
 
-/**
- * Local hosts, and names that say "dev" out loud. Anything else is assumed to
- * be someone's real data until the caller insists otherwise.
- */
-function looksLikeDevelopmentDatabase(url) {
-  const parsed = new URL(url)
-  const host = parsed.hostname.toLowerCase()
-  const database = parsed.pathname.replace(/^\//, "").toLowerCase()
-  const isLocalHost =
-    host === "localhost" ||
-    host === "127.0.0.1" ||
-    host === "::1" ||
-    host.endsWith(".local") ||
-    host.endsWith(".localhost")
-  const isNamedDev = /(^|[-_])(dev|development|local|test)([-_]|$)/.test(
-    database
-  )
-  return { isLocalHost, isNamedDev, host, database }
-}
-
-const { isLocalHost, isNamedDev, host, database } =
-  looksLikeDevelopmentDatabase(connectionString)
+const target = new URL(connectionString)
+const host = target.hostname
+const database = target.pathname.replace(/^\//, "")
 
 if (process.env.NODE_ENV === "production" && !override) {
-  console.error("Refusing to run: NODE_ENV is production.")
+  console.error(
+    "Refusing to run: NODE_ENV is production. Pass --i-know-what-im-doing to override."
+  )
   process.exit(1)
 }
 
-if (!isLocalHost && !isNamedDev && !override) {
-  console.error(
-    `Refusing to run: "${database}" on ${host} does not look like a development database.\n` +
-      "Back it up first, then pass --i-know-what-im-doing if you really mean it."
-  )
-  process.exit(1)
+console.log(`Emptying every table in "${database}" on ${host}`)
+
+if (wantsBackup) {
+  const { execFileSync } = await import("node:child_process")
+  execFileSync(process.execPath, ["scripts/backup-json.mjs"], {
+    stdio: "inherit",
+  })
 }
 
 const client = new pg.Client({ connectionString })

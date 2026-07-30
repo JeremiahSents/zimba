@@ -91,7 +91,7 @@ zimba/
 | `pnpm test` | Run tests (Vitest) |
 | `pnpm generate` | Generate Drizzle migrations |
 | `pnpm migrate` | Run Drizzle migrations |
-| `pnpm db:reset-data` | Empty every table in the dev database, keeping the schema and migration history |
+| `pnpm db:reset` | Empty every table in the database `DATABASE_URL` points at, keeping the schema and migration history. Add `-- --backup` to dump to `.backups/` first |
 | `pnpm check` | Run boundary checks + CI checks |
 
 ## Adding UI Components
