@@ -877,6 +877,79 @@ export function listPaymentsForSupplierAdmin(
     .orderBy(desc(payment.createdAt))
 }
 
+export type AdminPaymentDetail = {
+  id: string
+  amountCents: number
+  currency: string
+  paymentDate: Date | null
+  method: string | null
+  reference: string | null
+  createdAt: Date
+  supplierId: string | null
+  supplierName: string | null
+  supplierPhone: string | null
+  supplierEmail: string | null
+  expenseId: string | null
+  projectId: string | null
+  projectName: string | null
+  receiptFileUrl: string | null
+  receiptFileName: string | null
+  receiptContentType: string | null
+}
+
+/** Single payment within an org, with supplier, project, and receipt file. */
+export async function findPaymentForOrganizationAdmin(
+  executor: DatabaseExecutor,
+  organizationId: string,
+  paymentId: string
+): Promise<AdminPaymentDetail | undefined> {
+  const rows = await executor
+    .select({
+      id: payment.id,
+      amountCents: payment.amountCents,
+      currency: payment.currency,
+      paymentDate: payment.paymentDate,
+      method: payment.method,
+      reference: payment.reference,
+      createdAt: payment.createdAt,
+      supplierId: payment.supplierId,
+      supplierName: supplier.name,
+      supplierPhone: supplier.phone,
+      supplierEmail: supplier.email,
+      expenseId: payment.expenseId,
+      projectId: project.id,
+      projectName: project.name,
+      receiptFileUrl: file.url,
+      receiptFileName: file.filename,
+      receiptContentType: file.contentType,
+    })
+    .from(payment)
+    .leftJoin(
+      supplier,
+      and(
+        eq(supplier.id, payment.supplierId),
+        eq(supplier.organizationId, payment.organizationId)
+      )
+    )
+    .leftJoin(expense, eq(expense.id, payment.expenseId))
+    .leftJoin(
+      project,
+      and(
+        eq(project.id, expense.projectId),
+        eq(project.organizationId, expense.organizationId)
+      )
+    )
+    .leftJoin(file, eq(file.id, expense.receiptFileId))
+    .where(
+      and(
+        eq(payment.id, paymentId),
+        eq(payment.organizationId, organizationId)
+      )
+    )
+    .limit(1)
+  return rows[0]
+}
+
 export type AdminRecentExpense = {
   id: string
   status: string

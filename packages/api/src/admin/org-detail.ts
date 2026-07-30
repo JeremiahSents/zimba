@@ -1,6 +1,7 @@
 import { db } from "@workspace/db"
 import { findProjectForOrganization } from "@workspace/db/projects"
 import {
+  findPaymentForOrganizationAdmin,
   findSupplierForOrganizationAdmin,
   listPaymentsForProjectAdmin,
   listPaymentsForSupplierAdmin,
@@ -16,6 +17,7 @@ import { notFoundError } from "../shared/application-error"
 import type {
   AdminBudgetItemReceiptDto,
   AdminOrgAnalyticsDto,
+  AdminPaymentDetailDto,
   AdminProjectDetailDto,
   AdminProjectPaymentDto,
   AdminProjectReceiptDto,
@@ -30,6 +32,7 @@ export type {
   AdminBudgetItemReceiptDto,
   AdminOrgAnalyticsDto,
   AdminOrgTrendDto,
+  AdminPaymentDetailDto,
   AdminProjectDetailDto,
   AdminProjectPaymentDto,
   AdminProjectReceiptDto,
@@ -121,4 +124,18 @@ export async function getAdminSupplierDetailUseCase(
   )
   if (!supplier) notFoundError("Supplier not found in this organization.")
   return supplier
+}
+
+/** Single payment detail within an org, for the payment detail page. */
+export async function getAdminPaymentDetailUseCase(
+  organizationId: string,
+  paymentId: string
+): Promise<AdminPaymentDetailDto> {
+  const payment = await findPaymentForOrganizationAdmin(
+    db,
+    organizationId,
+    paymentId
+  )
+  if (!payment) notFoundError("Payment not found in this organization.")
+  return payment
 }

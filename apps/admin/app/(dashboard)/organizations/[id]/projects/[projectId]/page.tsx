@@ -162,6 +162,7 @@ export default async function ProjectDetailPage({
         {/* ── Payments ── */}
         <ProjectPaymentsTable
           payments={project.payments}
+          organizationId={organizationId}
           title="Payments"
         />
       </div>

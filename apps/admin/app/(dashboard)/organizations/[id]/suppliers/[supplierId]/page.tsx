@@ -158,7 +158,11 @@ export default async function SupplierDetailPage({
         )}
 
         {/* ── Payment history ── */}
-        <SupplierPaymentsTable payments={payments} title="Payment history" />
+        <SupplierPaymentsTable
+          payments={payments}
+          organizationId={organizationId}
+          title="Payment history"
+        />
       </div>
     </AdminDashboardShell>
   )

@@ -171,6 +171,26 @@ export type AdminSupplierPaymentDto = {
   receiptContentType: string | null
 }
 
+export type AdminPaymentDetailDto = {
+  id: string
+  amountCents: number
+  currency: string
+  paymentDate: Date | null
+  method: string | null
+  reference: string | null
+  createdAt: Date
+  supplierId: string | null
+  supplierName: string | null
+  supplierPhone: string | null
+  supplierEmail: string | null
+  expenseId: string | null
+  projectId: string | null
+  projectName: string | null
+  receiptFileUrl: string | null
+  receiptFileName: string | null
+  receiptContentType: string | null
+}
+
 export type AdminRecentExpenseDto = {
   id: string
   status: string

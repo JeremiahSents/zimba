@@ -13,6 +13,7 @@ import {
 } from "@tanstack/react-table"
 import { DataTable } from "@workspace/ui/components/data-table"
 import { type ReactNode, useMemo, useState } from "react"
+import { useRouter } from "next/navigation"
 import { formatCompactCurrency } from "@/lib/format-currency"
 
 function formatShortDate(dateInput: Date | string) {
@@ -25,11 +26,14 @@ function formatShortDate(dateInput: Date | string) {
 
 export function ProjectPaymentsTable({
   payments,
+  organizationId,
   title,
 }: {
   payments: AdminProjectPaymentDto[]
+  organizationId: string
   title?: ReactNode
 }) {
+  const router = useRouter()
   const [globalFilter, setGlobalFilter] = useState("")
   const [sorting, setSorting] = useState<SortingState>([])
   const [pagination, setPagination] = useState<PaginationState>({
@@ -107,10 +111,11 @@ export function ProjectPaymentsTable({
       title={title}
       rowNumbers
       pagination="always"
-      onRowClick={(row) => {
-        const url = row.original.receiptFileUrl
-        if (url) window.open(url, "_blank", "noopener,noreferrer")
-      }}
+      onRowClick={(row) =>
+        router.push(
+          `/organizations/${organizationId}/payments/${row.original.id}`
+        )
+      }
       search={{
         value: globalFilter,
         onChange: setGlobalFilter,
