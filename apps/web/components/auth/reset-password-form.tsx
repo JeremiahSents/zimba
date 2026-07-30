@@ -4,6 +4,7 @@ import { Button } from "@workspace/ui/components/button"
 import { Field, FieldGroup } from "@workspace/ui/components/field"
 import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
+import { toast } from "@workspace/ui/components/sonner"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
@@ -29,23 +30,23 @@ export function ResetPasswordForm({
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [isPending, setIsPending] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   const [isDone, setIsDone] = useState(false)
 
   async function submitNewPassword(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    setError(null)
 
     if (password.length < minimumPasswordLength) {
-      setError(`Password must be at least ${minimumPasswordLength} characters.`)
+      toast.error(
+        `Password must be at least ${minimumPasswordLength} characters.`
+      )
       return
     }
     if (password !== confirmPassword) {
-      setError("Both passwords must match.")
+      toast.error("Both passwords must match.")
       return
     }
     if (!token) {
-      setError("This reset link is no longer valid. Request a new one.")
+      toast.error("This reset link is no longer valid. Request a new one.")
       return
     }
 
@@ -57,7 +58,7 @@ export function ResetPasswordForm({
     setIsPending(false)
 
     if (result?.error) {
-      setError(
+      toast.error(
         result.error.message ||
           "We could not reset your password. Request a new link."
       )
@@ -65,6 +66,7 @@ export function ResetPasswordForm({
     }
 
     setIsDone(true)
+    // The login page raises its own "password changed" toast on arrival.
     router.push("/login?reset=1")
   }
 
@@ -128,12 +130,6 @@ export function ResetPasswordForm({
             Request a new link
           </Button>
         )}
-
-        {error ? (
-          <p role="alert" className="text-center text-destructive text-sm">
-            {error}
-          </p>
-        ) : null}
 
         <Button
           variant="ghost"

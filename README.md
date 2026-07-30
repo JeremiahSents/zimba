@@ -34,6 +34,7 @@ A pnpm monorepo built with Next.js 16, React 19, Drizzle ORM, and Better Auth.
    | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Google OAuth credentials |
    | `UPLOADTHING_TOKEN` | UploadThing API token |
    | `RESEND_API_KEY` / `RESEND_FROM` | Resend email credentials |
+   | `EMAIL_TRANSPORT` | `console` prints emails and their links to the terminal instead of sending — the default in dev when `RESEND_API_KEY` is empty. `resend` forces real sends. Ignored in production |
    | `ADMIN_APP_URL` | Admin console URL (web app only) — deep-links super admins to a demo request awaiting review |
    | `CUSTOMER_APP_URL` | Customer app URL (admin app only) — used in approval emails |
 

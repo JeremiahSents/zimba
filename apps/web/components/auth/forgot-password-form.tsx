@@ -4,6 +4,7 @@ import { Button } from "@workspace/ui/components/button"
 import { Field, FieldGroup } from "@workspace/ui/components/field"
 import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
+import { toast } from "@workspace/ui/components/sonner"
 import Link from "next/link"
 import { useState } from "react"
 import { authClient } from "@/lib/auth-client"
@@ -12,15 +13,13 @@ import { AuthHeader } from "./auth-header"
 export function ForgotPasswordForm() {
   const [email, setEmail] = useState("")
   const [isPending, setIsPending] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   const [isSent, setIsSent] = useState(false)
 
   async function requestReset(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    setError(null)
 
     if (!email.includes("@")) {
-      setError("Enter a valid email address.")
+      toast.error("Enter a valid email address.")
       return
     }
 
@@ -32,13 +31,18 @@ export function ForgotPasswordForm() {
     setIsPending(false)
 
     if (result?.error) {
-      setError(
+      toast.error(
         result.error.message ||
           "We could not send the reset link. Please try again."
       )
       return
     }
+    // The form is replaced by a standing note as well as the toast: this is the
+    // whole purpose of the page, so it should survive the toast timing out.
     setIsSent(true)
+    toast.success("Check your email", {
+      description: `If an account exists for ${email}, a reset link is on its way.`,
+    })
   }
 
   return (
@@ -50,13 +54,10 @@ export function ForgotPasswordForm() {
         />
 
         {isSent ? (
-          <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-emerald-950">
-            <p className="font-medium text-sm">Check your email</p>
-            <p className="mt-1 text-sm">
-              If an account exists for <strong>{email}</strong>, a reset link is
-              on its way. The link expires in one hour.
-            </p>
-          </div>
+          <p className="text-center text-muted-foreground text-sm">
+            If an account exists for <strong>{email}</strong>, a reset link is
+            on its way. The link expires in one hour.
+          </p>
         ) : (
           <form onSubmit={requestReset} className="flex flex-col gap-3">
             <Field>
@@ -82,12 +83,6 @@ export function ForgotPasswordForm() {
             </Button>
           </form>
         )}
-
-        {error ? (
-          <p role="alert" className="text-center text-destructive text-sm">
-            {error}
-          </p>
-        ) : null}
 
         <Button
           variant="ghost"

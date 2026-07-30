@@ -8,14 +8,14 @@ import {
 } from "@workspace/ui/components/field"
 import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
+import { toast } from "@workspace/ui/components/sonner"
 import { cn } from "@workspace/ui/lib/utils"
-import Image from "next/image"
 import Link from "next/link"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Google } from "@/components/svgs/google"
 import { authClient } from "@/lib/auth-client"
 import { AuthHeader } from "./auth-header"
-import { VerificationPendingNotice } from "./verification-pending-notice"
+import { showVerificationToast } from "./verification-toast"
 
 export function LoginForm({
   className,
@@ -35,13 +35,6 @@ export function LoginForm({
     email: string
   }
 }) {
-  const [error, setError] = useState<string | null>(
-    oauthError
-      ? "Google sign-in could not be completed. Please try again."
-      : accessExpired
-        ? "Your workspace access has ended. Sign in again, or reopen the workspace from the admin console."
-        : null
-  )
   const [isPending, setIsPending] = useState(false)
   const [mode, setMode] = useState<"signin" | "signup">(
     invitation ? "signup" : "signin"
@@ -49,9 +42,25 @@ export function LoginForm({
   const [email, setEmail] = useState(invitation?.email ?? "")
   const [password, setPassword] = useState("")
   const [name, setName] = useState("")
-  const [verificationSentTo, setVerificationSentTo] = useState<string | null>(
-    null
-  )
+
+  // Server-rendered states arrive as props on first paint, so they are raised
+  // once here rather than during render.
+  useEffect(() => {
+    if (oauthError)
+      toast.error("Google sign-in could not be completed", {
+        description: "Please try again.",
+      })
+    if (accessExpired)
+      toast.warning("Your workspace access has ended", {
+        description:
+          "Sign in again, or reopen the workspace from the admin console.",
+      })
+    if (passwordReset)
+      toast.success("Your password was changed", {
+        description: "Sign in with your new password.",
+      })
+  }, [oauthError, accessExpired, passwordReset])
+
   const newUserCallbackUrl = callbackUrl.startsWith("/invite/")
     ? callbackUrl
     : "/onboarding"
@@ -60,7 +69,6 @@ export function LoginForm({
   const verifyCallbackUrl = `/verify-email?next=${encodeURIComponent(newUserCallbackUrl)}`
 
   async function continueWithGoogle() {
-    setError(null)
     setIsPending(true)
 
     const result = await authClient.signIn.social({
@@ -71,21 +79,22 @@ export function LoginForm({
     })
 
     if (result?.error) {
-      setError(result.error.message || "Google sign-in could not be started.")
+      toast.error(
+        result.error.message || "Google sign-in could not be started."
+      )
       setIsPending(false)
     }
   }
 
   async function continueWithPassword(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    setError(null)
 
     if (!email.includes("@")) {
-      setError("Enter a valid email address.")
+      toast.error("Enter a valid email address.")
       return
     }
     if (password.length < 8) {
-      setError("Password must be at least 8 characters.")
+      toast.error("Password must be at least 8 characters.")
       return
     }
 
@@ -93,7 +102,7 @@ export function LoginForm({
 
     if (mode === "signup") {
       if (name.trim().length < 2) {
-        setError("Enter your name.")
+        toast.error("Enter your name.")
         setIsPending(false)
         return
       }
@@ -105,14 +114,14 @@ export function LoginForm({
       })
       setIsPending(false)
       if (result?.error) {
-        setError(
+        toast.error(
           result.error.message || "Could not create account. Please try again."
         )
         return
       }
       // Sign-up does not sign them in while verification is required, so tell
       // them where to go next rather than leaving the form looking idle.
-      setVerificationSentTo(email)
+      showVerificationToast(email, verifyCallbackUrl)
       setPassword("")
     } else {
       const result = await authClient.signIn.email({
@@ -124,10 +133,12 @@ export function LoginForm({
       if (result?.error) {
         // The server has already re-sent the link at this point.
         if (result.error.code === "EMAIL_NOT_VERIFIED") {
-          setVerificationSentTo(email)
+          showVerificationToast(email, verifyCallbackUrl)
           return
         }
-        setError(result.error.message || "Could not sign in. Please try again.")
+        toast.error(
+          result.error.message || "Could not sign in. Please try again."
+        )
         return
       }
     }
@@ -152,19 +163,6 @@ export function LoginForm({
                 : "Sign up with email and password or Google."
           }
         />
-
-        {passwordReset ? (
-          <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-emerald-950 text-sm">
-            Your password was changed. Sign in with your new password.
-          </div>
-        ) : null}
-
-        {verificationSentTo ? (
-          <VerificationPendingNotice
-            email={verificationSentTo}
-            callbackUrl={verifyCallbackUrl}
-          />
-        ) : null}
 
         <form onSubmit={continueWithPassword} className="flex flex-col gap-3">
           {mode === "signup" ? (
@@ -236,7 +234,7 @@ export function LoginForm({
           className="text-center text-muted-foreground text-xs hover:text-foreground"
           onClick={() => {
             setMode(mode === "signin" ? "signup" : "signin")
-            setError(null)
+            toast.dismiss()
           }}
         >
           {mode === "signin"
@@ -266,15 +264,6 @@ export function LoginForm({
             {isPending ? "Continuing with Google…" : "Continue with Google"}
           </Button>
         </Field>
-
-        {error ? (
-          <p
-            role="alert"
-            className="text-center text-destructive text-sm leading-5"
-          >
-            {error}
-          </p>
-        ) : null}
       </FieldGroup>
 
       <FieldDescription className="px-6 text-center">

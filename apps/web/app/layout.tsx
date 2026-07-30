@@ -1,6 +1,7 @@
 import { Geist, Inter, Public_Sans, Roboto } from "next/font/google"
 
 import "@workspace/ui/globals.css"
+import { Toaster } from "@workspace/ui/components/sonner"
 import { TooltipProvider } from "@workspace/ui/components/tooltip"
 import { cn } from "@workspace/ui/lib/utils"
 
@@ -45,6 +46,7 @@ export default function RootLayout({
       </head>
       <body suppressHydrationWarning>
         <TooltipProvider>{children}</TooltipProvider>
+        <Toaster position="top-center" richColors />
       </body>
     </html>
   )
