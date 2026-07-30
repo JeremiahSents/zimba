@@ -1,11 +1,11 @@
-import { Skeleton } from "@workspace/ui/components/skeleton"
+import { AppSkeleton, Skeleton } from "@workspace/ui/components/skeleton"
 
 const rows = ["one", "two", "three", "four", "five"]
 
 export default function ApplicationsLoading() {
   return (
     <main aria-busy="true" aria-label="Loading applications" className="p-6">
-      <Skeleton className="h-8 w-56" />
+            <AppSkeleton name="admin-applications"><Skeleton className="h-8 w-56" />
       <div className="mt-6 flex gap-3">
         <Skeleton className="h-9 w-64" />
         <Skeleton className="h-9 w-40" />
@@ -23,7 +23,7 @@ export default function ApplicationsLoading() {
             <Skeleton className="ml-auto h-5 w-16" />
           </div>
         ))}
-      </div>
+      </div>\n      </AppSkeleton>
     </main>
   )
 }

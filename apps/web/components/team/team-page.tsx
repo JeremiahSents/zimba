@@ -29,8 +29,6 @@ import type { TeamMember } from "@/lib/types"
 
 const inviteRoles = [
   { label: "Site manager", value: "site_manager" },
-  { label: "Accountant", value: "accountant" },
-  { label: "Viewer", value: "viewer" },
   { label: "Owner", value: "owner" },
 ] as const
 

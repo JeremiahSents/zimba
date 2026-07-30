@@ -1,4 +1,4 @@
-import { Skeleton } from "@workspace/ui/components/skeleton"
+import { AppSkeleton, Skeleton } from "@workspace/ui/components/skeleton"
 
 const rows = ["one", "two", "three", "four", "five", "six"]
 
@@ -9,7 +9,7 @@ export default function ProjectsLoading() {
       aria-label="Loading projects"
       className="flex-1 p-6 lg:p-8"
     >
-      <Skeleton className="h-8 w-48" />
+            <AppSkeleton name="admin-projects"><Skeleton className="h-8 w-48" />
       <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
         {rows.slice(0, 4).map((key) => (
           <Skeleton key={key} className="h-24 w-full" />
@@ -28,7 +28,7 @@ export default function ProjectsLoading() {
             <Skeleton className="h-5 w-28" />
           </div>
         ))}
-      </div>
+      </div>\n      </AppSkeleton>
     </main>
   )
 }

@@ -1,4 +1,4 @@
-import { Skeleton } from "@workspace/ui/components/skeleton"
+import { AppSkeleton, Skeleton } from "@workspace/ui/components/skeleton"
 
 const rows = ["one", "two", "three", "four", "five", "six"]
 
@@ -9,7 +9,7 @@ export default function ActivityLoading() {
       aria-label="Loading activity log"
       className="flex-1 p-6 lg:p-8"
     >
-      <Skeleton className="h-8 w-48" />
+            <AppSkeleton name="admin-activity"><Skeleton className="h-8 w-48" />
       <div className="mt-6 rounded-lg border">
         {rows.map((row) => (
           <div
@@ -23,7 +23,7 @@ export default function ActivityLoading() {
             <Skeleton className="h-5 w-32" />
           </div>
         ))}
-      </div>
+      </div>\n      </AppSkeleton>
     </main>
   )
 }
