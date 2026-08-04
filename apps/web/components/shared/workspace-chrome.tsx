@@ -53,7 +53,7 @@ export function WorkspaceChrome({ children }: { children: ReactNode }) {
         <footer
           className={`mt-auto px-4 text-center text-[10px] text-muted-foreground sm:px-7 lg:px-10 ${focusedTask ? "py-4" : "pt-4 pb-[calc(var(--mobile-bottom-space)+2rem)] md:py-4"}`}
         >
-          Built with 💖.
+          Built by Zimba Group Ltd.
         </footer>
       </SidebarInset>
       {!focusedTask ? <MobileDashboardNav /> : null}
