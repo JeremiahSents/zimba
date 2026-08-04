@@ -5,18 +5,21 @@ import {
   Footer,
   Hero,
   Offerings,
+  StructuredData,
   TrustedBy,
 } from "@/components/landing"
+import { SITE_DESCRIPTION, SITE_NAME, SITE_TAGLINE } from "@/lib/site"
 
 export const metadata: Metadata = {
-  title: "Zimba | Expense tracking for construction teams",
-  description:
-    "Zimba helps construction and real estate companies track expenses, budgets, approvals, and project cash flow.",
+  title: `${SITE_NAME} | ${SITE_TAGLINE}`,
+  description: SITE_DESCRIPTION,
+  alternates: { canonical: "/" },
 }
 
 export default function Page() {
   return (
     <main className="min-h-svh bg-background text-foreground">
+      <StructuredData />
       <Hero />
       <TrustedBy />
       <Offerings />

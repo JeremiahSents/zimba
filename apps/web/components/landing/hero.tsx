@@ -26,7 +26,7 @@ export function Hero() {
                   size="lg"
                   nativeButton={false}
                   render={<Link href="#book-demo" />}
-                  className="px-6"
+                  className="px-6 rounded-md"
                 >
                   Book a Demo
                 </Button>

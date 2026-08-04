@@ -19,7 +19,7 @@ const cards: Card[] = [
   {
     icon: Invoice01Icon,
     title: "Expense tracking",
-    body: "Log every cost against the project it belongs to — materials, labour, transport, permits. Nothing lands in a shared pot nobody can explain later.",
+    body: "Log every cost against the project it belongs to — materials, labour, transport, permits. Nothing lands in a shared pot nobody can't explain later.",
     span: "lg:col-span-4",
   },
   {

@@ -48,20 +48,20 @@ export function Header() {
 
         <div className="flex items-center gap-5">
           <Button
-            size="sm"
             nativeButton={false}
+            className="rounded-md px-8"
             render={<Link href={loginHref} />}
           >
             Sign in
           </Button>
-          <Button
+          {/* <Button
             size="sm"
             nativeButton={false}
             render={<Link href={onboardingHref} />}
             className="hidden px-4 sm:inline-flex"
           >
             Get started
-          </Button>
+          </Button> */}
         </div>
       </div>
     </header>

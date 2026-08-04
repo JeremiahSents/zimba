@@ -1,15 +1,20 @@
+import type { Metadata, Viewport } from "next"
 import { Geist, Inter, Public_Sans, Roboto } from "next/font/google"
 
 import "@workspace/ui/globals.css"
-// Side-effect import: registers the bones captured by `pnpm bones:web` so every
-// <BoneSkeleton name="..."> can resolve them. Required — without it the loading
-// routes fall back to their static placeholders.
+
 import "../bones/registry"
 import { Toaster } from "@workspace/ui/components/sonner"
 import { TooltipProvider } from "@workspace/ui/components/tooltip"
 import { cn } from "@workspace/ui/lib/utils"
 import { ThemeProvider } from "@/components/shared/theme-provider"
 import { ThemeShortcut } from "@/components/shared/theme-shortcut"
+import {
+  SITE_DESCRIPTION,
+  SITE_NAME,
+  SITE_TAGLINE,
+  SITE_URL,
+} from "@/lib/site"
 
 const publicSansHeading = Public_Sans({
   subsets: ["latin"],
@@ -27,6 +32,57 @@ const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
 })
+
+/**
+ * `metadataBase` is what makes every relative OG/canonical URL resolve to the
+ * marketing host rather than the deployment URL, so it has to be set here even
+ * though most routes below are behind auth.
+ */
+export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: `${SITE_NAME} | ${SITE_TAGLINE}`,
+    template: `%s | ${SITE_NAME}`,
+  },
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  keywords: [
+    "construction expense tracking",
+    "project cost management",
+    "construction accounting software",
+    "real estate expense management",
+    "project budget tracking",
+    "payment vouchers",
+    "Uganda construction software",
+  ],
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    siteName: SITE_NAME,
+    title: `${SITE_NAME} | ${SITE_TAGLINE}`,
+    description: SITE_DESCRIPTION,
+    url: "/",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${SITE_NAME} | ${SITE_TAGLINE}`,
+    description: SITE_DESCRIPTION,
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, "max-image-preview": "large" },
+  },
+  manifest: "/manifest.json",
+}
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0b1211" },
+  ],
+}
 
 export default function RootLayout({
   children,
