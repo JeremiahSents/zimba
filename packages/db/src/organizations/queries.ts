@@ -585,6 +585,48 @@ export async function countPendingInvitationsFromUser(
   return Number(row?.value ?? 0)
 }
 
+export async function findMemberInOrganization(
+  executor: DatabaseExecutor,
+  organizationId: string,
+  memberId: string
+) {
+  const rows = await executor
+    .select({ id: member.id, userId: member.userId, role: member.role })
+    .from(member)
+    .where(
+      and(eq(member.id, memberId), eq(member.organizationId, organizationId))
+    )
+    .limit(1)
+  return rows.at(0) ?? null
+}
+
+export async function countOrganizationOwners(
+  executor: DatabaseExecutor,
+  organizationId: string
+) {
+  const [row] = await executor
+    .select({ value: count() })
+    .from(member)
+    .where(
+      and(eq(member.organizationId, organizationId), eq(member.role, "owner"))
+    )
+  return Number(row?.value ?? 0)
+}
+
+export async function deleteMemberFromOrganization(
+  executor: DatabaseExecutor,
+  organizationId: string,
+  memberId: string
+) {
+  const [deleted] = await executor
+    .delete(member)
+    .where(
+      and(eq(member.id, memberId), eq(member.organizationId, organizationId))
+    )
+    .returning({ id: member.id, userId: member.userId, role: member.role })
+  return deleted ?? null
+}
+
 export async function updateMemberRole(
   executor: DatabaseExecutor,
   memberId: string,

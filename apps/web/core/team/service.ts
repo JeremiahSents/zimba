@@ -7,6 +7,7 @@ import {
   deleteInvitationUseCase,
   getInvitationPreviewUseCase,
   listTeamUseCase,
+  removeMemberUseCase,
 } from "@workspace/api"
 import { sendMemberInviteEmail } from "@workspace/transactional"
 import { normalizeRole } from "../auth/permissions"
@@ -15,17 +16,30 @@ import { unauthorized } from "../shared/errors"
 import { buildInviteUrl } from "./invite-url"
 
 export async function listTeam() {
-  const { organization } = await requireSession()
+  const { user, organization } = await requireSession()
   const team = await listTeamUseCase({
     organizationId: organization.organizationId,
   })
+  const role = normalizeRole(organization.role)
   return {
     members: team.members,
     invitations: team.invitations,
-    canInvite: ["owner", "site_manager"].includes(
-      normalizeRole(organization.role)
-    ),
+    canInvite: ["owner", "site_manager"].includes(role),
+    canRemoveMembers: role === "owner",
+    currentUserId: user.id,
   }
+}
+
+export async function removeMember(memberId: string) {
+  const { user, organization } = await requireSession()
+  return removeMemberUseCase(
+    {
+      userId: user.id,
+      organizationId: organization.organizationId,
+      role: normalizeRole(organization.role),
+    },
+    memberId
+  )
 }
 
 export async function createInvitation(input: {

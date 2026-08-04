@@ -22,6 +22,8 @@ export default async function Page() {
         }))}
         invitations={team.invitations}
         canInvite={team.canInvite}
+        canRemoveMembers={team.canRemoveMembers}
+        currentUserId={team.currentUserId}
       />
     </BoneCapture>
   )

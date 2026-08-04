@@ -6,7 +6,7 @@ import { ensureActionSession } from "@/core/auth/action-session"
 import type { WorkspaceRole } from "@/core/auth/permissions"
 import { getWorkspaceSlug } from "@/core/auth/workspace-slug"
 import { handleActionError } from "@/core/shared/handle-action-error"
-import { createInvitation } from "@/core/team/service"
+import { createInvitation, removeMember } from "@/core/team/service"
 
 export async function inviteMemberAction(input: {
   email: string
@@ -38,5 +38,20 @@ export async function inviteMemberAction(input: {
     }
   } catch (error) {
     return handleActionError(error, "team.invite")
+  }
+}
+
+export async function removeMemberAction(memberId: string) {
+  const authFailure = await ensureActionSession("team.remove-member")
+  if (authFailure) return authFailure
+  try {
+    await removeMember(memberId)
+    revalidatePath(`/${await getWorkspaceSlug()}/team`)
+    return {
+      success: true as const,
+      data: { message: "Member removed from this workspace." },
+    }
+  } catch (error) {
+    return handleActionError(error, "team.remove-member")
   }
 }

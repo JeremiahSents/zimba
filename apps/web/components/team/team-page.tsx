@@ -38,10 +38,14 @@ export function TeamPage({
   members,
   invitations,
   canInvite,
+  canRemoveMembers,
+  currentUserId,
 }: {
   members: TeamMember[]
   invitations: { id: string; email: string; role: string }[]
   canInvite: boolean
+  canRemoveMembers: boolean
+  currentUserId: string
 }) {
   const [showInvite, setShowInvite] = useState(false)
   const [message, setMessage] = useState("")
@@ -157,7 +161,12 @@ export function TeamPage({
           </CardContent>
         )}
       </Card>
-      <TeamTable members={members} title="Team members" />
+      <TeamTable
+        members={members}
+        title="Team members"
+        canRemove={canRemoveMembers}
+        currentUserId={currentUserId}
+      />
     </DashboardShell>
   )
 }

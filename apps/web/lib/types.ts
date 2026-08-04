@@ -240,6 +240,7 @@ export type ProjectDetailResponse = ProjectDashboardResponse & {
 }
 export type TeamMember = {
   id?: string
+  userId?: string
   name: string
   email?: string
   role: string
