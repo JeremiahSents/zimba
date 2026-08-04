@@ -80,9 +80,9 @@ describe("removeMemberUseCase", () => {
       role: "owner",
     })
 
-    await expect(
-      removeMemberUseCase(ctx, "member-1")
-    ).rejects.toMatchObject({ code: "FORBIDDEN" })
+    await expect(removeMemberUseCase(ctx, "member-1")).rejects.toMatchObject({
+      code: "FORBIDDEN",
+    })
     expect(repo.deleteMemberFromOrganization).not.toHaveBeenCalled()
   })
 

@@ -24,6 +24,14 @@ import type { PublicError } from "@/core/shared/errors"
 import { removeMemberAction } from "@/core/team/actions"
 import type { TeamMember } from "@/lib/types"
 
+function canRemoveMember(
+  member: TeamMember,
+  canRemove: boolean,
+  currentUserId: string
+) {
+  return canRemove && Boolean(member.id) && member.userId !== currentUserId
+}
+
 function RemoveMemberButton({
   member,
   onError,
@@ -77,9 +85,6 @@ export function TeamTable({
   const [sorting, setSorting] = useState<SortingState>([])
   const [error, setError] = useState<PublicError | null>(null)
 
-  const canRemoveRow = (member: TeamMember) =>
-    canRemove && Boolean(member.id) && member.userId !== currentUserId
-
   const columns = useMemo<ColumnDef<TeamMember>[]>(() => {
     const base: ColumnDef<TeamMember>[] = [
       {
@@ -106,7 +111,7 @@ export function TeamTable({
         header: () => <span className="sr-only">Actions</span>,
         enableSorting: false,
         cell: ({ row }) =>
-          canRemoveRow(row.original) ? (
+          canRemoveMember(row.original, canRemove, currentUserId) ? (
             <div className="text-right">
               <RemoveMemberButton member={row.original} onError={setError} />
             </div>
@@ -153,7 +158,7 @@ export function TeamTable({
               title={member.name}
               status={<Badge variant="success">Active</Badge>}
               actions={
-                canRemoveRow(member) ? (
+                canRemoveMember(member, canRemove, currentUserId) ? (
                   <RemoveMemberButton member={member} onError={setError} />
                 ) : null
               }
