@@ -15,7 +15,6 @@ import {
   isPlatformStaff,
 } from "@/core/auth/service"
 import { getWorkspaceContext } from "@/core/auth/workspace-context"
-import { getOnboardingApplicationForUser } from "@/core/organizations/onboarding-application"
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 
@@ -39,13 +38,7 @@ export default async function WorkspaceLayout({
     if (await isPlatformStaff(session.user.id)) {
       redirect(`/login?error=${ACCESS_EXPIRED}`)
     }
-    const application = await getOnboardingApplicationForUser(session.user.id)
-    if (
-      application &&
-      (application.status === "pending" || application.status === "rejected")
-    )
-      redirect("/pending-approval")
-    redirect("/onboarding")
+    redirect("/pending-approval")
   }
 
   let workspace: ResolvedWorkspaceContext | null = null

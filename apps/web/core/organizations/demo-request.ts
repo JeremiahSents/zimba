@@ -3,20 +3,17 @@
 import {
   listSuperAdminRecipientsUseCase,
   type OnboardingApplicationDto,
-  recordPlatformAuditUseCase,
   submitOnboardingApplicationUseCase,
 } from "@workspace/api"
 import {
   sendApplicationSubmittedEmail,
   sendOnboardingRequestEmail,
 } from "@workspace/transactional"
-import { headers } from "next/headers"
-import { redirect } from "next/navigation"
-import { auth } from "@/core/auth/auth"
-import { getApplicationReviewUrl } from "./admin-review-url"
-import { getOrganizationMembership } from "./service"
 
-export type OnboardingState = {
+import { getApplicationReviewUrl } from "./admin-review-url"
+
+export type DemoRequestState = {
+  status: "idle" | "success" | "error"
   error?: string
   fieldErrors?: {
     fullName?: string
@@ -31,38 +28,26 @@ export type OnboardingState = {
   }
 }
 
-export async function completeOnboarding(
-  _previousState: OnboardingState,
+/**
+ * Public on purpose: this runs from the marketing site for a visitor with no
+ * account. Approval is what creates anything — this only records the request
+ * and notifies both sides.
+ */
+export async function requestDemo(
+  _previousState: DemoRequestState,
   formData: FormData
-): Promise<OnboardingState> {
-  const session = await auth.api.getSession({ headers: await headers() })
-  if (!session) redirect("/login")
-
+): Promise<DemoRequestState> {
   const values = {
     fullName: readField(formData, "fullName"),
     companyName: readField(formData, "companyName"),
-    email: readField(formData, "email") || session.user.email,
+    email: readField(formData, "email"),
   }
-
-  const existing = await getOrganizationMembership(session.user.id)
-  if (existing) redirect(`/${existing.slug}/home`)
 
   let application: OnboardingApplicationDto
   try {
-    application = await submitOnboardingApplicationUseCase(
-      { userId: session.user.id },
-      {
-        ...values,
-        companyWebsite: readField(formData, "companyWebsite"),
-        industry: readField(formData, "industry"),
-        country: readField(formData, "country"),
-        phone: readField(formData, "phone"),
-        teamSize: readField(formData, "teamSize"),
-        useCase: readField(formData, "useCase"),
-      }
-    )
+    application = await submitOnboardingApplicationUseCase(values)
   } catch (error) {
-    return { ...toOnboardingState(error), values }
+    return { ...toDemoRequestState(error), values }
   }
 
   // Neither notification is allowed to fail the request: the record is already
@@ -72,20 +57,7 @@ export async function completeOnboarding(
     notifySuperAdmins(application),
   ])
 
-  await recordPlatformAuditUseCase({
-    actorId: session.user.id,
-    targetUserId: session.user.id,
-    operation: "onboarding_application_submitted",
-    metadata: {
-      applicationId: application.id,
-      companyName: application.companyName,
-      email: application.email,
-    },
-  }).catch((error: unknown) => {
-    console.error("Audit log failed", error)
-  })
-
-  redirect("/pending-approval?submitted=1")
+  return { status: "success" }
 }
 
 async function notifyApplicant(application: OnboardingApplicationDto) {
@@ -94,7 +66,7 @@ async function notifyApplicant(application: OnboardingApplicationDto) {
     fullName: application.fullName,
     companyName: application.companyName,
   }).catch((error) => {
-    console.error("Onboarding welcome email failed", error)
+    console.error("Demo request confirmation email failed", error)
   })
 }
 
@@ -102,10 +74,7 @@ async function notifySuperAdmins(application: OnboardingApplicationDto) {
   try {
     const superAdmins = await listSuperAdminRecipientsUseCase()
     if (!superAdmins.length) {
-      console.error(
-        "Onboarding request has no super admin to notify",
-        application.id
-      )
+      console.error("Demo request has no super admin to notify", application.id)
       return
     }
 
@@ -124,9 +93,9 @@ async function notifySuperAdmins(application: OnboardingApplicationDto) {
       useCase: application.useCase,
     })
     if (result.failed.length)
-      console.error("Onboarding request email partially failed", result.failed)
+      console.error("Demo request email partially failed", result.failed)
   } catch (error) {
-    console.error("Onboarding request notification failed", error)
+    console.error("Demo request notification failed", error)
   }
 }
 
@@ -134,16 +103,13 @@ function readField(formData: FormData, name: string): string {
   return String(formData.get(name) ?? "").trim()
 }
 
-/**
- * The use case validates with the same Zod schema the form is built from, so
- * its field errors can be shown against the inputs that produced them.
- */
-function toOnboardingState(error: unknown): OnboardingState {
+function toDemoRequestState(error: unknown): DemoRequestState {
   const fieldErrors = extractFieldErrors(error)
-  if (fieldErrors) return { fieldErrors }
+  if (fieldErrors) return { status: "error", fieldErrors }
 
-  console.error("Onboarding request failed", error)
+  console.error("Demo request failed", error)
   return {
+    status: "error",
     error:
       error instanceof Error
         ? error.message
@@ -153,11 +119,11 @@ function toOnboardingState(error: unknown): OnboardingState {
 
 function extractFieldErrors(
   error: unknown
-): OnboardingState["fieldErrors"] | null {
+): DemoRequestState["fieldErrors"] | null {
   if (!error || typeof error !== "object") return null
   const raw = (error as { fieldErrors?: Record<string, string[]> }).fieldErrors
   if (!raw) return null
-  const fieldErrors: NonNullable<OnboardingState["fieldErrors"]> = {}
+  const fieldErrors: NonNullable<DemoRequestState["fieldErrors"]> = {}
   if (raw.fullName?.length) fieldErrors.fullName = "Enter your full name."
   if (raw.companyName?.length)
     fieldErrors.companyName = "Enter your company name."

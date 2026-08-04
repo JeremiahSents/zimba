@@ -55,6 +55,12 @@ export type WorkspaceAuthOptions = {
    */
   cookieDomain?: string
   plugins?: Parameters<typeof betterAuth>[0]["plugins"]
+  /**
+   * Injected per app so this package stays free of organization logic. The
+   * customer app uses it to hand a newly registered user the workspace that was
+   * already approved for their email address.
+   */
+  onUserCreated?: (user: { id: string; email: string }) => Promise<void>
 }
 
 export function createWorkspaceAuth(options: WorkspaceAuthOptions) {
@@ -134,6 +140,25 @@ export function createWorkspaceAuth(options: WorkspaceAuthOptions) {
             autoSignInAfterVerification: true,
             /** Longer than a password reset: these get opened the next morning. */
             expiresIn: 60 * 60 * 24,
+          },
+        }
+      : {}),
+    ...(options.onUserCreated
+      ? {
+          databaseHooks: {
+            user: {
+              create: {
+                after: async (user: { id: string; email: string }) => {
+                  // Never allowed to fail the sign-up: the account exists by
+                  // now, and workspace access can be granted by hand.
+                  try {
+                    await options.onUserCreated?.(user)
+                  } catch (error) {
+                    console.error("onUserCreated hook failed", error)
+                  }
+                },
+              },
+            },
           },
         }
       : {}),

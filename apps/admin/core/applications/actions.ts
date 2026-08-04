@@ -12,7 +12,7 @@ import {
 } from "@workspace/transactional"
 import { revalidatePath } from "next/cache"
 import { requirePlatformSession } from "@/core/auth/service"
-import { getCustomerAppUrl } from "./customer-app-url"
+import { getMarketingUrl, getRegisterUrl } from "./customer-app-url"
 
 export async function approveApplication(formData: FormData) {
   const session = await requirePlatformSession()
@@ -29,7 +29,7 @@ export async function approveApplication(formData: FormData) {
       to: application.email,
       fullName: application.fullName,
       companyName: application.companyName,
-      loginUrl: `${getCustomerAppUrl()}/${result.slug}/home`,
+      loginUrl: getRegisterUrl(application.email),
     }).catch((error) => {
       console.error("Application approval email failed", error)
     })
@@ -71,7 +71,7 @@ export async function rejectApplication(formData: FormData) {
       fullName: application.fullName,
       companyName: application.companyName,
       rejectionReason: rejectionReason || undefined,
-      onboardingUrl: `${getCustomerAppUrl()}/onboarding`,
+      onboardingUrl: `${getMarketingUrl()}/#book-demo`,
     }).catch((error) => {
       console.error("Application rejection email failed", error)
     })

@@ -40,7 +40,7 @@ export default async function LoginPage({
         ? `/${membership.slug}/home`
         : membership
           ? destination
-          : "/onboarding"
+          : "/pending-approval"
     )
   }
 

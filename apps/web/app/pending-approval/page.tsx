@@ -13,7 +13,8 @@ import Image from "next/image"
 import Link from "next/link"
 import { redirect } from "next/navigation"
 import { auth } from "@/core/auth/auth"
-import { getOnboardingApplicationForUser } from "@/core/organizations/onboarding-application"
+import { getBookDemoHref } from "@/components/landing/urls"
+import { getOnboardingApplicationForEmail } from "@/core/organizations/onboarding-application"
 import { getOrganizationMembership } from "@/core/organizations/service"
 
 export const metadata: Metadata = {
@@ -35,9 +36,53 @@ export default async function PendingApprovalPage({
   const membership = await getOrganizationMembership(session.user.id)
   if (membership) redirect(`/${membership.slug}/home`)
 
-  const application = await getOnboardingApplicationForUser(session.user.id)
+  const application = await getOnboardingApplicationForEmail(session.user.email)
 
-  if (!application) redirect("/onboarding")
+  // Signed in, no workspace, and no request on file — they registered without
+  // ever booking a demo, so point them at the form.
+  if (!application) {
+    return (
+      <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-background p-6 md:p-10">
+        <div className="w-full max-w-md">
+          <Card>
+            <CardHeader className="items-center text-center">
+              <div className="flex size-12 items-center justify-center rounded-xl bg-muted">
+                <Image
+                  src="/logo-landing.png"
+                  alt="Zimba logo"
+                  width={32}
+                  height={32}
+                  className="size-8"
+                />
+              </div>
+              <CardTitle className="mt-2">No workspace yet</CardTitle>
+              <CardDescription>
+                We have no demo request on file for {session.user.email}. Book
+                one and our team will set your workspace up.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-2">
+              <Button
+                nativeButton={false}
+                render={<Link href={getBookDemoHref()} />}
+                className="w-full"
+              >
+                Book a demo
+              </Button>
+              <Button
+                variant="ghost"
+                nativeButton={false}
+                render={<Link href="/login" />}
+                className="w-full"
+              >
+                Back to login
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
+  }
 
   const isApproved = application.status === "approved"
   const isRejected = application.status === "rejected"
@@ -139,7 +184,7 @@ export default async function PendingApprovalPage({
                 <Button
                   variant="outline"
                   nativeButton={false}
-                  render={<Link href="/onboarding?reapply=1" />}
+                  render={<Link href={getBookDemoHref()} />}
                   className="w-full"
                 >
                   Book another demo

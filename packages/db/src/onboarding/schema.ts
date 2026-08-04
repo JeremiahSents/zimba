@@ -9,9 +9,12 @@ export const onboardingApplication = pgTable(
     id: varchar("id")
       .primaryKey()
       .$defaultFn(() => crypto.randomUUID()),
-    userId: text("user_id")
-      .notNull()
-      .references(() => user.id, { onDelete: "cascade" }),
+    /**
+     * Null until the applicant registers. A demo request is submitted from the
+     * marketing site by someone who has no account yet; the row is linked to a
+     * user when they sign up with the same email after approval.
+     */
+    userId: text("user_id").references(() => user.id, { onDelete: "cascade" }),
     fullName: varchar("full_name").notNull(),
     email: varchar("email").notNull(),
     companyName: varchar("company_name").notNull(),
@@ -42,5 +45,8 @@ export const onboardingApplication = pgTable(
   (table) => [
     index("onboarding_application_status_idx").on(table.status),
     index("onboarding_application_user_idx").on(table.userId),
+    // Registration looks the applicant up by email to claim their approved
+    // request, so that lookup needs to be indexed too.
+    index("onboarding_application_email_idx").on(table.email),
   ]
 )

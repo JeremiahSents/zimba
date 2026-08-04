@@ -63,7 +63,7 @@ export function LoginForm({
 
   const newUserCallbackUrl = callbackUrl.startsWith("/invite/")
     ? callbackUrl
-    : "/onboarding"
+    : "/pending-approval"
   // Confirmation links come back through /verify-email, which reports a bad
   // token instead of dumping the visitor on a page that cannot explain itself.
   const verifyCallbackUrl = `/verify-email?next=${encodeURIComponent(newUserCallbackUrl)}`

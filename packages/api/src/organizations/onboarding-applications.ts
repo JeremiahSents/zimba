@@ -3,8 +3,11 @@ import { updateUserName } from "@workspace/db/auth"
 import {
   countPendingOnboardingApplications,
   createOnboardingApplication,
+  findApprovedOnboardingApplicationByEmail,
+  findLatestOnboardingApplicationByEmail,
   findOnboardingApplicationById,
   findPendingOnboardingApplication,
+  linkOnboardingApplicationUser,
   listOnboardingApplicationsWithUser,
   updateOnboardingApplicationStatus,
 } from "@workspace/db/onboarding"
@@ -13,6 +16,7 @@ import {
   createOrganization,
   createOrganizationMember,
   findMembershipByUser,
+  findOrganizationById,
   findOrganizationBySlug,
 } from "@workspace/db/organizations"
 import type { z } from "zod"
@@ -65,11 +69,11 @@ function slugify(name: string) {
 }
 
 /**
- * A demo request, not a workspace. Nothing is provisioned here — a super admin
- * has to approve the request before an organization exists.
+ * A demo request, not a workspace, and submitted by someone with no account:
+ * the form lives on the marketing site. Nothing is provisioned here — a super
+ * admin has to approve the request, and the applicant registers afterwards.
  */
 export async function submitOnboardingApplicationUseCase(
-  ctx: { userId: string },
   input: unknown
 ): Promise<OnboardingApplicationDto> {
   const parsed = onboardingApplicationSchema.safeParse(input)
@@ -84,12 +88,12 @@ export async function submitOnboardingApplicationUseCase(
   const email = parsed.data.email.toLowerCase()
   const companyName = parsed.data.companyName
 
-  const [existing] = await findPendingOnboardingApplication(db, ctx.userId)
+  const [existing] = await findLatestOnboardingApplicationByEmail(db, email)
   if (existing && existing.status === "pending")
-    conflictError("You already have a pending request.")
+    conflictError("We already have a pending request for this email address.")
 
   const created = await createOnboardingApplication(db, {
-    userId: ctx.userId,
+    userId: null,
     fullName,
     email,
     companyName,
@@ -149,16 +153,18 @@ export async function approveOnboardingApplicationUseCase(
   if (app.status !== "pending")
     conflictError("This application has already been reviewed.")
 
+  const applicantUserId = app.userId
+
   return db.transaction(async (tx) => {
-    const [existing] = await findMembershipByUser(tx, app.userId)
-    if (existing) conflictError("User already belongs to an organization.")
+    if (applicantUserId) {
+      const [existing] = await findMembershipByUser(tx, applicantUserId)
+      if (existing) conflictError("User already belongs to an organization.")
+    }
 
     const base = slugify(app.companyName)
     const [taken] = await findOrganizationBySlug(tx, base)
     const slug = taken ? `${base}-${crypto.randomUUID().slice(0, 6)}` : base
     const organizationId = crypto.randomUUID()
-
-    await updateUserName(tx, app.userId, app.fullName)
 
     await createOrganization(tx, {
       id: organizationId,
@@ -167,12 +173,17 @@ export async function approveOnboardingApplicationUseCase(
       status: "active",
     })
 
-    await createOrganizationMember(tx, {
-      id: crypto.randomUUID(),
-      organizationId,
-      role: "owner",
-      userId: app.userId,
-    })
+    // Most applicants have no account yet — the workspace waits for them and
+    // claimApprovedApplicationUseCase makes them owner when they register.
+    if (applicantUserId) {
+      await updateUserName(tx, applicantUserId, app.fullName)
+      await createOrganizationMember(tx, {
+        id: crypto.randomUUID(),
+        organizationId,
+        role: "owner",
+        userId: applicantUserId,
+      })
+    }
 
     await updateOnboardingApplicationStatus(tx, applicationId, {
       status: "approved",
@@ -182,6 +193,47 @@ export async function approveOnboardingApplicationUseCase(
     })
 
     return { organizationId, slug }
+  })
+}
+
+/**
+ * Called right after a user registers. If their email matches an approved demo
+ * request whose workspace is still unclaimed, they become its owner — this is
+ * what replaces the old sign-in-then-apply flow.
+ */
+export async function claimApprovedApplicationUseCase(ctx: {
+  userId: string
+  email: string
+}): Promise<{ organizationId: string; slug: string } | null> {
+  const email = ctx.email.toLowerCase()
+  const [app] = await findApprovedOnboardingApplicationByEmail(db, email)
+  if (!app?.organizationId) return null
+  if (app.userId) return null
+
+  // Narrowed here so the transaction closure keeps the non-null type.
+  const approvedOrganizationId = app.organizationId
+
+  return db.transaction(async (tx) => {
+    const [existing] = await findMembershipByUser(tx, ctx.userId)
+    if (existing) return null
+
+    const [organization] = await findOrganizationById(
+      tx,
+      approvedOrganizationId
+    )
+    if (!organization) return null
+
+    await createOrganizationMember(tx, {
+      id: crypto.randomUUID(),
+      organizationId: organization.id,
+      role: "owner",
+      userId: ctx.userId,
+    })
+
+    await updateUserName(tx, ctx.userId, app.fullName)
+    await linkOnboardingApplicationUser(tx, app.id, ctx.userId)
+
+    return { organizationId: organization.id, slug: organization.slug }
   })
 }
 
@@ -211,6 +263,21 @@ export async function getOnboardingApplicationForUserUseCase(
   userId: string
 ): Promise<OnboardingApplicationDto | null> {
   const [app] = await findPendingOnboardingApplication(db, userId)
+  if (!app) return null
+  return toApplicationDto(app)
+}
+
+/**
+ * Demo requests are keyed by email, not by account, so this is how a signed-in
+ * user finds the request they submitted before they had an account.
+ */
+export async function getOnboardingApplicationByEmailUseCase(
+  email: string
+): Promise<OnboardingApplicationDto | null> {
+  const [app] = await findLatestOnboardingApplicationByEmail(
+    db,
+    email.toLowerCase()
+  )
   if (!app) return null
   return toApplicationDto(app)
 }

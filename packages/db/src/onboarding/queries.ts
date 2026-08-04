@@ -1,4 +1,4 @@
-import { count, desc, eq } from "drizzle-orm"
+import { and, count, desc, eq } from "drizzle-orm"
 import { organization } from "../organizations/schema"
 import type { DatabaseExecutor } from "../shared/executor"
 import { onboardingApplication } from "./schema"
@@ -24,6 +24,53 @@ export function findPendingOnboardingApplication(
     .where(eq(onboardingApplication.userId, userId))
     .orderBy(desc(onboardingApplication.createdAt))
     .limit(1)
+}
+
+/**
+ * Demo requests arrive with no account attached, so email is the only stable
+ * key for both de-duplicating submissions and claiming an approved request when
+ * the applicant finally registers.
+ */
+export function findLatestOnboardingApplicationByEmail(
+  executor: DatabaseExecutor,
+  email: string
+) {
+  return executor
+    .select()
+    .from(onboardingApplication)
+    .where(eq(onboardingApplication.email, email))
+    .orderBy(desc(onboardingApplication.createdAt))
+    .limit(1)
+}
+
+export function findApprovedOnboardingApplicationByEmail(
+  executor: DatabaseExecutor,
+  email: string
+) {
+  return executor
+    .select()
+    .from(onboardingApplication)
+    .where(
+      and(
+        eq(onboardingApplication.email, email),
+        eq(onboardingApplication.status, "approved")
+      )
+    )
+    .orderBy(desc(onboardingApplication.createdAt))
+    .limit(1)
+}
+
+export async function linkOnboardingApplicationUser(
+  executor: DatabaseExecutor,
+  id: string,
+  userId: string
+) {
+  const [updated] = await executor
+    .update(onboardingApplication)
+    .set({ userId, updatedAt: new Date() })
+    .where(eq(onboardingApplication.id, id))
+    .returning()
+  return updated ?? null
 }
 
 export function findOnboardingApplicationById(

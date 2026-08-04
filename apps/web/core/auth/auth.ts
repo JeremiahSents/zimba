@@ -6,6 +6,7 @@ import {
   readAuthCookieDomain,
   readGoogleOAuthCredentials,
 } from "@workspace/auth"
+import { claimApprovedApplicationUseCase } from "@workspace/api"
 import {
   sendEmailVerificationEmail,
   sendMagicLinkEmail,
@@ -41,6 +42,17 @@ export const auth = createWorkspaceAuth({
       },
     }),
   ],
+  /**
+   * A demo request is approved before the applicant has an account, so the
+   * workspace sits unclaimed until someone registers with that email. This is
+   * where they are made its owner.
+   */
+  onUserCreated: async (user) => {
+    await claimApprovedApplicationUseCase({
+      userId: user.id,
+      email: user.email,
+    })
+  },
   trustedOrigins: parseTrustedOrigins(env.BETTER_AUTH_TRUSTED_ORIGINS),
   cookieDomain: readAuthCookieDomain(),
 })

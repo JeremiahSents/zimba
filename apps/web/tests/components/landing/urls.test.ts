@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest"
 import {
   APP_ORIGIN,
+  MARKETING_ORIGIN,
   getLoginHref,
-  getOnboardingHref,
+  getBookDemoHref,
+  getRegisterHref,
 } from "@/components/landing/urls"
 
 describe("getLoginHref", () => {
@@ -15,12 +17,22 @@ describe("getLoginHref", () => {
   })
 })
 
-describe("getOnboardingHref", () => {
+describe("getRegisterHref", () => {
   it("points production sign-up to the app subdomain", () => {
-    expect(getOnboardingHref("production")).toBe(`${APP_ORIGIN}/onboarding`)
+    expect(getRegisterHref("production")).toBe(`${APP_ORIGIN}/register`)
   })
 
   it("keeps local development sign-up relative", () => {
-    expect(getOnboardingHref("development")).toBe("/onboarding")
+    expect(getRegisterHref("development")).toBe("/register")
+  })
+})
+
+describe("getBookDemoHref", () => {
+  it("points production back at the marketing landing page", () => {
+    expect(getBookDemoHref("production")).toBe(`${MARKETING_ORIGIN}/#book-demo`)
+  })
+
+  it("keeps local development relative", () => {
+    expect(getBookDemoHref("development")).toBe("/#book-demo")
   })
 })

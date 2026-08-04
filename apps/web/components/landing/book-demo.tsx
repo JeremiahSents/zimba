@@ -1,12 +1,7 @@
 import { CheckmarkCircle02Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Button } from "@workspace/ui/components/button"
-import { Input } from "@workspace/ui/components/input"
-import { Label } from "@workspace/ui/components/label"
 
-import { getOnboardingHref } from "@/components/landing/urls"
-
-const onboardingHref = getOnboardingHref()
+import { DemoForm } from "@/components/landing/demo-form"
 
 const reassurances = [
   "A walkthrough on your own project numbers",
@@ -14,9 +9,8 @@ const reassurances = [
 ]
 
 /**
- * A native GET form: the three fields land on /onboarding as query params, so
- * the full demo-request form arrives prefilled. Nothing is submitted from the
- * marketing origin itself (Better Auth only trusts the app origin).
+ * The request is recorded straight from the marketing site — no account needed.
+ * A super admin reviews it, and the applicant registers afterwards.
  */
 export function BookDemo() {
   return (
@@ -52,58 +46,7 @@ export function BookDemo() {
           </ul>
         </div>
 
-        <form
-          action={onboardingHref}
-          method="get"
-          className="rounded-xl border border-primary/20 bg-background p-6 shadow-sm sm:p-7"
-        >
-          <div className="grid gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="demo-full-name">Full name</Label>
-              <Input
-                id="demo-full-name"
-                name="fullName"
-                autoComplete="name"
-                placeholder="Your name"
-                className="rounded-md"
-                required
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="demo-company-name">Company name</Label>
-              <Input
-                id="demo-company-name"
-                name="companyName"
-                autoComplete="organization"
-                placeholder="Your company"
-                className="rounded-md"
-                required
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="demo-email">Email</Label>
-              <Input
-                id="demo-email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                placeholder="you@company.com"
-                className="rounded-md"
-                required
-              />
-            </div>
-            <Button
-              type="submit"
-              size="lg"
-              className="mt-1 rounded-md w-full"
-            >
-              Book a Demo
-            </Button>
-            <p className="text-center text-muted-foreground text-xs leading-5">
-              We&apos;ll only use these details to set up your demo.
-            </p>
-          </div>
-        </form>
+        <DemoForm />
       </div>
     </section>
   )

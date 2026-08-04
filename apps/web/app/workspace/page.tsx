@@ -2,7 +2,6 @@ import { listUserWorkspacesUseCase } from "@workspace/api"
 import { cookies, headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { auth } from "@/core/auth/auth"
-import { getOnboardingApplicationForUser } from "@/core/organizations/onboarding-application"
 import { LAST_WORKSPACE_COOKIE } from "@/lib/workspace-cookie"
 
 export const dynamic = "force-dynamic"
@@ -15,14 +14,9 @@ export default async function WorkspaceEntryPage() {
   const target = await pickWorkspace(workspaces)
   if (target) redirect(`/${target}/home`)
 
-  const application = await getOnboardingApplicationForUser(session.user.id)
-  if (
-    application &&
-    (application.status === "pending" || application.status === "rejected")
-  )
-    redirect("/pending-approval")
-
-  redirect("/onboarding")
+  // No membership means either a request still under review or none at all;
+  // /pending-approval explains both.
+  redirect("/pending-approval")
 }
 
 /**

@@ -2,7 +2,8 @@ export type OnboardingApplicationStatus = "pending" | "approved" | "rejected"
 
 export type OnboardingApplicationDto = {
   id: string
-  userId: string
+  /** Null until the applicant registers and claims the approved workspace. */
+  userId: string | null
   fullName: string
   email: string
   companyName: string
