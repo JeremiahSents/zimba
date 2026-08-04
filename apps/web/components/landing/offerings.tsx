@@ -4,7 +4,8 @@ import {
   Invoice01Icon,
   SmartPhone01Icon,
 } from "@hugeicons/core-free-icons"
-import { HugeiconsIcon } from "@hugeicons/react"
+import { PlusCard } from "@workspace/ui/components/ruixen-bento-cards"
+import type { HugeiconsIcon } from "@hugeicons/react"
 import type { ComponentProps } from "react"
 
 type Card = {
@@ -44,29 +45,21 @@ const cards: Card[] = [
 export function Offerings() {
   return (
     <section id="product" className="bg-background px-5 py-20 sm:px-8 sm:py-24">
-      <div className="mx-auto max-w-6xl">
+      <div className="mx-auto max-w-6xl rounded-2xl border border-primary/20 border-dashed p-5 sm:p-8">
         <h2 className="max-w-2xl text-balance font-heading font-normal text-3xl tracking-[-0.03em] sm:text-4xl">
           Everything it takes to keep a project on budget.
         </h2>
 
-        <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
+        <div className="mt-10 grid auto-rows-auto grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-6">
           {cards.map((card) => (
-            <div
+            <PlusCard
               key={card.title}
-              className={`flex flex-col rounded-2xl border border-border p-6 ${card.span}`}
-            >
-              <HugeiconsIcon
-                icon={card.icon}
-                strokeWidth={1.8}
-                className="size-6 text-primary"
-              />
-              <h3 className="mt-5 font-heading font-medium text-lg tracking-[-0.02em]">
-                {card.title}
-              </h3>
-              <p className="mt-2 text-muted-foreground text-sm leading-6">
-                {card.body}
-              </p>
-            </div>
+              icon={card.icon}
+              title={card.title}
+              description={card.body}
+              className={`border-primary/30 bg-transparent ${card.span}`}
+              plusClassName="text-primary/50"
+            />
           ))}
         </div>
       </div>
