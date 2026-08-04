@@ -24,9 +24,11 @@ const initialState: OnboardingState = {}
  */
 export function OnboardingForm({
   defaultName,
+  defaultCompany = "",
   email,
 }: {
   defaultName: string
+  defaultCompany?: string
   email: string
 }) {
   const [state, formAction, isPending] = useActionState(
@@ -67,7 +69,7 @@ export function OnboardingForm({
               name="companyName"
               autoComplete="organization"
               placeholder="Zimba Consultants"
-              defaultValue={state.values?.companyName ?? ""}
+              defaultValue={state.values?.companyName ?? defaultCompany}
               aria-invalid={Boolean(state.fieldErrors?.companyName)}
               required
             />

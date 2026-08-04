@@ -125,6 +125,17 @@
   --spacing-mobile-bottom-space: var(--mobile-bottom-space);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  --animate-marquee: marquee 40s linear infinite;
+
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    /* The track renders its items twice, so half a loop lands seamlessly. */
+    to {
+      transform: translateX(-50%);
+    }
+  }
 }
 
 @layer base {

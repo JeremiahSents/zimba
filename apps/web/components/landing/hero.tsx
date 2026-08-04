@@ -1,35 +1,50 @@
 import { Button } from "@workspace/ui/components/button"
+import Image from "next/image"
 import Link from "next/link"
 
 import { Header } from "@/components/landing/header"
-import { getOnboardingHref } from "@/components/landing/urls"
-
-const onboardingHref = getOnboardingHref()
 
 export function Hero() {
   return (
-    <section className="relative flex min-h-svh flex-col overflow-hidden bg-[linear-gradient(to_right,rgba(0,0,0,0.62),rgba(0,0,0,0.18)),url('/hero.png')] bg-center bg-cover bg-muted">
-      <Header />
+    <section className="bg-primary/10 p-3 sm:p-5">
+      <div className="mx-auto max-w-[1400px] overflow-hidden rounded-3xl bg-[oklch(0.24_0.05_166)] pb-4 sm:pb-6">
+        <Header />
 
-      <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-1 flex-col justify-center px-5 py-24 sm:px-8 lg:px-10">
-        <h1 className="max-w-3xl text-balance font-heading font-normal text-4xl text-white leading-none tracking-[-0.04em] sm:text-6xl lg:text-7xl">
-          Track your project expenses as you build the future.
-        </h1>
+        <div className="mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-10">
+          <div className="grid gap-8 py-12 sm:py-16 lg:grid-cols-[1.6fr_1fr] lg:items-end">
+            <h1 className="text-balance font-heading font-normal text-4xl text-white leading-[1.02] tracking-[-0.04em] sm:text-6xl lg:text-7xl">
+              Every project shilling, accounted for.
+            </h1>
 
-        <p className="mt-7 max-w-xl text-base text-white/78 leading-7 sm:text-xl">
-          One clean place for construction and real estate teams to monitor
-          expenses, budgets, approvals, and project cash flow.
-        </p>
+            <div className="max-w-sm lg:justify-self-end">
+              <p className="text-sm text-white/75 leading-6 sm:text-base">
+                Zimba gives construction and real estate teams one clean place
+                to track expenses, budgets, approvals, and project cash flow.
+              </p>
+              <div className="mt-6">
+                <Button
+                  size="lg"
+                  nativeButton={false}
+                  render={<Link href="#book-demo" />}
+                  className="px-6"
+                >
+                  Book a Demo
+                </Button>
+              </div>
+            </div>
+          </div>
 
-        <div className="mt-10">
-          <Button
-            size="lg"
-            nativeButton={false}
-            render={<Link href={onboardingHref} />}
-            className="px-6"
-          >
-            Book a Demo
-          </Button>
+          <div className="relative overflow-hidden rounded-2xl">
+            <Image
+              src="/hero.png"
+              alt="Construction team working on site"
+              width={1680}
+              height={945}
+              priority
+              className="h-[320px] w-full object-cover sm:h-[420px] lg:h-[480px]"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+          </div>
         </div>
       </div>
     </section>

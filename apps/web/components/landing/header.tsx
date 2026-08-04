@@ -3,7 +3,12 @@ import Image from "next/image"
 import Link from "next/link"
 import { getLoginHref, getOnboardingHref } from "./urls"
 
-const navItems = ["Product", "Industries", "Customers", "Company"]
+const navItems = [
+  { label: "Product", href: "#product" },
+  { label: "Industries", href: "#" },
+  { label: "Customers", href: "#" },
+  { label: "Company", href: "#" },
+]
 const loginHref = getLoginHref()
 const onboardingHref = getOnboardingHref()
 
@@ -31,8 +36,12 @@ export function Header() {
 
         <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-8 font-normal text-sm text-white/75 md:flex">
           {navItems.map((item) => (
-            <Link key={item} href="#" className="transition hover:text-white">
-              {item}
+            <Link
+              key={item.label}
+              href={item.href}
+              className="transition hover:text-white"
+            >
+              {item.label}
             </Link>
           ))}
         </nav>

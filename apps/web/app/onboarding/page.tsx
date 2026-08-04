@@ -14,11 +14,25 @@ export const metadata: Metadata = {
 export default async function OnboardingPage({
   searchParams,
 }: {
-  searchParams: Promise<{ reapply?: string }>
+  searchParams: Promise<{
+    reapply?: string
+    fullName?: string
+    companyName?: string
+    email?: string
+  }>
 }) {
-  const { reapply } = await searchParams
+  const { reapply, fullName, companyName, email } = await searchParams
   const session = await auth.api.getSession({ headers: await headers() })
-  if (!session) redirect("/login")
+  if (!session) {
+    // Keep landing-page prefill (fullName/companyName/email) across sign-in.
+    const prefill = new URLSearchParams()
+    if (fullName) prefill.set("fullName", fullName)
+    if (companyName) prefill.set("companyName", companyName)
+    if (email) prefill.set("email", email)
+    const query = prefill.toString()
+    const target = query ? `/onboarding?${query}` : "/onboarding"
+    redirect(`/login?callbackUrl=${encodeURIComponent(target)}`)
+  }
 
   const membership = await getOrganizationMembership(session.user.id)
   if (membership) redirect(`/${membership.slug}/home`)
@@ -33,8 +47,9 @@ export default async function OnboardingPage({
     <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-background p-6 md:p-10">
       <div className="w-full max-w-sm">
         <OnboardingForm
-          defaultName={session.user.name}
-          email={session.user.email}
+          defaultName={fullName?.trim() || session.user.name}
+          defaultCompany={companyName?.trim() ?? ""}
+          email={email?.trim() || session.user.email}
         />
       </div>
     </div>

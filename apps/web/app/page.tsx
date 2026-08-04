@@ -1,6 +1,12 @@
 import type { Metadata } from "next"
 
-import { Footer, Hero, TrustedBy } from "@/components/landing"
+import {
+  BookDemo,
+  Footer,
+  Hero,
+  Offerings,
+  TrustedBy,
+} from "@/components/landing"
 
 export const metadata: Metadata = {
   title: "Zimba | Expense tracking for construction teams",
@@ -13,6 +19,8 @@ export default function Page() {
     <main className="min-h-svh bg-background text-foreground">
       <Hero />
       <TrustedBy />
+      <Offerings />
+      <BookDemo />
       <Footer />
     </main>
   )

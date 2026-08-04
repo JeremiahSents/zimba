@@ -1,4 +1,6 @@
+export { BookDemo } from "@/components/landing/book-demo"
 export { Footer } from "@/components/landing/footer"
 export { Header } from "@/components/landing/header"
 export { Hero } from "@/components/landing/hero"
+export { Offerings } from "@/components/landing/offerings"
 export { TrustedBy } from "@/components/landing/trusted-by"
