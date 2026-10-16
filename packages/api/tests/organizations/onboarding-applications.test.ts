@@ -20,7 +20,11 @@ const organizationRepo = vi.hoisted(() => ({
   findOrganizationBySlug: vi.fn(),
 }))
 
-const authRepo = vi.hoisted(() => ({ updateUserName: vi.fn() }))
+const authRepo = vi.hoisted(() => ({
+  updateUserName: vi.fn(),
+  findUserByEmail: vi.fn(),
+  findUserById: vi.fn(),
+}))
 
 vi.mock("@workspace/db/onboarding", () => onboardingRepo)
 vi.mock("@workspace/db/organizations", () => organizationRepo)
@@ -139,9 +143,7 @@ describe("submitting a demo request", () => {
     ["a malformed email", { ...validInput, email: "not-an-email" }],
     ["a missing email", { ...validInput, email: "" }],
   ])("rejects %s", async (_label, input) => {
-    await expect(
-      submitOnboardingApplicationUseCase(input)
-    ).rejects.toThrow()
+    await expect(submitOnboardingApplicationUseCase(input)).rejects.toThrow()
     expect(onboardingRepo.createOnboardingApplication).not.toHaveBeenCalled()
   })
 
@@ -182,6 +184,60 @@ describe("reviewing a demo request", () => {
   beforeEach(() => {
     vi.resetAllMocks()
     dbMock.transaction.mockImplementation(async (callback) => callback({}))
+    authRepo.findUserByEmail.mockResolvedValue([])
+  })
+
+  it("links an existing verified applicant when the request has no user yet", async () => {
+    onboardingRepo.findOnboardingApplicationById.mockResolvedValue([
+      storedRow({ userId: null }),
+    ])
+    authRepo.findUserByEmail.mockResolvedValue([
+      { id: "user-existing", emailVerified: true },
+    ])
+    organizationRepo.findMembershipByUser.mockResolvedValue([])
+    organizationRepo.findOrganizationBySlug.mockResolvedValue([])
+
+    await approveOnboardingApplicationUseCase(
+      { reviewerId: "admin-1" },
+      "app-1"
+    )
+
+    expect(organizationRepo.createOrganizationMember).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ userId: "user-existing", role: "owner" })
+    )
+    expect(onboardingRepo.linkOnboardingApplicationUser).toHaveBeenCalledWith(
+      expect.anything(),
+      "app-1",
+      "user-existing"
+    )
+  })
+
+  it.each([
+    undefined,
+    { id: "user-existing", emailVerified: false },
+    { id: "user-existing", emailVerified: true, deactivatedAt: new Date() },
+  ])("leaves the approved workspace unclaimed without an eligible account: %j", async (account) => {
+    onboardingRepo.findOnboardingApplicationById.mockResolvedValue([
+      storedRow({ userId: null }),
+    ])
+    authRepo.findUserByEmail.mockResolvedValue(account ? [account] : [])
+    organizationRepo.findOrganizationBySlug.mockResolvedValue([])
+
+    await approveOnboardingApplicationUseCase(
+      { reviewerId: "admin-1" },
+      "app-1"
+    )
+
+    expect(organizationRepo.createOrganizationMember).not.toHaveBeenCalled()
+    expect(onboardingRepo.linkOnboardingApplicationUser).not.toHaveBeenCalled()
+    expect(
+      onboardingRepo.updateOnboardingApplicationStatus
+    ).toHaveBeenCalledWith(
+      expect.anything(),
+      "app-1",
+      expect.objectContaining({ status: "approved" })
+    )
   })
 
   it("creates the workspace with the applicant as owner on approval", async () => {
@@ -282,6 +338,14 @@ describe("claiming an approved workspace at registration", () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    authRepo.findUserById.mockResolvedValue([
+      {
+        id: "user-9",
+        email: "ada@example.com",
+        emailVerified: true,
+        deactivatedAt: null,
+      },
+    ])
     organizationRepo.findMembershipByUser.mockResolvedValue([])
     organizationRepo.findOrganizationById.mockResolvedValue([
       { id: "org-1", slug: "kampala-builders" },
@@ -297,7 +361,10 @@ describe("claiming an approved workspace at registration", () => {
       email: "ada@example.com",
     })
 
-    expect(result).toEqual({ organizationId: "org-1", slug: "kampala-builders" })
+    expect(result).toEqual({
+      organizationId: "org-1",
+      slug: "kampala-builders",
+    })
     expect(organizationRepo.createOrganizationMember).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
@@ -313,6 +380,47 @@ describe("claiming an approved workspace at registration", () => {
     )
   })
 
+  it.each([
+    undefined,
+    { email: "ada@example.com", emailVerified: false },
+    { email: "someone@example.com", emailVerified: true },
+    {
+      email: "ada@example.com",
+      emailVerified: true,
+      deactivatedAt: new Date(),
+    },
+  ])("does not grant access without a matching verified active account: %j", async (account) => {
+    authRepo.findUserById.mockResolvedValue(account ? [account] : [])
+    expect(
+      await claimApprovedApplicationUseCase({
+        userId: "user-9",
+        email: "ada@example.com",
+      })
+    ).toBeNull()
+    expect(organizationRepo.createOrganizationMember).not.toHaveBeenCalled()
+  })
+
+  it("allows an existing verified user to recover an unclaimed approval", async () => {
+    await claimApprovedApplicationUseCase({
+      userId: "user-9",
+      email: "ada@example.com",
+    })
+    onboardingRepo.findApprovedOnboardingApplicationByEmail.mockResolvedValue([
+      storedRow({
+        userId: "user-9",
+        status: "approved",
+        organizationId: "org-1",
+      }),
+    ])
+    expect(
+      await claimApprovedApplicationUseCase({
+        userId: "user-9",
+        email: "ada@example.com",
+      })
+    ).toBeNull()
+    expect(organizationRepo.createOrganizationMember).toHaveBeenCalledTimes(1)
+  })
+
   it("matches the request regardless of the case they type their email in", async () => {
     await claimApprovedApplicationUseCase({
       userId: "user-9",
@@ -325,7 +433,9 @@ describe("claiming an approved workspace at registration", () => {
   })
 
   it("ignores a registration with no approved request", async () => {
-    onboardingRepo.findApprovedOnboardingApplicationByEmail.mockResolvedValue([])
+    onboardingRepo.findApprovedOnboardingApplicationByEmail.mockResolvedValue(
+      []
+    )
 
     const result = await claimApprovedApplicationUseCase({
       userId: "user-9",
@@ -341,7 +451,11 @@ describe("claiming an approved workspace at registration", () => {
       approvedRow(),
     ])
     onboardingRepo.findApprovedOnboardingApplicationByEmail.mockResolvedValue([
-      storedRow({ userId: "user-1", status: "approved", organizationId: "org-1" }),
+      storedRow({
+        userId: "user-1",
+        status: "approved",
+        organizationId: "org-1",
+      }),
     ])
 
     const result = await claimApprovedApplicationUseCase({

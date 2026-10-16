@@ -1,5 +1,9 @@
 import { db } from "@workspace/db"
-import { updateUserName } from "@workspace/db/auth"
+import {
+  findUserByEmail,
+  findUserById,
+  updateUserName,
+} from "@workspace/db/auth"
 import {
   countPendingOnboardingApplications,
   createOnboardingApplication,
@@ -153,9 +157,13 @@ export async function approveOnboardingApplicationUseCase(
   if (app.status !== "pending")
     conflictError("This application has already been reviewed.")
 
-  const applicantUserId = app.userId
-
   return db.transaction(async (tx) => {
+    const [account] = app.userId
+      ? []
+      : await findUserByEmail(tx, app.email.toLowerCase())
+    const applicantUserId =
+      app.userId ??
+      (account?.emailVerified && !account.deactivatedAt ? account.id : null)
     if (applicantUserId) {
       const [existing] = await findMembershipByUser(tx, applicantUserId)
       if (existing) conflictError("User already belongs to an organization.")
@@ -183,6 +191,7 @@ export async function approveOnboardingApplicationUseCase(
         role: "owner",
         userId: applicantUserId,
       })
+      await linkOnboardingApplicationUser(tx, app.id, applicantUserId)
     }
 
     await updateOnboardingApplicationStatus(tx, applicationId, {
@@ -197,30 +206,32 @@ export async function approveOnboardingApplicationUseCase(
 }
 
 /**
- * Called right after a user registers. If their email matches an approved demo
- * request whose workspace is still unclaimed, they become its owner — this is
- * what replaces the old sign-in-then-apply flow.
+ * A verified applicant can claim their approved workspace at registration or
+ * from the approval page if their account predates approval.
  */
 export async function claimApprovedApplicationUseCase(ctx: {
   userId: string
   email: string
 }): Promise<{ organizationId: string; slug: string } | null> {
-  const email = ctx.email.toLowerCase()
-  const [app] = await findApprovedOnboardingApplicationByEmail(db, email)
-  if (!app?.organizationId) return null
-  if (app.userId) return null
-
-  // Narrowed here so the transaction closure keeps the non-null type.
-  const approvedOrganizationId = app.organizationId
-
   return db.transaction(async (tx) => {
+    const [account] = await findUserById(tx, ctx.userId)
+    if (
+      !account?.emailVerified ||
+      account.deactivatedAt ||
+      account.email.toLowerCase() !== ctx.email.toLowerCase()
+    )
+      return null
+
+    const [app] = await findApprovedOnboardingApplicationByEmail(
+      tx,
+      account.email.toLowerCase()
+    )
+    if (!app?.organizationId || app.userId) return null
+
     const [existing] = await findMembershipByUser(tx, ctx.userId)
     if (existing) return null
 
-    const [organization] = await findOrganizationById(
-      tx,
-      approvedOrganizationId
-    )
+    const [organization] = await findOrganizationById(tx, app.organizationId)
     if (!organization) return null
 
     await createOrganizationMember(tx, {

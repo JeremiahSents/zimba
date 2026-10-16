@@ -7,6 +7,16 @@ function request(url: string, headers?: HeadersInit) {
 }
 
 describe("proxy", () => {
+  it("does not treat pending approval as a workspace or overwrite the remembered workspace", () => {
+    const response = proxy(
+      request("https://app.zimba.digital/pending-approval")
+    )
+    expect(
+      response.headers.get("x-middleware-request-x-workspace-slug")
+    ).toBeNull()
+    expect(response.cookies.get("zimba_last_workspace")).toBeUndefined()
+  })
+
   it("rewrites app subdomain root to the dashboard", () => {
     const response = proxy(request("https://app.zimba.digital/"))
 

@@ -58,6 +58,7 @@ export function findApprovedOnboardingApplicationByEmail(
     )
     .orderBy(desc(onboardingApplication.createdAt))
     .limit(1)
+    .for("update")
 }
 
 export async function linkOnboardingApplicationUser(

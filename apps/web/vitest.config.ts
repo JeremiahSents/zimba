@@ -2,6 +2,9 @@ import { fileURLToPath } from "node:url"
 import { defineConfig } from "vitest/config"
 
 export default defineConfig({
+  oxc: {
+    jsx: { runtime: "automatic" },
+  },
   resolve: {
     // Mirrors the "@/*" path in tsconfig.json so tests can address app modules
     // the same way app code does.

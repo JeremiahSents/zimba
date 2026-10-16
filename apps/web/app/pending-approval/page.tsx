@@ -12,8 +12,9 @@ import { headers } from "next/headers"
 import Image from "next/image"
 import Link from "next/link"
 import { redirect } from "next/navigation"
-import { auth } from "@/core/auth/auth"
 import { getBookDemoHref } from "@/components/landing/urls"
+import { auth } from "@/core/auth/auth"
+import { claimApprovedWorkspaceAction } from "@/core/organizations/actions"
 import { getOnboardingApplicationForEmail } from "@/core/organizations/onboarding-application"
 import { getOrganizationMembership } from "@/core/organizations/service"
 
@@ -27,9 +28,9 @@ export const dynamic = "force-dynamic"
 export default async function PendingApprovalPage({
   searchParams,
 }: {
-  searchParams: Promise<{ submitted?: string }>
+  searchParams: Promise<{ submitted?: string; access?: string }>
 }) {
-  const { submitted } = await searchParams
+  const { submitted, access } = await searchParams
   const session = await auth.api.getSession({ headers: await headers() })
   if (!session) redirect("/login")
 
@@ -88,10 +89,6 @@ export default async function PendingApprovalPage({
   const isRejected = application.status === "rejected"
   const isPending = application.status === "pending"
 
-  if (isApproved && application.organizationId) {
-    redirect("/workspace")
-  }
-
   return (
     <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-background p-6 md:p-10">
       <div className="w-full max-w-md">
@@ -107,10 +104,13 @@ export default async function PendingApprovalPage({
               />
             </div>
             <CardTitle className="mt-2">
+              {isApproved && "Access Request Approved"}
               {isPending && "Access Request Under Review"}
               {isRejected && "Access Request Declined"}
             </CardTitle>
             <CardDescription>
+              {isApproved &&
+                "Your request has been approved. Open your workspace to get started."}
               {isPending &&
                 "Thanks for booking a demo. Zimba team will review your request."}
               {isRejected &&
@@ -118,13 +118,28 @@ export default async function PendingApprovalPage({
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            {isApproved && (
+              <div className="space-y-3">
+                {access === "unavailable" && (
+                  <p role="alert" className="text-destructive text-sm">
+                    We could not activate your workspace access. Confirm your
+                    email address and try again, or contact the Zimba team.
+                  </p>
+                )}
+                <form action={claimApprovedWorkspaceAction}>
+                  <Button type="submit" className="w-full">
+                    Open workspace
+                  </Button>
+                </form>
+              </div>
+            )}
             {submitted === "1" && (
               <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-emerald-950">
                 <p className="font-medium text-sm">Check your email</p>
                 <p className="mt-1 text-sm">
                   We sent a welcome message to{" "}
-                  <strong>{application.email}</strong>.The team will
-                  review your details and get in touch.
+                  <strong>{application.email}</strong>.The team will review your
+                  details and get in touch.
                 </p>
               </div>
             )}

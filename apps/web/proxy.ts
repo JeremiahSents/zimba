@@ -49,6 +49,7 @@ const NON_WORKSPACE_SEGMENTS = [
   "forgot-password",
   "reset-password",
   "verify-email",
+  "pending-approval",
 ]
 
 export function proxy(request: NextRequest) {
